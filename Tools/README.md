@@ -7,8 +7,8 @@ https://github.com/ole00/afterburner/tree/version_4_legacy
 The PC code is <a href="afterburner_w64_040.exe">afterburner w64</a>
 and the code for th Arduino UNO is <a href="afterburner042/afterburner042.ino">afterburner042.ino</a>
 
-Useful links:
-https://www.youtube.com/watch?v=fCsP7ujMJV8
+Links:
+<br>https://www.youtube.com/watch?v=fCsP7ujMJV8
 
 I used a circuit based on the one in the video (at 8:15)
 to switch the 12v supply to the edit pin.
@@ -54,3 +54,8 @@ I used the nightly builds as they include the Raspberry Pi capture device.
 <li><a href="pulseview-NIGHTLY-x86_64-release-installer.exe">Pulse View</a>
 <li><a href="sigrok-cli-NIGHTLY-x86_64-release-installer.exe">Sigrok</a>
 </li>
+
+Links: 
+<br>https://www.youtube.com/watch?app=desktop&v=waBu6ijT3wo
+<br>https://github.com/pysigrok/hardware-raspberrypi-pico
+
