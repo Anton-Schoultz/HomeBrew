@@ -34,6 +34,7 @@ afterburner_w64_040.exe e -v -t GAL20V8 -d %port%
 rem program the gal
 afterburner_w64_040.exe w -v -t GAL20V8 -d %port% -f %file%
 
+cd ..
 @echo Done!
 @echo Switch off power before removing.
 
