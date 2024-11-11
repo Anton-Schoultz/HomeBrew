@@ -16,7 +16,7 @@ to switch the 12v supply to the edit pin.
 # WinCUPL
 This is used to program the GAL20v8 chips.
 
-Here is the install file <a href="awincupl.exe">awincupl.exe</a>
+Here is the install file <a href="wincupl.exe">wincupl.exe</a>
 
 I have included some refernce documents<ul>
 <li><a href="CUPL_Reference.pdf">CUPL_Reference</a>
