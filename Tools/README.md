@@ -16,6 +16,8 @@ to switch the 12v supply to the edit pin.
 # WinCUPL
 This is used to program the GAL20v8 chips.
 
+Here is the install file <a href="awincupl.exe">awincupl.exe</a>
+
 I have included some refernce documents<ul>
 <li><a href="CUPL_Reference.pdf">CUPL_Reference</a>
 <li><a href="WinCUPL_Manual.pdf">WinCUPL_Manual</a>
@@ -53,7 +55,7 @@ I used the nightly builds as they include the Raspberry Pi capture device.
 (The release version does not show it in the device dropdown)<ul>
 <li><a href="pulseview-NIGHTLY-x86_64-release-installer.exe">Pulse View</a>
 <li><a href="sigrok-cli-NIGHTLY-x86_64-release-installer.exe">Sigrok</a>
-</li>
+</ul>
 
 Links: 
 <br>https://www.youtube.com/watch?app=desktop&v=waBu6ijT3wo
