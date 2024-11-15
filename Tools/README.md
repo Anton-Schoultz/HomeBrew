@@ -11,7 +11,7 @@ Links:
 <br>https://www.youtube.com/watch?v=fCsP7ujMJV8
 
 I used a circuit based on the one in the video (at 8:15)
-to switch the 12v supply to the edit pinnstead of the switchable module.
+to switch the 12v supply to the edit pin instead of the switchable module.
 
 I thew it all together on a proto-typing 'hat' which then plugs onto the Arduino UNO R3.
 
@@ -23,7 +23,7 @@ This is used to program the GAL20v8 chips.
 
 Here is the install file <a href="wincupl.exe">wincupl.exe</a>
 
-I have included some refernce documents<ul>
+I have included some reference documents<ul>
 <li><a href="CUPL_Reference.pdf">CUPL_Reference</a>
 <li><a href="WinCUPL_Manual.pdf">WinCUPL_Manual</a>
 </ul>

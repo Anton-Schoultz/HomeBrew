@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="EEProgrammer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/EEProgrammer_jar</output-path>
+    <root id="archive" name="EEProgrammer.jar">
+      <element id="module-output" name="EEProgrammer" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/javaLib/jSerialComm-2.9.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

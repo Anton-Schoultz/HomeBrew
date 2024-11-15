@@ -11,10 +11,10 @@ REM p1=jed file to write
 set port=COM8
 Rem
 if not .%1==. goto ok
-echo Program GLA20v8 using afterburner 
+echo Read GAL20v8 using afterburner 
 echo Usage:
-echo Burn {FileName} [Port]
-echo FileName is the name of the jed file, without the .jed
+echo ReadGAL {FileName} [Port]
+echo FileName is the name of the resulting fuse file (without extension)
 echo Port is the com port that the uno is attached to, default is %port%
 echo
 echo For more details about the programmer used please
@@ -22,19 +22,14 @@ echo refer to https://github.com/ole00/afterburner/tree/version_4_legacy
 goto exit
 
 :ok
-set file=%1.JED
+set file=%1.res
 if not .%2==. set port=%2
 
-@echo About to burn %file% via %port% ...
+@echo About to read GAL20V8 via %port% into %file% ...
 @echo Please nsure that power is on an press enter to continue.
 pause 
-rem erase the chip
-afterburner_w64_040.exe e -v -t GAL20V8 -d %port%
+afterburner_w64_040.exe r -t GAL20V8 -d %port% > %file%
 
-rem program the gal
-afterburner_w64_040.exe w -v -t GAL20V8 -d %port% -f %file%
-
-cd ..
 @echo Done!
 @echo Switch off power before removing.
 
