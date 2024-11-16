@@ -1,10 +1,10 @@
 # GAL Programmer
-The GAL programmer is bassed on this project
+The GAL programmer is bassed on this project by Bruce Abbott
 https://github.com/ole00/afterburner/tree/version_4_legacy
 
 <image src="afterburner_circuit.png"/>
 
-The PC code is <a href="afterburner_w64_040.exe">afterburner w64</a>
+The PC code is <a href="afterburner_w64_040.exe">afterburner w64 v4.0</a>
 and the code for th Arduino UNO is <a href="afterburner042/afterburner042.ino">afterburner042.ino</a>
 
 Links:
@@ -16,6 +16,8 @@ to switch the 12v supply to the edit pin instead of the switchable module.
 I thew it all together on a proto-typing 'hat' which then plugs onto the Arduino UNO R3.
 
 <image src="GAL_Programmer_Hat.jpg"/>
+
+<br>I added some convenience batch jobs GAL_Write.bat and GAL_Read.bat.
 
 
 # WinCUPL
@@ -66,3 +68,13 @@ Links:
 <br>https://www.youtube.com/watch?app=desktop&v=waBu6ijT3wo
 <br>https://github.com/pysigrok/hardware-raspberrypi-pico
 
+
+## EE Programmer
+Simple DIY EEPROM programer for PQ 52B33 8k x 8 EEPROM (Using Arduino Nano)
+<br>See the program comments at the top of 
+<code>Tools\EEProgrammer\arduino\EEProgrammer\EEProgrammer.ino</code>
+
+The PC code is written in java, InteliJ project is at 
+<code>Tools\EEProgrammer\EEProgrammer.iml</code>
+<br>This build the jar file, which is then coppied into the tools folder.
+<br>I added some convenience batch jobs EE_Write.bat and EE_Read.bat.

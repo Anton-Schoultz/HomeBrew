@@ -18,7 +18,7 @@ echo
 goto exit
 
 :ok
-set file=%1.res
+set file=%1.hex
 if not .%2==. set port=%2
 
 java -jar EEProgrammer.jar -B:%baud% -C:%port% -R:%file% -S:8

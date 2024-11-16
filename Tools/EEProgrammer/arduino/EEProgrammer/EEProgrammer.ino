@@ -34,6 +34,13 @@ Dxxxx[A] Dump as intel hex data records. xxxx=size, A=Ack
 
 // 8K=$2000 (8192)
 #define EEPROM_SIZE 0x2000
+/*
+Some delay constants
+*/
+#define DLY_ERASE 20  // spec is 10 mSec
+#define DLY_WRITE 15  // spec says 9 mSec
+#define DLY_WAIT 1
+#define DLY_MODE 2
 
 /* 
 Pins used to drive the shift registers 
@@ -56,13 +63,6 @@ Pins used to connect directly to the ee data pins
 #define EE_nWE 13
 #define EE_nCC A0
 
-/*
-Some delay constants
-*/
-#define DLY_ERASE 20  // spec is 10 mSec
-#define DLY_WRITE 15  // spec says 9 mSec
-#define DLY_WAIT 1
-#define DLY_MODE 2
 
 /*
 Programmer mode 
@@ -130,6 +130,7 @@ void help() {
   Serial.println(F("EEPROM programer - by Anton Schoultz 2024/11/15"));
   Serial.println(F("?       Help"));
   Serial.println(F("E       Erase the chip (enables fast write)"));
+  Serial.println(F("V       Verify that chip is errased.(All FF)"));
   Serial.println(F("R[nn]   Read [nn] rows of data"));
   Serial.println(F("Wxxxx   Write hex data at current address and move on"));
   Serial.println(F("Ahhll   Set current address as hhll"));
@@ -299,6 +300,41 @@ void eraseChip() {
   delay(DLY_WAIT);
   maxAdr = 0;  //reset max memory address
   Serial.print(F("Chip has been errased. "));
+}
+
+/** --------------------------------------------- doVerify
+Check that the chip is now all FF
+*/
+void doVerify(){
+  Serial.println(F("Reading memory to check erasure..."));
+  int count=0;
+  int tot = 0;
+  for(int i=0;i<EEPROM_SIZE;i++)
+  {
+    if( (i%256) == 255 )
+    {
+      int blk = i/256;
+      sprintf(strBuf, "Checking %02X00-%02XFF %d %d",blk,blk,tot,count);
+      Serial.println(strBuf);
+      tot=0;
+    }
+   int n = read(i);
+   for(int b=0;b<8;b++)
+   {
+    if( (n & 1 ) == 0 )
+    {
+      count++;
+      tot++;
+    }
+   }
+  }
+
+  if(count==0){
+    Serial.println(F("\r\nChip is all blanks"));
+  }else{
+    sprintf(strBuf, "NOT BLANK - there are %d zero bits",count);
+    Serial.println(strBuf);
+  }
 }
 
 /* --------------------------------------------- showData
@@ -516,6 +552,9 @@ void loop() {
       break;
     case 'W':  // Write
       doWrite();
+      break;
+    case 'V':  // verify
+      doVerify();
       break;
     case 'D':  // Dump
       doDump();

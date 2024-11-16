@@ -19,6 +19,7 @@ public class EEPromProgrammer {
     static final int MODE_ERASE = 2;
     static final int MODE_LOAD = 3;
     static final int MODE_DUMP = 4;
+    static final int MODE_VERIFY = 5 ;
 
     static final int NEW_READ_TIMEOUT = 5000;
     static final int NEW_WRITE_TIMEOUT = 5000;
@@ -95,7 +96,7 @@ public class EEPromProgrammer {
                         showHelp();
                         return;
                     }
-                    if(ch!='E') {
+                    if(ch!='E' && ch!='V') {
                         if (s.charAt(2) != ':') {
                             println("args should be formated like '-X:xxxxx'");
                             return;
@@ -145,6 +146,9 @@ public class EEPromProgrammer {
                         case 'E':
                             mode = MODE_ERASE;
                             break;
+                        case 'V':
+                            mode = MODE_VERIFY;
+                            break;
                         default:
                             break;
                     }
@@ -160,6 +164,9 @@ public class EEPromProgrammer {
                 waitForReady();
                 if(mode==MODE_ERASE) {
                     sendAndGet("E");
+                }
+                if(mode==MODE_VERIFY) {
+                    sendAndGet("V");
                 }
                 if(mode==MODE_READ){
                     File f = new File(fileSpec);
