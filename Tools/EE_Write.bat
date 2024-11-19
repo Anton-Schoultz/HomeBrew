@@ -15,6 +15,7 @@ set jar=%folder%EEProgrammer\out\artifacts\EEProgrammer_jar\EEPRogrammer.jar
 title=%jar%
 Rem ----------------------------------------------------------------------
 Rem
+
 if not .%1==. goto ok
 echo Read EEPROM
 echo Usage:
@@ -23,10 +24,11 @@ echo FileName is the name of the output file (without extension)
 echo Port is the com port that the uno is attached to, default is %port%
 echo
 goto exit
+
 :ok
-set file=%1.hex
+set file=%1
 if not .%2==. set port=%2
-java -jar %jar% -B:%baud% -C:%port% -R:%file% -S:8
+java -jar %jar% -B:%baud% -C:%port% -W:%file% -S:8
 @echo Done!
 @echo Switch off power before removing.
 :exit

@@ -9,6 +9,11 @@ Rem
 REM 
 REM p1=jed file to write
 set port=COM8
+Rem ----------------------------------------------------------------------
+Rem this sets folder to this batch file's parent (including traing \)
+set folder=%~dp0%
+set exec=%folder%GAL_Programmer\afterburner_w64_040.exe
+title=%exec%
 Rem
 if not .%1==. goto ok
 echo Read GAL20v8 using afterburner 
@@ -28,7 +33,7 @@ if not .%2==. set port=%2
 @echo About to read GAL20V8 via %port% into %file% ...
 @echo Please nsure that power is on an press enter to continue.
 pause 
-afterburner_w64_040.exe r -t GAL20V8 -d %port% > %file%
+%exec% r -t GAL20V8 -d %port% > %file%
 
 @echo Done!
 @echo Switch off power before removing.

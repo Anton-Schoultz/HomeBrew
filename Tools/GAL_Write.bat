@@ -9,6 +9,11 @@ Rem
 REM 
 REM p1=jed file to write
 set port=COM8
+Rem ----------------------------------------------------------------------
+Rem this sets folder to this batch file's parent (including traing \)
+set folder=%~dp0%
+set exec=%folder%GAL_Programmer\afterburner_w64_040.exe
+title=%exec%
 Rem
 if not .%1==. goto ok
 echo Program GLA20v8 using afterburner 
@@ -31,11 +36,8 @@ pause
 rem erase the chip
 rem afterburner_w64_040.exe e -v -t GAL20V8 -d %port%
 rem program the gal
-afterburner_w64_040.exe e w -v -t GAL20V8 -d %port% -f %file%
-
-afterburner_w64_040.exe r -v -t GAL20V8 -d %port% -f %1.res
-
-cd ..
+%exec%  e w -v -t GAL20V8 -d %port% -f %file%
+%exec%  r -v -t GAL20V8 -d %port% -f %1.res
 @echo Done!
 @echo Switch off power before removing.
 

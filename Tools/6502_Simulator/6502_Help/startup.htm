@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Startup</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
+
+
+<P><A NAME="startup"></A><B>Simulator Startup</B></P>
+
+<P>Once you have switched to debugger mode, you can start the program.</P>
+
+<P>A debugger can only be called if we have the resulting program code. program code is created when you have no errors on the end of the assembly or loaded with the File/Open Code command... The presence of the resulting code represents a stamp <img src=".\image\code.gif"> in the status bar. When you switch to the debugger, it changes to <img src=".\image\debug.gif">.</P>
+
+<P>In debugger mode, the 6502 (or 65C02) processor works simulated. The following commands are available:
+
+<UL>
+	<LI><B>Run (F5)</B> - executes the program at full speed with no status updates,<BR><BR></LI>
+
+	<LI><B>Animate (Ctrl-F5) </B> - Run, but updates the state of the registry window, allowing you to keep an account of changes,<BR><BR></LI>
+
+	<LI><B>Step Into (F11) </B> single step - follow one instruction,<BR><BR></LI>
+
+	<LI><B>Step Over (F10)</B> - single step from current line, but will complete a whole subroutine,<BR><BR></LI>
+
+	<LI><B>Run to return (Ctrl-F11)</B> - performs to exit the subroutine,<BR><BR></LI>
+
+	<LI><B>Run to cursor (Ctrl-F10)</B> - executes to the line where the cursor is,<BR><BR></LI>
+
+	<LI><B>Skip instruction (Shift-F11)</B> - bypasses the execution of the current instruction,<BR><BR></LI>
+
+	<LI><B>Skip to Cursor (Ctrl-SHift-F11)</B> - move command counter to the line where the cursor is,<BR><BR></LI>
+
+	<LI><B>Stop</B> - stops the simulator,<BR><BR></LI>
+
+	<LI><B>Restart</B> - restarts the simulator from teh beginning<BR><BR></LI>
+
+	<LI><B>Breakpoint</B> - sets a stopping place for Run<BR><BR></LI>
+
+	<LI><B>Breakpoint parameters</B> - sets the parameters of the stop location<BR><BR></LI>
+
+	<LI><B>Pulse an IRQ</B> - Cause an IRQ interrupt and will jump to location pointed to by IRQ vector ($FFFE)<BR><BR></LI>
+
+	<LI><B>Pulse an NMI</B> - Cause an NMI interrupt and will jump to location pointed to by NMI vector ($FFFA)<BR><BR></LI>
+
+	<LI><B>Pulse a processor Reset</B> - Cause a RESet and will jump to location pointed to by RES vector ($FFFC)<BR><BR></LI>
+
+	<LI><B>Set timed Interrupts</B> - sets the time intervals in ms for repeated IRQ and/or NMI Interrupts<BR><BR></LI>
+         
+</UL>
+
+</BODY>
+</HTML>
