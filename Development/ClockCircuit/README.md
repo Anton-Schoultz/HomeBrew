@@ -8,4 +8,6 @@ I like his aproach to building his 6502 machine, and will most likely proceed in
 After seeing the usefulness of Ben's clock circuit https://eater.net/8bit/clock, I opted to make my own.
 I opted for a somewhat different circuit, and added a power up reset.
 
+<image src="ClockCircuitDiagram.png"/>
 
+<image src="ClockCircuit.jpg"/>
