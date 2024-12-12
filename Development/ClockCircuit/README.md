@@ -13,8 +13,8 @@ I opted for a somewhat different (cruder) circuit, and added a reset circuit.
 
 Please excuse the hand-drawn diagram, but I figure even a badly hand-drawn diagram is better than no diagram at all ;-)
 
-The negative going reset pulse is generated at power=up, but can also be triggered by the push button.
-The positive going clock pulses can be manually generated, or auto-generated via a variable speed oscillator.
+The negative going reset pulse is generated at power-up, but can also be triggered by the push button.
+<br>The positive going clock pulses can be manually generated, or auto-generated via a variable speed oscillator.
 
 
 
