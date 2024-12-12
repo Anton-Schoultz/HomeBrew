@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- 
+  (C) Klemens Ullmann-Marx / www.ull.at
+  License: GPLv3
+ -->
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+  <script type="text/javascript" src="ic-label-creator.js"></script>                  
+  <script type="text/javascript" src="chips.js"></script>
+</head>
+
+<body style="margin: 5px; padding: 0;">
+
+<svg id="page" >
+</svg>
+
+<p style="font-family: sans-serif; font-size: 10px;">
+  IC-Label Set "Anton's 65c02 computer"<br />
+  <a href="https://github.com/klemens-u/ic-label-creator">https://github.com/klemens-u/ic-label-creator</a> 
+  (C) 2020 by Klemens Ullmann-Marx / <a href="https:/www.ull.at">www.ull.at</a>
+</p>
+
+<script> 
+  var globals = {
+    gimmeColor      : true,
+    pageWidth       : 210 - 20, // A4 width minus margin
+    pageHeight      : 297 - 40, // A4 height minus margin   
+    pinDistance     : 2.54,
+    // Starting position for first chip on page
+    chipPositionX   : 0,
+    chipPositionY   : 0,
+    svgStrokeWidth  : .2,
+    svgStrokeOffset : 0,
+    defaultChipLogicFamily : 'LS',
+    defaultChipSeries      : '74',    
+    outline         : 'blue',           //AS colour for the outline of the drawing - default is 'silver'
+    inside          :true,              //AS narrow the drawing to fit inside the pins/glue on top - default false
+  };
+  
+  $(document).ready(function() {
+    
+    // Set svg container to page size
+    $('#page').attr({
+      width: globals.pageWidth + 'mm',
+      height: globals.pageHeight + 'mm',
+    });
+    
+    
+    // 6502 computer kit
+    drawChip('R65C02');
+    drawChip('62256');
+    drawChip('52B33');
+    
+  });
+  
+</script> 
+
+</body>
+</html>
