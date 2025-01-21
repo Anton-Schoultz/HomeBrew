@@ -17,9 +17,9 @@ public class EEPromProgrammer {
     static final int MODE_READ = 0;
     static final int MODE_WRITE = 1;
     static final int MODE_ERASE = 2;
-    static final int MODE_LOAD = 3;
-    static final int MODE_DUMP = 4;
-    static final int MODE_VERIFY = 5 ;
+    static final int MODE_LOAD = 4;
+    static final int MODE_DUMP = 8;
+    static final int MODE_VERIFY = 16 ;
 
     static final int NEW_READ_TIMEOUT = 5000;
     static final int NEW_WRITE_TIMEOUT = 5000;
@@ -82,6 +82,8 @@ public class EEPromProgrammer {
             showHelp();
             return;
         }
+        println("EEProgrammer - Anton Schoultz - Jan 2025 2");
+        mode=0;
         for (String s : args) {
             if (s.equalsIgnoreCase("?")) {
                 showHelp();
@@ -123,19 +125,19 @@ public class EEPromProgrammer {
                             }
                             break;
                         case 'W':
-                            mode = MODE_WRITE;
+                            mode |= MODE_WRITE;
                             fileSpec = value;
                             break;
                         case 'L':
-                            mode = MODE_LOAD;
+                            mode |= MODE_LOAD;
                             fileSpec = value;
                             break;
                         case 'R':
-                            mode = MODE_READ;
+                            mode |= MODE_READ;
                             fileSpec = value;
                             break;
                         case 'D':
-                            mode = MODE_DUMP;
+                            mode |= MODE_DUMP;
                             fileSpec = value;
                             break;
                         case 'S':
@@ -144,10 +146,10 @@ public class EEPromProgrammer {
                             }
                             break;
                         case 'E':
-                            mode = MODE_ERASE;
+                            mode |= MODE_ERASE;
                             break;
                         case 'V':
-                            mode = MODE_VERIFY;
+                            mode |= MODE_VERIFY;
                             break;
                         default:
                             break;
@@ -155,38 +157,44 @@ public class EEPromProgrammer {
                 }
             }
         }
-        System.out.printf("Comport:%s %d, Filename:%s Size:0x%04x %n", portName, baudRate, fileSpec,romSize);
+        System.out.printf("%n-- Comport:%s %d, Filename:%s Size:0x%04x %n", portName, baudRate, fileSpec,romSize);
         findComPort();
         if (comPort != null) {
             openComPort();
             System.out.println("Found port " + portDetails(comPort));
             try {
                 waitForReady();
-                if(mode==MODE_ERASE) {
+                if( isMode(MODE_ERASE) ) {
+                    System.out.println("\r\nERASING...\r\n");
                     sendAndGet("E");
                 }
-                if(mode==MODE_VERIFY) {
+                if(isMode(MODE_VERIFY)) {
+                    System.out.println("\r\nVerifing...\r\n");
                     sendAndGet("V");
                 }
-                if(mode==MODE_READ){
+                if(isMode(MODE_LOAD)) {
+                    System.out.println("\r\nLoading...\r\n");
+                    loadBinaryToROM();
                     File f = new File(fileSpec);
+                    f = genOutFile(f);
                     readEE(f);
                 }
-                if(mode==MODE_DUMP){
-                    File f = new File(fileSpec);
-                    dumpEE(f);
-                }
-                if(mode==MODE_WRITE) {
+                if(isMode(MODE_WRITE)) {
+                    System.out.println("\r\nWritinging...\r\n");
                     writeEE();
                     File f = new File(fileSpec);
                     f = genOutFile(f);
                     readEE(f);
                 }
-                if(mode==MODE_LOAD) {
-                    loadBinaryToROM();
+                if(isMode(MODE_READ)){
+                    System.out.println("\r\nReading...\r\n");
                     File f = new File(fileSpec);
-                    f = genOutFile(f);
                     readEE(f);
+                }
+                if(isMode(MODE_DUMP)){
+                    System.out.println("\r\nDumpinging...\r\n");
+                    File f = new File(fileSpec);
+                    dumpEE(f);
                 }
 
             } catch (Exception e) {
@@ -198,12 +206,16 @@ public class EEPromProgrammer {
 
     }
 
+    private boolean isMode(int value){
+        return (mode & value)>0;
+    }
+
     /* load a binary file, convert to intel hex lines and send to programmer */
     private boolean loadBinaryToROM() {
         try {
             File fBin = new File(fileSpec);
             if (!fBin.exists()) {
-                System.out.println("File not found.");
+                System.out.println("File not found. '"+fBin.getAbsolutePath()+"'");
                 return true;
             }
             try ( InputStream inputStream = new FileInputStream(fBin); ) {

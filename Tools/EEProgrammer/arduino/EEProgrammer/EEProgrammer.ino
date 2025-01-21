@@ -30,7 +30,7 @@ Dxxxx[A] Dump as intel hex data records. xxxx=size, A=Ack
 
 /* sets the comunication baud rate - must match the PC program */
 // 9600,19200,31250,38400,57600,74880,115200
-#define SERIAL_BAUD_RATE 57600
+#define SERIAL_BAUD_RATE 115200
 
 // 8K=$2000 (8192)
 #define EEPROM_SIZE 0x2000
@@ -116,6 +116,8 @@ void setup() {
   pinMode(EE_nCC, OUTPUT);
   // start up serial port
   Serial.begin(SERIAL_BAUD_RATE);
+  Serial.println(F("EEProgrammer - Anton Schoultz - Jan 2025"));
+  Serial.println(F("========================================"));
   // greeting
   help();
   // initial mode
@@ -299,7 +301,8 @@ void eraseChip() {
   digitalWrite(EE_nCC, HIGH);
   delay(DLY_WAIT);
   maxAdr = 0;  //reset max memory address
-  Serial.print(F("Chip has been errased. "));
+  Serial.print(F("Chip has been errased. Fast mode activated."));
+  fastWrite=true;
 }
 
 /** --------------------------------------------- doVerify
@@ -331,6 +334,7 @@ void doVerify(){
 
   if(count==0){
     Serial.println(F("\r\nChip is all blanks"));
+    fastWrite=true;
   }else{
     sprintf(strBuf, "NOT BLANK - there are %d zero bits",count);
     Serial.println(strBuf);
@@ -540,6 +544,7 @@ void loop() {
       break;
     case 'E':  // 'E'rase
       eraseChip();
+      fastWrite=true;
       break;
     case ':':  // Intel hex data line
       intelHex();
