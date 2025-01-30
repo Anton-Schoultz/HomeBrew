@@ -55,9 +55,25 @@
     
     
     // 6502 computer kit
-    drawChip('R65C02');
-    drawChip('62256');
-    drawChip('52B33');
+    drawChip('R65C02P2'); // CPU
+    drawChip('62256');    // 32k sram
+    //drawChip('62256'); drawChip('62256');  drawChip('62256'); 
+    drawChip('HM6264LP-12'); // 8k sram 
+    drawChip('52B33');    // 8k eeprom
+    //drawChip('52B33'); drawChip('52B33'); drawChip('52B33');
+    //drawChip('HY2764D-15');         // 8k uv eprom
+    drawChip('SST29EE010-90');     // 128k eeprom
+    //drawChip('GM16C550');           // coms (complex)
+    drawChip('MC68B50');            // coms (simple)
+    drawChip('6522');           // VIA 1MHz
+    drawChip('GAL20V8',' ',' ','MemDecode');           // GAL
+    drawChip('7492');   // Counter /2,/6 (fast)
+    drawChip('4040');   // Counter 14bit
+    
+    
+    drawChip('PIN40');drawChip('PIN32');
+    drawChip('PIN28');drawChip('PIN24');drawChip('PIN20');
+    drawChip('PIN18');drawChip('PIN16');drawChip('PIN14');
     
   });
   

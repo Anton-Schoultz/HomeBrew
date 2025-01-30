@@ -17,7 +17,7 @@
  * @param (string) family       optional, the logic family, default=LS (e.g LS, HC, ...)  
  * @param (string) series       optional, the series, default=74 (e.g. 74, 54)
  */
-function drawChip(chipName, series, type) {
+function drawChip(chipName, series, type, info) {
   
   console.log('=== ', chipName, type, series);
   
@@ -32,11 +32,14 @@ function drawChip(chipName, series, type) {
   var numPins = Object.keys(chip.pins).length;
   var chipWidth = numPins / 2 * globals.pinDistance + 1;
   var chipHeightPins = ('heightPins' in chip) ? chip.heightPins : 3;
+  
+  //AS make wide ICs narrower to stick ontop
   if ('inside' in globals) {
       if(globals.inside && chipHeightPins > 3) {
-          chipHeightPins = chipHeightPins - 2;
+          chipHeightPins = chipHeightPins - 1;
       }
   }
+  
   var chipHeight = chipHeightPins * globals.pinDistance;
   
   var $page = $('#page');
@@ -73,8 +76,17 @@ function drawChip(chipName, series, type) {
 
   tweakedChipName = tweakChipName(chipName, series, type);
   
+  //AS add info
+  var descr = chip.description;
+  if (info === undefined) {
+    // no change
+  } else {
+    descr = descr + ' ' + info;
+  }
+
+  
   svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'text'))
-    .html('&nbsp;&nbsp;' + tweakedChipName + ' ' + chip.description)
+    .html('&nbsp;&nbsp;' + tweakedChipName + ' ' + descr)
     .attr({
       x : '50%',
       y : chipHeight / 2 + .2  + 'mm',
@@ -162,9 +174,8 @@ function tweakChipName(chipName, family, series) {
       series = globals.defaultChipSeries;
     }
   }
-  
   chipName = chipName.replace(/^74LS/, series + family);
-  
+
   return chipName;
 }  
 
@@ -266,7 +277,7 @@ function chipColor(type) {
     return 'blue';
   }
   
-  if (['mux', 'demux', 'via'].includes(type)) {
+  if (['mux', 'demux', 'via','com'].includes(type)) {
     return 'green';
   }
   
@@ -275,7 +286,7 @@ function chipColor(type) {
   }    
   
   if (['cpu'].includes(type)) {
-    return 'darkorange';
+    return 'black';//AS darkorange
   }
   
   return 'black';
