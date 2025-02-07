@@ -286,7 +286,7 @@ function chipColor(type) {
   }    
   
   if (['cpu'].includes(type)) {
-    return 'black';//AS darkorange
+    return 'black ';//AS darkorange
   }
   
   return 'black';
