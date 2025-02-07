@@ -40,7 +40,7 @@ Main:		; Main loop
 ;			;CLI					; Enable IRQs
 ;
 			; point character output to the buffer write
-			LDAX(BufWrite)
+			LDAX(BufBlkWr)
 			STAX(V_CHROUT)
 
 ;			LDAX(Msg)			; message addres

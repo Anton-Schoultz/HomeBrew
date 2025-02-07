@@ -63,10 +63,13 @@ BufWrapX	tay					; place index into Y
 ;------------------------------------------------------------------------- BufWriteBlk
 ; writes the byte in A to the buffer (blocks until there is space)
 ; X,Y preserved
-BufWriteBlk: ; Write A to buiffer (blocks until space is available)
-			pha
+BufBlkWr: ; Write A to buffer (blocks until space is available)
+			sta	Z_Tmp			; save character
+
+BufBlkWrL	lda	Z_Tmp
 			jsr BufWrite
-			bne	BufWriteBlk		; if  no space loop back
+			cmp #0
+			bne	BufBlkWrL		; if  no space loop back
 			rts
 
 
@@ -74,7 +77,6 @@ BufWriteBlk: ; Write A to buiffer (blocks until space is available)
 ; writes the byte in A to the buffer EQ=True,success NE=Failure
 ; X,Y preserved
 BufWrite:	;writes .A to the buffer
-;;			pha
 			phy					;save y
 
 			sta	Z_Tmp			; save character
@@ -90,11 +92,8 @@ BufWrite:	;writes .A to the buffer
 			ldy #BUF_WX
 			sta (Z_Ptr),y		; save new write index
 			lda #0				; zero .A (So EQ=True)
-;			ply
-;			rts
 
-BufWriteX	;;pla
-			ply					; restore y
+BufWriteX	ply					; restore y
 			rts
 
 
