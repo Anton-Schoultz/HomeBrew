@@ -1,0 +1,21 @@
+; Macro.a65
+;
+
+; Returns high byte of a 16 bit vale
+#DEFINE HIGH(m) (m>>8)
+
+;-- used to define variables in memory
+#define Var(name,size) name .block size
+#define Short(name) name .block 1
+#define Int(name) name .block 2
+#define Long(name) name .block 4
+
+
+
+; Loads AX with 16 bit value, low->A, high->X
+#DEFINE LDAX(m) lda #(m)
+#DEFCONT	\	ldx #HIGH(m)
+
+; Stores 16 bit value (AX) into address A->(adr), X->(adr+1)
+#DEFINE STAX(p) STA p \ STX p+1
+

@@ -1,0 +1,33 @@
+Code Notes
+==========
+
+Object
+	Size L,H	total length of object (add to pointer to find next one, zero=end of list)
+	-
+	RefCntr		Count the references to this object, once it gets to $80 no longer change it
+	ObjID L,H	ID of the object (eg CRC of class name?)
+	:
+	:
+
+:-- I/O device interface
+Init
+RdData
+WrData
+RdStatus
+WrCmd
+
+;			jmp ($,X)
+;			nop
+;			.dw	KxInit	; x=4 
+;			.dw	KxRd	; x=6 
+;			.dw	KxWr	; x=8 
+;			.dw	KxSt	; x=10
+;			.dw	KxCmd	; x=12
+
+
+
+BUFFER
+	0	Len		0-239
+	1	iwr
+	2	ird
+	3	data[0...len]

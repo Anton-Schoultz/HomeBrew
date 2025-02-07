@@ -1,0 +1,192 @@
+;
+; Test.asm - Simple monitor
+;
+; ascii characters are in .A and the call DoMon
+; to process them.
+;
+; 0-9,A-F   Hex digits, scrolled into H,L
+; @     copy hex value in H,L to address
+; ' '/','   write low value to address and incr address
+; ?     display 16 bytes at address and move it on
+;
+
+; Z-Page
+
+MONL    = $10           ; low value being scrolled in
+MONH    = $11           ; high value of scroll in
+
+MONADL  = $12           ; Address low
+MONADH  = $13           ; Address high
+
+LEN = 8                 ; no of data bytes per row
+
+ESC = 27                ; ESCAPE char
+
+IO_AREA = $0300
+
+
+TERMINAL_OUT    = IO_AREA+1
+TERMINAL_IN     = IO_AREA+4
+
+
+    .ORG $8000
+
+
+; Simulator i/o area as per Options screen is in IO_AREA
+;IO_AREA+0 = TERMINAL_CLS       ; (w)
+;IO_AREA+1 = TERMINAL_OUT       ; (w)
+;IO_AREA+2 = TERMINAL_OUT_CHR   ; (w)
+;IO_AREA+3 = TERMINAL_OUT_HEX   ; (w)
+;IO_AREA+4 = TERMINAL_IN        ; (r)
+;IO_AREA+5 = TERMINAL_X_POS     ; (r/w)
+;IO_AREA+6 = TERMINAL_Y_POS     ; (r/w)
+
+
+
+NXT:            JSR     GetChar
+                BEQ     NXT
+
+                CMP     #ESC
+                BEQ     EXIT
+
+                JSR     PrChar
+                JSR     MonChar
+                JMP     NXT
+
+EXIT:           BRK
+
+
+
+MonChar:        PHA
+                EOR     #'0'            ; Map digits to 0-9
+                CMP     #9+1            ; Is it a decimal digit?
+                BCC     MonDigit        ; Yes!
+                ADC     #$08            ; Map letter "A"-"F" to $FA-FF
+                CMP     #$7A            ; Hex letter?
+                BCC     MonCmd          ;No! Character not hex
+
+MonDigit:       ASL a
+                ASL a                    ; Hex digit to MSD of A
+                ASL a
+                ASL a
+
+                LDX     #4              ; Shift count
+MonShift:       ASL a                   ;  Hex digit left, MSB to carry
+                ROL     MONL            ; Rotate into LSD
+                ROL     MONH            ; Rotate into MSD's
+                DEX                     ; Done 4 shifts?
+                BNE     MonShift        ; No, loop
+
+                PLA
+                RTS                     ;   Processed hex digit into H,L
+
+
+MonCmd:     ; check for cmd @ comes in as $79
+                PLA
+                CMP     #'@'
+                BNE     MonShow
+
+                ; got '@' so copy value to address
+                LDA     MONH
+                STA     MONADH
+                LDA     MONL
+                STA     MONADL
+                RTS
+
+MonShow
+                CMP     #'?'            ; '?' to display bytes?
+                BNE     MonData         ; No, see if we have data byte
+
+
+MonSHowRow:             ;-- new line
+                JSR     PrNL
+                ;-- address
+                LDA     MONADH
+                JSR     PrByte
+                LDA     MONADL
+                JSR     PrByte
+                LDA     #':'
+                JSR     PrChar
+                ;
+                LDY     #0
+                LDX     #LEN
+        ;
+MonShowNxt
+                LDA     (MONADL),Y      ; get data
+                JSR     PrByte          ; print as hex
+                LDA     #' '            ; print a space
+                JSR     PrChar
+                INY                     ; next offset
+                DEX                     ; count off no of bytes to show
+                BNE     MonShowNxt      ; loop back if more
+
+                CLC                     ; move address on by the length
+                LDA     #LEN
+                ADC     MONADL
+                STA     MONADL
+                LDA     #0
+                ADC     MONADH
+                STA     MONADH
+
+                RTS
+
+
+
+
+MonData
+                RTS
+
+;-------------------------------------------------------------------------
+;  Subroutine to print new line  =  CR LF
+;-------------------------------------------------------------------------
+
+PrNL:           LDA     #$0d
+                STA     TERMINAL_OUT    ; Sends A to output screen
+                LDA     #$0A
+                STA     TERMINAL_OUT    ; Sends A to output screen
+                RTS
+
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a byte in A in hex form (destructive)
+;-------------------------------------------------------------------------
+
+PrByte:         PHA                     ;Save A for LSD
+                LSR a
+                LSR a
+                LSR a                   ; MSD to LSD position
+                LSR a
+                JSR     PrHex           ; Output hex digit
+                PLA                     ; Restore A
+
+; Fall through to print hex routine
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a hexadecimal digit
+;-------------------------------------------------------------------------
+
+PrHex:          AND     #$0F            ; Mask LSD for hex print
+                ORA     #'0'            ; Add "0"
+                CMP     #'9'+1          ; Is it a decimal digit?
+                BCC     PrChar          ; Yes! output it
+                ADC     #6              ; Add offset for letter A-F
+                JMP     PrChar          ; Print it and return
+
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a character to the terminal
+;-------------------------------------------------------------------------
+
+PrChar:
+                STA     TERMINAL_OUT    ; Sends A to output screen
+                RTS
+
+;-------------------------------------------------------------------------
+;  Subroutine to get an inoput character, returns zero if none
+;-------------------------------------------------------------------------
+GetChar:
+                LDA     TERMINAL_IN
+                RTS
+
+; .end is in calling source
+

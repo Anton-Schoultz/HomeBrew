@@ -1,0 +1,41 @@
+; Ram.a65
+;
+; ZERO page definitions
+;
+
+
+;--------------------------------------------------------------------- Z-Page
+.org $0000
+
+Int(Z_Ptr)			; general object pointer
+
+Int(Z_SRC)			; Pointer to source (2 bytes)
+Int(Z_TGT)			; Pointer to destination
+
+Short(Z_Tmp)		; temp byte for counter etc
+
+
+Var(Z_END,0)
+
+
+
+.echo $0100-$
+.echo " bytes available in Z-Page (0000-00FF)\r"
+
+;--------------------------------------------------------------------- Stack
+.org $0100
+
+;--------------------------------------------------------------------- SysVars
+.org $0200
+Int(V_CHROUT)		; vector to output a character
+Int(V_CHRIN)		; vector to read a character
+
+
+
+
+.echo $0300-$
+.echo " bytes available in system variables (0300-03FF)\r"
+
+;--------------------------------------------------------------------- IO
+; this is mapped to page 3 (see IOMap.a65)
+

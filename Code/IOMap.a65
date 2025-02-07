@@ -1,0 +1,26 @@
+; IOMap
+; I/O is memory mapped to one page
+; 16 addresses are reserved for each device
+
+IO_BASE		= $0300				; I/O base address
+
+IO_0		= IO_BASE
+IO_1		= IO_BASE + $10
+IO_2		= IO_BASE + $20
+IO_3		= IO_BASE + $30
+IO_4		= IO_BASE + $40
+IO_5		= IO_BASE + $50
+IO_6		= IO_BASE + $60
+IO_7		= IO_BASE + $70
+IO_8		= IO_BASE + $80
+IO_9		= IO_BASE + $90
+IO_A		= IO_BASE + $A0
+IO_B		= IO_BASE + $B0
+IO_C		= IO_BASE + $C0
+IO_D		= IO_BASE + $D0
+IO_E		= IO_BASE + $E0
+IO_F		= IO_BASE + $F0
+
+; Here I allocate device logical name to their slots
+
+DEV_COM		= IO_0				; Serial port MC68B50 chip
