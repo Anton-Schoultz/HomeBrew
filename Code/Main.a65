@@ -34,11 +34,11 @@ Main:		; Main loop
 			;- create buffer object at $0300
 			LDAX($0300)			; buffer at $0300
 			STAX(Z_Ptr)			; point at the buffer  {Z_Ptr is at 00,01}
-			lda #29
+			lda #09
 			jsr	BufInit			; initialise to size of 16
 
-;			;CLI					; Enable IRQs
-;
+			CLI					; Enable IRQs
+
 			; point character output to the buffer write
 			LDAX(BufBlkWr)
 			STAX(V_CHROUT)
