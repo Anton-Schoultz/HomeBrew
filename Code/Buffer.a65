@@ -28,25 +28,25 @@ BufInit:	; Create buffer of size .A at location pointed to by Z_Ptr and clear it
 ; X,Y preserved
 BufClear:	; Clear the buffer pointedto by Z_Ptr
 			phx
-			phy
-			ldy	#0				; len
-			lda (Z_Ptr),y
-			tax					; save len in X
-			iny					; point to WriteIndex
-			lda #BUF_DATA
-			sta (Z_Ptr),y		; set Write index to 3 = data[0]
-			iny
-			sta (Z_Ptr),y		; set Read index to 3 = data[0]
-			iny					; point at data[0]
-			dex					; x=x-3 (no no of bytes in data[]
-			dex
-			dex
-			lda	#0
-BufClearL	sta	(Z_Ptr),y		; zero mem
-			iny
-			dex
-			bne	BufClearL
-			ply
+				phy
+					ldy	#0				; len
+					lda (Z_Ptr),y
+					tax					; save len in X
+					iny					; point to WriteIndex
+					lda #BUF_DATA
+					sta (Z_Ptr),y		; set Write index to 3 = data[0]
+					iny
+					sta (Z_Ptr),y		; set Read index to 3 = data[0]
+					iny					; point at data[0]
+					dex					; x=x-3 (no no of bytes in data[]
+					dex
+					dex
+					lda	#0
+BufClearL			sta	(Z_Ptr),y		; zero mem
+					iny
+					dex
+					bne	BufClearL
+				ply
 			plx
 			rts
 
@@ -79,19 +79,19 @@ BufBlkWrL	lda	Z_Tmp
 BufWrite:	;writes .A to the buffer
 			phy					;save y
 
-			sta	Z_Tmp			; save character
-			; get write index
-			ldy	#BUF_WX			; use write index
-			jsr BufWrap			; check index and return it in Y, data[Y] in .A
-			bne BufWriteX		; non-zero,so buffer is full
-			;ok
-			lda Z_Tmp
-			sta (Z_Ptr),y		; store the character
-			iny					; bump pointer
-			tya
-			ldy #BUF_WX
-			sta (Z_Ptr),y		; save new write index
-			lda #0				; zero .A (So EQ=True)
+				sta	Z_Tmp			; save character
+				; get write index
+				ldy	#BUF_WX			; use write index
+				jsr BufWrap			; check index and return it in Y, data[Y] in .A
+				bne BufWriteX		; non-zero,so buffer is full
+				;ok
+				lda Z_Tmp
+				sta (Z_Ptr),y		; store the character
+				iny					; bump pointer
+				tya
+				ldy #BUF_WX
+				sta (Z_Ptr),y		; save new write index
+				lda #0				; zero .A (So EQ=True)
 
 BufWriteX	ply					; restore y
 			rts
@@ -102,24 +102,23 @@ BufWriteX	ply					; restore y
 ; X,Y preserved
 BufRead:	;reads the buffer into .A
 			phx
-			phy
-			sta	Z_Tmp			; save character
-			; get read index
-			ldy	#BUF_RX			; use read index
-			jsr BufWrap			; check index and return it in Y, data[Y] in .A
-			beq BufWriteX		; zero, so empty (don't move)
-			;ok
-			pha					; save data
-			lda #0				; clear the spot for write
-			sta (Z_Ptr),y
-			;
-			iny					; bump pointer
-			tya
-			ldy #BUF_RX
-			sta (Z_Ptr),y		; save new read index
-			pla					; recall data
+				phy
+					; get read index
+					ldy	#BUF_RX			; use read index
+					jsr BufWrap			; check index and return it in Y, data[Y] in .A
+					beq BufReadX		; zero, so empty (don't move)
+					;ok
+					pha					; save data
+						lda #0				; clear the spot for write
+						sta (Z_Ptr),y
+						;
+						iny					; bump pointer
+						tya
+						ldy #BUF_RX
+						sta (Z_Ptr),y		; save new read index
+					pla					; recall data
 BufReadX
-			ply
+				ply
 			plx
 			rts
 

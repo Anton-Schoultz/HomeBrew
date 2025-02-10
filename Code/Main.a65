@@ -5,16 +5,16 @@
 
 
 ROMBEG .org $E000
-;.FILL $2000,$FF
+;.FILL $2000,$EA
 ;.org $E000
 
 
-;			jmp ($,X)
-;			nop
-;			.dw	addr	; x=4
-;			.dw	addr	; x=6
-;			.dw	addr	; x=8
-;			.dw	addr	; x=10
+;E000 7C 00 E0  jmp ($,X)
+;E003 EA        nop
+;E004 00 00     .dw	addr	; x=4
+;E006 00 00     .dw	addr	; x=6
+;E008 00 00     .dw	addr	; x=8
+;E00A 00 00     .dw	addr	; x=10
 
 ;------------------------------------------------------------------------- RESET
 Reset:		; reset entry point (Cold start)
@@ -34,7 +34,7 @@ Main:		; Main loop
 			;- create buffer object at $0300
 			LDAX($0300)			; buffer at $0300
 			STAX(Z_Ptr)			; point at the buffer  {Z_Ptr is at 00,01}
-			lda #09
+			lda #03
 			jsr	BufInit			; initialise to size of 16
 
 			CLI					; Enable IRQs
@@ -43,12 +43,32 @@ Main:		; Main loop
 			LDAX(BufBlkWr)
 			STAX(V_CHROUT)
 
-;			LDAX(Msg)			; message addres
-;			jsr PrAXHex			; print as hex
+
+;			lda #'A'
+;			jsr	PutChar
+;
+;			lda #'B'
+;			jsr	PutChar
+;
+;			lda #'C'
+;			jsr	PutChar
+;
+;			lda #'D'
+;			jsr	PutChar
+;
+;			lda #'E'
+;			jsr	PutChar
+;
+;			lda #'F'
+;			jsr	PutChar
+
+
+			LDAX(Msg)			; message addres
+			jsr PrAXHex			; print as hex
 
 			LDAX(Msg)			; message addres
 			jsr	PrStr			; 'print' it to the device pointed to by V_CHROUT
-;
+
 ;			; write to screen
 ;			jsr	UseConsole
 ;
@@ -64,6 +84,9 @@ Main:		; Main loop
 ;
 ;ShowX
 
+Stop:		nop
+			nop
+			bra	Stop
 
 
 			BRK
@@ -87,14 +110,14 @@ Nmi:		; Non-Maskable interrupt entry point
 ; use this for timer interrupts straight from binary divider ?
 			;-- Save registers
 			PHA
-			PHX
-			PHY
+				PHX
+			 		PHY
 
 ; NMI code in here
 
 NmiRtn		;-- Restore registers and return
-			PLY
-			PLX
+					PLY
+				PLX
 			PLA
 			RTI
 
@@ -107,34 +130,25 @@ Irq:		; Interrupt Request servcie routine
 ; Serial port Rx ?
 			;-- Save registers
 			PHA
-			PHX
-			PHY
+				PHX
+					PHY
 
-; IRQ code in here
-; 	reset IRQ source
-; 	handle irq
+		; IRQ code in here
+		; 	reset IRQ source
+		; 	handle irq
 
-			jsr	BufRead
-			beq	IrqRtn			; nothing to show
+						jsr	BufRead
+						beq	IrqRtn			; nothing to show
 
-			jsr SimPutChar		; print character
+						jsr SimPutChar		; print character
 
 
 IrqRtn		;-- Restore registers and return
-			PLY
-			PLX
+					PLY
+				PLX
 			PLA
 			RTI					; pop status & PC, return, re-enabling IRQ
 
-
-
-
-
-
-
-
-Stop:
-	brk
 
 
 Msg: .DB " Hello World\r\nThis is me!",0
