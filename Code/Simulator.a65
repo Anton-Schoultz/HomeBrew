@@ -5,64 +5,87 @@
 ; The variable "IO_AREA" is reserved and will return the start address of the IO page.
 ; Data is passed through the accumulator register.
 ;
-; IO_AREA+0: TERMINAL_CLS (w)
-; IO_AREA+1: TERMINAL_OUT (w)
-; IO_AREA+2: TERMINAL_OUT_CHR (w)
-; IO_AREA+3: TERMINAL_OUT_HEX (w)
-; IO_AREA+4: TERMINAL_IN (r)
-; IO_AREA+5: TERMINAL_X_POS (r/w)
-; IO_AREA+6: TERMINAL_Y_POS (r/w)
+; IO_AREA+0: SIM_CLS (w)
+; IO_AREA+1: SIM_OUT (w)
+; IO_AREA+2: SIM_OUT_CHR (w)
+; IO_AREA+3: SIM_OUT_HEX (w)
+; IO_AREA+4: SIM_IN (r)
+; IO_AREA+5: SIM_X_POS (r/w)
+; IO_AREA+6: SIM_Y_POS (r/w)
 ;
 ; (w) means write only port, (r) read only, (r/w) read/write.
 ;
-; TERMINAL_CLS - clear terminal window, set cursor at (0,0) position.
+; SIM_CLS - clear terminal window, set cursor at (0,0) position.
 ;
-; TERMINAL_OUT - output single character interpreting control characters.
+; SIM_OUT - output single character interpreting control characters.
 ; 	Terminal can only recognize these control characters:
 ; 		ASCII $0D (carriage return) moving cursor to the beginning of line,
 ; 		ASCII $0A (line feed) moving cursor to the next line and scrolling window if necessary,
 ; 		ASCII $08 (backspace) moving one position to the left and erasing char below cursor.
 ;
-; TERMINAL_OUT_CHR - outputs single character; pass control chars as it
+; SIM_OUT_CHR - outputs single character; pass control chars as it
 ;
-; TERMINAL_OUT_HEX - outputs single byte as a two-digit hexadecimal number.
+; SIM_OUT_HEX - outputs single byte as a two-digit hexadecimal number.
 ;
-; TERMINAL_IN - input single byte, returns 0 if there's no characters available in terminal's buffer
+; SIM_IN - input single byte, returns 0 if there's no characters available in terminal's buffer
 ;     	When I/O terminal window is active, it can accept keyboard input;
 ;		press [Ins] key to paste clipboard's contents into terminal.
 ;
-; TERMINAL_X_POS - cursor X position (column).
+; SIM_X_POS - cursor X position (column).
 ;
-; TERMINAL_Y_POS - cursor Y position (row).
+; SIM_Y_POS - cursor Y position (row).
 ;
+#ifndef _Simulator
+#define _Simulator
 
 IO_AREA			= $8000	; This must match what is set in simulator's Options screen.
 
 
 ;-------------------------------------------------------------------------
 ; set up the interface area
-TERMINAL_CLS 		= IO_AREA+0
-TERMINAL_OUT 		= IO_AREA+1
-TERMINAL_OUT_CHR 	= IO_AREA+2
-TERMINAL_OUT_HEX 	= IO_AREA+3
-TERMINAL_IN 		= IO_AREA+4
-TERMINAL_X_POS		= IO_AREA+5
-TERMINAL_Y_POS		= IO_AREA+6
+SIM_CLS 	= IO_AREA+0
+SIM_OUT 	= IO_AREA+1
+SIM_OUT_CHR = IO_AREA+2
+SIM_OUT_HEX = IO_AREA+3
+SIM_IN 		= IO_AREA+4
+SIM_X_POS	= IO_AREA+5
+SIM_Y_POS	= IO_AREA+6
 
-;-------------------------------------------------------------------------
-;  Subroutine to print a character to the terminal
-;-------------------------------------------------------------------------
+;-- I/O device interface jump table offsets
+;IO_INIT		= 0	;Init
+;IO_CHRIN		= 3	;CharInput
+;IO_CHROUT		= 6	;CharOutput
+;IO_RDSTATUS	= 9 ;RdStatus
+;IO_WRCMD		= 12;WrCommand
 
-SimPutChar:	; output a character via the simultor
-                STA     TERMINAL_OUT    ; Sends A to output screen
-                RTS
+Simulator:
+			jmp	SimNop			; Init
+			jmp	SimGet			; Char Input
+			jmp SimPut			; Char Ouput
+			jmp	SimNop			; Read Status
+			jmp	SimNop			; Write Command
 
-;-------------------------------------------------------------------------
-;  Subroutine to get an inoput character, returns zero if none
-;-------------------------------------------------------------------------
-SimGetChar:	; input a character via the simulator
-                LDA     TERMINAL_IN
-                RTS
+SimNop		rts
 
-; .end is in calling source
+;------------------------------------------------------------------------- SimGet
+SimGet:	; input a character via the simulator
+            LDA     SIM_IN
+            RTS
+
+;------------------------------------------------------------------------- SimPut
+SimPut:	; output a character via the simultor
+			CMP #CLS			; Form Feed = Clear Screen
+			BEQ	SimCls
+
+            STA     SIM_OUT    ; Sends A to output screen
+            RTS
+
+;------------------------------------------------------------------------- SimCls
+SimCls: ; Clear Screen (FF)
+			STA		SIM_CLS
+			RTS
+
+
+#endif
+
 

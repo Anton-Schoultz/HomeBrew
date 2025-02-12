@@ -26,7 +26,7 @@ BufInit:	; Create buffer of size .A at location pointed to by Z_Ptr and clear it
 ;------------------------------------------------------------------------- BufClear
 ; Wipes the buffer (pointed to by Z_Ptr) with zeroes
 ; X,Y preserved
-BufClear:	; Clear the buffer pointedto by Z_Ptr
+BufClear:	; Clear the buffer pointed to by Z_Ptr
 			phx
 				phy
 					ldy	#0				; len

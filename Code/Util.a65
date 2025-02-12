@@ -2,6 +2,8 @@
 ;
 ; General utilities
 
+
+
 ;-------------------------------------------------------------------------
 ;  Subroutine to convert ascii character in A to hex nibble in A (destructive)
 ;-------------------------------------------------------------------------
@@ -24,14 +26,14 @@ A2HEX_X		rts;
 PrAXHex:	; print AX as 4 hex digits (A=Low, X=Hi)
 			pha					; save low
 			txa					; get high
-			jsr	PrByte			; print hi as hex digits
+			jsr	PrAHex			; print hi as hex digits
 			pla					; restore low
 			; - fall through to print low as hex digits
 
 ;-------------------------------------------------------------------------
 ;  Subroutine to print a byte in A in hex form (destructive)
 ;-------------------------------------------------------------------------
-PrByte:     ; Print a byte in A in hex form (destructive)
+PrAHex:     ; Print a byte in A in hex form (destructive)
 			PHA                 ;Save A for LSD
             LSR a
             LSR a
@@ -46,15 +48,14 @@ PrByte:     ; Print a byte in A in hex form (destructive)
 ;  Subroutine to print a hexadecimal digit
 ;-------------------------------------------------------------------------
 PrHex:		; print hex digit for low nibble of A
-          	AND     #$0F            ; Mask LSD for hex print
-			ORA     #'0'            ; Add "0"
-    		CMP     #'9'+1          ; Is it a decimal digit?
-   			BCC     PrChar          ; Yes! output it
-    		ADC     #6              ; Add offset for letter A-F
+          	AND     #$0F        ; Mask LSD for hex print
+			ORA     #'0'        ; Add "0"
+    		CMP     #'9'+1      ; Is it a decimal digit?
+   			BCC     PrHexCh     ; Yes! output it
+    		ADC     #6          ; Add offset for letter A-F
+PrHexCh	; print character in A to output device via vector
+			jmp 	CharOut
 
-PrChar:		; print character in A to output device via vector
-			jsr 	PutChar
-			rts
 
 
 ;-------------------------------------------------------------------------
@@ -63,11 +64,11 @@ PrChar:		; print character in A to output device via vector
 PrStr:		; print a string pointed to by AX (preseves X,Y)
 			phy
 			STAX(Z_SRC)
-			ldy #0
-PrStr1		lda (Z_SRC),y
-			beq PrStr2			; zero -> exit
-			jsr	PrChar			; print character
+			ldy 	#0
+PrStr1		lda 	(Z_SRC),y
+			beq 	PrStr2		; zero -> exit
+			jsr		CharOut		; print character
 			iny					; move to next char
-			bne PrStr1			; loop back
+			bne 	PrStr1		; loop back
 PrStr2		ply
 			rts					; exit

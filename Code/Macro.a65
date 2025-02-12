@@ -1,6 +1,17 @@
 ; Macro.a65
 ;
 
+;--- ASCII Control Codes
+#DEFINE NULL	0
+#DEFINE BS 		8
+#DEFINE HT 		9
+#DEFINE LF 		10
+#DEFINE	VT		11
+#DEFINE CLS		12
+#DEFINE CR 		13
+#DEFINE ESC		27
+
+
 ; Returns high byte of a 16 bit vale
 #DEFINE HIGH(m) (m>>8)
 
@@ -9,6 +20,13 @@
 #define Short(name) name .block 1
 #define Int(name) name .block 2
 #define Long(name) name .block 4
+
+
+
+#define BREAK(n) BRK \ .db n
+
+#DEFINE PUSHAXY() pha \ phx \ phy
+#DEFINE PULLAXY() ply \ plx \ pla
 
 
 

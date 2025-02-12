@@ -2,10 +2,12 @@
 ;
 ; ZERO page definitions
 ;
-
+#ifndef _Vars
+#define _Vars
 
 ;--------------------------------------------------------------------- Z-Page
 .org $0000
+
 
 Int(Z_Ptr)			; general object pointer
 
@@ -17,7 +19,7 @@ Short(Z_Tmp)		; temp byte for counter etc
 
 Var(Z_END,0)
 
-
+Int(Z_IrqPtr)		; Pointer for IRQ use
 
 .echo $0100-$
 .echo " bytes available in Z-Page (0000-00FF)\r"
@@ -27,15 +29,20 @@ Var(Z_END,0)
 
 ;--------------------------------------------------------------------- SysVars
 .org $0200
-Int(V_CHROUT)		; vector to output a character
-Int(V_CHRIN)		; vector to read a character
+Int(V_CHROUT)		; vector to output a character - used by CharOut
+Int(V_CHRIN)		; vector to read a character   - Used by CharIn
 
+Short(BRK_NO)		; BRK post byte
 
 
 
 .echo $0300-$
 .echo " bytes available in system variables (0300-03FF)\r"
 
+.org $300
+; I/O wil map here
+
 ;--------------------------------------------------------------------- IO
 ; this is mapped to page 3 (see IOMap.a65)
 
+#endif

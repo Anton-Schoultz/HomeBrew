@@ -16,52 +16,27 @@ ROMBEG .org $E000
 ;E008 00 00     .dw	addr	; x=8
 ;E00A 00 00     .dw	addr	; x=10
 
-;------------------------------------------------------------------------- RESET
-Reset:		; reset entry point (Cold start)
+;------------------------------------------------------------------------- Cold
+Cold: ; Cold start entry point
 ; cold start initialization
 ;
 			sei					; halt IRQs
-			ldx	#$FF			; Set Stack pointer to top of the stack space $0100-01FF
+			ldx	#$ff			; Set Stack pointer to top of the stack space $0100-01FF
 			txs
+			cli
 
-;------------------------------------------------------------------------- MAIN
+;------------------------------------------------------------------------- Warm
+Warm: ; Warm Start entry point
+
+
+
+;------------------------------------------------------------------------- Main
 ; Main loop code
-Main:		; Main loop
+Main:
+			jsr	UseDefault		; Default input & output (CONSOLE => Simulator)
 
-			;- set outptu to screen
-			jsr 	UseConsole
-
-			;- create buffer object at $0300
-			LDAX($0300)			; buffer at $0300
-			STAX(Z_Ptr)			; point at the buffer  {Z_Ptr is at 00,01}
-			lda #03
-			jsr	BufInit			; initialise to size of 16
-
-			CLI					; Enable IRQs
-
-			; point character output to the buffer write
-			LDAX(BufBlkWr)
-			STAX(V_CHROUT)
-
-
-;			lda #'A'
-;			jsr	PutChar
-;
-;			lda #'B'
-;			jsr	PutChar
-;
-;			lda #'C'
-;			jsr	PutChar
-;
-;			lda #'D'
-;			jsr	PutChar
-;
-;			lda #'E'
-;			jsr	PutChar
-;
-;			lda #'F'
-;			jsr	PutChar
-
+			lda	#CLS			; output form-feed = Clear Screen
+			jsr	CharOut
 
 			LDAX(Msg)			; message addres
 			jsr PrAXHex			; print as hex
@@ -69,39 +44,12 @@ Main:		; Main loop
 			LDAX(Msg)			; message addres
 			jsr	PrStr			; 'print' it to the device pointed to by V_CHROUT
 
-;			; write to screen
-;			jsr	UseConsole
-;
-;			; point input character to read from buffer
-;			LDAX(BufRead)
-;			STAX(V_CHRIN)
-;
-;Show		jsr	GetChar
-;			beq	ShowX
-;
-;			jsr PutChar
-;			bra	Show
-;
-;ShowX
 
 Stop:		nop
 			nop
-			bra	Stop
 
-
+			.db $DB	; halt simulator
 			BRK
-
-
-UseConsole: ; use console as output
-			LDAX(SimPutChar)
-			STAX(V_CHROUT)
-			rts
-
-GetChar:	; read input character
-			jmp (V_CHRIN)
-
-PutChar:	; send character out
-			jmp	(V_CHROUT)
 
 
 ;------------------------------------------------------------------------- NMI
@@ -127,45 +75,69 @@ Irq:		; Interrupt Request servcie routine
 ; Interrupt low level, reset the source as early as posible
 ; PC & Status are pushed, then cpu comes here
 ;
-; Serial port Rx ?
 			;-- Save registers
-			PHA
-				PHX
-					PHY
+			PUSHAXY()			; Y,X,Z,S,PC
 
-		; IRQ code in here
-		; 	reset IRQ source
-		; 	handle irq
+			;-- Test to see if it is an IRQ or a BRK
+			tsx
+			lda $0104,x			; get the pushed status
+			and #$10				; check the BRK bit
+			bne IrqBrk			; BREAK -> IrqBrk
 
-						jsr	BufRead
-						beq	IrqRtn			; nothing to show
 
-						jsr SimPutChar		; print character
+			;-- IRQ source was a signal on the IRQ pin
+
+			; IRQ signal service routine here
+
+
+;			; Signbal IRQ here
+;			nop
+;			bra IrqRtn
+;
+;; Serial port Rx ?
+;		; IRQ code in here
+;		; 	reset IRQ source
+;		; 	handle irq
+;
+;						jsr	BufRead
+;						beq	IrqRtn			; nothing to show
+;
+;						jsr SimPutChar		; print character
 
 
 IrqRtn		;-- Restore registers and return
-					PLY
-				PLX
-			PLA
+			PULLAXY()
 			RTI					; pop status & PC, return, re-enabling IRQ
+
+;-- here for an interrupt caused by a BRK instruction
+; fetch the post byte and styore it in ERRNO and return from inerrupt
+IrqBrk
+			lda	$105,X			;
+			sta Z_IrqPtr
+			lda $106,X
+			sta Z_IrqPtr+1
+
+			lda Z_IrqPtr		; if low ..
+			bne IrqBrk0			; .. is zero
+			dec Z_IrqPtr+1		; .. decr high
+IrqBrk0		dec Z_IrqPtr		; decr low
+
+			lda (Z_IrqPtr)		; get the byte after the BRK (post byte)
+			sta BRK_NO			; save it
+
+			bra IrqRtn
 
 
 
 Msg: .DB " Hello World\r\nThis is me!",0
 
 
-
-
-
-VecPutChar:	; Output character as directed
-	jsr 	SimPutChar
-	rts
-
-#include 	"Buffer.a65"
-
-#include	"Simulator.a65"		; for running on PC simulator
+	.org $E100
+#include	"IODev.a65"
 #include 	"Util.a65"
-#include 	"MC68B50.a65"		; Define data and code for MC68b50 coms chip
+
+;#include 	"Text.a65"
+;#include 	"Buffer.a65"
 
 ROMEND = $
 
@@ -175,7 +147,7 @@ ROMEND = $
 ; FFFE,F	IRQ
 .org $FFFA
 .dw Nmi		; Non-Maskable Interrupt
-.dw Reset	; Points to reset address (cold start) FFFC,FFFD
+.dw Cold	; Points to reset address (cold start) FFFC,FFFD
 .dw Irq		; interrupt vector
 
 

@@ -1,14 +1,44 @@
-Code Notes
-==========
-
+CodeNotes.txt
+=============
+--------------------------------------------------------------------------- Object
 Object
-	Size L,H	total length of object (add to pointer to find next one, zero=end of list)
-	-
-	RefCntr		Count the references to this object, once it gets to $80 no longer change it
-	ObjID L,H	ID of the object (eg CRC of class name?)
-	:
-	:
+	0: Len		Length of the object
+					0:end-of-list marker,
+					1: Length = XLen * 16  (255* 16= 4080)
+					2: Length = XLen * 256 (255*256=65280)
+					3: Future
+					04-FF(255) 'Small/normal' object
 
+	1:RefCntr	Reference counter, once it gets to $80(Premanent) it is no longer modified
+
+	2:CID		Class ID, 2 bytes, CRC16 of class name
+
+	4:[XLen]
+
+--------------------------------------------------------------------------- Text
+Text
+	0:			Dimension length of text (max len)
+	1..FF		characters, null terminated
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------- BRK
+BRK , PHP 	pushes B as 1
+IRQ , NMI	push B as 0
+BRK is actually a 2 byte code, 00 for the break and the post byte, irq returns after the post byte
+
+C: r >= arg  	N: r <  arg 	Z: r == arg
+
+--------------------------------------------------------------------------- I/O
+These are devices taht are used mainly to send/receive ASCII
+as such they can support CharIn / CharOut
+
+Eg Keyboard, Screen, RS232 ...
 :-- I/O device interface
 Init
 RdData
@@ -18,9 +48,9 @@ WrCmd
 
 ;			jmp ($,X)
 ;			nop
-;			.dw	KxInit	; x=4 
-;			.dw	KxRd	; x=6 
-;			.dw	KxWr	; x=8 
+;			.dw	KxInit	; x=4
+;			.dw	KxRd	; x=6
+;			.dw	KxWr	; x=8
 ;			.dw	KxSt	; x=10
 ;			.dw	KxCmd	; x=12
 

@@ -21,6 +21,5 @@ IO_D		= IO_BASE + $D0
 IO_E		= IO_BASE + $E0
 IO_F		= IO_BASE + $F0
 
-; Here I allocate device logical name to their slots
-
-DEV_COM		= IO_0				; Serial port MC68B50 chip
+; assign the rs232 chip to address IO_0
+ADR_RS232	= IO_0

@@ -5,47 +5,73 @@
 ; the address for the chip must be defined by DEV_COM
 ; default coms divisor and format is set in COM_INIT (as div16, 8N2)
 ;
+#ifndef _MC68B50
+#define _MC68B50
+
 #include "MC68B50_def.a65"
 
+; RS232CHIP is set to the memomery address where the chip is mapped
+
 ;------------------------------------------------------------------- setup values here
-COM_DATA	= DEV_COM			; Data transmit/receive register
-COM_CTRL	= DEV_COM+1			; Control (Wr)/ Status (Rd)
+COM_DATA	= ADR_RS232			; Data transmit/receive register
+COM_CTRL	= ADR_RS232+1		; Control (Wr)/ Status (Rd)
+
+
+;-- I/O device interface jump table offsets
+;IO_INIT		= 0	;Init
+;IO_CHRIN		= 3	;CharInput
+;IO_CHROUT		= 6	;CharOutput
+;IO_RDSTATUS	= 9 ;RdStatus
+;IO_WRCMD		= 12;WrCommand
+
+MC68B50:
+			jmp	ComReset		; Init
+			jmp	ComGet			; Char Input
+			jmp ComPut			; Char Ouput
+			jmp	ComStatus		; Read Status
+			jmp	ComFmt			; Write Command (Set Format .A)
+
+ComNOP		rts
+
 ;
-;------------------------------------------------------------------- Reset
-COM_RESET:	; Reset the serial chip
+;------------------------------------------------------------------- ComReset
+ComReset:	; Reset the serial chip
 			lda #COM_RST
 			sta COM_CTRL		; Set the reset bits to reset the chip
 
 ;-------------------------------------------------------------------
-COM_INIT:	; Initialise the coms to div16, 8n2
+ComInit:	; Initialise the coms to div16, 8n2
 			lda #(COM_DIV16 | COM_8N2)	; default for 8N2, div16
 
-COM_FMT:	; Set coms format as per A reg
+ComFmt:	; Set coms format as per A reg
 			sta COM_CTRL		; Set coms speed and format
 			rts
 
-COM_STATUS:	; Return the status of the coms chip in A
+ComStatus:; Return the status of the coms chip in A
 			lda	COM_CTRL		; read Status register
 			rts
 
-COM_GET:	; wait for rx data and then return it in A
+ComGet:	; Get data into A if available, otherwise return zero
 			lda	COM_CTRL		; read status
 			and	#COM_RDRF		; check if rcvd full
-			beq	COM_GET			; none available so loop back
+			beq	ComGetX			; none available so exit with A=0
 			; have data
-COM_RX:		; fetch the data from the chip without waiting
+ComRx		; fetch the data from the chip without waiting
 			lda	COM_DATA		; read the data byte
-			rts
+ComGetX		rts
 
-COM_PUT:	; write character in A to the serial port once it's available
+ComPut:	; write character in A to the serial port once it's available
 			pha					; Save byte to send
-COM_PUT0	; available?
+
+ComPut0	; available?
 			lda	COM_CTRL		; get status
 			and	#COM_TDRE
-			beq	COM_PUT0		; wait for it to be empty
+			beq	ComPut0			; wait for it to be empty
 			;
 			pla					; restore data byte
 			;- fall through
-COM_TX:		; Send A to com without waiting
+ComTx:		; Send A to com without waiting
 			sta	COM_DATA
-			rts					
+			rts
+
+#endif
