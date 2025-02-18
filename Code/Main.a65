@@ -28,20 +28,36 @@ Main: ; Main loop code
 			jsr	CharOut
 
 			jsr	Calc
-			;
-			LDAX(65000)
-			jsr CalcSetI
-			jsr CalcPush
-			;
-			LDAX(300)
-			jsr CalcSetI
-			jsr CalcModI
-			;
-			jsr CalcGetI
-			jsr PrAXHex
 
-;			jsr CalcRemI
+			LDAX(Num)
+			jsr CalcParseAX		; convert string to value  ; -1234=FB2E      +1234=$04D2
+
+			jsr CalcGetI		; TOS -> AX
+			jsr	PrAXHex			; print AX as hex (FB2E) OK
+			lda #'='
+			jsr CharOut
+
+			nop
+
+			jsr CalcStr
+
+
+
+
+
+			;
+;			LDAX(-100)
+;			jsr CalcSetI
+;			jsr CalcPush
+;			;
+;			LDAX(30)
+;			jsr CalcSetI
+;			jsr CalcDivI
+;			;
 ;			jsr CalcGetI
+;			jsr PrAXHex
+
+;			jsr CalcRemI		; remainder into TOS (and AX)
 ;			jsr PrAXHex
 
 
@@ -82,6 +98,7 @@ Stop:; halt simulator
 
 Msg: .DB " Hello World\r\nThis is me!",0
 
+Num	.db "-1234",0	; -1234=FB2E      +1234=$04D2
 
 
 #include 	"UtilHex.a65"

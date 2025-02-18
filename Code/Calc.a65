@@ -4,12 +4,14 @@
 ;
 
 #if ($>>8)==0
+ .org ($+16)/16 * 16
 .LIST
 ;------------------------------- Calc Z-Page
 Var(TOS,4)              ; Top-Of-Stack
 Var(NXT,4)              ; Next item on stack
-Var(RES,4)              ; Result
+Var(RES,8)              ; Result
 Short(CSP)              ; Calc stack pointer (00->0F)
+Short(SGN)
 .NOLIST
 #endif
 
@@ -42,14 +44,40 @@ Calc:;Initialise calculator [A]
             lda #0              ; Init calc stack pointer
             sta CSP
 ;---------------------------------------------------------------- CalcZero
-CalcZero:; Zero TOS [A]
+CalcZero:; Zero TOS & SGN [A]
             lda #0
             sta TOS
             sta TOS+1
             sta TOS+2
             sta TOS+3
+            sta SGN
             rts
-
+;---------------------------------------------------------------- CalcFix
+CalcFix:; Fix sign of AX based on SGN (if SGN-ve, then Complement)
+			ldy	SGN				; N=1 if -ve
+			bmi CalcCmpl		; -ve so go and complement
+			rts					; otherwise +ve and we're ok as is
+;---------------------------------------------------------------- CalcAbs
+CalcAbs:; Return sign in Y (0=+, 1=-) and and value in AX
+			ldy	#0
+			cpx #$80
+			bcc CalcCmplX		; positive so exit y=0 (+ve)
+			dey					; negative, so make y=$FF (-ve)
+			; fall through to complement AX
+;---------------------------------------------------------------- CalcCmplAX
+CalcCmpl:; Two's compliment of AX (A=Lo, X=Hi)
+			eor #$FF
+			pha
+			txa
+			eor #$FF
+			tax
+			pla
+			inc A
+			bne CalcCmplX
+			inx
+CalcCmplX	rts
+;---------------------------------------------------------------- CalcDup
+CalcDup:; Duplicate TOS (=Push TOS)
 ;---------------------------------------------------------------- CalcPush
 CalcPush:; Push TOS onto the stack [AX]
             ldx CSP
@@ -66,6 +94,19 @@ CalcPush:; Push TOS onto the stack [AX]
             inc A
             and #$0F
             sta CSP
+            rts
+;---------------------------------------------------------------- CalcDrop
+CalcDrop:; Pop item into TOS item variable
+            jsr CalcPop
+            ;
+            lda CSTK0,X
+            sta TOS+0
+            lda CSTK1,X
+            sta TOS+1
+            lda CSTK2,X
+            sta TOS+2
+            lda CSTK3,X
+            sta TOS+3
             rts
 
 ;---------------------------------------------------------------- CalcPop
@@ -134,11 +175,31 @@ CalcSubI:; TOS = NXT - TOS	(16 bit signed integer)
 			sta TOS+1
 			;
 			rts
+;---------------------------------------------------------------- CalcSign
+CalcSign:; Set Result SGN and make TOS & NXT positive
+			;-- TOS
+			lda	TOS+0
+			ldx TOS+1
+			jsr CalcAbs
+			sta TOS+0
+			stx TOS+1
+			sty SGN
+			;-- NXT
+			lda NXT+0
+			ldx NXT+1
+			jsr CalcAbs
+			sta NXT+0
+			stx NXT+1
+			tya
+			eor SGN
+			sta SGN
+			rts
 
 ;---------------------------------------------------------------- CalcMulI
 CalcMulI:; TOS = NXT * TOS	(16 bit signed integer)
 ; 726 cycles for 123 * 27
 			jsr CalcNext		; pop into NXT
+			jsr CalcSign
 			;
         	lda #0       		;Initialize RES to 0
         	sta RES+2
@@ -163,11 +224,13 @@ CalcMulI2   ror A        		; shift
         	;- place result in TOS
         	lda RES
         	ldx RES+1
+        	jsr CalcFix
         	jmp CalcSetI		; AX -> TOS
 
 ;---------------------------------------------------------------- CalcDivI
 CalcDivI:; TOS = NXT / TOS	(16 bit signed integer)
 			jsr CalcNext		; pop into NXT
+			jsr CalcSign
 
 ; NXT / TOS => NXT, remainder in RES
 			lda #0      ;Initialize RES to 0
@@ -193,17 +256,127 @@ CalcDivL2   dex
 			;
 			lda NXT
 			ldx NXT+1
+        	jsr CalcFix
         	jmp CalcSetI		; AX -> TOS
 ;---------------------------------------------------------------- CalcModI
 CalcModI:; TOS = NXT % TOS
-			jsr	CalcDivI		; divide with remainder in res
-			; fall through to get remained into TOS
+			jsr	CalcDivI		; divide with remainder in RES
+			; fall through to get remainder into TOS
 ;---------------------------------------------------------------- CalcRemI
-CalcRemI:; Remainder of division into TOS (Call CalcDivI before this)
+CalcRemI:; Remainder of division into TOS (also in AX) - Call CalcDivI before
 			lda RES
 			ldx RES+1
 			jmp	CalcSetI
+;---------------------------------------------------------------- CalcD10
+CalcD10:; Divide TOS by 10, remainder in A
+			ldy #16
+			lda #0
+			clc
+CalcD101 	rol a
+			cmp #10
+			bcc CalcD102
+			sbc #10
+CalcD102 	rol TOS
+			rol TOS+1
+			dey
+			bpl CalcD101
+			rts
 
+;---------------------------------------------------------------- CalcStr
+CalcStr:; convert TOS to string in RES
+			;-- abs of TOS, sign in SGN
+			lda	TOS+0
+			ldx TOS+1
+			jsr CalcAbs
+			sta TOS+0
+			stx TOS+1
+			sty SGN
+			ldx #5
+CalcStrL	jsr CalcD10			; Divide TOS by 10, remainder in A
+			ora #'0'
+			sta RES,x
+			dex
+			bpl CalcStrL
+			;-- add the sign
+			lda #'+'
+			ldy SGN
+			bpl CalcStrX
+			lda #'-'
+CalcStrX	sta RES
+			rts
+
+;---------------------------------------------------------------- CalcMul10
+CalcMul10:; TOS = TOS * 10
+			;--TOS x 10
+			clc
+			rol TOS
+			rol TOS+1			; TOS = TOS *2
+			lda TOS
+			sta RES
+			lda TOS+1
+			sta RES+1			; RES = TOS * 2
+			clc
+			rol TOS
+			rol TOS+1			; TOS = TOS * 4
+			clc
+			rol TOS
+			rol TOS+1			; TOS = TOS * 8
+			;
+			clc
+			lda RES
+			adc TOS
+			sta TOS
+			lda RES+1
+			adc TOS+1
+			sta TOS+1			; TOS = 10 x TOS
+			;--
+			rts
+
+;---------------------------------------------------------------- CalcParseAX
+CalcParseAX:; Parse value in string at AX (null terminated) -> TOS
+			STAX(Z_Ptr)
+;---------------------------------------------------------------- CalcParse
+CalcParse:; Parse value in string at Z_Ptr (null terminated) -> TOS
+			jsr CalcZero		; TOS=0, SGN=0
+			ldy #255
+CalcParseL	iny
+			bmi CalcParseX		; too long -> exit (more than 127 chars!!)
+			;
+			lda (Z_Ptr),y		; get char
+			beq CalcParseX		; null -> exit
+
+			cmp #'+'
+			beq CalcParseL		; +ve, ok
+
+			cmp #'-'
+			beq CalcParseNeg	; -ve, ok
+
+			cmp #$3A
+			bpl CalcParseX		; >'9' -> exit
+			cmp #$30
+			bmi CalcParseX		; <'0' -> exit
+			pha
+
+			jsr CalcMul10
+
+			pla
+			clc
+			and #$0F
+			adc TOS				; add digit value to TOS
+			sta TOS
+			bcc CalcParseL
+			inc TOS+1
+			bra CalcParseL
+
+CalcParseNeg
+			lda #$FF
+			sta SGN
+			bra CalcParseL
+
+CalcParseX	lda	TOS
+			ldx	TOS+1
+			jsr CalcFix
+			jmp CalcSetI
 
 .echo $-Calc
 .echo " bytes for Calc.a65\r"
