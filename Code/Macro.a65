@@ -1,7 +1,7 @@
+.NOLIST
 ; Macro.a65
 ;
-
-;--- ASCII Control Codes
+;------------------------------- ASCII Control Codes
 #DEFINE NULL	0
 #DEFINE BS 		8
 #DEFINE HT 		9
@@ -11,11 +11,19 @@
 #DEFINE CR 		13
 #DEFINE ESC		27
 
+;------------------------------- I/O device interface jump table offsets
+IO_INIT		= 0	;Init
+IO_CHRIN	= 3	;CharInput
+IO_CHROUT	= 6	;CharOutput
+IO_RDSTATUS	= 9 ;RdStatus
+IO_WRCMD	= 12;WrCommand
+
+
 
 ; Returns high byte of a 16 bit vale
 #DEFINE HIGH(m) (m>>8)
 
-;-- used to define variables in memory
+;------------------------------- Declare variables
 #define Var(name,size) name .block size
 #define Short(name) name .block 1
 #define Int(name) name .block 2
@@ -29,11 +37,24 @@
 #DEFINE PULLAXY() ply \ plx \ pla
 
 
-
 ; Loads AX with 16 bit value, low->A, high->X
-#DEFINE LDAX(m) lda #(m)
-#DEFCONT	\	ldx #HIGH(m)
+#DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
 
-; Stores 16 bit value (AX) into address A->(adr), X->(adr+1)
+; Stores 16 bit value (AX) into address A->(p), X->(p+1)
 #DEFINE STAX(p) STA p \ STX p+1
 
+
+; treats Z-Page as a bunch of register pairs and uses Y as index to the low byte
+
+; Stores AX into the reg pair indexed by y : A->(y), X->(y+1)
+#DEFINE SETAX(n) LDY #n \ STA $00,y \ TXA \ STA $01,y
+
+; loads ax from reg pair indexed by y
+#DEFINE GETAX(n) LDY #n \ LDA $01,y \ TAX \ STA $00,y
+
+; Adds AX to register pair at y
+#DEFINE ADDAX(n) LDY #n \ CLC \ ADC $00,y \ STA $00,y \ TXA \ ADC $01,y \ STA $01,y
+
+
+
+.LIST

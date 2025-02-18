@@ -8,149 +8,115 @@ ROMBEG .org $E000
 ;.FILL $2000,$EA
 ;.org $E000
 
-
-;E000 7C 00 E0  jmp ($,X)
-;E003 EA        nop
-;E004 00 00     .dw	addr	; x=4
-;E006 00 00     .dw	addr	; x=6
-;E008 00 00     .dw	addr	; x=8
-;E00A 00 00     .dw	addr	; x=10
-
-;------------------------------------------------------------------------- Cold
-Cold: ; Cold start entry point
-; cold start initialization
+CODEPAGE = 1
+.LIST
+;========================================================================
+; CODE
+;========================================================================
 ;
-			sei					; halt IRQs
-			ldx	#$ff			; Set Stack pointer to top of the stack space $0100-01FF
-			txs
-			cli
 
-;------------------------------------------------------------------------- Warm
-Warm: ; Warm Start entry point
-
-
+#include "Cold.a65"
+	; falls through to Warm start
+#include "Warm.a65"
+	; falls through to Main Loop
 
 ;------------------------------------------------------------------------- Main
-; Main loop code
-Main:
-			jsr	UseDefault		; Default input & output (CONSOLE => Simulator)
+Main: ; Main loop code
+			jsr	DevDefault		; Default input & output (CONSOLE => Simulator)
 
 			lda	#CLS			; output form-feed = Clear Screen
 			jsr	CharOut
 
-			LDAX(Msg)			; message addres
-			jsr PrAXHex			; print as hex
+			jsr	Calc
+			;
+			LDAX(65000)
+			jsr CalcSetI
+			jsr CalcPush
+			;
+			LDAX(300)
+			jsr CalcSetI
+			jsr CalcModI
+			;
+			jsr CalcGetI
+			jsr PrAXHex
 
-			LDAX(Msg)			; message addres
-			jsr	PrStr			; 'print' it to the device pointed to by V_CHROUT
+;			jsr CalcRemI
+;			jsr CalcGetI
+;			jsr PrAXHex
 
 
-Stop:		nop
-			nop
 
-			.db $DB	; halt simulator
+
+;			LDAX($200)
+;			STAX(Z_Src)
+;
+;			TEST(Z_Src,$200)	; Expecting Z_Src to be $0200 ..
+;
+;			TEST(Z_Src,$1234)
+;
+;			jsr Monitor
+
+;			LDAX(Msg)			; message addres
+;			jsr PrAXHex			; print as hex
+;
+;			LDAX(Msg)			; message addres
+;			jsr	PrStr			; 'print' it to the device pointed to by V_CHROUT
+
+;			; create text at $200
+;			LDAX($200)
+;			STAX(Z_Ptr)			; Z_Ptr == Z_Txt  00,01
+;			lda #31
+;			jsr TextDim
+;
+;			; copy message
+;			LDAX(Msg)
+;			STAX(Z_Src)			; 02,03
+;			jsr TextCopy
+
+
+
+
+Stop:; halt simulator
+			.db $DB
 			BRK
-
-
-;------------------------------------------------------------------------- NMI
-Nmi:		; Non-Maskable interrupt entry point
-; Negative-edge triggered interrupt
-; use this for timer interrupts straight from binary divider ?
-			;-- Save registers
-			PHA
-				PHX
-			 		PHY
-
-; NMI code in here
-
-NmiRtn		;-- Restore registers and return
-					PLY
-				PLX
-			PLA
-			RTI
-
-
-;------------------------------------------------------------------------- IRQ
-Irq:		; Interrupt Request servcie routine
-; Interrupt low level, reset the source as early as posible
-; PC & Status are pushed, then cpu comes here
-;
-			;-- Save registers
-			PUSHAXY()			; Y,X,Z,S,PC
-
-			;-- Test to see if it is an IRQ or a BRK
-			tsx
-			lda $0104,x			; get the pushed status
-			and #$10				; check the BRK bit
-			bne IrqBrk			; BREAK -> IrqBrk
-
-
-			;-- IRQ source was a signal on the IRQ pin
-
-			; IRQ signal service routine here
-
-
-;			; Signbal IRQ here
-;			nop
-;			bra IrqRtn
-;
-;; Serial port Rx ?
-;		; IRQ code in here
-;		; 	reset IRQ source
-;		; 	handle irq
-;
-;						jsr	BufRead
-;						beq	IrqRtn			; nothing to show
-;
-;						jsr SimPutChar		; print character
-
-
-IrqRtn		;-- Restore registers and return
-			PULLAXY()
-			RTI					; pop status & PC, return, re-enabling IRQ
-
-;-- here for an interrupt caused by a BRK instruction
-; fetch the post byte and styore it in ERRNO and return from inerrupt
-IrqBrk
-			lda	$105,X			;
-			sta Z_IrqPtr
-			lda $106,X
-			sta Z_IrqPtr+1
-
-			lda Z_IrqPtr		; if low ..
-			bne IrqBrk0			; .. is zero
-			dec Z_IrqPtr+1		; .. decr high
-IrqBrk0		dec Z_IrqPtr		; decr low
-
-			lda (Z_IrqPtr)		; get the byte after the BRK (post byte)
-			sta BRK_NO			; save it
-
-			bra IrqRtn
-
-
 
 Msg: .DB " Hello World\r\nThis is me!",0
 
 
-	.org $E100
-#include	"IODev.a65"
-#include 	"Util.a65"
 
-;#include 	"Text.a65"
-;#include 	"Buffer.a65"
+#include 	"UtilHex.a65"
+#include 	"Util.a65"
+#include 	"Text.a65"
+#include 	"Buffer.a65"
+#include 	"MC68B50.a65"
+#include 	"Simulator.a65"
+;#include 	"Monitor.a65"
+#include	"Dev.a65"
+
+;#include	"Test.a65"
+
+;========================================================================
+; MODULES
+;========================================================================
+;
+#include 	"Modules.a65"
+
+#include 	"Irq.a65"
+
 
 ROMEND = $
+.echo (ROMEND - ROMBEG)
+.echo " total code bytes\r"
 
 ;------------------------------------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
 .org $FFFA
-.dw Nmi		; Non-Maskable Interrupt
-.dw Cold	; Points to reset address (cold start) FFFC,FFFD
-.dw Irq		; interrupt vector
-
+.dw Nmi		; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Cold	; FFFC,D=> RESET	Points to Reset address (cold start)
+.dw Irq		; FFFE,F=> IRQ		Points to Interrupt handler
 
 .echo ($FFFA - ROMEND) / 256
-.echo " pages (x256) available in the 8k ROM. E000-FFFF\r"
+.echo "/32 pages (x256) available in the 8k ROM. E000-FFFF\r"
 	.END

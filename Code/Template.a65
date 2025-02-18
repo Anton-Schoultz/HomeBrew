@@ -1,0 +1,29 @@
+.NOLIST
+; Template
+;
+;
+;
+
+#if ($>>8)==0
+.LIST
+;------------------------------- Template Z-Page
+; Variables required, specified using the macros:-
+;	Var(name,size) name .block size
+;	Short(name) name .block 1
+;	Int(name) name .block 2
+;	Long(name) name .block 4
+.NOLIST
+#endif
+
+
+#if CODEPAGE
+#ifndef _Template
+#define _Template
+;-------------------------------------------------------------------------- Template
+
+
+
+.echo $-Template
+.echo " bytes for Template.a65\r"
+#endif
+#endif

@@ -1,192 +1,145 @@
-;
-; Test.asm - Simple monitor
-;
+.NOLIST
+; Monitor.a65
 ; ascii characters are in .A and the call DoMon
 ; to process them.
 ;
-; 0-9,A-F   Hex digits, scrolled into H,L
-; @     copy hex value in H,L to address
+; 0-9,A-F   Hex digits, scrolled into MonVal
+; @         copy hex value to address MonAdr
+; X         execute code at MonAdr, pass low value as A
+;
 ; ' '/','   write low value to address and incr address
-; ?     display 16 bytes at address and move it on
+; ?         display bytes at address and move it on
+;
+; Uses CharOut to print hex characters
+; Uses CharIn to get the next character to process
+; Uses UtilHex.A2Hex to convert ascii to hex
+;
+;Int(MonAdr)            ; Monitor address
+;Int(MonVal)            ; Monitor value
+
+
+; Variables required, specified using the macros:-
+;   Var(name,size) name .block size
+;   Short(name) name .block 1
+;   Int(name) name .block 2
+;   Long(name) name .block 4
 ;
 
-; Z-Page
-
-MONL    = $10           ; low value being scrolled in
-MONH    = $11           ; high value of scroll in
-
-MONADL  = $12           ; Address low
-MONADH  = $13           ; Address high
-
-LEN = 8                 ; no of data bytes per row
-
-ESC = 27                ; ESCAPE char
-
-IO_AREA = $0300
+#if ($>>8)==0
+.LIST
+;------------------------------- Monitor Z-Page
+Int(MonAdr)             ; Monitor address
+Int(MonVal)             ; Monitor value
+.NOLIST
+#endif
 
 
-TERMINAL_OUT    = IO_AREA+1
-TERMINAL_IN     = IO_AREA+4
+#if CODEPAGE
+#ifndef _Montor
+#define _Monitor
+.LIST
+;================================================================ MONITOR
+
+Monitor: ; enter with character to deal with in A
+            cmp #0              ; Null char, just return
+            beq MonitorX
+            cmp #'@'            ; '@' sets address
+            beq MonSet
+            cmp #'X'            ; 'X' execute code at MonAdr
+            beq MonRun
+            cmp #'?'            ; '?' display 16 bytes and incr adr
+            beq MonShow
+            cmp #','            ; ',' write low byte to memory
+            beq MonWr
+            cmp #' '            ; ' ' write low byte to memory
+            beq MonWr
+            ; try hex deigit
+            jsr A2Hex
+            bcs MonDigit        ; CY set if valid
+MonitorX    rts
 
 
-    .ORG $8000
+MonWr:; Write low valkue byte to memory address and bump address
+            lda MonVal
+            sta (MonAdr)
+            inc MonAdr
+            bne MonWrX
+            inc MonAdr+1
+MonWrX      rts
 
 
-; Simulator i/o area as per Options screen is in IO_AREA
-;IO_AREA+0 = TERMINAL_CLS       ; (w)
-;IO_AREA+1 = TERMINAL_OUT       ; (w)
-;IO_AREA+2 = TERMINAL_OUT_CHR   ; (w)
-;IO_AREA+3 = TERMINAL_OUT_HEX   ; (w)
-;IO_AREA+4 = TERMINAL_IN        ; (r)
-;IO_AREA+5 = TERMINAL_X_POS     ; (r/w)
-;IO_AREA+6 = TERMINAL_Y_POS     ; (r/w)
+MonSet:; sets address from the value
+            lda MonVal
+            sta MonAdr
+            lda MonVal+1
+            sta MonAdr+1
+            rts
+
+MonRun:; call code at MonAdr, pass low value in A
+            lda MonVal
+            jmp (MonAdr)
+
+MonDigit:; take hex value in A and shift it into the value
+            ASL a
+            ASL a               ; Hex digit to MSD of A
+            ASL a
+            ASL a
+            LDX     #4          ; Shift count
+MonShift:   ASL a               ; Hex digit left, MSB to carry
+            ROL     MonVal      ; Rotate into LSD
+            ROL     MonVal+1    ; Rotate into MSD's
+            DEX                 ; Done 4 shifts?
+            BNE     MonShift    ; No, loop
+            RTS                 ;   Processed hex digit into H,L
+
+MonShow: ; Display a line of data from memory (16 bytes) and bumo address
+            lda     #CR
+            jsr     CharOut
+            lda     #LF
+            jsr     CharOut
+            ;-- set address to paragraph boundary $XXX0
+            lda     MonAdr
+            and     #$F8
+            sta     MonAdr
+            ;-- display address
+            LDA     MonAdr+1
+            JSR     PrAHex
+            LDA     MonAdr
+            JSR     PrAHex
+            LDA     #':'
+            JSR     CharOut
+            ;-- display data
+            LDY     #0
+            LDX     #8
+MonShowNxt  LDA     (MonAdr),Y      ; get data
+            JSR     PrAHex          ; print as hex
+            LDA     #' '            ; print a space
+            JSR     CharOut
+            INY                     ; next offset
+            DEX                     ; count off no of bytes to show
+            BNE     MonShowNxt      ; loop back if more
+
+            ;-- bump address by 16
+            lda     #8
+            clc
+            adc     MonAdr
+            sta     MonAdr
+            bcc     MonShowX
+            inc     MonAdr+1
+MonShowX    rts
+
+;MonLoop: ; loop to get characters and interpret them
+;           jsr CharIn          ; read character
+;           beq MonLoop         ; null so loop back
+;           jsr Monitor         ; process the character
+;           bra MonLoop         ; loop back
 
 
+.echo $-Monitor
+.echo " bytes in Monitor.a65\r"
+#endif
 
-NXT:            JSR     GetChar
-                BEQ     NXT
+;=============================================================== end of Code
+#endif
 
-                CMP     #ESC
-                BEQ     EXIT
-
-                JSR     PrChar
-                JSR     MonChar
-                JMP     NXT
-
-EXIT:           BRK
-
-
-
-MonChar:        PHA
-                EOR     #'0'            ; Map digits to 0-9
-                CMP     #9+1            ; Is it a decimal digit?
-                BCC     MonDigit        ; Yes!
-                ADC     #$08            ; Map letter "A"-"F" to $FA-FF
-                CMP     #$7A            ; Hex letter?
-                BCC     MonCmd          ;No! Character not hex
-
-MonDigit:       ASL a
-                ASL a                    ; Hex digit to MSD of A
-                ASL a
-                ASL a
-
-                LDX     #4              ; Shift count
-MonShift:       ASL a                   ;  Hex digit left, MSB to carry
-                ROL     MONL            ; Rotate into LSD
-                ROL     MONH            ; Rotate into MSD's
-                DEX                     ; Done 4 shifts?
-                BNE     MonShift        ; No, loop
-
-                PLA
-                RTS                     ;   Processed hex digit into H,L
-
-
-MonCmd:     ; check for cmd @ comes in as $79
-                PLA
-                CMP     #'@'
-                BNE     MonShow
-
-                ; got '@' so copy value to address
-                LDA     MONH
-                STA     MONADH
-                LDA     MONL
-                STA     MONADL
-                RTS
-
-MonShow
-                CMP     #'?'            ; '?' to display bytes?
-                BNE     MonData         ; No, see if we have data byte
-
-
-MonSHowRow:             ;-- new line
-                JSR     PrNL
-                ;-- address
-                LDA     MONADH
-                JSR     PrByte
-                LDA     MONADL
-                JSR     PrByte
-                LDA     #':'
-                JSR     PrChar
-                ;
-                LDY     #0
-                LDX     #LEN
-        ;
-MonShowNxt
-                LDA     (MONADL),Y      ; get data
-                JSR     PrByte          ; print as hex
-                LDA     #' '            ; print a space
-                JSR     PrChar
-                INY                     ; next offset
-                DEX                     ; count off no of bytes to show
-                BNE     MonShowNxt      ; loop back if more
-
-                CLC                     ; move address on by the length
-                LDA     #LEN
-                ADC     MONADL
-                STA     MONADL
-                LDA     #0
-                ADC     MONADH
-                STA     MONADH
-
-                RTS
-
-
-
-
-MonData
-                RTS
-
-;-------------------------------------------------------------------------
-;  Subroutine to print new line  =  CR LF
-;-------------------------------------------------------------------------
-
-PrNL:           LDA     #$0d
-                STA     TERMINAL_OUT    ; Sends A to output screen
-                LDA     #$0A
-                STA     TERMINAL_OUT    ; Sends A to output screen
-                RTS
-
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a byte in A in hex form (destructive)
-;-------------------------------------------------------------------------
-
-PrByte:         PHA                     ;Save A for LSD
-                LSR a
-                LSR a
-                LSR a                   ; MSD to LSD position
-                LSR a
-                JSR     PrHex           ; Output hex digit
-                PLA                     ; Restore A
-
-; Fall through to print hex routine
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a hexadecimal digit
-;-------------------------------------------------------------------------
-
-PrHex:          AND     #$0F            ; Mask LSD for hex print
-                ORA     #'0'            ; Add "0"
-                CMP     #'9'+1          ; Is it a decimal digit?
-                BCC     PrChar          ; Yes! output it
-                ADC     #6              ; Add offset for letter A-F
-                JMP     PrChar          ; Print it and return
-
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a character to the terminal
-;-------------------------------------------------------------------------
-
-PrChar:
-                STA     TERMINAL_OUT    ; Sends A to output screen
-                RTS
-
-;-------------------------------------------------------------------------
-;  Subroutine to get an inoput character, returns zero if none
-;-------------------------------------------------------------------------
-GetChar:
-                LDA     TERMINAL_IN
-                RTS
-
-; .end is in calling source
 

@@ -1,0 +1,80 @@
+; MiniMon
+;
+; MC68B50 serial port, configured to generate an IRQ whenever a byte is recieved
+; provides a simple monitor program (fits in top 512 bytes of eerom FE00-FFFF)
+;
+#ifndef _MiniMon
+#define _MiniMon
+
+#include "Macro.a65"			; macro definitions
+#include "Vars.a65"				; Z-Page, Stack and system ram
+#include "IOMap.a65"			; Define I/O port adresses
+
+ROMBEG:		.org $FE00
+
+;ROMBEG .org $E000				; Use this for the 8K EEPROM to generate 8k rom file
+;.FILL $2000,$EA
+;.org $E000
+
+
+
+#include "Cold.a65"
+#include "Warm.a65"; falls through to main
+
+;-- initialise the com port
+			jsr	ComReset		; reset port & initilise it /16,8N2
+
+;-- set up vectors
+			LDAX(IrqNOP)
+			STAX(V_NMI)			; No NMI handler
+			STAX(V_BRK) 		; No BRK handler
+			;
+			LDAX(MiniMon)
+			STAX(V_IRQ)			; Route Coms chip IRQ to the monitor's input
+
+Main:; Main loop
+			bra Main			; loop forever
+
+;-------------------------------------------------------------------------- MiniMon
+MiniMon: ; RS232 input comes here
+			jsr ComGet			; get the character from the port
+			beq MinMonX			; null input
+			pha
+			jsr	CharOut			; echo the input character
+			pla
+			jsr Monitor			; pass it on to the monitor program to process
+MinMonX		rts
+
+;-------------------------------------------------------------------------- CharOut
+CharOut:; Output character A to currently active output device [V_CHROUT]
+			jmp	ComPut			; write character in A to the serial port once it's available
+
+;-------------------------------------------------------------------------- CharIn
+;CharIn:; Return character .A from the currently active input device [V_CHROUT]
+; Not used here
+
+#include "MC68B50.a65"			; serial port
+#include "Monitor.a65"			; monitor
+#include "UtilHex.a65"			; Hex conversion
+#include "IRQ.a65"				; BRK, IRQ, NMI handlers via V_IRQ,V_BRK,V_NMI
+
+
+.echo $-ROMBEG
+.echo " bytes of main code\r"
+
+
+;------------------------------------------------------------------------- hardware vectors
+; FFFA,B	NMI
+; FFFC,D	Reset
+; FFFE,F	IRQ
+.org $FFFA
+.dw Nmi		; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Cold	; FFFC,D=> RESET	Points to Reset address (cold start)
+.dw Irq		; FFFE,F=> IRQ		Points to Interrupt handler
+
+
+.echo $-MiniMon
+.echo " bytes for MiniMon.a65\r"
+#endif
+
+.END

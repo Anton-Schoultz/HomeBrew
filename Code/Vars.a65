@@ -5,44 +5,56 @@
 #ifndef _Vars
 #define _Vars
 
-;--------------------------------------------------------------------- Z-Page
+CODEPAGE = 0
 .org $0000
+;================================================================ Z-PAGE
 
 
-Int(Z_Ptr)			; general object pointer
+Int(Z_Ptr)          ; general object pointer (used by print string )
+Int(Z_Src)          ; Pointer to source (2 bytes)
+Int(Z_Tgt)          ; Pointer to destination
 
-Int(Z_SRC)			; Pointer to source (2 bytes)
-Int(Z_TGT)			; Pointer to destination
-
-Short(Z_Tmp)		; temp byte for counter etc
+Short(Z_Tmp)        ; temp byte for counter etc
+Short(Z_Cnt)        ; Counter/ max short term scratch
 
 
-Var(Z_END,0)
-
-Int(Z_IrqPtr)		; Pointer for IRQ use
+#include "Modules.a65"
 
 .echo $0100-$
 .echo " bytes available in Z-Page (0000-00FF)\r"
 
-;--------------------------------------------------------------------- Stack
+.LIST
+;================================================================ CPU STACK
 .org $0100
-
-;--------------------------------------------------------------------- SysVars
+;-- this is the cpu stack growing down from 01FF to 0100
+#include "Modules.a65"
+.LIST
+;================================================================ SYSVARS
 .org $0200
-Int(V_CHROUT)		; vector to output a character - used by CharOut
-Int(V_CHRIN)		; vector to read a character   - Used by CharIn
 
-Short(BRK_NO)		; BRK post byte
+;------------------------------- Interrupt handlers
+Int(V_IRQ)          ; body of IRQ handler
+Int(V_NMI)          ; body of NMI handler
+Int(V_BRK)          ; body of BRK handler
+Int(Z_IrqPtr)       ; Pointer for IRQ use
+
+;------------------------------- Char In/Out, Devices
+Int(V_CHROUT)       ; vector to output a character - used by CharOut
+Int(V_CHRIN)        ; vector to read a character   - Used by CharIn
 
 
+Short(BRK_NO)       ; BRK post byte
+
+.NOLIST
+#include "Modules.a65"
 
 .echo $0300-$
 .echo " bytes available in system variables (0300-03FF)\r"
 
-.org $300
-; I/O wil map here
 
-;--------------------------------------------------------------------- IO
+;================================================================ I/O
+.org $300
 ; this is mapped to page 3 (see IOMap.a65)
+
 
 #endif

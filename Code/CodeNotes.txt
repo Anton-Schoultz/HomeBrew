@@ -54,10 +54,75 @@ WrCmd
 ;			.dw	KxSt	; x=10
 ;			.dw	KxCmd	; x=12
 
-
-
 BUFFER
 	0	Len		0-239
 	1	iwr
 	2	ird
 	3	data[0...len]
+	
+--------------------------------------------------------------------------- Numbers
++/-999	11 bits	leaves 5 for Exp => E+/-15
+	
+__________________________________________________________________________ Calculator
+TOS		Top-Of-Stack	Fixed Z-Pg locations	TOSA,TOSB,TOSC,TOSD (float)
+NXT		Next-TOS		"						NXTA,NXTB,NXTC,NXTD
+
+CSP		Calc Stack Pointer
+
+CSTK	CalcStack broken into 4 sections A,B,C,D index via CSP with .X reg 
+		This stack could be in Z-page or in higher memory
+
+PUSH:	Push TOS onto stack sections
+		LDX CSP \ DEX \ STX CSP			; STACK INDEX
+		LDA TOSA \ STA CSTKA,X
+		LDA TOSB \ STA CSTKB,X
+		LDA TOSC \ STA CSTKC,X
+		LDA TOSD \ STA CSTKD,X
+		
+POP:	Pop NXT from stack sections
+		LDX CSP
+		LDA CSTKA \ STA NXTA
+		LDA CSTKB \ STA NXTB		
+		LDA CSTKC \ STA NXTC		
+		LDA CSTKD \ STA NXTD
+		INX \ STX CSP
+
+__________________________________________________________________________ Frame
+NB When calling a function, only allow Constants and/or Variables (no expressions)
+So caller must evaluate expresion seperately and assign to temp vars, 
+which are then passed to the called function. Pointers may also be passed.
+Functions return value will be in TOS
+
+*	FP		2 Frame pointer 	Points to the current frame, args & locals accessed via offset in .Y
+
+*FP->	0:FPSZ		1 Parent frame size	(subtract from this FP to get caller's FP)
+		1:FRTN		2 Return address
+*		3:FOBJ		2 Points to active data object OBJ->ClassID, find ClassObj
+		5:FMID		2 Method ID
+		7:args...	Argument values passed into this function
+		?:locals.. 	Local variables for this function
+		
+*		n:FSZ		1 This frame size - setup on entry to this function	(& set SFP)	<- SubFramePointer (SFP)
+
+*SFP
+
+
+*	SFP		SubFramePtr	Points to the start of what will become the called function's Frame SFP = FP + FSZ
+	ARG		Argument offset 1,2=RTN 3,4=This 5...args , pfsz
+							
+							
+
+when calling, parameters (retrived vars or constants) are written to child structure
+	LDY	SFA
+	LDA	TOSA	\ STA (CFP),Y \ INY
+	LDA	TOSB	\ STA (CFP),Y \ INY
+	:
+	STY SFA
+	
+		PFSZ	FSZ		PRTN	THIS	Args....	Locals...				x0x1x2x3x4x5x6x7x8x9xAxBxCxDxExF 
+FP1	->  xx		0a		1234	a000	aa bb cc	vv					01	xx0a1234a000aabbccvv
+
+sfp0=fp1+fsz=0100+0a=> 010a												01  ....................0a
+
+FP2	->  0a      07		5678	a000	dd								01	....................0a075678a000			
+																		02  dd 

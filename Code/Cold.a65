@@ -1,0 +1,17 @@
+; Cold
+;
+; Cold start Code
+;
+#ifndef _Cold
+#define _Cold
+;-------------------------------------------------------------------------- Cold
+Cold: ; Cold start entry point
+			sei					; halt IRQs
+			ldx	#$ff			; Set Stack pointer to top of the stack space $0100-01FF
+			txs
+			cld					; ensure binary mode
+
+
+.echo $-Cold
+.echo " bytes for Cold.a65\r"
+#endif

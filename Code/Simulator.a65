@@ -40,7 +40,6 @@
 
 IO_AREA			= $8000	; This must match what is set in simulator's Options screen.
 
-
 ;-------------------------------------------------------------------------
 ; set up the interface area
 SIM_CLS 	= IO_AREA+0
@@ -51,38 +50,33 @@ SIM_IN 		= IO_AREA+4
 SIM_X_POS	= IO_AREA+5
 SIM_Y_POS	= IO_AREA+6
 
-;-- I/O device interface jump table offsets
-;IO_INIT		= 0	;Init
-;IO_CHRIN		= 3	;CharInput
-;IO_CHROUT		= 6	;CharOutput
-;IO_RDSTATUS	= 9 ;RdStatus
-;IO_WRCMD		= 12;WrCommand
 
 Simulator:
-			jmp	SimNop			; Init
-			jmp	SimGet			; Char Input
-			jmp SimPut			; Char Ouput
-			jmp	SimNop			; Read Status
-			jmp	SimNop			; Write Command
+;-- I/O device interface jump table
+	jmp	SimNop			; Init
+	jmp	SimGet			; Char Input
+	jmp SimPut			; Char Ouput
+	jmp	SimNop			; Read Status
+	jmp	SimNop			; Write Command
 
 SimNop		rts
 
 ;------------------------------------------------------------------------- SimGet
-SimGet:	; input a character via the simulator
+SimGet:; input a character via the simulator, null if none [A]
             LDA     SIM_IN
             RTS
 
 ;------------------------------------------------------------------------- SimPut
-SimPut:	; output a character via the simultor
+SimPut:; output a character via the simultor
 			CMP #CLS			; Form Feed = Clear Screen
 			BEQ	SimCls
 
-            STA     SIM_OUT    ; Sends A to output screen
+            STA SIM_OUT    		; Sends A to output screen (interprets CR LF BS)
             RTS
 
 ;------------------------------------------------------------------------- SimCls
-SimCls: ; Clear Screen (FF)
-			STA		SIM_CLS
+SimCls:; Clear Screen (CLS / FormFeed)
+			STA	SIM_CLS
 			RTS
 
 

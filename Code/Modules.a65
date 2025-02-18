@@ -1,0 +1,34 @@
+.NOLIST
+; Modules
+;
+; list of modules to be included, each has
+;
+; Variables required, specified using the macros:-
+;	Var(name,size) name .block size
+;	Short(name) name .block 1
+;	Int(name) name .block 2
+;	Long(name) name .block 4
+;
+;#if ($>>8)==0
+;;-- Zero page variables
+;	Int(Z_Adr)	; zero page reg pair
+;#endif
+;
+;#if ($>>8)==1
+;;-- bottom part of CPU stack space
+;;
+;#endif
+;
+;#if ($>>8)==2
+;;-- System Variables area $02xx
+;;
+;#endif
+;#if CODEPAGE
+;;-- COde in here
+;;
+;#endif
+;
+#include	"Monitor.a65"
+#include	"Test.a65"
+#include	"Calc.a65"
+

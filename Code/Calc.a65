@@ -1,0 +1,211 @@
+.NOLIST
+; Calc
+;
+;
+
+#if ($>>8)==0
+.LIST
+;------------------------------- Calc Z-Page
+Var(TOS,4)              ; Top-Of-Stack
+Var(NXT,4)              ; Next item on stack
+Var(RES,4)              ; Result
+Short(CSP)              ; Calc stack pointer (00->0F)
+.NOLIST
+#endif
+
+#if ($>>8)==1
+.LIST
+;------------------------------- Calc stack space
+; resides below the cpu stack 64 bytes - leaves 192 for cpu
+; this is a split stack
+Var(CSTK0,16)           ; Stack for LSB
+Var(CSTK1,16)
+Var(CSTK2,16)
+Var(CSTK3,16)           ; Stack for MSB
+.NOLIST
+#endif
+
+
+#if CODEPAGE
+#ifndef _Calc
+#define _Calc
+
+TOS0 = TOS
+TOS1 = TOS+1
+TOS2 = TOS+2
+TOS3 = TOS+3
+
+
+.LIST
+;================================================================ CALC
+Calc:;Initialise calculator [A]
+            lda #0              ; Init calc stack pointer
+            sta CSP
+;---------------------------------------------------------------- CalcZero
+CalcZero:; Zero TOS [A]
+            lda #0
+            sta TOS
+            sta TOS+1
+            sta TOS+2
+            sta TOS+3
+            rts
+
+;---------------------------------------------------------------- CalcPush
+CalcPush:; Push TOS onto the stack [AX]
+            ldx CSP
+            lda TOS+0
+            sta CSTK0,X
+            lda TOS+1
+            sta CSTK1,X
+            lda TOS+2
+            sta CSTK2,X
+            lda TOS+3
+            sta CSTK3,X
+            ; force CSP to 0-15
+            lda CSP
+            inc A
+            and #$0F
+            sta CSP
+            rts
+
+;---------------------------------------------------------------- CalcPop
+CalcPop:; Reduce stack pointer, .X points to 'popped' item
+            ; force CSP to 0-15
+            lda CSP
+            dec A
+            and #$0F
+            sta CSP
+            ;
+            ldx CSP
+            rts
+
+;---------------------------------------------------------------- CalcNext
+CalcNext:; Pop item into NXT item variable
+            jsr CalcPop
+            ;
+            lda CSTK0,X
+            sta NXT+0
+            lda CSTK1,X
+            sta NXT+1
+            lda CSTK2,X
+            sta NXT+2
+            lda CSTK3,X
+            sta NXT+3
+            rts
+
+;---------------------------------------------------------------- CalcSetI
+CalcSetI:; TOS = AX (16 bit signed integer A=lo,X=hi) [AY]
+			sta	TOS+0
+			stx TOS+1
+			ldy #0
+			sty TOS+2			; clear high bytes
+			sty TOS+3
+			rts
+;---------------------------------------------------------------- CalcGetI
+CalcGetI:; Return TOS in AX (16 bit signed integer A=lo,X=hi)
+			lda	TOS+0
+			ldx TOS+1
+			rts
+
+;---------------------------------------------------------------- CalcAddI
+CalcAddI:; TOS = NXT + TOS	(16 bit signed integer)
+			jsr CalcPop			; Pop but access onstack with X
+			clc
+			lda CSTK0,X
+			adc TOS+0
+			sta TOS+0
+			;
+			lda CSTK1,X
+			adc TOS+1
+			sta TOS+1
+			;
+			rts
+
+;---------------------------------------------------------------- CalcSubI
+CalcSubI:; TOS = NXT - TOS	(16 bit signed integer)
+			jsr CalcPop			; Pop but access onstack with X
+			sec
+			lda CSTK0,X
+			sbc TOS+0
+			sta TOS+0
+			;
+			lda CSTK1,X
+			sbc TOS+1
+			sta TOS+1
+			;
+			rts
+
+;---------------------------------------------------------------- CalcMulI
+CalcMulI:; TOS = NXT * TOS	(16 bit signed integer)
+; 726 cycles for 123 * 27
+			jsr CalcNext		; pop into NXT
+			;
+        	lda #0       		;Initialize RES to 0
+        	sta RES+2
+        	ldx #16      		;There are 16 bits in TOS
+CalcMulI1   lsr TOS+1    		;Get low bit of TOS
+        	ror TOS
+        	bcc CalcMulI2       ;0 or 1?
+        	tay          		;If 1, add NXT (hi byte of RES is in A)
+        	clc
+        	lda NXT
+        	adc RES+2
+        	sta RES+2
+        	tya
+        	adc NXT+1
+CalcMulI2   ror A        		; shift
+        	ror RES+2
+        	ror RES+1
+        	ror RES
+        	dex
+       	 	bne CalcMulI1
+        	sta RES+3
+        	;- place result in TOS
+        	lda RES
+        	ldx RES+1
+        	jmp CalcSetI		; AX -> TOS
+
+;---------------------------------------------------------------- CalcDivI
+CalcDivI:; TOS = NXT / TOS	(16 bit signed integer)
+			jsr CalcNext		; pop into NXT
+
+; NXT / TOS => NXT, remainder in RES
+			lda #0      ;Initialize RES to 0
+			sta RES
+			sta RES+1
+			ldx #16     ;There are 16 bits in NXT
+CalcDivL1   asl NXT    ;Shift hi bit of NXT into RES
+			rol NXT+1  ;(vacating the lo bit, which will be used for the quotient)
+			rol RES
+			rol RES+1
+			lda RES
+			sec         ;Trial subtraction
+			sbc TOS
+			tay
+			lda RES+1
+			sbc TOS+1
+			bcc CalcDivL2      ;Did subtraction succeed?
+			sta RES+1   ;If yes, save it
+			sty RES
+			inc NXT    ;and record a 1 in the quotient
+CalcDivL2   dex
+			bne CalcDivL1
+			;
+			lda NXT
+			ldx NXT+1
+        	jmp CalcSetI		; AX -> TOS
+;---------------------------------------------------------------- CalcModI
+CalcModI:; TOS = NXT % TOS
+			jsr	CalcDivI		; divide with remainder in res
+			; fall through to get remained into TOS
+;---------------------------------------------------------------- CalcRemI
+CalcRemI:; Remainder of division into TOS (Call CalcDivI before this)
+			lda RES
+			ldx RES+1
+			jmp	CalcSetI
+
+
+.echo $-Calc
+.echo " bytes for Calc.a65\r"
+#endif
+#endif

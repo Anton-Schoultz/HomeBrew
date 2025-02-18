@@ -1,0 +1,38 @@
+; Temp
+;
+; EXPERIMENTS
+
+#DEFINE HIGH(m) (m>>8)
+
+#DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
+#DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
+
+.org $0201
+
+START:  	NOP
+
+fl .block 1
+
+#if ($>>8)==0
+.echo "Defined Z-Pg $00xx\r"
+vz .block 1
+#endif
+
+#if ($>>8)==2
+.echo "Defined SysVars $02xx\r"
+sv .block 2
+#endif
+
+#if ($>>8)>=4
+.echo "Defined code\r"
+var .block 2
+#endif
+
+
+
+
+	LDAX(1000)
+
+EXP .EXPORT START, EXP
+
+.end

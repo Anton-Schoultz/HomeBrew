@@ -10,7 +10,7 @@
 
 #include "MC68B50_def.a65"
 
-; RS232CHIP is set to the memomery address where the chip is mapped
+; RS232CHIP is set to the memory address where the chip is mapped
 
 ;------------------------------------------------------------------- setup values here
 COM_DATA	= ADR_RS232			; Data transmit/receive register
@@ -24,33 +24,33 @@ COM_CTRL	= ADR_RS232+1		; Control (Wr)/ Status (Rd)
 ;IO_RDSTATUS	= 9 ;RdStatus
 ;IO_WRCMD		= 12;WrCommand
 
-MC68B50:
+MC68B50:; Serial port device using the MC68B50 chip 0:init,3:CharIn,6:CharOut,9:RdStatus,12:WrCmd
 			jmp	ComReset		; Init
 			jmp	ComGet			; Char Input
 			jmp ComPut			; Char Ouput
 			jmp	ComStatus		; Read Status
 			jmp	ComFmt			; Write Command (Set Format .A)
-
-ComNOP		rts
-
 ;
 ;------------------------------------------------------------------- ComReset
 ComReset:	; Reset the serial chip
 			lda #COM_RST
 			sta COM_CTRL		; Set the reset bits to reset the chip
 
-;-------------------------------------------------------------------
-ComInit:	; Initialise the coms to div16, 8n2
+;------------------------------------------------------------------- ComInit
+ComInit:; Initialise the coms to div16, 8n2
 			lda #(COM_DIV16 | COM_8N2)	; default for 8N2, div16
 
+;------------------------------------------------------------------- ComFmt
 ComFmt:	; Set coms format as per A reg
 			sta COM_CTRL		; Set coms speed and format
-			rts
+ComNOP		rts
 
+;------------------------------------------------------------------- ComStatus
 ComStatus:; Return the status of the coms chip in A
 			lda	COM_CTRL		; read Status register
 			rts
 
+;------------------------------------------------------------------- ComGet
 ComGet:	; Get data into A if available, otherwise return zero
 			lda	COM_CTRL		; read status
 			and	#COM_RDRF		; check if rcvd full
@@ -60,6 +60,7 @@ ComRx		; fetch the data from the chip without waiting
 			lda	COM_DATA		; read the data byte
 ComGetX		rts
 
+;------------------------------------------------------------------- ComPut
 ComPut:	; write character in A to the serial port once it's available
 			pha					; Save byte to send
 
@@ -74,4 +75,6 @@ ComTx:		; Send A to com without waiting
 			sta	COM_DATA
 			rts
 
+.echo $-MC68B50
+.echo " bytes for MC68B50\r"
 #endif

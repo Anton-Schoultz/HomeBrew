@@ -1,74 +1,27 @@
 ; Util.a65
 ;
 ; General utilities
+#ifndef _Util
+#define _Util
 
+Util:
 
-
-;-------------------------------------------------------------------------
-;  Subroutine to convert ascii character in A to hex nibble in A (destructive)
-;-------------------------------------------------------------------------
-
-A2HEX:		; convert A to hex value (CY is set if valid, clear if not)
-            EOR     #'0'       	; Map digits to 0-9
-            CMP     #9+1   		; Is it a decimal digit?
-            BCC     A2HEX9	    ; Yes!
-            ADC     #$08        ; Map letter "A"-"F" to $FA-FF
-            CMP     #$7A        ; Hex letter?
-            BCC     A2HEX_X     ;No! Character not hex
-			;
-A2HEX9      sec					; set carry flag to indicate valid
-			;
-A2HEX_X		rts;
-
-;-------------------------------------------------------------------------
-;  Subroutine to print AX as 4 hex digits (A=Low, X=Hi)
-;-------------------------------------------------------------------------
-PrAXHex:	; print AX as 4 hex digits (A=Low, X=Hi)
-			pha					; save low
-			txa					; get high
-			jsr	PrAHex			; print hi as hex digits
-			pla					; restore low
-			; - fall through to print low as hex digits
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a byte in A in hex form (destructive)
-;-------------------------------------------------------------------------
-PrAHex:     ; Print a byte in A in hex form (destructive)
-			PHA                 ;Save A for LSD
-            LSR a
-            LSR a
-            LSR a               ; MSD to LSD position
-            LSR a
-            JSR     PrHex       ; Output hex digit
-            PLA                 ; Restore A
-
-; Fall through to print hex routine
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a hexadecimal digit
-;-------------------------------------------------------------------------
-PrHex:		; print hex digit for low nibble of A
-          	AND     #$0F        ; Mask LSD for hex print
-			ORA     #'0'        ; Add "0"
-    		CMP     #'9'+1      ; Is it a decimal digit?
-   			BCC     PrHexCh     ; Yes! output it
-    		ADC     #6          ; Add offset for letter A-F
-PrHexCh	; print character in A to output device via vector
-			jmp 	CharOut
-
-
-
-;-------------------------------------------------------------------------
-;  Subroutine to print a string poitned to by AX
-;-------------------------------------------------------------------------
-PrStr:		; print a string pointed to by AX (preseves X,Y)
+;------------------------------------------------------------------------- PrStrAX
+PrStrAX:; print a null-terminated string pointed to by AX [A]
+			STAX(Z_Ptr)
+;------------------------------------------------------------------------- PrStr
+PrStr:; print a null-terminated string pointed to by Z_Ptr [A]
 			phy
-			STAX(Z_SRC)
-			ldy 	#0
-PrStr1		lda 	(Z_SRC),y
-			beq 	PrStr2		; zero -> exit
-			jsr		CharOut		; print character
-			iny					; move to next char
-			bne 	PrStr1		; loop back
+				STAX(Z_Ptr)
+				ldy 	#0
+PrStr1			lda 	(Z_Ptr),y
+				beq 	PrStr2		; zero -> exit
+				jsr		CharOut		; print character
+				iny					; move to next char
+				bne 	PrStr1		; loop back
 PrStr2		ply
 			rts					; exit
+
+.echo $-Util
+.echo " bytes for Util\r"
+#endif

@@ -1,0 +1,130 @@
+; Text.a65
+;
+; Text field
+;
+;	0:		Max		Dimension length of text (max len, including terminating zero)
+;	1..FF	Data[]	characters, null terminated
+;
+; On entry, Z_Txt points to byte 0
+;
+#ifndef _Text
+#define _Text
+Text:
+
+; For now just re-use Z_Ptr as the text pointer
+; - later it may have it's own pointer, then we just remove this define
+#define Z_Txt Z_Ptr
+
+;------------------------------------------------------------------------- TextDim
+TextDim: ; Create Text at (Z_Txt) with length .A [uses AXY]
+			sta (Z_Txt)			; save the length
+			;drop through to clear the text field
+;------------------------------------------------------------------------- TextClear
+TextClear: ; Clear the text field pointed to by Z_Txt [uses AXY]
+			ldy	#1				; index to first char
+			lda (Z_Txt)			; get length
+			tax					; into X
+			bne TextClear_L
+			rts
+TextClear_L	lda #0
+			sta (Z_Txt),y
+			iny
+			dex
+			bne TextClear_L
+			rts
+;------------------------------------------------------------------------- TextTerm
+TextTerm: ; force a terminating null in last position  Data[Max]=0
+			ldy (Z_Ptr)
+			lda #0
+			sta (Z_Txt),y
+			rts
+;------------------------------------------------------------------------- TextCheck
+TextCheck: ; Checks that Y is in range 0 < y < (Z_Txt), C:1 if full
+			cpy #0
+			beq TextCheckR		; zero so set it to 1 C:1 Z:1 N:0
+			;max?
+	 	cpy (Z_Txt) 		; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
+			bmi	TextCheckOK		; < max so ok (Z:0 C:0 N:1)   OK if C=0
+			sec					; full C:1
+			rts
+			; >= so force to 1
+TextCheckR	ldy	#1				; reset to the begining C:0(OK)
+TextCheckOK	clc					; C:0 = OK
+		 	rts
+;------------------------------------------------------------------------- TextPut
+TextPut: ; Text[Y++]=A (check & reset Y=1 if need be) [uses AY]
+			jsr	TextCheck
+			sta (Z_Txt),y
+			iny
+			rts
+;------------------------------------------------------------------------- TextGet
+TextGet: ; A=Text[Y++] (check & reset Y=1 if need be) [uses AY]
+			jsr	TextCheck
+			lda (Z_Txt),y
+			iny
+			rts
+;------------------------------------------------------------------------- TextSize
+TextSize: ; Scan the text for the first null byte, return offset in Y [last char in A]
+			ldy #1				; first char in the buffer
+TextSizeL	cpy	(Z_Txt)			; max index?
+			bmi TextSizeX		; read at end so exit
+			lda (Z_Txt),y		; get char
+			beq TextSizeX		; found terminating null -> exit
+			iny
+			bne TextSizeL
+TextSizeX	rts
+
+;------------------------------------------------------------------------- TextQ
+TextQ: ; Add .A to the end of the text (if space available) [Use AXY]
+			tax					; save char to store
+			jsr TextSize		; find first null N=1 if full
+			bmi	TextQX
+			txa					; recall char
+			sta (Z_Txt),y		; save at that point
+TextQX		rts
+;------------------------------------------------------------------------- TextDQ
+TextDQ: ; Remove the first char .A and shift the rest up
+			ldy	#1
+			lda (Z_Txt),y
+			pha
+			jsr TextSL
+			pla
+			rts
+;------------------------------------------------------------------------- TextSL
+TextSL: ; Shift text left by one char starting from .Y
+			iny
+			lda (Z_Txt),y		; get next char
+			dey
+			sta (Z_Txt),y		; save here
+
+			iny					; move on to end
+			cpy (Z_Txt)			; done?
+			bpl TextSL			; no loop
+
+			lda #0				; final null
+			sta (Z_Txt),y
+
+			rts
+
+;------------------------------------------------------------------------- TextCopy
+TextCopy: ; copy text from (Z_Src) to this text object
+			ldy	#1
+TextCopyL	jsr	TextCheck
+			bcs	TextCopyX		; this text is full
+			cpy (Z_Src)			; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
+			bcs TextCopyX		; source is done
+			lda (Z_Src),y
+			sta (Z_Txt),y		; copy across
+			beq	TextCopyX		; Null = terminator so exit
+			iny					; next index
+			bne	TextCopyL
+TextCopyX	rts
+
+
+
+; C: r >= arg  	N: r <  arg 	Z: r == arg
+
+
+.echo $-Text
+.echo " bytes for Text\r"
+#endif
