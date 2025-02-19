@@ -20,6 +20,12 @@ CODEPAGE = 1
 #include "Warm.a65"
 	; falls through to Main Loop
 
+
+#define TSTNUM(one,two) LDAX(one)\ jsr CalcSetI\ jsr CalcPush \ LDAX(two)\ jsr CalcSetI
+#define TSTRES(res) TEST(TOS,res)\ jsr MShowTOS\ jsr NewLine
+
+
+
 ;------------------------------------------------------------------------- Main
 Main: ; Main loop code
 			jsr	DevDefault		; Default input & output (CONSOLE => Simulator)
@@ -27,69 +33,90 @@ Main: ; Main loop code
 			lda	#CLS			; output form-feed = Clear Screen
 			jsr	CharOut
 
-			nop
-			nop
-
-
-
-
 			jsr	Calc
 
-;NumNeg	.db "-1234",0	; -1234=FB2E
-;NumPos	.db "1234",0	; +1234=$04D2
+			PRINT("123 456 Add\r\n")
+            TSTNUM(123,456)
+            jsr CalcAddI
+            TSTRES(579)
+
+			PRINT("123 45 Mul\r\n")
+            TSTNUM(123,45)
+            jsr CalcMulI
+            TSTRES(5535)
+
+			PRINT("-123 -45 Mul\r\n")
+            TSTNUM(-123,-45)
+            jsr CalcMulI
+            TSTRES(5535)
 
 
-            PRINT("Convert -1234\r\n")
+
+
+
+Stop:; halt simulator
+			.db $DB
+			BRK
+
+;---------------------------------------------- TestCvt
+TestCvt:; test conversions
+            PRINT("Convert -1234 $FB2E\r\n")
 			LDAX(NumNeg)
 			jsr CalcParseAX		; convert string to value  ; -1234=FB2E
-			TEST(TOS,$FB2E)
+			TEST(TOS,-1234)
 			jsr MShowTOS
             jsr NewLine
 
-            PRINT("Convert 1234\r\n")
+            PRINT("Convert 1234 $04D2\r\n")
 			LDAX(NumPos)
 			jsr CalcParseAX		; convert string to value  ;+1234=$04D2
-			TEST(TOS,$04D2)
+			TEST(TOS,1234)
 			jsr MShowTOS
-			TEST(TOS,$04D2)     ; this shouold not fail (MShow saves & restores)
+			TEST(TOS,1234)     ; this should not fail (MShow saves & restores)
             jsr NewLine
-;-------
-;            PRINT("-100 150 Add = 50\r\n")
-;            jsr LdVal
-;            jsr CalcAddI        ; -100 + 150 => 50
-;            jsr MShowTOS
-;			TEST(TOS,50)
-;            jsr NewLine
-;
-;            PRINT("-100 150 Sub = -250\r\n")
-;            jsr LdVal
-;            jsr CalcSubI
-;            jsr MShowTOS
-;			TEST(TOS,-250)
-;            jsr NewLine
-;
-;            PRINT("-100 150 Mul = -15000\r\n")
-;            jsr LdVal
-;            jsr CalcMulI
-;            jsr MShowTOS
-;			TEST(TOS,-15000)
-;            jsr NewLine
-;
-;            PRINT("-100 150 Div = 0 -0.66\r\n")
-;            jsr LdVal
-;            jsr CalcDivI
-;            jsr MShowTOS
-;			TEST(TOS,0)
-;            jsr NewLine
-;
-;            PRINT("-100 150 Mod = 100\r\n")
-;            jsr LdVal
-;            jsr CalcModI
-;            jsr MShowTOS
-;			TEST(TOS,100)
-;            jsr NewLine
-;------
+            rts
 
+;---------------------------------------------- Test1
+Test1:; tests with -100, 150
+            PRINT("-100 150 Add = 50\r\n")
+            jsr LdVal
+            jsr CalcAddI        ; -100 + 150 => 50
+            jsr MShowTOS
+			TEST(TOS,50)
+            jsr NewLine
+
+            PRINT("-100 150 Sub = -250\r\n")
+            jsr LdVal
+            jsr CalcSubI
+            jsr MShowTOS
+			TEST(TOS,-250)
+            jsr NewLine
+
+            PRINT("-100 150 Mul = -15000\r\n")
+            jsr LdVal
+            jsr CalcMulI
+            jsr MShowTOS
+			TEST(TOS,-15000)
+            jsr NewLine
+
+            PRINT("-100 150 Div = 0 -0.66\r\n")
+            jsr LdVal
+            jsr CalcDivI
+            jsr MShowTOS
+			TEST(TOS,0)
+            jsr NewLine
+
+            PRINT("-100 150 Mod = 100\r\n")
+            jsr LdVal
+            jsr CalcModI
+            jsr MShowTOS
+			TEST(TOS,100)
+            jsr NewLine
+
+            rts
+
+;---------------------------------------------- Test2
+Test2:; tests with 100, -50
             PRINT("100 -50 Add = 50\r\n")
             jsr LdVal2
             jsr CalcAddI
@@ -125,51 +152,8 @@ Main: ; Main loop code
 			TEST(TOS,0)
             jsr NewLine
 
-;------
+            rts
 
-
-;			;
-;			jsr CalcGetI
-;			jsr PrAXHex
-
-;			jsr CalcRemI		; remainder into TOS (and AX)
-;			jsr PrAXHex
-
-
-
-
-;			LDAX($200)
-;			STAX(Z_Src)
-;
-;			TEST(Z_Src,$200)	; Expecting Z_Src to be $0200 ..
-;
-;			TEST(Z_Src,$1234)
-;
-;			jsr Monitor
-
-;			LDAX(Msg)			; message addres
-;			jsr PrAXHex			; print as hex
-;
-;			LDAX(Msg)			; message addres
-;			jsr	PrStr			; 'print' it to the device pointed to by V_CHROUT
-
-;			; create text at $200
-;			LDAX($200)
-;			STAX(Z_Ptr)			; Z_Ptr == Z_Txt  00,01
-;			lda #31
-;			jsr TextDim
-;
-;			; copy message
-;			LDAX(Msg)
-;			STAX(Z_Src)			; 02,03
-;			jsr TextCopy
-
-
-
-
-Stop:; halt simulator
-			.db $DB
-			BRK
 
 ;---------------------------------------------- Load Values
 LdVal:; -100, push, 150

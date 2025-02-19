@@ -18,7 +18,10 @@ IO_CHROUT	= 6	;CharOutput
 IO_RDSTATUS	= 9 ;RdStatus
 IO_WRCMD	= 12;WrCommand
 
-#Define PRINT(str) jsr _Print_ \ .db str , 0
+;Allows outputing of text from inline, needs Util.a65 , which uses CharOut
+; eg PRINT("this is some text to printout\r\n")
+; NB dont use 'funny' chars like = brackets etc of assembler will choke
+#Define PRINT(str) jsr _Print_ \ .db str, 0
 
 
 ; Returns high byte of a 16 bit vale
