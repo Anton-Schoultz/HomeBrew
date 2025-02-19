@@ -27,36 +27,107 @@ Main: ; Main loop code
 			lda	#CLS			; output form-feed = Clear Screen
 			jsr	CharOut
 
+			nop
+			nop
+
+
+
+
 			jsr	Calc
 
-			LDAX(Num)
-			jsr CalcParseAX		; convert string to value  ; -1234=FB2E +1234=$04D2
-
-			jsr CalcGetI		; TOS -> AX
-			jsr	PrAXHex			; print AX as hex (FB2E) OK
-			lda #'='
-			jsr CharOut
-
-			jsr CalcDup
-			jsr CalcStr			; Cvt to string in RES
-			LDAX(RES)
-			jsr PrStrAX			; print string as decimal
-			jsr CalcDrop
-
-			nop
-			jsr CalcI2F
+;NumNeg	.db "-1234",0	; -1234=FB2E
+;NumPos	.db "1234",0	; +1234=$04D2
 
 
+            PRINT("Convert -1234\r\n")
+			LDAX(NumNeg)
+			jsr CalcParseAX		; convert string to value  ; -1234=FB2E
+			TEST(TOS,$FB2E)
+			jsr MShowTOS
+            jsr NewLine
+
+            PRINT("Convert 1234\r\n")
+			LDAX(NumPos)
+			jsr CalcParseAX		; convert string to value  ;+1234=$04D2
+			TEST(TOS,$04D2)
+			jsr MShowTOS
+			TEST(TOS,$04D2)     ; this shouold not fail (MShow saves & restores)
+            jsr NewLine
+;-------
+;            PRINT("-100 150 Add = 50\r\n")
+;            jsr LdVal
+;            jsr CalcAddI        ; -100 + 150 => 50
+;            jsr MShowTOS
+;			TEST(TOS,50)
+;            jsr NewLine
+;
+;            PRINT("-100 150 Sub = -250\r\n")
+;            jsr LdVal
+;            jsr CalcSubI
+;            jsr MShowTOS
+;			TEST(TOS,-250)
+;            jsr NewLine
+;
+;            PRINT("-100 150 Mul = -15000\r\n")
+;            jsr LdVal
+;            jsr CalcMulI
+;            jsr MShowTOS
+;			TEST(TOS,-15000)
+;            jsr NewLine
+;
+;            PRINT("-100 150 Div = 0 -0.66\r\n")
+;            jsr LdVal
+;            jsr CalcDivI
+;            jsr MShowTOS
+;			TEST(TOS,0)
+;            jsr NewLine
+;
+;            PRINT("-100 150 Mod = 100\r\n")
+;            jsr LdVal
+;            jsr CalcModI
+;            jsr MShowTOS
+;			TEST(TOS,100)
+;            jsr NewLine
+;------
+
+            PRINT("100 -50 Add = 50\r\n")
+            jsr LdVal2
+            jsr CalcAddI
+            jsr MShowTOS
+			TEST(TOS,50)
+            jsr NewLine
+
+            PRINT("100 -50 Sub = 150\r\n")
+            jsr LdVal2
+            jsr CalcSubI
+            jsr MShowTOS
+			TEST(TOS,150)
+            jsr NewLine
+
+            PRINT("100 -50 Mul = -5000\r\n")
+            jsr LdVal2
+            jsr CalcMulI
+            jsr MShowTOS
+			TEST(TOS,-5000)
+            jsr NewLine
+
+            PRINT("100 -50 Div = -2\r\n")
+            jsr LdVal2
+            jsr CalcDivI
+            jsr MShowTOS
+			TEST(TOS,-2)
+            jsr NewLine
+
+            PRINT("100 -50 Mod = 0\r\n")
+            jsr LdVal2
+            jsr CalcModI
+            jsr MShowTOS
+			TEST(TOS,0)
+            jsr NewLine
+
+;------
 
 
-			;
-;			LDAX(-100)
-;			jsr CalcSetI
-;			jsr CalcPush
-;			;
-;			LDAX(30)
-;			jsr CalcSetI
-;			jsr CalcDivI
 ;			;
 ;			jsr CalcGetI
 ;			jsr PrAXHex
@@ -100,9 +171,51 @@ Stop:; halt simulator
 			.db $DB
 			BRK
 
+;---------------------------------------------- Load Values
+LdVal:; -100, push, 150
+			LDAX(-100)          ; -100=$FF9C
+			jsr CalcSetI
+			jsr CalcPush
+			LDAX(150)           ; 150 =$0096
+			jsr CalcSetI
+            rts
+;---------------------------------------------- Load Values
+LdVal2:; 100, push, -50
+			LDAX(100)          ; -100=$FF9C
+			jsr CalcSetI
+			jsr CalcPush
+			LDAX(-50)           ; 150 =$0096
+			jsr CalcSetI
+            rts
+
+;---------------------------------------------- Show contents of TOS (kills tos)
+MShowTOS:;Show contents of TOS (kills tos)
+			jsr CalcGetI		; TOS -> AX
+			PUSHAXY()           ; store
+			;
+			jsr	PrAXHex			; print AX as hex (FB2E) OK
+			lda #'='
+			jsr CharOut
+			jsr CalcStr			; Cvt to string in RES
+			LDAX(RES)
+			jsr PrStrAX			; print string as decimal
+			;
+			PULLAXY()            ; restore
+			jsr CalcSetI
+
+NewLine:; print CR,LF
+            lda #CR
+			jsr CharOut
+            lda #LF
+			jmp CharOut
+
+
+
+
 Msg: .DB " Hello World\r\nThis is me!",0
 
-Num	.db "-1234",0	; -1234=FB2E      +1234=$04D2
+NumNeg	.db "-1234",0	; -1234=FB2E
+NumPos	.db "1234",0	; +1234=$04D2
 
 
 #include 	"UtilHex.a65"

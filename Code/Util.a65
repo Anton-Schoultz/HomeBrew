@@ -12,15 +12,48 @@ PrStrAX:; print a null-terminated string pointed to by AX [A]
 ;------------------------------------------------------------------------- PrStr
 PrStr:; print a null-terminated string pointed to by Z_Ptr [A]
 			phy
-				STAX(Z_Ptr)
 				ldy 	#0
 PrStr1			lda 	(Z_Ptr),y
 				beq 	PrStr2		; zero -> exit
 				jsr		CharOut		; print character
 				iny					; move to next char
 				bne 	PrStr1		; loop back
-PrStr2		ply
+
+PrStr2		sty Z_Tmp
+            ply
 			rts					; exit
+
+
+;------------------------------------------------------------------------- _Print_
+_Print_:;Print in-line string
+;jsr _Print_
+;.db "text",0
+            pla
+            plx
+            STAX(Z_Ptr)
+
+_Inc        inc Z_Ptr
+            bne _IncX
+            inc Z_Ptr+1
+_IncX
+
+            jsr PrStr
+
+            clc
+            lda Z_Tmp
+            inc a
+            adc Z_Ptr
+            sta Z_Ptr
+            lda #0
+            adc Z_Ptr+1
+            sta Z_Ptr+1
+
+            jmp (Z_Ptr)
+
+;_Inc        inc Z_Ptr
+;            bne _incX
+;            inc Z_Ptr+1
+;_IncX       rts
 
 .echo $-Util
 .echo " bytes for Util\r"
