@@ -1,0 +1,33 @@
+[Project ID]
+Signature=UE Proj: v.1
+[Project Information]
+Filter=*.*
+Project Directory=D:\GitHub\HomeBrew\Code\
+Use Relative Directory=1
+Relative to Project File=1
+Project Wordfile=
+Project Tagfile=
+Create Tagfile=0
+[Group]
+0=
+[Open Files]
+Open File0=D:\GitHub\HomeBrew\Code\VCpu.a65
+Active File Display Mode=3
+Open File Pos0=806
+Open File Line0=0
+Active File Index=1
+Open File Window Pos0=0,1,-1,-1,-8,-31,104,104,814,551
+Open File1=D:\GitHub\HomeBrew\Code\Frame.a65
+Open File Pos1=7
+Open File Line1=0
+Open File Window Pos1=2,3,-1,-1,-8,-31,156,156,870,607
+Open File2=D:\GitHub\HomeBrew\Code\Object.a65
+Open File Pos2=462
+Open File Line2=0
+Open File Window Pos2=0,1,-1,-1,-8,-31,182,182,896,633
+Open File3=
+[File View]
+Current Select=Open Files\Frame.a65
+Scroll Position=100
+[Files]
+0=VCpu.a65

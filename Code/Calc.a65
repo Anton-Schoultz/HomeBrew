@@ -1,7 +1,33 @@
 .NOLIST
 ; Calc
-;
-;
+;Calc        Initialise calculator [A]
+;CalcAbs     Return sign in Y (0=+, 1=-) and and value in AX
+;CalcAbsNXT  Cvt TOS to absolute, with sign in Y
+;CalcAbsTOS  Cvt TOS to absolute, with sign in .Y and SGN
+;CalcAddI    TOS = NXT + TOS (16 bit signed integer)
+;CalcCmpl    Two's compliment of AX (A=Lo, X=Hi)
+;CalcD10     TOS = TOS / 10, remainder in A
+;CalcDivI    TOS = NXT / TOS (16 bit signed integer)
+;CalcDrop    Pop item into TOS item variable
+;CalcDup     Duplicate TOS (=Push TOS)
+;CalcFix     Fix sign of AX based on SGN (if SGN-ve, then Complement)
+;CalcGetI    Return TOS in AX (16 bit signed integer A=lo,X=hi)
+;CalcI2F     Covert TOS from Int to float
+;CalcModI    TOS = NXT % TOS
+;CalcMul10   TOS = TOS * 10
+;CalcMulI    TOS = NXT * TOS (16 bit signed integer)
+;CalcNext    Pop item into NXT item variable
+;CalcParse   Parse value in string at Z_Ptr (null terminated) -> TOS
+;CalcParseAX Parse value in string at AX (null terminated) -> TOS
+;CalcPop     Reduce stack pointer, .X points to 'popped' item
+;CalcPush    Push TOS onto the stack [AX]
+;CalcRemI    Remainder of division into TOS (also in AX) - Call CalcDivI before
+;CalcSetI    TOS = AX (16 bit signed integer A=lo,X=hi) [AY]
+;CalcSign    Set Result SGN and make TOS & NXT positive
+;CalcStr     convert TOS to string in RES
+;CalcSubI    TOS = NXT - TOS (16 bit signed integer)
+;CalcZero    Zero TOS & SGN [A]
+
 
 #if ($>>8)==0
  .org ($+16)/16 * 16
@@ -52,11 +78,13 @@ CalcZero:; Zero TOS & SGN [A]
             sta TOS+3
             sta SGN
             rts
+
 ;---------------------------------------------------------------- CalcFix
 CalcFix:; Fix sign of AX based on SGN (if SGN-ve, then Complement)
 			ldy	SGN				; N=1 if -ve
 			bmi CalcCmpl		; -ve so go and complement
 			rts					; otherwise +ve and we're ok as is
+
 ;---------------------------------------------------------------- CalcAbs
 CalcAbs:; Return sign in Y (0=+, 1=-) and and value in AX
 			ldy	#0
@@ -116,8 +144,7 @@ CalcPop:; Reduce stack pointer, .X points to 'popped' item
             dec A
             and #$0F
             sta CSP
-            ;
-            ldx CSP
+            tax
             rts
 
 ;---------------------------------------------------------------- CalcNext
@@ -175,21 +202,31 @@ CalcSubI:; TOS = NXT - TOS	(16 bit signed integer)
 			sta TOS+1
 			;
 			rts
-;---------------------------------------------------------------- CalcSign
-CalcSign:; Set Result SGN and make TOS & NXT positive
-			;-- TOS
-			lda	TOS+0
+
+;---------------------------------------------------------------- CalcAbsTOS
+CalcAbsTOS:; Cvt TOS to absolute, with sign in .Y and SGN
+			lda TOS
 			ldx TOS+1
 			jsr CalcAbs
-			sta TOS+0
+			sta TOS
 			stx TOS+1
 			sty SGN
-			;-- NXT
+			rts
+
+;---------------------------------------------------------------- CalcAbsNXT
+CalcAbsNXT:; Cvt TOS to absolute, with sign in Y
 			lda NXT+0
 			ldx NXT+1
 			jsr CalcAbs
 			sta NXT+0
 			stx NXT+1
+			rts
+
+;---------------------------------------------------------------- CalcSign
+CalcSign:; Set Result SGN and make TOS & NXT positive
+			;-- TOS
+			jsr CalcAbsTOS
+			jsr CalcAbsNXT
 			tya
 			eor SGN
 			sta SGN
@@ -268,7 +305,9 @@ CalcRemI:; Remainder of division into TOS (also in AX) - Call CalcDivI before
 			ldx RES+1
 			jmp	CalcSetI
 ;---------------------------------------------------------------- CalcD10
-CalcD10:; Divide TOS by 10, remainder in A
+CalcD10TOS:; TOS = TOS / 10, remainder in A [AXY]
+			ldx #TOS
+CalcD10:; Divide value at 0,X  by 10, remainder in A [AY]
 			ldy #16
 			lda #0
 			clc
@@ -276,8 +315,8 @@ CalcD101 	rol a
 			cmp #10
 			bcc CalcD102
 			sbc #10
-CalcD102 	rol TOS
-			rol TOS+1
+CalcD102 	rol $00,X		; TOS
+			rol $01,X		; TOS+1
 			dey
 			bpl CalcD101
 			rts
@@ -291,13 +330,24 @@ CalcStr:; convert TOS to string in RES
 			sta TOS+0
 			stx TOS+1
 			sty SGN
-			ldx #5
-CalcStrL	jsr CalcD10			; Divide TOS by 10, remainder in A
+
+			;-- TOS to digits in RES
+			ldx #7
+			lda #0
+			sta RES,x
+			dex
+			sta RES,x
+			dex
+
+CalcStrL	phx
+			jsr CalcD10TOS
+			plx
 			ora #'0'
 			sta RES,x
 			dex
 			bpl CalcStrL
-			;-- add the sign
+
+			;-- Place sign in RES[0] based on SGN
 			lda #'+'
 			ldy SGN
 			bpl CalcStrX
@@ -377,6 +427,20 @@ CalcParseX	lda	TOS
 			ldx	TOS+1
 			jsr CalcFix
 			jmp CalcSetI
+
+
+;---------------------------------------------------------------- CalcI2F
+CalcI2F:; Covert TOS from Int to float
+			jsr CalcAbsTOS		; sign in Y
+			;
+			tya
+			and #$80			; Sign is top bit 1:-ve 0:+ve
+			ora #$40			; Exp is offset $40 (so -63...+63)
+			sta TOS+2			; save EXP flag in TOS3
+			rts
+
+
+
 
 .echo $-Calc
 .echo " bytes for Calc.a65\r"

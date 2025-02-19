@@ -1,0 +1,64 @@
+.NOLIST
+; Frame
+; Argument	= Value passed by caller
+; Parameter	= Variable name in function
+;
+;--- These are from Object
+;Int(OBJ)			; pointer to current object (set from the frame) - access object variables
+;Int(OCID)			; class ID of THIS - fetched from object
+;Int(OSTATIC)		; pointer to the class static object (looked up) - access static variable
+
+
+#if ($>>8)==0
+.LIST
+;------------------------------- Frame Z-Page
+Int(FB)             ; Curent Frame base pointer - access locals variables (incl args)
+
+
+Int(SFB)			; Sub-frame base pointer
+Short(FX)			; Frame offset index
+Short(SFX)			; Sub-Frame offset index
+
+.NOLIST
+#endif
+
+#if ($>>8)==2
+.LIST
+;------------------------------- Frame System variables
+;
+.NOLIST
+#endif
+
+
+
+#if CODEPAGE
+#ifndef _Frame
+#define _Frame
+
+;------------------------------- frame structure
+; length of parent frame, subtract to get parent's base
+#define F_PSZ 0
+; length of args (offset to first byte after the args)
+#define F_ARG 1
+; Address (in this context) to return to when a call completes
+#define F_RTN 2
+; This context's active object = THIS
+#define F_OBJ 4
+; Method ID for this ocntext
+#define F_MID 6
+; Arguments are stores at 8... 		(F_ARG-1)
+; followed by local variables 		(F_ARG...)
+
+
+.LIST
+;================================================================ FRAME
+Frame:
+
+;---------------------------------------------------------------- Frame
+Frame
+
+
+.echo $-Frame
+.echo " bytes for Frame.a65\r"
+#endif
+#endif

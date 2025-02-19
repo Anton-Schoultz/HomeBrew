@@ -30,17 +30,21 @@ Main: ; Main loop code
 			jsr	Calc
 
 			LDAX(Num)
-			jsr CalcParseAX		; convert string to value  ; -1234=FB2E      +1234=$04D2
+			jsr CalcParseAX		; convert string to value  ; -1234=FB2E +1234=$04D2
 
 			jsr CalcGetI		; TOS -> AX
 			jsr	PrAXHex			; print AX as hex (FB2E) OK
 			lda #'='
 			jsr CharOut
 
+			jsr CalcDup
+			jsr CalcStr			; Cvt to string in RES
+			LDAX(RES)
+			jsr PrStrAX			; print string as decimal
+			jsr CalcDrop
+
 			nop
-
-			jsr CalcStr
-
+			jsr CalcI2F
 
 
 

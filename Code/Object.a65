@@ -1,0 +1,43 @@
+.NOLIST
+; Object
+;
+;	0: Len		Length of the object
+;					0:end-of-list marker,
+;					1: Length = XLen * 16  (255* 16= 4080)
+;					2: Length = XLen * 256 (255*256=65280)
+;					3: Future
+;					04-FF(255) 'Small/normal' object
+;
+;	1:RefCntr	Reference counter, once it gets to $80(Premanent) it is no longer modified
+;
+;	2:CID		Class ID, 2 bytes, CRC16 of class name
+;
+;	4:[XLen]
+
+#if ($>>8)==0
+.LIST
+;------------------------------- Object Z-Page
+Int(OBJ)			; pointer to current object (set from the frame) - access object variables
+Int(OCID)			; class ID of THIS - fetched from object
+Int(OSTATIC)		; pointer to the class static object (looked up) - access static variable
+
+.NOLIST
+#endif
+
+
+#if CODEPAGE
+#ifndef _Object
+#define _Object
+;================================================================ OBJECT
+Object:
+
+
+
+;---------------------------------------------------------------- Obj
+
+
+
+.echo $-Object
+.echo " bytes for Object.a65\r"
+#endif
+#endif
