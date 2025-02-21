@@ -75,6 +75,6 @@ ComTx:		; Send A to com without waiting
 			sta	COM_DATA
 			rts
 
-.echo $-MC68B50
-.echo " bytes for MC68B50\r"
+;.echo $-MC68B50
+;.echo " bytes for MC68B50\r"
 #endif

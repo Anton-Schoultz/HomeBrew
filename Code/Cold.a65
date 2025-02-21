@@ -11,7 +11,8 @@ Cold: ; Cold start entry point
 			txs
 			cld					; ensure binary mode
 
+            jsr CharCopy        ; copy CharRd & CharWr to z-page
 
-.echo $-Cold
-.echo " bytes for Cold.a65\r"
+;.echo $-Cold
+;.echo " bytes for Cold.a65\r"
 #endif

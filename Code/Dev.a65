@@ -88,7 +88,7 @@ DevAdr:; DevNo in A, Offset in Y, exit with AX = base addr + Y [AXY]
 DevAdrX		TYA					; restore low into A
 			RTS
 
-.echo $-Dev
-.echo " bytes for Dev\r"
+;.echo $-Dev
+;.echo " bytes for Dev\r"
 #endif
 	

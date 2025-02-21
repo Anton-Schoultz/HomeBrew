@@ -25,7 +25,8 @@ IO_WRCMD	= 12;WrCommand
 
 
 ; Returns high byte of a 16 bit vale
-#DEFINE HIGH(m) (m>>8)
+#DEFINE HIGH(m)  (m>>8)
+#DEFINE UPPER(m) (m>>16)
 
 ;------------------------------- Declare variables
 #define Var(name,size) name .block size
@@ -43,10 +44,15 @@ IO_WRCMD	= 12;WrCommand
 
 ; Loads AX with 16 bit value, low->A, high->X
 #DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
-
 ; Stores 16 bit value (AX) into address A->(p), X->(p+1)
 #DEFINE STAX(p) STA p \ STX p+1
 
+; Loads AXY with 16 bit value, low->A, high->X, UPR->Y
+#DEFINE LDAXY(m) lda #(m) \ ldx #HIGH(m) \ ldy #UPPER(m)
+; Stores 24 bit value (AXY) into address A->(p), X->(p+1), Y-> (p+2)
+#DEFINE STAXY(p) STA p \ STX p+1 \ STY p+2
+; set z-pag to constant value
+#DEFINE POINT(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 
 ; treats Z-Page as a bunch of register pairs and uses Y as index to the low byte
 

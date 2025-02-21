@@ -135,8 +135,8 @@ MonShowX    rts
 ;           bra MonLoop         ; loop back
 
 
-.echo $-Monitor
-.echo " bytes in Monitor.a65\r"
+;.echo $-Monitor
+;.echo " bytes in Monitor.a65\r"
 #endif
 
 ;=============================================================== end of Code

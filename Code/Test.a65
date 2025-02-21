@@ -34,7 +34,7 @@ Test:; Test if RegPair at 0000,Y is equal to .A.X
             ;- save expected result
             sta     TestExp
             stx     TestExp+1
-            ;- get regpair to check
+            ;- get value from regpair to check
             lda 	0,y
             sta     TestRes
             lda 	1,y
@@ -54,10 +54,13 @@ Test:; Test if RegPair at 0000,Y is equal to .A.X
 TestFail:   jsr     TestDump
             LDAX(TestNAK)
             ; fall to TestMsg
-TestMsg:    jmp     PrStrAX
-
+TestMsg:    jsr     CharAppendAX
+            jmp     CharPrint
 
 TestDump: ; dump calling address, expect, result
+            ;- clear STRBUF
+            jsr     CharClear
+            ;
             tsx
             lda $103,x          ;lo
             sta TestAdr
@@ -74,22 +77,21 @@ TestDump0   jsr TextHex         ; print the return address in hex
             lda TestExp
             ldx TestExp+1
             jsr TextHex         ; print expected value in hex
-            lda TestRes
+            ;
+            lda TestRes         ; result in Hex
             ldx TestRes+1
             ; fall through to print result as hex
-TextHex:    jsr PrAXHex         ; print value as hex
+TextHex:    jsr CvtAXHex        ; write AX to STRBUF as hex digits
             lda #' '
-            jmp CharOut         ; print a space and return
+            jmp CharWr          ; print a space and return
 
 
 TestACK .DB " OK\r\n",0
 
-TestNAK .DB " ** FAILED **\r\n",0
+TestNAK .DB " ** FAIL **\r\n",0
 
-.echo $-Test
-.echo " bytes for Test\r"
-
+;.echo $-Test
+;.echo " bytes for Test\r"
 #endif
-
 ; end of Test
 #endif

@@ -10,6 +10,6 @@ Warm: ; Warm Start entry point
 
 
 
-.echo $-Warm
-.echo " bytes for Warm.a65\r"
+;.echo $-Warm
+;.echo " bytes for Warm.a65\r"
 #endif

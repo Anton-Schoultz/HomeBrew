@@ -20,6 +20,9 @@ CODEPAGE = 1
 #include "Warm.a65"
 	; falls through to Main Loop
 
+; $02 is undocumented NOP, 2bytes, 2Cycles
+#define MARK(n) .DB $02,n
+
 
 #define TSTNUM(one,two) LDAX(one)\ jsr CalcSetI\ jsr CalcPush \ LDAX(two)\ jsr CalcSetI
 #define TSTRES(res) TEST(TOS,res)\ jsr MShowTOS\ jsr NewLine
@@ -30,27 +33,44 @@ CODEPAGE = 1
 Main: ; Main loop code
 			jsr	DevDefault		; Default input & output (CONSOLE => Simulator)
 
-			lda	#CLS			; output form-feed = Clear Screen
+			MARK(1)
+
+			lda #CLS			; output form-feed = Clear Screen
 			jsr	CharOut
 
-			jsr	Calc
+            MARK(2)
 
-			PRINT("123 456 Add\r\n")
-            TSTNUM(123,456)
-            jsr CalcAddI
-            TSTRES(579)
+			PRINT("TESTING...\r\n")
 
-			PRINT("123 45 Mul\r\n")
-            TSTNUM(123,45)
-            jsr CalcMulI
-            TSTRES(5535)
+            jsr TestChar
 
-			PRINT("-123 -45 Mul\r\n")
-            TSTNUM(-123,-45)
-            jsr CalcMulI
-            TSTRES(5535)
+			jsr	Calc            ; Init calc system
 
+            PRINT("-- CONVERT --\r\n")
+            jsr TestCvt
 
+;            PRINT("-- RANDOM --\r\n")
+;			PRINT("123 456 Add\r\n")
+;            TSTNUM(123,456)
+;            jsr CalcAddI
+;            TSTRES(579)
+;
+;			PRINT("123 45 Mul\r\n")
+;            TSTNUM(123,45)
+;            jsr CalcMulI
+;            TSTRES(5535)
+;
+;			PRINT("-123 -45 Mul\r\n")
+;            TSTNUM(-123,-45)
+;            jsr CalcMulI
+;            TSTRES(5535)
+;
+            PRINT("-- TEST1 --\r\n")
+            jsr Test1
+
+            PRINT("-- TEST2 --\r\n")
+            jsr Test2
+;
 
 
 
@@ -58,22 +78,31 @@ Stop:; halt simulator
 			.db $DB
 			BRK
 
+;---------------------------------------------- TestChar
+TestChar:; test char routiones CharRd, CharWr
+            jsr CharClear       ; wipe and point
+            POINT(Z_Rd,Msg)     ; source is message
+            jsr CharEcho        ; read input chars until null and send to output
+            rts
+
 ;---------------------------------------------- TestCvt
 TestCvt:; test conversions
             PRINT("Convert -1234 $FB2E\r\n")
-			LDAX(NumNeg)
-			jsr CalcParseAX		; convert string to value  ; -1234=FB2E
+
+			POINT(Z_Rd,NumNeg)
+			jsr CalcParse  		; Read from memory, parse as Integer; -1234=FB2E
 			TEST(TOS,-1234)
 			jsr MShowTOS
             jsr NewLine
 
-            PRINT("Convert 1234 $04D2\r\n")
-			LDAX(NumPos)
-			jsr CalcParseAX		; convert string to value  ;+1234=$04D2
-			TEST(TOS,1234)
-			jsr MShowTOS
-			TEST(TOS,1234)     ; this should not fail (MShow saves & restores)
-            jsr NewLine
+;            PRINT("Convert 1234 $04D2\r\n")
+;			LDAX(NumPos)
+;			jsr CalcParseAX		; convert string to value  ;+1234=$04D2
+;			TEST(TOS,1234)
+;			jsr MShowTOS
+;			TEST(TOS,1234)     ; this should not fail (MShow saves & restores)
+;            jsr NewLine
+
             rts
 
 ;---------------------------------------------- Test1
@@ -172,27 +201,30 @@ LdVal2:; 100, push, -50
 			jsr CalcSetI
             rts
 
-;---------------------------------------------- Show contents of TOS (kills tos)
+;---------------------------------------------- MShowTOS
+;Show contents of TOS (kills tos)
 MShowTOS:;Show contents of TOS (kills tos)
+            jsr CharClear       ; clear string buffer
+            ;
 			jsr CalcGetI		; TOS -> AX
 			PUSHAXY()           ; store
 			;
-			jsr	PrAXHex			; print AX as hex (FB2E) OK
+			jsr	CvtAXHex		; append AX as hex (FB2E) OK
 			lda #'='
-			jsr CharOut
-			jsr CalcStr			; Cvt to string in RES
-			LDAX(RES)
-			jsr PrStrAX			; print string as decimal
+			jsr CharWr
+			;
+			jsr CvtInt          ; Convert TOS to integer String and write to output (CharWr)
 			;
 			PULLAXY()            ; restore
 			jsr CalcSetI
+			;
+            jsr CharPrint       ; print the buffer out
 
 NewLine:; print CR,LF
             lda #CR
 			jsr CharOut
             lda #LF
 			jmp CharOut
-
 
 
 
@@ -223,8 +255,9 @@ NumPos	.db "1234",0	; +1234=$04D2
 
 
 ROMEND = $
+.echo "\rTOTAL "
 .echo (ROMEND - ROMBEG)
-.echo " total code bytes\r"
+.echo " bytes : "
 
 ;------------------------------------------------------------------------- hardware vectors
 ; FFFA,B	NMI
@@ -237,4 +270,5 @@ ROMEND = $
 
 .echo ($FFFA - ROMEND) / 256
 .echo "/32 pages (x256) available in the 8k ROM. E000-FFFF\r"
+
 	.END

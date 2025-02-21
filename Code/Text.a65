@@ -125,6 +125,6 @@ TextCopyX	rts
 ; C: r >= arg  	N: r <  arg 	Z: r == arg
 
 
-.echo $-Text
-.echo " bytes for Text\r"
+;.echo $-Text
+;.echo " bytes for Text\r"
 #endif

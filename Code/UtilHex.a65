@@ -15,38 +15,47 @@ A2Hex:; convert A to hex value (CY is set if valid, clear if not) [A]
             ADC     #$08        ; Map letter "A"-"F" to $FA-FF
             CMP     #$7A        ; Hex letter?
             BCC     A2Hex_X     ;No! Character not hex
-			;
 A2Hex9      sec					; set carry flag to indicate valid
-A2Hex_X		rts					; carry clear if invalid char
+A2Hex_X		and     #$0F
+            rts					; carry clear if invalid char
 
-;------------------------------------------------------------------------- PrAXHex
-PrAXHex:; print AX (lo/hi) as 4 hex digits [A]
+
+;------------------------------------------------------------------------- CvtAXHex
+PrAHex:; print hex string
+            pha
+            POINT(Z_Wr,RES)
+            pla
+            jsr CvtAXHex
+            POINT(Z_Ptr,RES)
+            jmp PrStr
+
+;------------------------------------------------------------------------- CvtAXHex
+CvtAXHex:; print AX (lo/hi) as 4 hex digits [A]
 			pha					; save low
 			txa					; get high
-			jsr	PrAHex			; print hi as hex digits
+			jsr	CvtAHex			; print hi as hex digits
 			pla					; restore low
 			; - fall through to print low as hex digits
-;------------------------------------------------------------------------- PrAHex
-PrAHex:; Print A in hex form [A]
+;------------------------------------------------------------------------- CvtAHex
+CvtAHex:; Print A in hex form [A]
 			PHA                 ;Save A for LSD
             LSR a
             LSR a
             LSR a               ; MSD to LSD position
             LSR a
-            JSR     PrHex       ; Output hex digit
+            JSR     CvtHexN     ; Output hex digit
             PLA                 ; Restore A and then
 			; - fall through to print hex routine
-;------------------------------------------------------------------------- PrHex
-PrHex:; print hex digit for low nibble of A [A]
+;------------------------------------------------------------------------- CvtHexN
+CvtHexN:; Convert hex nibble to output
           	AND     #$0F        ; Mask LSD for hex print
-			ORA     #'0'        ; Add "0"
-    		CMP     #'9'+1      ; Is it a decimal digit?
-   			BCC     PrHexCh     ; Yes! output it
-    		ADC     #6          ; Add offset for letter A-F
-PrHexCh	; print character in A to output device via vector
-			jmp 	CharOut
+            cmp #10
+            bcc CvtHexX
+            adc #'f'
+CvtHexX     eor #'0'
+			jmp 	CharWr
 
 
-.echo $-UtilHex
-.echo " bytes in UtilHex.a65\r"
+;.echo $-UtilHex
+;.echo " bytes in UtilHex.a65\r"
 #endif

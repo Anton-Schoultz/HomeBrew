@@ -1,0 +1,181 @@
+; Experiment
+;
+
+#include "Macro.a65"
+
+.org $0000
+;================================================================ Z-PAGE
+;
+;------------------------------- Calc Z-Page
+Var(RES,16)             ;00-0F  Result
+Var(TOS,4)              ;10-13  Top-Of-Stack
+Var(NXT,4)              ;14-17  Next item on stack
+Short(CSP)              ;18     Calc stack pointer (00->0F)
+Short(SGN)              ;19
+Int(Z_Ptr)              ;1A/B   general object pointer (used by print string )
+Int(Z_Src)              ;1C/D   Pointer to source (2 bytes)
+Int(Z_Tgt)              ;1E/F   Pointer to destination
+
+Short(EXP)
+Short(EXPSave)
+
+Short(Z_Tmp)            ; temp byte for counter etc
+Short(Z_Cnt)            ; Counter/ max short term scratch
+
+;------------------------------- Test SysVars
+Short(TestAdr)          ; low byte of test caller address
+Int(TestExp)            ; test expected result
+Int(TestRes)            ; test actual result
+; z=Zpg addr to check, val=expected value
+#DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
+
+.org $0100
+;------------------------------- Calc stack space
+; resides below the cpu stack 64 bytes - leaves 192 for cpu
+; this is a split stack
+Var(CSTK0,16)           ; Stack for LSB
+Var(CSTK1,16)
+Var(CSTK2,16)
+Var(CSTK3,16)           ; Stack for MSB
+
+
+;================================================================ SYSVARS
+.org $0200
+
+; 1234      04 D2           ; D2 04 00
+; 12340     30 34           ; 34 30 00
+; 12345     30 39           ; 39 30 00
+; 123450    01 E2 3A        ; 3A E2 01
+
+.org $E000
+;            LDAX($7FFF)         ; 32767 = +3.2767E+04
+;            STAX(TOS)
+;            jsr CalcI2F         ; 39 30 40 (Exp=$40 +ve, 10^(64-64) = 10^0 = 1
+
+; 12nF 12E-9
+
+            LDAXY($37000C)      ; 12E-9 => 1.2E-8
+            STAXY(TOS)
+
+            ldx #TOS
+            ldy #NXT
+            jsr CalcCopy
+
+            jsr CalcStrF
+
+            LDAX(RES)
+            jsr PrStrAX
+
+            brk
+
+TestRtn:
+
+
+
+
+;---------------------------------------------------------------- CalcMul10
+CalcMul10L:; TOS = TOS * 10
+;16bit= 74cycles
+;24bit=104
+			lda TOS
+			sta RES
+			lda TOS+1
+			sta RES+1
+			lda TOS+2
+			sta RES+2           ; RES = TOS
+			;
+			asl RES
+			rol RES+1
+			rol RES+2           ; RES = 2*TOS
+			;
+			asl RES
+			rol RES+1
+			rol RES+2           ; RES = 2*TOS
+			;
+			clc
+			lda TOS
+			adc RES
+			sta TOS
+			lda TOS+1
+			adc RES+1
+			sta TOS+1
+			;
+			lda TOS+2
+			adc RES+2
+			sta TOS+2           ;TOS = 5*TOS
+			;
+			asl TOS
+			rol TOS+1
+			rol TOS+2           ;TOS = 10*TOS
+			rts
+
+;-----------------------------------------------------------------------
+Mult:; TOS * NXT -> RES
+			lda #0       			;Initialize RES to 0
+			sta RES+2
+			ldx #16      			;There are 16 bits in NXT
+L1      	lsr NXT+1   			;Get low bit of NXT
+			ror NXT
+			bcc L2       			;0 or 1?
+			tay          			;If 1, add TOS (hi byte of RES is in A)
+			clc
+			lda TOS
+			adc RES+2
+			sta RES+2
+			tya
+			adc TOS+1
+L2      	ror A        			;"Stairstep" shift
+			ror RES+2
+			ror RES+1
+			ror RES
+			dex
+			bne L1
+			sta RES+3
+			rts
+
+
+
+
+
+;======================================================================
+; UTILITIY
+
+CharOut:; print A to screen
+            jmp SimPut
+CharIn:; get cahr from keyboard
+            jmp SimGet
+
+
+CODEPAGE = 1
+;---------------------------------------------------- Simulator
+#include "Simulator.a65"
+;SimCls:; Clear Screen (CLS / FormFeed)
+;SimGet:; input a character via the simulator, null if none [A]
+;SimPut:; output a character via the simultor
+;Simulator:
+
+;---------------------------------------------------- UtilHex
+;A2Hex:; convert A to hex value (CY is set if valid, clear if not) [A]
+;PrAHex:; Print A in hex form [A]
+;PrAXHex:; print AX (lo/hi) as 4 hex digits [A]
+;PrHex:; print hex digit for low nibble of A [A]
+#include "UtilHex.a65"
+
+;---------------------------------------------------- Util
+;_Print_:;Print in-line string
+;PrStr:; print a null-terminated string pointed to by Z_Ptr [A]
+;PrStrAX:; print a null-terminated string pointed to by AX [A]
+;Bin2Dec:; convert binary value in A (0-99) into ASCII digits in X(hi) A(lo)
+#include "Util.a65"
+;allows #Define PRINT(str) jsr _Print_ \ .db str, 0
+
+;---------------------------------------------------- Test
+; z=Zpg addr to check, val=expected value
+;#DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
+#include "Test.a65"
+
+;---------------------------------------------------- Test
+#include "Calc.a65"
+
+
+.end

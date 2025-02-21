@@ -5,10 +5,11 @@
 #ifndef _Vars
 #define _Vars
 
+#define STRBUFLEN 64
+
 CODEPAGE = 0
 .org $0000
 ;================================================================ Z-PAGE
-
 
 Int(Z_Ptr)          ; general object pointer (used by print string )
 Int(Z_Src)          ; Pointer to source (2 bytes)
@@ -16,11 +17,14 @@ Int(Z_Tgt)          ; Pointer to destination
 
 Short(Z_Tmp)        ; temp byte for counter etc
 Short(Z_Cnt)        ; Counter/ max short term scratch
+; $10 ..
 
 
 #include "Modules.a65"
 
-.echo $0100-$
+; CharRd & CharWr get coppied intoz-page at $E8...$FF
+
+.echo $00E8-$
 .echo " bytes available in Z-Page (0000-00FF)\r"
 
 .LIST
@@ -31,6 +35,7 @@ Short(Z_Cnt)        ; Counter/ max short term scratch
 .LIST
 ;================================================================ SYSVARS
 .org $0200
+Var(STRBUF,STRBUFLEN)      ; output string buffer
 
 ;------------------------------- Interrupt handlers
 Int(V_IRQ)          ; body of IRQ handler
@@ -41,15 +46,13 @@ Int(Z_IrqPtr)       ; Pointer for IRQ use
 ;------------------------------- Char In/Out, Devices
 Int(V_CHROUT)       ; vector to output a character - used by CharOut
 Int(V_CHRIN)        ; vector to read a character   - Used by CharIn
-
-
 Short(BRK_NO)       ; BRK post byte
 
 .NOLIST
 #include "Modules.a65"
 
 .echo $0300-$
-.echo " bytes available in system variables (0300-03FF)\r"
+.echo " bytes available in system variables (0300-03FF)\r\n"
 
 
 ;================================================================ I/O

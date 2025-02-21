@@ -5,6 +5,7 @@
 ;CalcAbsNXT  Cvt TOS to absolute, with sign in Y
 ;CalcAbsTOS  Cvt TOS to absolute, with sign in .Y and SGN
 ;CalcAddI    TOS = NXT + TOS (16 bit signed integer)
+;CalcCopy    Copy value from Z,X to Z,Y
 ;CalcCmpl    Two's compliment of AX (A=Lo, X=Hi)
 ;CalcD10     TOS = TOS / 10, remainder in A
 ;CalcDivI    TOS = NXT / TOS (16 bit signed integer)
@@ -33,11 +34,13 @@
  .org ($+16)/16 * 16
 .LIST
 ;------------------------------- Calc Z-Page
+Var(RES,16)              ; Result
 Var(TOS,4)              ; Top-Of-Stack
 Var(NXT,4)              ; Next item on stack
-Var(RES,8)              ; Result
+Short(SGN)              ; sign
+Short(EXP)              ; exponent
+Short(DIG)              ; digits counter
 Short(CSP)              ; Calc stack pointer (00->0F)
-Short(SGN)
 .NOLIST
 #endif
 
@@ -58,12 +61,6 @@ Var(CSTK3,16)           ; Stack for MSB
 #ifndef _Calc
 #define _Calc
 
-TOS0 = TOS
-TOS1 = TOS+1
-TOS2 = TOS+2
-TOS3 = TOS+3
-
-
 .LIST
 ;================================================================ CALC
 Calc:;Initialise calculator [A]
@@ -77,8 +74,10 @@ CalcZero:; Zero TOS & SGN [A]
             sta TOS+2
             sta TOS+3
             sta SGN
+            lda EXP
             rts
 
+;***** Change these to only work on TOS ****************************************************
 ;---------------------------------------------------------------- CalcFix
 CalcFix:; Fix sign of AX based on SGN (if SGN-ve, then Complement)
 			ldy	SGN				; N=1 if -ve
@@ -104,6 +103,9 @@ CalcCmpl:; Two's compliment of AX (A=Lo, X=Hi)
 			bne CalcCmplX
 			inx
 CalcCmplX	rts
+
+
+
 ;---------------------------------------------------------------- CalcDup
 CalcDup:; Duplicate TOS (=Push TOS)
 ;---------------------------------------------------------------- CalcPush
@@ -135,6 +137,27 @@ CalcDrop:; Pop item into TOS item variable
             sta TOS+2
             lda CSTK3,X
             sta TOS+3
+            rts
+
+;---------------------------------------------------------------- CalcRES2TOS
+CalcRES2TOS:; Copy RES to TOS
+            ldx #RES
+            bra CalcToTOS
+;---------------------------------------------------------------- CalcNXT2TOS
+CalcNXT2TOS:; Copy NXTS to TOS
+            ldx #RES
+;---------------------------------------------------------------- CalcToTOS
+CalcToTOS   ldx #TOS
+;---------------------------------------------------------------- CalcCopy
+CalcCopy:; Copy value from Z,X to Z,Y
+            lda $00,X
+            sta $00,Y
+            lda $01,X
+            sta $01,Y
+            lda $02,X
+            sta $02,Y
+            lda $03,X
+            sta $03,Y
             rts
 
 ;---------------------------------------------------------------- CalcPop
@@ -259,9 +282,12 @@ CalcMulI2   ror A        		; shift
        	 	bne CalcMulI1
         	sta RES+3
         	;- place result in TOS
+        	;
+        	;** copy RES->TOS, then fix TOS *************************************
         	lda RES
         	ldx RES+1
         	jsr CalcFix
+        	;
         	jmp CalcSetI		; AX -> TOS
 
 ;---------------------------------------------------------------- CalcDivI
@@ -291,6 +317,7 @@ CalcDivL1   asl NXT    ;Shift hi bit of NXT into RES
 CalcDivL2   dex
 			bne CalcDivL1
 			;
+			;** copy NXT-> TOS, then fix TOS *************************************
 			lda NXT
 			ldx NXT+1
         	jsr CalcFix
@@ -308,21 +335,24 @@ CalcRemI:; Remainder of division into TOS (also in AX) - Call CalcDivI before
 CalcD10TOS:; TOS = TOS / 10, remainder in A [AXY]
 			ldx #TOS
 CalcD10:; Divide value at 0,X  by 10, remainder in A [AY]
-			ldy #16
+;432cy (without .x drops to 396cy)
+;for 24 bit, ldy #24 and add include the rol 02,X
+			ldy #16             ; make this 24 for 24 bit version
 			lda #0
 			clc
 CalcD101 	rol a
 			cmp #10
 			bcc CalcD102
 			sbc #10
-CalcD102 	rol $00,X		; TOS
-			rol $01,X		; TOS+1
+CalcD102 	rol $00,X		    ; TOS
+			rol $01,X		    ; TOS+1
+			;rol $01,X		    ; TOS+2  - include for 24 bit version
 			dey
 			bpl CalcD101
 			rts
 
 ;---------------------------------------------------------------- CalcStr
-CalcStr:; convert TOS to string in RES
+CalcStr:; convert TOS to string in RES (Padded with zeroes)
 			;-- abs of TOS, sign in SGN
 			lda	TOS+0
 			ldx TOS+1
@@ -330,15 +360,13 @@ CalcStr:; convert TOS to string in RES
 			sta TOS+0
 			stx TOS+1
 			sty SGN
-
 			;-- TOS to digits in RES
-			ldx #7
+			ldx #8
 			lda #0
 			sta RES,x
 			dex
 			sta RES,x
 			dex
-
 CalcStrL	phx
 			jsr CalcD10TOS
 			plx
@@ -346,7 +374,6 @@ CalcStrL	phx
 			sta RES,x
 			dex
 			bpl CalcStrL
-
 			;-- Place sign in RES[0] based on SGN
 			lda #'+'
 			ldy SGN
@@ -356,71 +383,61 @@ CalcStrX	sta RES
 			rts
 
 ;---------------------------------------------------------------- CalcMul10
-CalcMul10:; TOS = TOS * 10
-			;--TOS x 10
-			clc
-			rol TOS
-			rol TOS+1			; TOS = TOS *2
+CalcMul10:; TOS = TOS * 10 (preserves all registers)
+;81cycles
+            pha
 			lda TOS
 			sta RES
 			lda TOS+1
-			sta RES+1			; RES = TOS * 2
+			sta RES+1           ; RES = TOS
+			asl RES
+			rol RES+1           ; RES = 2*TOS
+			asl RES
+			rol RES+1           ; RES = 4*TOS
 			clc
-			rol TOS
-			rol TOS+1			; TOS = TOS * 4
-			clc
-			rol TOS
-			rol TOS+1			; TOS = TOS * 8
-			;
-			clc
-			lda RES
-			adc TOS
+			lda TOS
+			adc RES
 			sta TOS
-			lda RES+1
-			adc TOS+1
-			sta TOS+1			; TOS = 10 x TOS
-			;--
+			lda TOS+1
+			adc RES+1
+			sta TOS+1           ;TOS = 5*TOS
+			asl TOS
+			rol TOS+1           ;TOS = 10*TOS
+			pla
 			rts
 
 ;---------------------------------------------------------------- CalcParseAX
 CalcParseAX:; Parse value in string at AX (null terminated) -> TOS
-			STAX(Z_Ptr)
+			STAX(Z_Rd)
 ;---------------------------------------------------------------- CalcParse
 CalcParse:; Parse value in string at Z_Ptr (null terminated) -> TOS
-			jsr CalcZero		; TOS=0, SGN=0
-			ldy #255
-CalcParseL	iny
-			bmi CalcParseX		; too long -> exit (more than 127 chars!!)
-			;
-			lda (Z_Ptr),y		; get char
+			jsr CalcZero		; TOS=0, SGN=0(+), EXP=0
+CalcParseL	jsr CharRd  		; Read next character in
 			beq CalcParseX		; null -> exit
-
+            ; '+' ignore (default sign) get next
 			cmp #'+'
-			beq CalcParseL		; +ve, ok
-
+			beq CalcParseL		; +ve, ok, next char
+            ; '-' note sign and get next
 			cmp #'-'
-			beq CalcParseNeg	; -ve, ok
+			bne CalcParse1
+			lda #$FF
+			sta SGN
+			bra CalcParseL
 
-			cmp #$3A
+CalcParse1
+            cmp #$3A
 			bpl CalcParseX		; >'9' -> exit
 			cmp #$30
 			bmi CalcParseX		; <'0' -> exit
-			pha
-
-			jsr CalcMul10
-
-			pla
+			jsr CalcMul10       ; TOS = TOS * 10 (preserves AXY)
 			clc
 			and #$0F
 			adc TOS				; add digit value to TOS
 			sta TOS
 			bcc CalcParseL
 			inc TOS+1
-			bra CalcParseL
-
-CalcParseNeg
-			lda #$FF
-			sta SGN
+			bcc CalcParseL
+			inc TOS+2
 			bra CalcParseL
 
 CalcParseX	lda	TOS
@@ -432,14 +449,112 @@ CalcParseX	lda	TOS
 ;---------------------------------------------------------------- CalcI2F
 CalcI2F:; Covert TOS from Int to float
 			jsr CalcAbsTOS		; sign in Y
-			;
 			tya
 			and #$80			; Sign is top bit 1:-ve 0:+ve
-			ora #$40			; Exp is offset $40 (so -63...+63)
+			ora #$40			; Exp is offset $40 (so E-63 ... E+63)
 			sta TOS+2			; save EXP flag in TOS3
 			rts
 
+;---------------------------------------------------------------- CalcStrF
+CalcStrF:; Covert float to string in RES
+;RES  0   1   2   3   4   5   6   7   8   9   10   11   12
+;     SS '0' '3' '2' '7' '6' '7'  00
+;- get exponent into EXP
+            lda TOS+2
+            pha
+;- convert mantisa part (with sign)
+            jsr CalcStr
+            pla                 ;restore EXP byte
+            and #$7F            ;mask off the mantissa sign
+            sec
+            sbc #$40            ;subtract offset (now signed binary)
+            sta EXP             ; save exponent value
+;- find first non '0'
+            ldy #1
+            ldx #1
+CalcStrF1   lda RES,x
+            cmp #'0'
+            bne CalcStrF2
+            inx
+            cpx #6              ; want at least one digit
+            bne CalcStrF1
+            lda RES,x
+;-move first non-zero digit
+CalcStrF2   sta RES,y
+            iny
+            inx
+            lda RES,x
+            beq CalcStrF4
+            ; place the point
+            lda #'.'
+            sta RES,y
+            iny
+;- copy & adjust E
+CalcStrF3   lda RES,x
+            beq CalcStrF4       ; null = done
+            sta RES,y
+            inx
+            iny
+            inc EXP
+            cpx #7              ; end
+            bne CalcStrF3
+;- now for the E
+CalcStrF4   lda #'E'
+            sta RES,y
+            iny
+            ;- exp sign
+			ldx #'+'
+            lda EXP
+            bpl CalcStrF5
+            ldx #'-'
+            eor #$FF
+            inc A
+CalcStrF5   sta EXP
+            ; sign char to RES[y++]
+            txa
+            sta RES,y
+            iny
+			;-- EXP to bcd
+			lda EXP
+            and #$7F
+			jsr Bin2Dec
+			PHA                 ;Save A for LSD
+            LSR a
+            LSR a
+            LSR a               ; MSD to LSD position
+            LSR a
+            ora #'0'
+            sta RES,y
+            iny
+            PLA                 ; Restore A and then
+            and #$0F
+            ora #'0'
+            sta RES,y
+            iny
+            lda #0
+            sta RES,Y
+            rts
 
+
+;---------------------------------------------------------------- CvtFloat
+CvtFloat:; Convert TOS to Float String and write to output (CharWr)
+            jsr CalcStrF
+            LDAX(RES)
+            jmp CharAppendAX    ; append contents of RES to the output buffer
+
+;---------------------------------------------------------------- CvtInt
+CvtInt:; Convert TOS to integer String and write to output (CharWr)
+            jsr CalcStr
+            LDAX(RES)
+            jmp CharAppendAX    ; append contents of RES to the output buffer
+
+
+;.export Calc,CalcAbs,CalcAbsNXT,CalcAbsTOS,CalcAddI,CalcCmpl,CalcD10,CalcDivI
+;.export CalcDrop,CalcDup,CalcFix,CalcGetI,CalcI2F,CalcModI,CalcMul10,CalcMulI
+;.export CalcNext,CalcParse,CalcParseAX,CalcPop,CalcPush,CalcRemI,CalcSetI
+;.export CalcSign,CalcStr,CalcSubI,CalcZero
+
+.export RES,TOS,NXT,SGN,DIG,EXP
 
 
 .echo $-Calc

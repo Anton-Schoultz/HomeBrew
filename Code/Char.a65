@@ -1,0 +1,129 @@
+.NOLIST
+; Char
+;
+; Character Get/Put routines to read/write characters to memory and move pointer
+;
+; Char      copies the code into Z_page where they live (self modifying code)
+; CharGet   (Z_Rd++) ->   A
+; CharPut       A    -> (Z_Wr++)
+;
+
+#if ($>>8)==0
+.LIST
+;------------------------------- Char Z-Page
+; Z_Rd = $E9
+; Z_Wr = $F5
+.NOLIST
+#endif
+
+;CODEPAGE =1
+
+#if CODEPAGE
+#ifndef _Char
+#define _Char
+.LIST
+;======================================================================== CHAR
+; Character Read / Write
+;========================================================================
+CharRd .EQU $00E8
+CharWr .EQU $00F4
+
+Z_Rd = CharRd + 1
+Z_Wr = CharWr + 1
+
+;------------------------------------------------------------------------ Char
+Char
+;                E8  E9  EA   EB  EC   ED  EE   EF  F0   F1  F2   F3
+CharTbl     .db $AD,$00,$04, $E6,$E9, $D0,$02, $E6,$EA, $29,$FF, $60
+;                F4  F5  F6   F7  F8   F9  FA   FB  FC   FD
+            .db $8D,$00,$04, $E6,$F5, $D0,$02, $E6,$F6, $60
+;              FE FF
+            .db 0,0 ; avail Z-pg
+
+CharCopy:; Copy the CharGet & CharPut routines into Z-Page
+            ldy #$17
+CharL       lda CharTbl,y
+            sta $E8,y
+            dey
+            bpl CharL
+            rts
+
+
+;------------------------------------------------------------------------ CharAppendAX
+CharAppendAX:; Copy from AX to Z_Wr until a null
+            STAX(Z_Rd)
+            ; fall through
+;------------------------------------------------------------------------ CharAppend
+CharAppend:; Copy from Z_Rd to Z_Wr until a null
+            jsr CharRd          ; read a char
+            jsr CharWr          ; write it
+            cmp #0              ; check if zero
+            bne CharAppend      ; if not, loop back for more
+            rts                 ; done
+
+;------------------------------------------------------------------------ CharEcho
+CharEcho:; Read from Z_Rd (until null) and send to output
+            jsr CharRd          ; read a char
+            jsr CharOut         ; write it
+            cmp #0              ; check if zero
+            bne CharEcho        ; if not, loop back for more
+            rts                 ; done
+
+;------------------------------------------------------------------------ CharClear
+CharClear:; Clear the STRBUF to nulls and set to write to it
+            POINT(Z_Wr,STRBUF)  ; point CharWr to go into STRBUF
+            lda #0
+            ldy #(STRBUFLEN-1)
+CharClearL  sta (Z_Wr),y
+            dey
+            bne CharClearL
+            sta (Z_Wr),y
+            rts
+
+;------------------------------------------------------------------------ CharPrint
+CharPrint:; send contents of STRBUF to output (CharOut)
+            POINT(Z_Ptr,STRBUF) ; point Z_Ptr to the start of the stirng buffer
+            jmp PrStr           ; send it to CharOut
+
+
+
+;;------------------------------------------------------------------------ CharRd
+;CharRd:; Fetch the character into A and Incr Read Pointer Z_Rd
+;            lda $0400
+;            inc CharRd+1       ; incr low byte Z_Rd
+;            bne CharRdX
+;            inc CharRd+2       ; incr high byte Z_Rd
+;CharRdX    and #$FF            ; sets flags again based on fetch char (Z,N)
+;            rts
+;;------------------------------------------------------------------------ CharWr
+;CharWr:; store A into memory and Incr Write Pointer Z_Wr
+;            sta $0400
+;            inc CharWr+1       ; incr low byte Z_Wr
+;            bne CharWrX
+;            inc CharWr+2       ; incr high byte Z_Wr
+;CharWrX    rts
+
+;00E8             .org $00E8
+;00E8             ;------------------------------------------------------------------------ CharRd
+;00E8             CharRd:; Fetch the character into A and Incr Read Pointer Z_Rd
+;00E8 AD 00 04                lda $0400
+;00EB E6 E9                   inc CharRd+1       ; incr low byte Z_Rd
+;00ED D0 02                   bne CharRdX
+;00EF E6 EA                   inc CharRd+2       ; incr high byte Z_Rd
+;00F1 29 FF       CharRdX    and #$FF            ; sets flags again based on fetch char (Z,N)
+;00F3 60                      rts
+;00F4             ;------------------------------------------------------------------------ CharWr
+;00F4             CharWr:; store A into memory and Incr Write Pointer Z_Wr
+;00F4 8D 00 04                sta $0400
+;00F7 E6 F5                   inc CharWr+1       ; incr low byte Z_Wr
+;00F9 D0 02                   bne CharWrX
+;00FB E6 F6                   inc CharWr+2       ; incr high byte Z_Wr
+;00FD 60          CharWrX    rts
+
+
+.echo $-Char
+.echo " bytes for Char.a65\r"
+#endif
+#endif
+
+;.end

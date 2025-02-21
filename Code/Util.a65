@@ -4,7 +4,52 @@
 #ifndef _Util
 #define _Util
 
+#define low Z_Tmp
+
 Util:
+
+;------------------------------------------------------------------------- Bin2Dec
+Bin2Dec:; convert binary value in A (0-99) into BCD in A
+	        SED			        ; all adds in decimal mode
+	        STA	low		        ; save A
+	        LDA	#$00		    ; clear A
+	        LDX	#$07		    ; set bit count
+Bin2DecL
+	        LSR	low		        ; bit to carry
+	        BCC	Bin2DecS	    ; branch if no add
+	        ADC	Bin2DecTbl-1,X	; else add BCD value
+Bin2DecS
+	        DEX			        ; decrement bit count
+	        BNE	Bin2DecL	    ; loop if more to do
+
+;***********************************************************************
+; if you only require conversion of numbers between $00 and $63 (0 to 99
+; decimal) then omit all code between the "*"s
+;
+;	BCC	skip_100	; branch if no 100's carry
+;				; if Cb set here (and can only be set by the
+;				; last loop add) then there was a carry into
+;	INX			; the 100's so add 100's carry to the high byte
+;skip_100
+;				; now check the 2^7 (128) bit
+;	LSR	low		; bit 7 to carry
+;	BCC	skip_fin	; branch if no add
+;
+;	INX			; else effectively add 100 part of 128
+;	ADC	#$27		; and then add 128 (-1) part of 128
+;	BCC	skip_fin	; branch if no further carry
+;
+;	INX			; else add 200's carry
+;skip_fin
+;	STX	high		; save result high byte
+;
+; end of 100's code
+;***********************************************************************
+	        STA	low		        ; save result low byte
+	        cld			        ; clear decimal mode
+	        rts
+Bin2DecTbl
+	.byte	$63,$31,$15,$07,$03,$01,$00
 
 ;------------------------------------------------------------------------- PrStrAX
 PrStrAX:; print a null-terminated string pointed to by AX [A]
@@ -23,38 +68,17 @@ PrStr2		sty Z_Tmp
             ply
 			rts					; exit
 
-
 ;------------------------------------------------------------------------- _Print_
 _Print_:;Print in-line string
 ;jsr _Print_
 ;.db "text",0
             pla
             plx
-            STAX(Z_Ptr)
+            STAX(Z_Rd)
+            jsr CharRd          ; skip over fisrt byte (end of jsr)
+            jsr CharEcho        ; Read memory, send to output
+            jmp (Z_Rd)
 
-_Inc        inc Z_Ptr
-            bne _IncX
-            inc Z_Ptr+1
-_IncX
-
-            jsr PrStr
-
-            clc
-            lda Z_Tmp
-            inc a
-            adc Z_Ptr
-            sta Z_Ptr
-            lda #0
-            adc Z_Ptr+1
-            sta Z_Ptr+1
-
-            jmp (Z_Ptr)
-
-;_Inc        inc Z_Ptr
-;            bne _incX
-;            inc Z_Ptr+1
-;_IncX       rts
-
-.echo $-Util
-.echo " bytes for Util\r"
+;.echo $-Util
+;.echo " bytes for Util\r"
 #endif

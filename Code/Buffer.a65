@@ -125,6 +125,6 @@ BufReadX
             plx
             rts
 
-.echo $-Buffer
-.echo " bytes for Buffer\r"
+;.echo $-Buffer
+;.echo " bytes for Buffer\r"
 #endif
