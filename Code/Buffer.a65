@@ -18,7 +18,7 @@ BUF_RX = 2
 BUF_DATA = 3
 
 
-;------------------------------------------------------------------------- BufInit
+;--------------------------------------------------------------------- BufInit
 ; A is size of the buffer to set up at (Z_Ptr)
 ; X,Y preserved
 BufInit:    ; Create buffer of size .A at location pointed to by Z_Ptr and clear it
@@ -32,12 +32,12 @@ BufInit:    ; Create buffer of size .A at location pointed to by Z_Ptr and clear
 BufClear:   ; Clear the buffer pointed to by Z_Ptr
             phx
                 phy
-                    ldy #0              ; len
-                    lda (Z_Ptr),y
-                    tax                 ; save len in X
-                    iny                 ; point to WriteIndex
-                    lda #BUF_DATA
-                    sta (Z_Ptr),y       ; set Write index to 3 = data[0]
+                    LDY #0              ; len
+                    LDA (Z_Ptr),y
+                    TAX                 ; save len in X
+                    INY                 ; point to WriteIndex
+                    LDA #BUF_DATA
+                    STA (Z_Ptr),y       ; set Write index to 3 = data[0]
                     iny
                     sta (Z_Ptr),y       ; set Read index to 3 = data[0]
                     iny                 ; point at data[0]
