@@ -13,117 +13,117 @@
 #define _Buffer
 Buffer:
 
-BUF_WX = 1
-BUF_RX = 2
-BUF_DATA = 3
+BUF_WX 		= 	1
+BUF_RX 		= 	2
+BUF_DATA 	= 	3
 
 
 ;--------------------------------------------------------------------- BufInit
 ; A is size of the buffer to set up at (Z_Ptr)
 ; X,Y preserved
-BufInit:    ; Create buffer of size .A at location pointed to by Z_Ptr and clear it
-            clc
-            adc #BUF_DATA       ; add space for header
-            sta (Z_Ptr)         ; set the length of the data
+BufInit:; Create buffer of size .A at location pointed to by Z_Ptr and clear it
+ 		CLC
+ 		ADC 	#BUF_DATA 	; add space for header
+ 		STA 	(Z_Ptr) 	; set the length of the data
 
-;------------------------------------------------------------------------- BufClear
+;--------------------------------------------------------------------- BufClear
 ; Wipes the buffer (pointed to by Z_Ptr) with zeroes
 ; X,Y preserved
-BufClear:   ; Clear the buffer pointed to by Z_Ptr
-            phx
-                phy
-                    LDY #0              ; len
-                    LDA (Z_Ptr),y
-                    TAX                 ; save len in X
-                    INY                 ; point to WriteIndex
-                    LDA #BUF_DATA
-                    STA (Z_Ptr),y       ; set Write index to 3 = data[0]
-                    iny
-                    sta (Z_Ptr),y       ; set Read index to 3 = data[0]
-                    iny                 ; point at data[0]
-                    dex                 ; x=x-3 (no no of bytes in data[]
-                    dex
-                    dex
-                    lda #0
-BufClearL           sta (Z_Ptr),y       ; zero mem
-                    iny
-                    dex
-                    bne BufClearL
-                ply
-            plx
-            rts
+BufClear:; Clear the buffer pointed to by Z_Ptr
+ 		PHX
+ 		PHY
+ 		LDY 	#0 		; len
+ 		LDA 	(Z_Ptr),y
+ 		TAX 			; save len in X
+ 		INY 			; point to WriteIndex
+ 		LDA 	#BUF_DATA
+ 		STA 	(Z_Ptr),y 	; set Write index to 3 = data[0]
+ 		INY
+ 		STA 	(Z_Ptr),y 	; set Read index to 3 = data[0]
+ 		INY 			; point at data[0]
+ 		DEX 			; x=x-3 (no no of bytes in data[]
+ 		DEX
+ 		DEX
+ 		LDA 	#0
+BufClearL 	STA 	(Z_Ptr),y 	; zero mem
+ 		INY
+ 		DEX
+ 		BNE 	BufClearL
+ 		PLY
+ 		PLX
+ 		RTS
 
-BufWrap:    ;check if index .y is beyond the end, if so wrap it back, return index in Y
-            lda (Z_Ptr),y       ; fetch the index at .y (y = 1:wr or 2:rd)
-            cmp (Z_Ptr)
-            bmi BufWrapX        ; C:1 a>=m,  Z:1 a == m, N:1 a < m
-            lda #BUF_DATA       ; wrap it back
-            sta (Z_Ptr),y       ; store new value
-BufWrapX    tay                 ; place index into Y
-            lda (Z_Ptr),y       ; fetch the character (for null test)
-            rts
+BufWrap 	;check if index .y is beyond the end, if so wrap it back, return index in Y
+ 		LDA 	(Z_Ptr),y 	; fetch the index at .y (y = 1:wr or 2:rd)
+ 		CMP 	(Z_Ptr)
+ 		BMI 	BufWrapX 	; C:1 a>=m,  Z:1 a == m, N:1 a < m
+ 		LDA 	#BUF_DATA 	; wrap it back
+ 		STA 	(Z_Ptr),y 	; store new value
+BufWrapX 	TAY 			; place index into Y
+ 		LDA 	(Z_Ptr),y 	; fetch the character (for null test)
+ 		RTS
 
-;------------------------------------------------------------------------- BufWriteBlk
+;--------------------------------------------------------------------- BufWriteBlk
 ; writes the byte in A to the buffer (blocks until there is space)
 ; X,Y preserved
-BufBlkWr: ; Write A to buffer (blocks until space is available)
-            sta Z_Tmp           ; save character
+BufBlkWr:; Write A to buffer (blocks until space is available)
+ 		STA 	Z_Tmp 		; save character
 
-BufBlkWrL   lda Z_Tmp
-            jsr BufWrite
-            cmp #0
-            bne BufBlkWrL       ; if  no space loop back
-            rts
+BufBlkWrL 	LDA 	Z_Tmp
+ 		JSR 	BufWrite
+ 		CMP 	#0
+ 		BNE 	BufBlkWrL 	; if  no space loop back
+ 		RTS
 
 
-;------------------------------------------------------------------------- BufWrite
+;--------------------------------------------------------------------- BufWrite
 ; writes the byte in A to the buffer EQ=True,success NE=Failure
 ; X,Y preserved
-BufWrite:   ;writes .A to the buffer
-            phy                 ;save y
+BufWrite:;writes .A to the buffer
+ 		PHY 			;save y
 
-                sta Z_Tmp           ; save character
-                ; get write index
-                ldy #BUF_WX         ; use write index
-                jsr BufWrap         ; check index and return it in Y, data[Y] in .A
-                bne BufWriteX       ; non-zero,so buffer is full
-                ;ok
-                lda Z_Tmp
-                sta (Z_Ptr),y       ; store the character
-                iny                 ; bump pointer
-                tya
-                ldy #BUF_WX
-                sta (Z_Ptr),y       ; save new write index
-                lda #0              ; zero .A (So EQ=True)
+ 		STA 	Z_Tmp 		; save character
+	 	;-- get write index
+ 		LDY 	#BUF_WX 	; use write index
+ 		JSR 	BufWrap 	; check index and return it in Y, data[Y] in .A
+ 		BNE 	BufWriteX 	; non-zero,so buffer is full
+	 	;-- ok
+ 		LDA 	Z_Tmp
+ 		STA 	(Z_Ptr),y 	; store the character
+ 		INY 			; bump pointer
+ 		TYA
+ 		LDY 	#BUF_WX
+ 		STA 	(Z_Ptr),y 	; save new write index
+ 		LDA 	#0 		; zero .A (So EQ=True)
 
-BufWriteX   ply                 ; restore y
-            rts
+BufWriteX 	PLY 			; restore y
+ 		RTS
 
 
-;------------------------------------------------------------------------- BufRead
+;--------------------------------------------------------------------- BufRead
 ; Read the byte from the buffer into .A (Zero = empty)
 ; X,Y preserved
-BufRead:    ;reads the buffer into .A
-            phx
-                phy
-                    ; get read index
-                    ldy #BUF_RX         ; use read index
-                    jsr BufWrap         ; check index and return it in Y, data[Y] in .A
-                    beq BufReadX        ; zero, so empty (don't move)
-                    ;ok
-                    pha                 ; save data
-                        lda #0              ; clear the spot for write
-                        sta (Z_Ptr),y
-                        ;
-                        iny                 ; bump pointer
-                        tya
-                        ldy #BUF_RX
-                        sta (Z_Ptr),y       ; save new read index
-                    pla                 ; recall data
+BufRead:;reads the buffer into .A
+ 		PHX
+ 		PHY
+	 	;-- get read index
+ 		LDY 	#BUF_RX 	; use read index
+ 		JSR 	BufWrap 	; check index and return it in Y, data[Y] in .A
+ 		BEQ 	BufReadX 	; zero, so empty (don't move)
+	 	;-- ok
+ 		PHA 			; save data
+ 		LDA 	#0 		; clear the spot for write
+ 		STA 	(Z_Ptr),y
+	 	;-- 
+ 		INY 			; bump pointer
+ 		TYA
+ 		LDY 	#BUF_RX
+ 		STA 	(Z_Ptr),y 	; save new read index
+ 		PLA 			; recall data
 BufReadX
-                ply
-            plx
-            rts
+ 		PLY
+ 		PLX
+ 		RTS
 
 ;.echo $-Buffer
 ;.echo " bytes for Buffer\r"

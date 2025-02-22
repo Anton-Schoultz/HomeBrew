@@ -9,62 +9,62 @@
 #ifndef _Irq
 #define _Irq
 
-;------------------------------------------------------------------------- IRQ
-Irq:		; Interrupt Request service routine
+;--------------------------------------------------------------------- IRQ
+Irq:; Interrupt Request service routine
 ; Interrupt low level, reset the source as early as posible
 ; PC & Status are pushed, then cpu comes here
 ;
-			;-- Save registers
-			PUSHAXY()			; Y,X,Z,S,PC
+	 	;-- -- Save registers
+ 		PUSHAXY() 		; Y,X,Z,S,PC
 
-			;-- Test to see if it is an IRQ or a BRK
-			tsx
-			lda $0104,x			; get the pushed status
-			and #$10				; check the BRK bit
-			bne IrqBrk			; BREAK -> IrqBrk
-			jsr	IrqDo
+	 	;-- -- Test to see if it is an IRQ or a BRK
+ 		TSX
+ 		LDA 	$0104,x 	; get the pushed status
+ 		AND 	#$10 		; check the BRK bit
+ 		BNE 	IrqBrk 	; BREAK -> IrqBrk
+ 		JSR 	IrqDo
 
-;-------------------------------------------------------------------------- IrqRtn
-IrqRtn:	; Restore registers and return from IRQ
-			PULLAXY()
-			rti					; pop status & PC, return, re-enabling IRQ
+;--------------------------------------------------------------------- IrqRtn
+IrqRtn:; Restore registers and return from IRQ
+ 		PULLAXY()
+ 		RTI 			; pop status & PC, return, re-enabling IRQ
 
-;-------------------------------------------------------------------------- IrqBrk
+;--------------------------------------------------------------------- IrqBrk
 ; fetch the post byte and store it in ERRNO, then return from interrupt
-IrqBrk: ; Handle BRK interrupt
-			lda	$105,X			;
-			sta Z_IrqPtr
-			lda $106,X
-			sta Z_IrqPtr+1
-			lda Z_IrqPtr		; if low ..
-			bne IrqBrk0			; .. is zero
-			dec Z_IrqPtr+1		; .. decr high
-IrqBrk0		dec Z_IrqPtr		; decr low
-			lda (Z_IrqPtr)		; get the byte after the BRK (post byte)
-			sta BRK_NO			; save it
-			jsr	IrqBrkDo
-			bra IrqRtn			; exit from interrupt
+IrqBrk:; Handle BRK interrupt
+ 		LDA 	$105,X 	;
+ 		STA 	Z_IrqPtr
+ 		LDA 	$106,X
+ 		STA 	Z_IrqPtr+1
+ 		LDA 	Z_IrqPtr 	; if low ..
+ 		BNE 	IrqBrk0 	; .. is zero
+ 		DEC 	Z_IrqPtr+1 	; .. decr high
+IrqBrk0 	DEC 	Z_IrqPtr 	; decr low
+ 		LDA 	(Z_IrqPtr) 	; get the byte after the BRK (post byte)
+ 		STA 	BRK_NO 	; save it
+ 		JSR 	IrqBrkDo
+ 		BRA 	IrqRtn 	; exit from interrupt
 
-IrqBrkDo	jmp (V_BRK)			; the rts in the body goes back to caller
-IrqDo:		jmp	(V_IRQ)			; the rts in the body goes back to caller
+IrqBrkDo 	JMP 	(V_BRK) 	; the rts in the body goes back to caller
+IrqDo: 		JMP 	(V_IRQ) 	; the rts in the body goes back to caller
 
-;------------------------------------------------------------------------- NMI
-Nmi: ; Non-Maskable interrupt service handler
+;--------------------------------------------------------------------- NMI
+Nmi:; Non-Maskable interrupt service handler
 ; Negative-edge triggered interrupt
 ; use this for timer interrupts straight from binary divider ?
-			;-- Save registers
-			PUSHAXY()			; Push axy
-			jsr NmiDo
+	 	;-- -- Save registers
+ 		PUSHAXY() 		; Push axy
+ 		JSR 	NmiDo
 
-NmiRtn		;-- Restore registers and return
-			PULLAXY()			; Pop yxa
-			RTI
+NmiRtn 		;-- Restore registers and return
+ 		PULLAXY() 		; Pop yxa
+ 		RTI
 
-NmiDo: ; handle NMI via vector at V_NMI
-			jmp (V_NMI)
+NmiDo:; handle NMI via vector at V_NMI
+ 		JMP 	(V_NMI)
 
-IrqNOP: ; Empty IRQ service
-			rts
+IrqNOP:; Empty IRQ service
+ 		RTS
 
 
 ;.echo $-Irq

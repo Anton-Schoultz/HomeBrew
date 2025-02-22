@@ -6,7 +6,7 @@
 
 #if ($>>8)==0
 .LIST
-;------------------------------- Template Z-Page
+;--------------------------------------------------------------------- Template Z-Page
 ; Variables required, specified using the macros:-
 ;	Var(name,size) name .block size
 ;	Short(name) name .block 1
@@ -19,7 +19,7 @@
 #if CODEPAGE
 #ifndef _Template
 #define _Template
-;-------------------------------------------------------------------------- Template
+;--------------------------------------------------------------------- Template
 
 
 

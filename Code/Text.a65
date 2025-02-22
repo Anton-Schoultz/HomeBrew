@@ -15,110 +15,110 @@ Text:
 ; - later it may have it's own pointer, then we just remove this define
 #define Z_Txt Z_Ptr
 
-;------------------------------------------------------------------------- TextDim
-TextDim: ; Create Text at (Z_Txt) with length .A [uses AXY]
-			sta (Z_Txt)			; save the length
-			;drop through to clear the text field
-;------------------------------------------------------------------------- TextClear
-TextClear: ; Clear the text field pointed to by Z_Txt [uses AXY]
-			ldy	#1				; index to first char
-			lda (Z_Txt)			; get length
-			tax					; into X
-			bne TextClear_L
-			rts
-TextClear_L	lda #0
-			sta (Z_Txt),y
-			iny
-			dex
-			bne TextClear_L
-			rts
-;------------------------------------------------------------------------- TextTerm
-TextTerm: ; force a terminating null in last position  Data[Max]=0
-			ldy (Z_Ptr)
-			lda #0
-			sta (Z_Txt),y
-			rts
-;------------------------------------------------------------------------- TextCheck
-TextCheck: ; Checks that Y is in range 0 < y < (Z_Txt), C:1 if full
-			cpy #0
-			beq TextCheckR		; zero so set it to 1 C:1 Z:1 N:0
-			;max?
-	 	cpy (Z_Txt) 		; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
-			bmi	TextCheckOK		; < max so ok (Z:0 C:0 N:1)   OK if C=0
-			sec					; full C:1
-			rts
-			; >= so force to 1
-TextCheckR	ldy	#1				; reset to the begining C:0(OK)
-TextCheckOK	clc					; C:0 = OK
-		 	rts
-;------------------------------------------------------------------------- TextPut
-TextPut: ; Text[Y++]=A (check & reset Y=1 if need be) [uses AY]
-			jsr	TextCheck
-			sta (Z_Txt),y
-			iny
-			rts
-;------------------------------------------------------------------------- TextGet
-TextGet: ; A=Text[Y++] (check & reset Y=1 if need be) [uses AY]
-			jsr	TextCheck
-			lda (Z_Txt),y
-			iny
-			rts
-;------------------------------------------------------------------------- TextSize
-TextSize: ; Scan the text for the first null byte, return offset in Y [last char in A]
-			ldy #1				; first char in the buffer
-TextSizeL	cpy	(Z_Txt)			; max index?
-			bmi TextSizeX		; read at end so exit
-			lda (Z_Txt),y		; get char
-			beq TextSizeX		; found terminating null -> exit
-			iny
-			bne TextSizeL
-TextSizeX	rts
+;--------------------------------------------------------------------- TextDim
+TextDim:; Create Text at (Z_Txt) with length .A [uses AXY]
+ 		STA 	(Z_Txt) 	; save the length
+ 		;-- drop through to clear the text field
+;--------------------------------------------------------------------- TextClear
+TextClear:; Clear the text field pointed to by Z_Txt [uses AXY]
+ 		LDY 	#1 		; index to first char
+ 		LDA 	(Z_Txt) 	; get length
+ 		TAX 			; into X
+ 		BNE 	TextClear_L
+ 		RTS
+TextClear_L 	LDA 	#0
+ 		STA 	(Z_Txt),y
+ 		INY
+ 		DEX
+ 		BNE 	TextClear_L
+ 		RTS
+;--------------------------------------------------------------------- TextTerm
+TextTerm:; force a terminating null in last position  Data[Max]=0
+ 		LDY 	(Z_Ptr)
+ 		LDA 	#0
+ 		STA 	(Z_Txt),y
+ 		RTS
+;--------------------------------------------------------------------- TextCheck
+TextCheck:; Checks that Y is in range 0 < y < (Z_Txt), C:1 if full
+ 		CPY 	#0
+ 		BEQ 	TextCheckR 	; zero so set it to 1 C:1 Z:1 N:0
+ 		;-- max?
+ 		CPY 	(Z_Txt) 	; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
+ 		BMI 	TextCheckOK 	; < max so ok (Z:0 C:0 N:1)   OK if C=0
+ 		SEC 			; full C:1
+ 		RTS
+ 		;-- >= so force to 1
+TextCheckR 	LDY 	#1 		; reset to the begining C:0(OK)
+TextCheckOK 	CLC 			; C:0 = OK
+ 		RTS
+;--------------------------------------------------------------------- TextPut
+TextPut:; Text[Y++]=A (check & reset Y=1 if need be) [uses AY]
+ 		JSR 	TextCheck
+ 		STA 	(Z_Txt),y
+ 		INY
+ 		RTS
+;--------------------------------------------------------------------- TextGet
+TextGet:; A=Text[Y++] (check & reset Y=1 if need be) [uses AY]
+ 		JSR 	TextCheck
+ 		LDA 	(Z_Txt),y
+ 		INY
+ 		RTS
+;--------------------------------------------------------------------- TextSize
+TextSize:; Scan the text for the first null byte, return offset in Y [last char in A]
+ 		LDY 	#1 		; first char in the buffer
+TextSizeL 	CPY 	(Z_Txt) 	; max index?
+ 		BMI 	TextSizeX 	; read at end so exit
+ 		LDA 	(Z_Txt),y 	; get char
+ 		BEQ 	TextSizeX 	; found terminating null -> exit
+ 		INY
+ 		BNE 	TextSizeL
+TextSizeX 	RTS
 
-;------------------------------------------------------------------------- TextQ
-TextQ: ; Add .A to the end of the text (if space available) [Use AXY]
-			tax					; save char to store
-			jsr TextSize		; find first null N=1 if full
-			bmi	TextQX
-			txa					; recall char
-			sta (Z_Txt),y		; save at that point
-TextQX		rts
-;------------------------------------------------------------------------- TextDQ
-TextDQ: ; Remove the first char .A and shift the rest up
-			ldy	#1
-			lda (Z_Txt),y
-			pha
-			jsr TextSL
-			pla
-			rts
-;------------------------------------------------------------------------- TextSL
-TextSL: ; Shift text left by one char starting from .Y
-			iny
-			lda (Z_Txt),y		; get next char
-			dey
-			sta (Z_Txt),y		; save here
+;--------------------------------------------------------------------- TextQ
+TextQ:; Add .A to the end of the text (if space available) [Use AXY]
+ 		TAX 			; save char to store
+ 		JSR 	TextSize 	; find first null N=1 if full
+ 		BMI 	TextQX
+ 		TXA 			; recall char
+ 		STA 	(Z_Txt),y 	; save at that point
+TextQX 		RTS
+;--------------------------------------------------------------------- TextDQ
+TextDQ:; Remove the first char .A and shift the rest up
+ 		LDY 	#1
+ 		LDA 	(Z_Txt),y
+ 		PHA
+ 		JSR 	TextSL
+ 		PLA
+ 		RTS
+;--------------------------------------------------------------------- TextSL
+TextSL:; Shift text left by one char starting from .Y
+ 		INY
+ 		LDA 	(Z_Txt),y 	; get next char
+ 		DEY
+ 		STA 	(Z_Txt),y 	; save here
 
-			iny					; move on to end
-			cpy (Z_Txt)			; done?
-			bpl TextSL			; no loop
+ 		INY 			; move on to end
+ 		CPY 	(Z_Txt) 	; done?
+ 		BPL 	TextSL 	; no loop
 
-			lda #0				; final null
-			sta (Z_Txt),y
+ 		LDA 	#0 		; final null
+ 		STA 	(Z_Txt),y
 
-			rts
+ 		RTS
 
-;------------------------------------------------------------------------- TextCopy
-TextCopy: ; copy text from (Z_Src) to this text object
-			ldy	#1
-TextCopyL	jsr	TextCheck
-			bcs	TextCopyX		; this text is full
-			cpy (Z_Src)			; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
-			bcs TextCopyX		; source is done
-			lda (Z_Src),y
-			sta (Z_Txt),y		; copy across
-			beq	TextCopyX		; Null = terminator so exit
-			iny					; next index
-			bne	TextCopyL
-TextCopyX	rts
+;--------------------------------------------------------------------- TextCopy
+TextCopy:; copy text from (Z_Src) to this text object
+ 		LDY 	#1
+TextCopyL 	JSR 	TextCheck
+ 		BCS 	TextCopyX 	; this text is full
+ 		CPY 	(Z_Src) 	; C:1 y>=Len Z:1 Y EQ Len N:1 Y < Len
+ 		BCS 	TextCopyX 	; source is done
+ 		LDA 	(Z_Src),y
+ 		STA 	(Z_Txt),y 	; copy across
+ 		BEQ 	TextCopyX 	; Null = terminator so exit
+ 		INY 			; next index
+ 		BNE 	TextCopyL
+TextCopyX 	RTS
 
 
 

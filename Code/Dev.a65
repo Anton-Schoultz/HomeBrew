@@ -20,73 +20,73 @@
 ;IO_RDSTATUS	= 9 ;RdStatus
 ;IO_WRCMD		= 12;WrCommand
 
-;--------------------------------------------------------------------------
-Dev:; device management
+;--------------------------------------------------------------------- 
+Dev 		; device management
 
 
-DevTbl:; Device table/list
+DevTbl 		; Device table/list
 #ifdef _Simulator
-	.dw		Simulator
+.dw		Simulator
 #endif
 
 #ifdef _MC68B50
-	.dw		MC68B50
+.dw		MC68B50
 #endif
 
-;-------------------------------------------------------------------------- CharOut
-CharOut:; Output character A to currently active output device [V_CHROUT]
-			jmp (V_CHROUT)
+;--------------------------------------------------------------------- CharOut
+CharOut 	; Output character A to currently active output device [V_CHROUT]
+ 		JMP 	(V_CHROUT)
 
-;-------------------------------------------------------------------------- CharIn
-CharIn:; Return character .A from the currently active input device [V_CHROUT]
-			jmp	(V_CHRIN)
+;--------------------------------------------------------------------- CharIn
+CharIn 		; Return character .A from the currently active input device [V_CHROUT]
+ 		JMP 	(V_CHRIN)
 
-;-------------------------------------------------------------------------- DevDefault
-DevDefault:; select the default input and output devices
-			lda	#CONSOLE		; CONSOLE as output
-			jsr DevOut
-			lda	#CONSOLE		; CONSOLE for input
-			;- fall through to set input device
-;-------------------------------------------------------------------------- DevIn
-DevIn:; Set device no in A as the current input device for CharIn
+;--------------------------------------------------------------------- DevDefault
+DevDefault 	; select the default input and output devices
+ 		LDA 	#CONSOLE 	; CONSOLE as output
+ 		JSR 	DevOut
+ 		LDA 	#CONSOLE 	; CONSOLE for input
+	 	;-- - fall through to set input device
+;--------------------------------------------------------------------- DevIn
+DevIn 		; Set device no in A as the current input device for CharIn
 ; use device no as index, look up input routine address and save in V_CHARIN
-			ldy #IO_CHRIN
-			jsr DevAdr			; get address of device's jump table
-;-------------------------------------------------------------------------- DevInAX
-DevInAX:; set charin address as AX (A=lo,X=High)
-			STA V_CHRIN
-			STX V_CHRIN+1
-			RTS
+ 		LDY 	#IO_CHRIN
+ 		JSR 	DevAdr 	; get address of device's jump table
+;--------------------------------------------------------------------- DevInAX
+DevInAX 	; set charin address as AX (A=lo,X=High)
+ 		STA 	V_CHRIN
+ 		STX 	V_CHRIN+1
+ 		RTS
 
-;-------------------------------------------------------------------------- DevOut
-DevOut:; Set device no in A as the current output device for CharOut
+;--------------------------------------------------------------------- DevOut
+DevOut 		; Set device no in A as the current output device for CharOut
 ; use device no as index, look up output routine address and save in V_CHAROUT
-			ldy #IO_CHROUT
-			jsr DevAdr			; get address of device's jump table
-;-------------------------------------------------------------------------- DevOutAX
-DevOutAX:; set charout address as AX (A=lo,X=Hi)
-			STA V_CHROUT
-			STX V_CHROUT+1
-			RTS
+ 		LDY 	#IO_CHROUT
+ 		JSR 	DevAdr 	; get address of device's jump table
+;--------------------------------------------------------------------- DevOutAX
+DevOutAX 	; set charout address as AX (A=lo,X=Hi)
+ 		STA 	V_CHROUT
+ 		STX 	V_CHROUT+1
+ 		RTS
 
-;-------------------------------------------------------------------------- DevAdr
-DevAdr:; DevNo in A, Offset in Y, exit with AX = base addr + Y [AXY]
-			; get tbl offset in x
-			ASL	A
-			TAX
-			; function offset Y into A
-			TYA
-			CLC
-			; add the low byte lo ->A
-			ADC DevTbl,X		; C set if page-crossed (Flag used for incr x)
-			TAY					; save low in Y (does not change CY)
-			; hi->X
-			LDA DevTbl+1,X		; get high address (does not change CY)
-			TAX					; save it in X (does not change CY)
-			BCC DevAdrX			; check carry
-			INX					; carry set, so incr the high
-DevAdrX		TYA					; restore low into A
-			RTS
+;--------------------------------------------------------------------- DevAdr
+DevAdr 		; DevNo in A, Offset in Y, exit with AX = base addr + Y [AXY]
+	 	;-- get tbl offset in x
+ 		ASL 	A
+ 		TAX
+	 	;-- function offset Y into A
+ 		TYA
+ 		CLC
+	 	;-- add the low byte lo ->A
+ 		ADC 	DevTbl,X 	; C set if page-crossed (Flag used for incr x)
+ 		TAY 			; save low in Y (does not change CY)
+	 	;-- hi->X
+ 		LDA 	DevTbl+1,X 	; get high address (does not change CY)
+ 		TAX 			; save it in X (does not change CY)
+ 		BCC 	DevAdrX 	; check carry
+ 		INX 			; carry set, so incr the high
+DevAdrX 	TYA 			; restore low into A
+ 		RTS
 
 ;.echo $-Dev
 ;.echo " bytes for Dev\r"

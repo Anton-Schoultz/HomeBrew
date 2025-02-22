@@ -38,46 +38,46 @@
 #ifndef _Simulator
 #define _Simulator
 
-IO_AREA			= $8000	; This must match what is set in simulator's Options screen.
+IO_AREA 	= 	$8000 		; This must match what is set in simulator's Options screen.
 
-;-------------------------------------------------------------------------
+;--------------------------------------------------------------------- 
 ; set up the interface area
-SIM_CLS 	= IO_AREA+0
-SIM_OUT 	= IO_AREA+1
-SIM_OUT_CHR = IO_AREA+2
-SIM_OUT_HEX = IO_AREA+3
-SIM_IN 		= IO_AREA+4
-SIM_X_POS	= IO_AREA+5
-SIM_Y_POS	= IO_AREA+6
+SIM_CLS 	= 	IO_AREA+0
+SIM_OUT 	= 	IO_AREA+1
+SIM_OUT_CHR 	= 	IO_AREA+2
+SIM_OUT_HEX 	= 	IO_AREA+3
+SIM_IN 		= 	IO_AREA+4
+SIM_X_POS 	= 	IO_AREA+5
+SIM_Y_POS 	= 	IO_AREA+6
 
 
 Simulator:
-;-- I/O device interface jump table
-	jmp	SimNop			; Init
-	jmp	SimGet			; Char Input
-	jmp SimPut			; Char Ouput
-	jmp	SimNop			; Read Status
-	jmp	SimNop			; Write Command
+;--------------------------------------------------------------------- I/O device interface jump table
+ 		JMP 	SimNop 	; Init
+ 		JMP 	SimGet 	; Char Input
+ 		JMP 	SimPut 	; Char Ouput
+ 		JMP 	SimNop 	; Read Status
+ 		JMP 	SimNop 	; Write Command
 
-SimNop		rts
+SimNop 		RTS
 
-;------------------------------------------------------------------------- SimGet
-SimGet:; input a character via the simulator, null if none [A]
-            LDA     SIM_IN
-            RTS
+;--------------------------------------------------------------------- SimGet
+SimGet 		; input a character via the simulator, null if none [A]
+ 		LDA 	SIM_IN
+ 		RTS
 
-;------------------------------------------------------------------------- SimPut
-SimPut:; output a character via the simultor
-			CMP #CLS			; Form Feed = Clear Screen
-			BEQ	SimCls
+;--------------------------------------------------------------------- SimPut
+SimPut 		; output a character via the simultor
+ 		CMP 	#CLS 		; Form Feed = Clear Screen
+ 		BEQ 	SimCls
 
-            STA SIM_OUT    		; Sends A to output screen (interprets CR LF BS)
-            RTS
+ 		STA 	SIM_OUT 	; Sends A to output screen (interprets CR LF BS)
+ 		RTS
 
-;------------------------------------------------------------------------- SimCls
-SimCls:; Clear Screen (CLS / FormFeed)
-			STA	SIM_CLS
-			RTS
+;--------------------------------------------------------------------- SimCls
+SimCls 		; Clear Screen (CLS / FormFeed)
+ 		STA 	SIM_CLS
+ 		RTS
 
 
 #endif

@@ -5,13 +5,13 @@
 
 #if ($>>8)==2
 .LIST
-;------------------------------- Test SysVars
-Short(TestAdr)          ; low byte of test caller address
-Int(TestExp)            ; test expected result
-Int(TestRes)            ; test actual result
+;--------------------------------------------------------------------- Test SysVars
+Short(TestAdr) 	; low byte of test caller address
+Int(TestExp) 	; test expected result
+Int(TestRes) 	; test actual result
 
 .NOLIST
-;-- this defines the macro while setting up z-page (iow before any code segments)
+;--------------------------------------------------------------------- this defines the macro while setting up z-page (iow before any code segments)
 #DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
 
 #endif
@@ -21,7 +21,7 @@ Int(TestRes)            ; test actual result
 #ifndef _Test
 #define _Test
 .LIST
-;================================================================= TEST
+;===================================================================== TEST
 ; Testing framework
 ;
 ; Allows testing of zero page register pairs against an expected 16 bit value
@@ -29,66 +29,66 @@ Int(TestRes)            ; test actual result
 ;
 ; TEST(z,Expected)	z=Zpage to check, Expected value to test against
 ;
-;-------------------------------------------------------------------------- Test
-Test:; Test if RegPair at 0000,Y is equal to .A.X
-            ;- save expected result
-            sta     TestExp
-            stx     TestExp+1
-            ;- get value from regpair to check
-            lda 	0,y
-            sta     TestRes
-            lda 	1,y
-            sta     TestRes+1
-            ;- compare
-            cmp     TestExp+1
-            bne     TestFail
-            lda     TestRes
-            cmp     TestExp
-            bne     TestFail
+;--------------------------------------------------------------------- Test
+Test 		; Test if RegPair at 0000,Y is equal to .A.X
+ 		;-- save expected result
+ 		STA 	TestExp
+ 		STX 	TestExp+1
+ 		;-- get value from regpair to check
+ 		LDA 	0,y
+ 		STA 	TestRes
+ 		LDA 	1,y
+ 		STA 	TestRes+1
+ 		;-- compare
+ 		CMP 	TestExp+1
+ 		BNE 	TestFail
+ 		LDA 	TestRes
+ 		CMP 	TestExp
+ 		BNE 	TestFail
 
-            ;- OK
-            jsr     TestDump
-            LDAX(TestACK)
-            bra     TestMsg
+ 		;-- OK
+ 		JSR 	TestDump
+ 		LDAX(TestACK)
+ 		BRA 	TestMsg
 
-TestFail:   jsr     TestDump
-            LDAX(TestNAK)
-            ; fall to TestMsg
-TestMsg:    jsr     CharAppendAX
-            jmp     CharPrint
+TestFail: 	JSR 	TestDump
+ 		LDAX(TestNAK)
+ 		;-- fall to TestMsg
+TestMsg: 	JSR 	CharAppendAX
+ 		JMP 	CharPrint
 
-TestDump: ; dump calling address, expect, result
-            ;- clear STRBUF
-            jsr     CharClear
-            ;
-            tsx
-            lda $103,x          ;lo
-            sta TestAdr
-            lda $104,x          ; hi
-            tax
-            ;- adjust address to find start of the test call
-            sec
-            lda TestAdr
-            sbc #8              ; start of the test code sequence
-            sta TestAdr
-            bcs TestDump0
-            dex
-TestDump0   jsr TextHex         ; print the return address in hex
-            lda TestExp
-            ldx TestExp+1
-            jsr TextHex         ; print expected value in hex
-            ;
-            lda TestRes         ; result in Hex
-            ldx TestRes+1
-            ; fall through to print result as hex
-TextHex:    jsr CvtAXHex        ; write AX to STRBUF as hex digits
-            lda #' '
-            jmp CharWr          ; print a space and return
+TestDump:; dump calling address, expect, result
+ 		;-- clear STRBUF
+ 		JSR 	CharClear
+ 		;-- 
+ 		TSX
+ 		LDA 	$103,x 	;lo
+ 		STA 	TestAdr
+ 		LDA 	$104,x 	; hi
+ 		TAX
+ 		;-- adjust address to find start of the test call
+ 		SEC
+ 		LDA 	TestAdr
+ 		SBC 	#8 		; start of the test code sequence
+ 		STA 	TestAdr
+ 		BCS 	TestDump0
+ 		DEX
+TestDump0 	JSR 	TextHex 	; print the return address in hex
+ 		LDA 	TestExp
+ 		LDX 	TestExp+1
+ 		JSR 	TextHex 	; print expected value in hex
+ 		;-- 
+ 		LDA 	TestRes 	; result in Hex
+ 		LDX 	TestRes+1
+ 		;-- fall through to print result as hex
+TextHex: 	JSR 	CvtAXHex 	; write AX to STRBUF as hex digits
+ 		LDA 	#' '
+ 		JMP 	CharWr 	; print a space and return
 
 
-TestACK .DB " OK\r\n",0
+TestACK 	.DB 	" OK\r\n",0
 
-TestNAK .DB " ** FAIL **\r\n",0
+TestNAK 	.DB 	" ** FAIL **\r\n",0
 
 ;.echo $-Test
 ;.echo " bytes for Test\r"

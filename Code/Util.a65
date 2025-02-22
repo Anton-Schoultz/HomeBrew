@@ -8,19 +8,19 @@
 
 Util:
 
-;------------------------------------------------------------------------- Bin2Dec
-Bin2Dec:; convert binary value in A (0-99) into BCD in A
-	        SED			        ; all adds in decimal mode
-	        STA	low		        ; save A
-	        LDA	#$00		    ; clear A
-	        LDX	#$07		    ; set bit count
+;--------------------------------------------------------------------- Bin2Dec
+Bin2Dec 	; convert binary value in A (0-99) into BCD in A
+ 		SED 			; all adds in decimal mode
+ 		STA 	low 		; save A
+ 		LDA 	#$00 		; clear A
+ 		LDX 	#$07 		; set bit count
 Bin2DecL
-	        LSR	low		        ; bit to carry
-	        BCC	Bin2DecS	    ; branch if no add
-	        ADC	Bin2DecTbl-1,X	; else add BCD value
+ 		LSR 	low 		; bit to carry
+ 		BCC 	Bin2DecS 	; branch if no add
+ 		ADC 	Bin2DecTbl-1,X ; else add BCD value
 Bin2DecS
-	        DEX			        ; decrement bit count
-	        BNE	Bin2DecL	    ; loop if more to do
+ 		DEX 			; decrement bit count
+ 		BNE 	Bin2DecL 	; loop if more to do
 
 ;***********************************************************************
 ; if you only require conversion of numbers between $00 and $63 (0 to 99
@@ -45,39 +45,39 @@ Bin2DecS
 ;
 ; end of 100's code
 ;***********************************************************************
-	        STA	low		        ; save result low byte
-	        cld			        ; clear decimal mode
-	        rts
+ 		STA 	low 		; save result low byte
+ 		CLD 			; clear decimal mode
+ 		RTS
 Bin2DecTbl
-	.byte	$63,$31,$15,$07,$03,$01,$00
+.byte	$63,$31,$15,$07,$03,$01,$00
 
-;------------------------------------------------------------------------- PrStrAX
-PrStrAX:; print a null-terminated string pointed to by AX [A]
-			STAX(Z_Ptr)
-;------------------------------------------------------------------------- PrStr
-PrStr:; print a null-terminated string pointed to by Z_Ptr [A]
-			phy
-				ldy 	#0
-PrStr1			lda 	(Z_Ptr),y
-				beq 	PrStr2		; zero -> exit
-				jsr		CharOut		; print character
-				iny					; move to next char
-				bne 	PrStr1		; loop back
+;--------------------------------------------------------------------- PrStrAX
+PrStrAX 	; print a null-terminated string pointed to by AX [A]
+ 		STAX(Z_Ptr)
+;--------------------------------------------------------------------- PrStr
+PrStr 		; print a null-terminated string pointed to by Z_Ptr [A]
+ 		PHY
+ 		LDY 	#0
+PrStr1 		LDA 	(Z_Ptr),y
+ 		BEQ 	PrStr2 	; zero -> exit
+ 		JSR 	CharOut 	; print character
+ 		INY 			; move to next char
+ 		BNE 	PrStr1 	; loop back
 
-PrStr2		sty Z_Tmp
-            ply
-			rts					; exit
+PrStr2 		STY 	Z_Tmp
+ 		PLY
+ 		RTS 			; exit
 
-;------------------------------------------------------------------------- _Print_
-_Print_:;Print in-line string
+;--------------------------------------------------------------------- _Print_
+_Print_ 	;Print in-line string
 ;jsr _Print_
 ;.db "text",0
-            pla
-            plx
-            STAX(Z_Rd)
-            jsr CharRd          ; skip over fisrt byte (end of jsr)
-            jsr CharEcho        ; Read memory, send to output
-            jmp (Z_Rd)
+ 		PLA
+ 		PLX
+ 		STAX(Z_Rd)
+ 		JSR 	CharRd 	; skip over fisrt byte (end of jsr)
+ 		JSR 	CharEcho 	; Read memory, send to output
+ 		JMP 	(Z_Rd)
 
 ;.echo $-Util
 ;.echo " bytes for Util\r"

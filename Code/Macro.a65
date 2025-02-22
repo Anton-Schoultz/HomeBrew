@@ -1,7 +1,7 @@
 .NOLIST
 ; Macro.a65
 ;
-;------------------------------- ASCII Control Codes
+;--------------------------------------------------------------------- ASCII Control Codes
 #DEFINE NULL	0
 #DEFINE BS 		8
 #DEFINE HT 		9
@@ -11,12 +11,12 @@
 #DEFINE CR 		13
 #DEFINE ESC		27
 
-;------------------------------- I/O device interface jump table offsets
-IO_INIT		= 0	;Init
-IO_CHRIN	= 3	;CharInput
-IO_CHROUT	= 6	;CharOutput
-IO_RDSTATUS	= 9 ;RdStatus
-IO_WRCMD	= 12;WrCommand
+;--------------------------------------------------------------------- I/O device interface jump table offsets
+IO_INIT 	= 	0 		;Init
+IO_CHRIN 	= 	3 		;CharInput
+IO_CHROUT 	= 	6 		;CharOutput
+IO_RDSTATUS 	= 	9 		;RdStatus
+IO_WRCMD 	= 	1 		;WrCommand
 
 ;Allows outputing of text from inline, needs Util.a65 , which uses CharOut
 ; eg PRINT("this is some text to printout\r\n")
@@ -28,7 +28,7 @@ IO_WRCMD	= 12;WrCommand
 #DEFINE HIGH(m)  (m>>8)
 #DEFINE UPPER(m) (m>>16)
 
-;------------------------------- Declare variables
+;--------------------------------------------------------------------- Declare variables
 #define Var(name,size) name .block size
 #define Short(name) name .block 1
 #define Int(name) name .block 2

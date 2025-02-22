@@ -4,42 +4,42 @@
 #include "Macro.a65"
 
 .org $0000
-;================================================================ Z-PAGE
+;===================================================================== Z-PAGE
 ;
-;------------------------------- Calc Z-Page
-Var(RES,16)             ;00-0F  Result
-Var(TOS,4)              ;10-13  Top-Of-Stack
-Var(NXT,4)              ;14-17  Next item on stack
-Short(CSP)              ;18     Calc stack pointer (00->0F)
-Short(SGN)              ;19
-Int(Z_Ptr)              ;1A/B   general object pointer (used by print string )
-Int(Z_Src)              ;1C/D   Pointer to source (2 bytes)
-Int(Z_Tgt)              ;1E/F   Pointer to destination
+;--------------------------------------------------------------------- Calc Z-Page
+Var(RES,16) 	;00-0F  Result
+Var(TOS,4) 	;10-13  Top-Of-Stack
+Var(NXT,4) 	;14-17  Next item on stack
+Short(CSP) 	;18     Calc stack pointer (00->0F)
+Short(SGN) 	;19
+Int(Z_Ptr) 	;1A/B   general object pointer (used by print string )
+Int(Z_Src) 	;1C/D   Pointer to source (2 bytes)
+Int(Z_Tgt) 	;1E/F   Pointer to destination
 
 Short(EXP)
 Short(EXPSave)
 
-Short(Z_Tmp)            ; temp byte for counter etc
-Short(Z_Cnt)            ; Counter/ max short term scratch
+Short(Z_Tmp) 	; temp byte for counter etc
+Short(Z_Cnt) 	; Counter/ max short term scratch
 
-;------------------------------- Test SysVars
-Short(TestAdr)          ; low byte of test caller address
-Int(TestExp)            ; test expected result
-Int(TestRes)            ; test actual result
+;--------------------------------------------------------------------- Test SysVars
+Short(TestAdr) 	; low byte of test caller address
+Int(TestExp) 	; test expected result
+Int(TestRes) 	; test actual result
 ; z=Zpg addr to check, val=expected value
 #DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
 
 .org $0100
-;------------------------------- Calc stack space
+;--------------------------------------------------------------------- Calc stack space
 ; resides below the cpu stack 64 bytes - leaves 192 for cpu
 ; this is a split stack
-Var(CSTK0,16)           ; Stack for LSB
+Var(CSTK0,16) 	; Stack for LSB
 Var(CSTK1,16)
 Var(CSTK2,16)
-Var(CSTK3,16)           ; Stack for MSB
+Var(CSTK3,16) 	; Stack for MSB
 
 
-;================================================================ SYSVARS
+;===================================================================== SYSVARS
 .org $0200
 
 ; 1234      04 D2           ; D2 04 00
@@ -54,114 +54,114 @@ Var(CSTK3,16)           ; Stack for MSB
 
 ; 12nF 12E-9
 
-            LDAXY($37000C)      ; 12E-9 => 1.2E-8
-            STAXY(TOS)
+ 		LDAXY($37000C) 	; 12E-9 => 1.2E-8
+ 		STAXY(TOS)
 
-            ldx #TOS
-            ldy #NXT
-            jsr CalcCopy
+ 		LDX 	#TOS
+ 		LDY 	#NXT
+ 		JSR 	CalcCopy
 
-            jsr CalcStrF
+ 		JSR 	CalcStrF
 
-            LDAX(RES)
-            jsr PrStrAX
+ 		LDAX(RES)
+ 		JSR 	PrStrAX
 
-            brk
+ 		BRK
 
 TestRtn:
 
 
 
 
-;---------------------------------------------------------------- CalcMul10
-CalcMul10L:; TOS = TOS * 10
+;--------------------------------------------------------------------- CalcMul10
+CalcMul10L 	; TOS = TOS * 10
 ;16bit= 74cycles
 ;24bit=104
-			lda TOS
-			sta RES
-			lda TOS+1
-			sta RES+1
-			lda TOS+2
-			sta RES+2           ; RES = TOS
-			;
-			asl RES
-			rol RES+1
-			rol RES+2           ; RES = 2*TOS
-			;
-			asl RES
-			rol RES+1
-			rol RES+2           ; RES = 2*TOS
-			;
-			clc
-			lda TOS
-			adc RES
-			sta TOS
-			lda TOS+1
-			adc RES+1
-			sta TOS+1
-			;
-			lda TOS+2
-			adc RES+2
-			sta TOS+2           ;TOS = 5*TOS
-			;
-			asl TOS
-			rol TOS+1
-			rol TOS+2           ;TOS = 10*TOS
-			rts
+ 		LDA 	TOS
+ 		STA 	RES
+ 		LDA 	TOS+1
+ 		STA 	RES+1
+ 		LDA 	TOS+2
+ 		STA 	RES+2 		; RES = TOS
+	 	;-- 
+ 		ASL 	RES
+ 		ROL 	RES+1
+ 		ROL 	RES+2 		; RES = 2*TOS
+	 	;-- 
+ 		ASL 	RES
+ 		ROL 	RES+1
+ 		ROL 	RES+2 		; RES = 2*TOS
+	 	;-- 
+ 		CLC
+ 		LDA 	TOS
+ 		ADC 	RES
+ 		STA 	TOS
+ 		LDA 	TOS+1
+ 		ADC 	RES+1
+ 		STA 	TOS+1
+	 	;-- 
+ 		LDA 	TOS+2
+ 		ADC 	RES+2
+ 		STA 	TOS+2 		;TOS = 5*TOS
+	 	;-- 
+ 		ASL 	TOS
+ 		ROL 	TOS+1
+ 		ROL 	TOS+2 		;TOS = 10*TOS
+ 		RTS
 
-;-----------------------------------------------------------------------
-Mult:; TOS * NXT -> RES
-			lda #0       			;Initialize RES to 0
-			sta RES+2
-			ldx #16      			;There are 16 bits in NXT
-L1      	lsr NXT+1   			;Get low bit of NXT
-			ror NXT
-			bcc L2       			;0 or 1?
-			tay          			;If 1, add TOS (hi byte of RES is in A)
-			clc
-			lda TOS
-			adc RES+2
-			sta RES+2
-			tya
-			adc TOS+1
-L2      	ror A        			;"Stairstep" shift
-			ror RES+2
-			ror RES+1
-			ror RES
-			dex
-			bne L1
-			sta RES+3
-			rts
-
-
+;--------------------------------------------------------------------- 
+Mult 		; TOS * NXT -> RES
+ 		LDA 	#0 		;Initialize RES to 0
+ 		STA 	RES+2
+ 		LDX 	#16 		;There are 16 bits in NXT
+L1 		LSR 	NXT+1 		;Get low bit of NXT
+ 		ROR 	NXT
+ 		BCC 	L2 		;0 or 1?
+ 		TAY 			;If 1, add TOS (hi byte of RES is in A)
+ 		CLC
+ 		LDA 	TOS
+ 		ADC 	RES+2
+ 		STA 	RES+2
+ 		TYA
+ 		ADC 	TOS+1
+L2 		ROR 	A 		;"Stairstep" shift
+ 		ROR 	RES+2
+ 		ROR 	RES+1
+ 		ROR 	RES
+ 		DEX
+ 		BNE 	L1
+ 		STA 	RES+3
+ 		RTS
 
 
 
-;======================================================================
+
+
+;===================================================================== 
 ; UTILITIY
 
-CharOut:; print A to screen
-            jmp SimPut
-CharIn:; get cahr from keyboard
-            jmp SimGet
+CharOut 	; print A to screen
+ 		JMP 	SimPut
+CharIn 		; get cahr from keyboard
+ 		JMP 	SimGet
 
 
-CODEPAGE = 1
-;---------------------------------------------------- Simulator
+CODEPAGE 	= 	1
+;--------------------------------------------------------------------- Simulator
 #include "Simulator.a65"
 ;SimCls:; Clear Screen (CLS / FormFeed)
 ;SimGet:; input a character via the simulator, null if none [A]
 ;SimPut:; output a character via the simultor
 ;Simulator:
 
-;---------------------------------------------------- UtilHex
+;--------------------------------------------------------------------- UtilHex
 ;A2Hex:; convert A to hex value (CY is set if valid, clear if not) [A]
 ;PrAHex:; Print A in hex form [A]
 ;PrAXHex:; print AX (lo/hi) as 4 hex digits [A]
 ;PrHex:; print hex digit for low nibble of A [A]
 #include "UtilHex.a65"
 
-;---------------------------------------------------- Util
+;--------------------------------------------------------------------- Util
 ;_Print_:;Print in-line string
 ;PrStr:; print a null-terminated string pointed to by Z_Ptr [A]
 ;PrStrAX:; print a null-terminated string pointed to by AX [A]
@@ -169,12 +169,12 @@ CODEPAGE = 1
 #include "Util.a65"
 ;allows #Define PRINT(str) jsr _Print_ \ .db str, 0
 
-;---------------------------------------------------- Test
+;--------------------------------------------------------------------- Test
 ; z=Zpg addr to check, val=expected value
 ;#DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
 #include "Test.a65"
 
-;---------------------------------------------------- Test
+;--------------------------------------------------------------------- Test
 #include "Calc.a65"
 
 

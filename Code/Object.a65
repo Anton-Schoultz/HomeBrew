@@ -16,10 +16,10 @@
 
 #if ($>>8)==0
 .LIST
-;------------------------------- Object Z-Page
-Int(OBJ)			; pointer to current object (set from the frame) - access object variables
-Int(OCID)			; class ID of THIS - fetched from object
-Int(OSTATIC)		; pointer to the class static object (looked up) - access static variable
+;--------------------------------------------------------------------- Object Z-Page
+Int(OBJ) 	; pointer to current object (set from the frame) - access object variables
+Int(OCID) 	; class ID of THIS - fetched from object
+Int(OSTATIC) 	; pointer to the class static object (looked up) - access static variable
 
 .NOLIST
 #endif
@@ -28,12 +28,12 @@ Int(OSTATIC)		; pointer to the class static object (looked up) - access static v
 #if CODEPAGE
 #ifndef _Object
 #define _Object
-;================================================================ OBJECT
+;===================================================================== OBJECT
 Object:
 
 
 
-;---------------------------------------------------------------- Obj
+;--------------------------------------------------------------------- Obj
 
 
 

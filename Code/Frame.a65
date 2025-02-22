@@ -3,28 +3,28 @@
 ; Argument	= Value passed by caller
 ; Parameter	= Variable name in function
 ;
-;--- These are from Object
-;Int(OBJ)			; pointer to current object (set from the frame) - access object variables
-;Int(OCID)			; class ID of THIS - fetched from object
-;Int(OSTATIC)		; pointer to the class static object (looked up) - access static variable
+;--------------------------------------------------------------------- These are from Object
+;Int(OBJ)	; pointer to current object (set from the frame) - access object variables
+;Int(OCID)	; class ID of THIS - fetched from object
+;Int(OSTATIC)	; pointer to the class static object (looked up) - access static variable
 
 
 #if ($>>8)==0
 .LIST
-;------------------------------- Frame Z-Page
-Int(FB)             ; Curent Frame base pointer - access locals variables (incl args)
+;--------------------------------------------------------------------- Frame Z-Page
+Int(FB) 	; Curent Frame base pointer - access locals variables (incl args)
 
 
-Int(SFB)			; Sub-frame base pointer
-Short(FX)			; Frame offset index
-Short(SFX)			; Sub-Frame offset index
+Int(SFB) 	; Sub-frame base pointer
+Short(FX) 	; Frame offset index
+Short(SFX) 	; Sub-Frame offset index
 
 .NOLIST
 #endif
 
 #if ($>>8)==2
 .LIST
-;------------------------------- Frame System variables
+;--------------------------------------------------------------------- Frame System variables
 ;
 .NOLIST
 #endif
@@ -35,7 +35,7 @@ Short(SFX)			; Sub-Frame offset index
 #ifndef _Frame
 #define _Frame
 
-;------------------------------- frame structure
+;--------------------------------------------------------------------- frame structure
 ; length of parent frame, subtract to get parent's base
 #define F_PSZ 0
 ; length of args (offset to first byte after the args)
@@ -51,10 +51,10 @@ Short(SFX)			; Sub-Frame offset index
 
 
 .LIST
-;================================================================ FRAME
+;===================================================================== FRAME
 Frame:
 
-;---------------------------------------------------------------- Frame
+;--------------------------------------------------------------------- Frame
 Frame
 
 

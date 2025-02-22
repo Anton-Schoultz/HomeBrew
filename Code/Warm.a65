@@ -4,8 +4,8 @@
 ;
 #ifndef _Warm
 #define _Warm
-;------------------------------------------------------------------------- Warm
-Warm: ; Warm Start entry point
+;--------------------------------------------------------------------- Warm
+Warm:; Warm Start entry point
 
 
 

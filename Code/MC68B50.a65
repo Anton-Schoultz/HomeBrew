@@ -12,68 +12,68 @@
 
 ; RS232CHIP is set to the memory address where the chip is mapped
 
-;------------------------------------------------------------------- setup values here
-COM_DATA	= ADR_RS232			; Data transmit/receive register
-COM_CTRL	= ADR_RS232+1		; Control (Wr)/ Status (Rd)
+;--------------------------------------------------------------------- setup values here
+COM_DATA 	= 	ADR_RS232 	; Data transmit/receive register
+COM_CTRL 	= 	ADR_RS232+1 	; Control (Wr)/ Status (Rd)
 
 
-;-- I/O device interface jump table offsets
+;--------------------------------------------------------------------- I/O device interface jump table offsets
 ;IO_INIT		= 0	;Init
 ;IO_CHRIN		= 3	;CharInput
 ;IO_CHROUT		= 6	;CharOutput
 ;IO_RDSTATUS	= 9 ;RdStatus
 ;IO_WRCMD		= 12;WrCommand
 
-MC68B50:; Serial port device using the MC68B50 chip 0:init,3:CharIn,6:CharOut,9:RdStatus,12:WrCmd
-			jmp	ComReset		; Init
-			jmp	ComGet			; Char Input
-			jmp ComPut			; Char Ouput
-			jmp	ComStatus		; Read Status
-			jmp	ComFmt			; Write Command (Set Format .A)
+MC68B50 	; Serial port device using the MC68B50 chip 0:init,3:CharIn,6:CharOut,9:RdStatus,12:WrCmd
+ 		JMP 	ComReset 	; Init
+ 		JMP 	ComGet 	; Char Input
+ 		JMP 	ComPut 	; Char Ouput
+ 		JMP 	ComStatus 	; Read Status
+ 		JMP 	ComFmt 	; Write Command (Set Format .A)
 ;
-;------------------------------------------------------------------- ComReset
-ComReset:	; Reset the serial chip
-			lda #COM_RST
-			sta COM_CTRL		; Set the reset bits to reset the chip
+;--------------------------------------------------------------------- ComReset
+ComReset 	; Reset the serial chip
+ 		LDA 	#COM_RST
+ 		STA 	COM_CTRL 	; Set the reset bits to reset the chip
 
-;------------------------------------------------------------------- ComInit
-ComInit:; Initialise the coms to div16, 8n2
-			lda #(COM_DIV16 | COM_8N2)	; default for 8N2, div16
+;--------------------------------------------------------------------- ComInit
+ComInit 	; Initialise the coms to div16, 8n2
+ 		LDA 	#(COM_DIV16 | COM_8N2) ; default for 8N2, div16
 
-;------------------------------------------------------------------- ComFmt
-ComFmt:	; Set coms format as per A reg
-			sta COM_CTRL		; Set coms speed and format
-ComNOP		rts
+;--------------------------------------------------------------------- ComFmt
+ComFmt 		; Set coms format as per A reg
+ 		STA 	COM_CTRL 	; Set coms speed and format
+ComNOP 		RTS
 
-;------------------------------------------------------------------- ComStatus
-ComStatus:; Return the status of the coms chip in A
-			lda	COM_CTRL		; read Status register
-			rts
+;--------------------------------------------------------------------- ComStatus
+ComStatus 	; Return the status of the coms chip in A
+ 		LDA 	COM_CTRL 	; read Status register
+ 		RTS
 
-;------------------------------------------------------------------- ComGet
-ComGet:	; Get data into A if available, otherwise return zero
-			lda	COM_CTRL		; read status
-			and	#COM_RDRF		; check if rcvd full
-			beq	ComGetX			; none available so exit with A=0
-			; have data
-ComRx		; fetch the data from the chip without waiting
-			lda	COM_DATA		; read the data byte
-ComGetX		rts
+;--------------------------------------------------------------------- ComGet
+ComGet 		; Get data into A if available, otherwise return zero
+ 		LDA 	COM_CTRL 	; read status
+ 		AND 	#COM_RDRF 	; check if rcvd full
+ 		BEQ 	ComGetX 	; none available so exit with A=0
+ 		;-- -- -- -- -- -- -- have data
+ComRx 		; fetch the data from the chip without waiting
+ 		LDA 	COM_DATA 	; read the data byte
+ComGetX 	RTS
 
-;------------------------------------------------------------------- ComPut
-ComPut:	; write character in A to the serial port once it's available
-			pha					; Save byte to send
+;--------------------------------------------------------------------- ComPut
+ComPut 		; write character in A to the serial port once it's available
+ 		PHA 			; Save byte to send
 
-ComPut0	; available?
-			lda	COM_CTRL		; get status
-			and	#COM_TDRE
-			beq	ComPut0			; wait for it to be empty
-			;
-			pla					; restore data byte
-			;- fall through
-ComTx:		; Send A to com without waiting
-			sta	COM_DATA
-			rts
+ComPut0 	; available?
+ 		LDA 	COM_CTRL 	; get status
+ 		AND 	#COM_TDRE
+ 		BEQ 	ComPut0 	; wait for it to be empty
+ 		;-- -- -- -- -- -- --
+ 		PLA 			; restore data byte
+ 		;-- -- -- -- -- -- -- - fall through
+ComTx 		; Send A to com without waiting
+ 		STA 	COM_DATA
+ 		RTS
 
 ;.echo $-MC68B50
 ;.echo " bytes for MC68B50\r"

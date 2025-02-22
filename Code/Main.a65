@@ -1,24 +1,24 @@
 
-#include "Macro.a65"			; macro definitions
-#include "Vars.a65"				; Z-Page, Stack and system ram
-#include "IOMap.a65"			; Define I/O port adresses
+#include "Macro.a65"		 			; macro definitions
+#include "Vars.a65"		 			; Z-Page, Stack and system ram
+#include "IOMap.a65"		 			; Define I/O port adresses
 
 
-ROMBEG .org $E000
+ROMBEG 		.ORG 	$E000
 ;.FILL $2000,$EA
 ;.org $E000
 
-CODEPAGE = 1
+CODEPAGE 	= 	1
 .LIST
-;========================================================================
+;===================================================================== 
 ; CODE
-;========================================================================
+;===================================================================== 
 ;
 
 #include "Cold.a65"
-	; falls through to Warm start
+ 		;-- falls through to Warm start
 #include "Warm.a65"
-	; falls through to Main Loop
+ 		;-- falls through to Main Loop
 
 ; $02 is undocumented NOP, 2bytes, 2Cycles
 #define MARK(n) .DB $02,n
@@ -29,25 +29,25 @@ CODEPAGE = 1
 
 
 
-;------------------------------------------------------------------------- Main
-Main: ; Main loop code
-			jsr	DevDefault		; Default input & output (CONSOLE => Simulator)
+;--------------------------------------------------------------------- Main
+Main:; Main loop code
+ 		JSR 	DevDefault 	; Default input & output (CONSOLE => Simulator)
 
-			MARK(1)
+ 		MARK(1)
 
-			lda #CLS			; output form-feed = Clear Screen
-			jsr	CharOut
+ 		LDA 	#CLS 		; output form-feed = Clear Screen
+ 		JSR 	CharOut
 
-            MARK(2)
+ 		MARK(2)
 
-			PRINT("TESTING...\r\n")
+ 		PRINT("TESTING...\r\n")
 
-            jsr TestChar
+ 		JSR 	TestChar
 
-			jsr	Calc            ; Init calc system
+ 		JSR 	Calc 		; Init calc system
 
-            PRINT("-- CONVERT --\r\n")
-            jsr TestCvt
+ 		PRINT("-- CONVERT --\r\n")
+ 		JSR 	TestCvt
 
 ;            PRINT("-- RANDOM --\r\n")
 ;			PRINT("123 456 Add\r\n")
@@ -65,35 +65,35 @@ Main: ; Main loop code
 ;            jsr CalcMulI
 ;            TSTRES(5535)
 ;
-            PRINT("-- TEST1 --\r\n")
-            jsr Test1
+ 		PRINT("-- TEST1 --\r\n")
+ 		JSR 	Test1
 
-            PRINT("-- TEST2 --\r\n")
-            jsr Test2
+ 		PRINT("-- TEST2 --\r\n")
+ 		JSR 	Test2
 ;
 
 
 
-Stop:; halt simulator
+Stop 		; halt simulator
 			.db $DB
-			BRK
+ 		BRK
 
-;---------------------------------------------- TestChar
-TestChar:; test char routiones CharRd, CharWr
-            jsr CharClear       ; wipe and point
-            POINT(Z_Rd,Msg)     ; source is message
-            jsr CharEcho        ; read input chars until null and send to output
-            rts
+;--------------------------------------------------------------------- TestChar
+TestChar 	; test char routiones CharRd, CharWr
+ 		JSR 	CharClear 	; wipe and point
+ 		POINT(Z_Rd,Msg) 	; source is message
+ 		JSR 	CharEcho 	; read input chars until null and send to output
+ 		RTS
 
-;---------------------------------------------- TestCvt
-TestCvt:; test conversions
-            PRINT("Convert -1234 $FB2E\r\n")
+;--------------------------------------------------------------------- TestCvt
+TestCvt 	; test conversions
+ 		PRINT("Convert -1234 $FB2E\r\n")
 
-			POINT(Z_Rd,NumNeg)
-			jsr CalcParse  		; Read from memory, parse as Integer; -1234=FB2E
-			TEST(TOS,-1234)
-			jsr MShowTOS
-            jsr NewLine
+ 		POINT(Z_Rd,NumNeg)
+ 		JSR 	CalcParse 	; Read from memory, parse as Integer; -1234=FB2E
+ 		TEST(TOS,-1234)
+ 		JSR 	MShowTOS
+ 		JSR 	NewLine
 
 ;            PRINT("Convert 1234 $04D2\r\n")
 ;			LDAX(NumPos)
@@ -103,135 +103,135 @@ TestCvt:; test conversions
 ;			TEST(TOS,1234)     ; this should not fail (MShow saves & restores)
 ;            jsr NewLine
 
-            rts
+ 		RTS
 
-;---------------------------------------------- Test1
-Test1:; tests with -100, 150
-            PRINT("-100 150 Add = 50\r\n")
-            jsr LdVal
-            jsr CalcAddI        ; -100 + 150 => 50
-            jsr MShowTOS
-			TEST(TOS,50)
-            jsr NewLine
+;--------------------------------------------------------------------- Test1
+Test1 		; tests with -100, 150
+ 		PRINT("-100 150 Add = 50\r\n")
+ 		JSR 	LdVal
+ 		JSR 	CalcAddI 	; -100 + 150 => 50
+ 		JSR 	MShowTOS
+ 		TEST(TOS,50)
+ 		JSR 	NewLine
 
-            PRINT("-100 150 Sub = -250\r\n")
-            jsr LdVal
-            jsr CalcSubI
-            jsr MShowTOS
-			TEST(TOS,-250)
-            jsr NewLine
+ 		PRINT("-100 150 Sub = -250\r\n")
+ 		JSR 	LdVal
+ 		JSR 	CalcSubI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,-250)
+ 		JSR 	NewLine
 
-            PRINT("-100 150 Mul = -15000\r\n")
-            jsr LdVal
-            jsr CalcMulI
-            jsr MShowTOS
-			TEST(TOS,-15000)
-            jsr NewLine
+ 		PRINT("-100 150 Mul = -15000\r\n")
+ 		JSR 	LdVal
+ 		JSR 	CalcMulI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,-15000)
+ 		JSR 	NewLine
 
-            PRINT("-100 150 Div = 0 -0.66\r\n")
-            jsr LdVal
-            jsr CalcDivI
-            jsr MShowTOS
-			TEST(TOS,0)
-            jsr NewLine
+ 		PRINT("-100 150 Div = 0 -0.66\r\n")
+ 		JSR 	LdVal
+ 		JSR 	CalcDivI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,0)
+ 		JSR 	NewLine
 
-            PRINT("-100 150 Mod = 100\r\n")
-            jsr LdVal
-            jsr CalcModI
-            jsr MShowTOS
-			TEST(TOS,100)
-            jsr NewLine
+ 		PRINT("-100 150 Mod = 100\r\n")
+ 		JSR 	LdVal
+ 		JSR 	CalcModI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,100)
+ 		JSR 	NewLine
 
-            rts
+ 		RTS
 
-;---------------------------------------------- Test2
-Test2:; tests with 100, -50
-            PRINT("100 -50 Add = 50\r\n")
-            jsr LdVal2
-            jsr CalcAddI
-            jsr MShowTOS
-			TEST(TOS,50)
-            jsr NewLine
+;--------------------------------------------------------------------- Test2
+Test2 		; tests with 100, -50
+ 		PRINT("100 -50 Add = 50\r\n")
+ 		JSR 	LdVal2
+ 		JSR 	CalcAddI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,50)
+ 		JSR 	NewLine
 
-            PRINT("100 -50 Sub = 150\r\n")
-            jsr LdVal2
-            jsr CalcSubI
-            jsr MShowTOS
-			TEST(TOS,150)
-            jsr NewLine
+ 		PRINT("100 -50 Sub = 150\r\n")
+ 		JSR 	LdVal2
+ 		JSR 	CalcSubI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,150)
+ 		JSR 	NewLine
 
-            PRINT("100 -50 Mul = -5000\r\n")
-            jsr LdVal2
-            jsr CalcMulI
-            jsr MShowTOS
-			TEST(TOS,-5000)
-            jsr NewLine
+ 		PRINT("100 -50 Mul = -5000\r\n")
+ 		JSR 	LdVal2
+ 		JSR 	CalcMulI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,-5000)
+ 		JSR 	NewLine
 
-            PRINT("100 -50 Div = -2\r\n")
-            jsr LdVal2
-            jsr CalcDivI
-            jsr MShowTOS
-			TEST(TOS,-2)
-            jsr NewLine
+ 		PRINT("100 -50 Div = -2\r\n")
+ 		JSR 	LdVal2
+ 		JSR 	CalcDivI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,-2)
+ 		JSR 	NewLine
 
-            PRINT("100 -50 Mod = 0\r\n")
-            jsr LdVal2
-            jsr CalcModI
-            jsr MShowTOS
-			TEST(TOS,0)
-            jsr NewLine
+ 		PRINT("100 -50 Mod = 0\r\n")
+ 		JSR 	LdVal2
+ 		JSR 	CalcModI
+ 		JSR 	MShowTOS
+ 		TEST(TOS,0)
+ 		JSR 	NewLine
 
-            rts
+ 		RTS
+ 		;-- test indent comment
 
+;--------------------------------------------------------------------- Load Values
+LdVal 		; -100, push, 150
+ 		LDAX(-100) 		; -100=$FF9C
+ 		JSR 	CalcSetI
+ 		JSR 	CalcPush
+ 		LDAX(150) 		; 150 =$0096
+ 		JSR 	CalcSetI
+ 		RTS
+;--------------------------------------------------------------------- Load Values
+LdVal2 		; 100, push, -50
+ 		LDAX(100) 		; -100=$FF9C
+ 		JSR 	CalcSetI
+ 		JSR 	CalcPush
+ 		LDAX(-50) 		; 150 =$0096
+ 		JSR 	CalcSetI
+ 		RTS
 
-;---------------------------------------------- Load Values
-LdVal:; -100, push, 150
-			LDAX(-100)          ; -100=$FF9C
-			jsr CalcSetI
-			jsr CalcPush
-			LDAX(150)           ; 150 =$0096
-			jsr CalcSetI
-            rts
-;---------------------------------------------- Load Values
-LdVal2:; 100, push, -50
-			LDAX(100)          ; -100=$FF9C
-			jsr CalcSetI
-			jsr CalcPush
-			LDAX(-50)           ; 150 =$0096
-			jsr CalcSetI
-            rts
-
-;---------------------------------------------- MShowTOS
+;--------------------------------------------------------------------- MShowTOS
 ;Show contents of TOS (kills tos)
-MShowTOS:;Show contents of TOS (kills tos)
-            jsr CharClear       ; clear string buffer
-            ;
-			jsr CalcGetI		; TOS -> AX
-			PUSHAXY()           ; store
-			;
-			jsr	CvtAXHex		; append AX as hex (FB2E) OK
-			lda #'='
-			jsr CharWr
-			;
-			jsr CvtInt          ; Convert TOS to integer String and write to output (CharWr)
-			;
-			PULLAXY()            ; restore
-			jsr CalcSetI
-			;
-            jsr CharPrint       ; print the buffer out
+MShowTOS 	;Show contents of TOS (kills tos)
+ 		JSR 	CharClear 	; clear string buffer
+ 		;-- 
+ 		JSR 	CalcGetI 	; TOS -> AX
+ 		PUSHAXY() 		; store
+ 		;-- 
+ 		JSR 	CvtAXHex 	; append AX as hex (FB2E) OK
+ 		LDA 	#'='
+ 		JSR 	CharWr
+ 		;-- 
+ 		JSR 	CvtInt 	; Convert TOS to integer String and write to output (CharWr)
+ 		;-- 
+ 		PULLAXY() 		; restore
+ 		JSR 	CalcSetI
+ 		;-- 
+ 		JSR 	CharPrint 	; print the buffer out
 
-NewLine:; print CR,LF
-            lda #CR
-			jsr CharOut
-            lda #LF
-			jmp CharOut
+NewLine 	; print CR,LF
+ 		LDA 	#CR
+ 		JSR 	CharOut
+ 		LDA 	#LF
+ 		JMP 	CharOut
 
 
 
-Msg: .DB " Hello World\r\nThis is me!",0
+Msg: 		.DB 	" Hello World\r\nThis is me!",0
 
-NumNeg	.db "-1234",0	; -1234=FB2E
-NumPos	.db "1234",0	; +1234=$04D2
+NumNeg 		.DB 	"-1234",0 	; -1234=FB2E
+NumPos 		.DB 	"1234",0 	; +1234=$04D2
 
 
 #include 	"UtilHex.a65"
@@ -245,28 +245,28 @@ NumPos	.db "1234",0	; +1234=$04D2
 
 ;#include	"Test.a65"
 
-;========================================================================
+;===================================================================== 
 ; MODULES
-;========================================================================
+;===================================================================== 
 ;
 #include 	"Modules.a65"
 
 #include 	"Irq.a65"
 
 
-ROMEND = $
+ROMEND 		= 	$
 .echo "\rTOTAL "
 .echo (ROMEND - ROMBEG)
 .echo " bytes : "
 
-;------------------------------------------------------------------------- hardware vectors
+;--------------------------------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
 .org $FFFA
-.dw Nmi		; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
-.dw Cold	; FFFC,D=> RESET	Points to Reset address (cold start)
-.dw Irq		; FFFE,F=> IRQ		Points to Interrupt handler
+.dw Nmi	 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Cold 				; FFFC,D=> RESET	Points to Reset address (cold start)
+.dw Irq	 				; FFFE,F=> IRQ		Points to Interrupt handler
 
 .echo ($FFFA - ROMEND) / 256
 .echo "/32 pages (x256) available in the 8k ROM. E000-FFFF\r"

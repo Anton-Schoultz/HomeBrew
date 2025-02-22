@@ -27,9 +27,9 @@
 
 #if ($>>8)==0
 .LIST
-;------------------------------- Monitor Z-Page
-Int(MonAdr)             ; Monitor address
-Int(MonVal)             ; Monitor value
+;--------------------------------------------------------------------- Monitor Z-Page
+Int(MonAdr) 	; Monitor address
+Int(MonVal) 	; Monitor value
 .NOLIST
 #endif
 
@@ -38,95 +38,95 @@ Int(MonVal)             ; Monitor value
 #ifndef _Montor
 #define _Monitor
 .LIST
-;================================================================ MONITOR
+;===================================================================== MONITOR
 
-Monitor: ; enter with character to deal with in A
-            cmp #0              ; Null char, just return
-            beq MonitorX
-            cmp #'@'            ; '@' sets address
-            beq MonSet
-            cmp #'X'            ; 'X' execute code at MonAdr
-            beq MonRun
-            cmp #'?'            ; '?' display 16 bytes and incr adr
-            beq MonShow
-            cmp #','            ; ',' write low byte to memory
-            beq MonWr
-            cmp #' '            ; ' ' write low byte to memory
-            beq MonWr
-            ; try hex deigit
-            jsr A2Hex
-            bcs MonDigit        ; CY set if valid
-MonitorX    rts
-
-
-MonWr:; Write low valkue byte to memory address and bump address
-            lda MonVal
-            sta (MonAdr)
-            inc MonAdr
-            bne MonWrX
-            inc MonAdr+1
-MonWrX      rts
+Monitor 	; enter with character to deal with in A
+ 		CMP 	#0 		; Null char, just return
+ 		BEQ 	MonitorX
+ 		CMP 	#'@'            ; '@' sets address
+ 		BEQ 	MonSet
+ 		CMP 	#'X'            ; 'X' execute code at MonAdr
+ 		BEQ 	MonRun
+ 		CMP 	#'?'            ; '?' display 16 bytes and incr adr
+ 		BEQ 	MonShow
+ 		CMP 	#','            ; ',' write low byte to memory
+ 		BEQ 	MonWr
+ 		CMP 	#' '            ; ' ' write low byte to memory
+ 		BEQ 	MonWr
+ 		;-- try hex deigit
+ 		JSR 	A2Hex
+ 		BCS 	MonDigit 	; CY set if valid
+MonitorX 	RTS
 
 
-MonSet:; sets address from the value
-            lda MonVal
-            sta MonAdr
-            lda MonVal+1
-            sta MonAdr+1
-            rts
+MonWr 		; Write low valkue byte to memory address and bump address
+ 		LDA 	MonVal
+ 		STA 	(MonAdr)
+ 		INC 	MonAdr
+ 		BNE 	MonWrX
+ 		INC 	MonAdr+1
+MonWrX 		RTS
 
-MonRun:; call code at MonAdr, pass low value in A
-            lda MonVal
-            jmp (MonAdr)
 
-MonDigit:; take hex value in A and shift it into the value
-            ASL a
-            ASL a               ; Hex digit to MSD of A
-            ASL a
-            ASL a
-            LDX     #4          ; Shift count
-MonShift:   ASL a               ; Hex digit left, MSB to carry
-            ROL     MonVal      ; Rotate into LSD
-            ROL     MonVal+1    ; Rotate into MSD's
-            DEX                 ; Done 4 shifts?
-            BNE     MonShift    ; No, loop
-            RTS                 ;   Processed hex digit into H,L
+MonSet 		; sets address from the value
+ 		LDA 	MonVal
+ 		STA 	MonAdr
+ 		LDA 	MonVal+1
+ 		STA 	MonAdr+1
+ 		RTS
 
-MonShow: ; Display a line of data from memory (16 bytes) and bumo address
-            lda     #CR
-            jsr     CharOut
-            lda     #LF
-            jsr     CharOut
-            ;-- set address to paragraph boundary $XXX0
-            lda     MonAdr
-            and     #$F8
-            sta     MonAdr
-            ;-- display address
-            LDA     MonAdr+1
-            JSR     PrAHex
-            LDA     MonAdr
-            JSR     PrAHex
-            LDA     #':'
-            JSR     CharOut
-            ;-- display data
-            LDY     #0
-            LDX     #8
-MonShowNxt  LDA     (MonAdr),Y      ; get data
-            JSR     PrAHex          ; print as hex
-            LDA     #' '            ; print a space
-            JSR     CharOut
-            INY                     ; next offset
-            DEX                     ; count off no of bytes to show
-            BNE     MonShowNxt      ; loop back if more
+MonRun 		; call code at MonAdr, pass low value in A
+ 		LDA 	MonVal
+ 		JMP 	(MonAdr)
 
-            ;-- bump address by 16
-            lda     #8
-            clc
-            adc     MonAdr
-            sta     MonAdr
-            bcc     MonShowX
-            inc     MonAdr+1
-MonShowX    rts
+MonDigit 	; take hex value in A and shift it into the value
+ 		ASL 	a
+ 		ASL 	a 		; Hex digit to MSD of A
+ 		ASL 	a
+ 		ASL 	a
+ 		LDX 	#4 		; Shift count
+MonShift: 	ASL 	a 		; Hex digit left, MSB to carry
+ 		ROL 	MonVal 	; Rotate into LSD
+ 		ROL 	MonVal+1 	; Rotate into MSD's
+ 		DEX 			; Done 4 shifts?
+ 		BNE 	MonShift 	; No, loop
+ 		RTS 			;   Processed hex digit into H,L
+
+MonShow 	;-- Display a line of data from memory (16 bytes) and bumo address
+ 		LDA 	#CR
+ 		JSR 	CharOut
+ 		LDA 	#LF
+ 		JSR 	CharOut
+ 		;-- set address to paragraph boundary $XXX0
+ 		LDA 	MonAdr
+ 		AND 	#$F8
+ 		STA 	MonAdr
+ 		;-- display address
+ 		LDA 	MonAdr+1
+ 		JSR 	PrAHex
+ 		LDA 	MonAdr
+ 		JSR 	PrAHex
+ 		LDA 	#':'
+ 		JSR 	CharOut
+ 		;-- display data
+ 		LDY 	#0
+ 		LDX 	#8
+MonShowNxt 	LDA 	(MonAdr),Y 	; get data
+ 		JSR 	PrAHex 	; print as hex
+ 		LDA 	#' '            ; print a space
+ 		JSR 	CharOut
+ 		INY 			; next offset
+ 		DEX 			; count off no of bytes to show
+ 		BNE 	MonShowNxt 	; loop back if more
+
+ 		;-- bump address by 16
+ 		LDA 	#8
+ 		CLC
+ 		ADC 	MonAdr
+ 		STA 	MonAdr
+ 		BCC 	MonShowX
+ 		INC 	MonAdr+1
+MonShowX 	RTS
 
 ;MonLoop: ; loop to get characters and interpret them
 ;           jsr CharIn          ; read character
@@ -139,7 +139,7 @@ MonShowX    rts
 ;.echo " bytes in Monitor.a65\r"
 #endif
 
-;=============================================================== end of Code
+;===================================================================== END OF CODE
 #endif
 
 

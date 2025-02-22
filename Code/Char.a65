@@ -10,7 +10,7 @@
 
 #if ($>>8)==0
 .LIST
-;------------------------------- Char Z-Page
+;--------------------------------------------------------------------- Char Z-Page
 ; Z_Rd = $E9
 ; Z_Wr = $F5
 .NOLIST
@@ -22,68 +22,68 @@
 #ifndef _Char
 #define _Char
 .LIST
-;======================================================================== CHAR
+;===================================================================== CHAR
 ; Character Read / Write
-;========================================================================
-CharRd .EQU $00E8
-CharWr .EQU $00F4
+;===================================================================== 
+CharRd 		.EQU 	$00E8
+CharWr 		.EQU 	$00F4
 
-Z_Rd = CharRd + 1
-Z_Wr = CharWr + 1
+Z_Rd 		= 	CharRd
+Z_Wr 		= 	CharWr
 
-;------------------------------------------------------------------------ Char
+;--------------------------------------------------------------------- Char
 Char
 ;                E8  E9  EA   EB  EC   ED  EE   EF  F0   F1  F2   F3
-CharTbl     .db $AD,$00,$04, $E6,$E9, $D0,$02, $E6,$EA, $29,$FF, $60
+CharTbl 	.DB 	$AD,$00,$04,
 ;                F4  F5  F6   F7  F8   F9  FA   FB  FC   FD
-            .db $8D,$00,$04, $E6,$F5, $D0,$02, $E6,$F6, $60
+.db $8D,$00,$04, $E6,$F5, $D0,$02, $E6,$F6, $60
 ;              FE FF
-            .db 0,0 ; avail Z-pg
+.db 0,0 				; avail Z-pg
 
-CharCopy:; Copy the CharGet & CharPut routines into Z-Page
-            ldy #$17
-CharL       lda CharTbl,y
-            sta $E8,y
-            dey
-            bpl CharL
-            rts
+CharCopy 	; Copy the CharGet & CharPut routines into Z-Page
+ 		LDY 	#$17
+CharL 		LDA 	CharTbl,y
+ 		STA 	$E8,y
+ 		DEY
+ 		BPL 	CharL
+ 		RTS
 
 
-;------------------------------------------------------------------------ CharAppendAX
-CharAppendAX:; Copy from AX to Z_Wr until a null
-            STAX(Z_Rd)
-            ; fall through
-;------------------------------------------------------------------------ CharAppend
-CharAppend:; Copy from Z_Rd to Z_Wr until a null
-            jsr CharRd          ; read a char
-            jsr CharWr          ; write it
-            cmp #0              ; check if zero
-            bne CharAppend      ; if not, loop back for more
-            rts                 ; done
+;--------------------------------------------------------------------- CharAppendAX
+CharAppendAX 	; Copy from AX to Z_Wr until a null
+ 		STAX(Z_Rd)
+	 	;-- fall through
+;--------------------------------------------------------------------- CharAppend
+CharAppend 	; Copy from Z_Rd to Z_Wr until a null
+ 		JSR 	CharRd 	; read a char
+ 		JSR 	CharWr 	; write it
+ 		CMP 	#0 		; check if zero
+ 		BNE 	CharAppend 	; if not, loop back for more
+ 		RTS 			; done
 
-;------------------------------------------------------------------------ CharEcho
-CharEcho:; Read from Z_Rd (until null) and send to output
-            jsr CharRd          ; read a char
-            jsr CharOut         ; write it
-            cmp #0              ; check if zero
-            bne CharEcho        ; if not, loop back for more
-            rts                 ; done
+;--------------------------------------------------------------------- CharEcho
+CharEcho 	; Read from Z_Rd (until null) and send to output
+ 		JSR 	CharRd 	; read a char
+ 		JSR 	CharOut 	; write it
+ 		CMP 	#0 		; check if zero
+ 		BNE 	CharEcho 	; if not, loop back for more
+ 		RTS 			; done
 
-;------------------------------------------------------------------------ CharClear
-CharClear:; Clear the STRBUF to nulls and set to write to it
-            POINT(Z_Wr,STRBUF)  ; point CharWr to go into STRBUF
-            lda #0
-            ldy #(STRBUFLEN-1)
-CharClearL  sta (Z_Wr),y
-            dey
-            bne CharClearL
-            sta (Z_Wr),y
-            rts
+;--------------------------------------------------------------------- CharClear
+CharClear 	; Clear the STRBUF to nulls and set to write to it
+ 		POINT(Z_Wr,STRBUF) 	; point CharWr to go into STRBUF
+ 		LDA 	#0
+ 		LDY 	#(STRBUFLEN-1)
+CharClearL 	STA 	(Z_Wr),y
+ 		DEY
+ 		BNE 	CharClearL
+ 		STA 	(Z_Wr),y
+ 		RTS
 
-;------------------------------------------------------------------------ CharPrint
-CharPrint:; send contents of STRBUF to output (CharOut)
-            POINT(Z_Ptr,STRBUF) ; point Z_Ptr to the start of the stirng buffer
-            jmp PrStr           ; send it to CharOut
+;--------------------------------------------------------------------- CharPrint
+CharPrint 	; send contents of STRBUF to output (CharOut)
+ 		POINT(Z_Ptr,STRBUF) 	; point Z_Ptr to the start of the stirng buffer
+ 		JMP 	PrStr 		; send it to CharOut
 
 
 

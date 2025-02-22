@@ -7,16 +7,16 @@
 
 #define STRBUFLEN 64
 
-CODEPAGE = 0
+CODEPAGE 	= 	0
 .org $0000
-;================================================================ Z-PAGE
+;===================================================================== Z-PAGE
 
-Int(Z_Ptr)          ; general object pointer (used by print string )
-Int(Z_Src)          ; Pointer to source (2 bytes)
-Int(Z_Tgt)          ; Pointer to destination
+Int(Z_Ptr) 	; general object pointer (used by print string )
+Int(Z_Src) 	; Pointer to source (2 bytes)
+Int(Z_Tgt) 	; Pointer to destination
 
-Short(Z_Tmp)        ; temp byte for counter etc
-Short(Z_Cnt)        ; Counter/ max short term scratch
+Short(Z_Tmp) 	; temp byte for counter etc
+Short(Z_Cnt) 	; Counter/ max short term scratch
 ; $10 ..
 
 
@@ -28,25 +28,25 @@ Short(Z_Cnt)        ; Counter/ max short term scratch
 .echo " bytes available in Z-Page (0000-00FF)\r"
 
 .LIST
-;================================================================ CPU STACK
+;===================================================================== CPU STACK
 .org $0100
-;-- this is the cpu stack growing down from 01FF to 0100
+; this is the cpu stack growing down from 01FF to 0100
 #include "Modules.a65"
 .LIST
-;================================================================ SYSVARS
+;===================================================================== SYSVARS
 .org $0200
-Var(STRBUF,STRBUFLEN)      ; output string buffer
+Var(STRBUF,STRBUFLEN) ; output string buffer
 
-;------------------------------- Interrupt handlers
-Int(V_IRQ)          ; body of IRQ handler
-Int(V_NMI)          ; body of NMI handler
-Int(V_BRK)          ; body of BRK handler
-Int(Z_IrqPtr)       ; Pointer for IRQ use
+;--------------------------------------------------------------------- Interrupt handlers
+Int(V_IRQ) 	; body of IRQ handler
+Int(V_NMI) 	; body of NMI handler
+Int(V_BRK) 	; body of BRK handler
+Int(Z_IrqPtr) 	; Pointer for IRQ use
 
-;------------------------------- Char In/Out, Devices
-Int(V_CHROUT)       ; vector to output a character - used by CharOut
-Int(V_CHRIN)        ; vector to read a character   - Used by CharIn
-Short(BRK_NO)       ; BRK post byte
+;--------------------------------------------------------------------- Char In/Out, Devices
+Int(V_CHROUT) 	; vector to output a character - used by CharOut
+Int(V_CHRIN) 	; vector to read a character   - Used by CharIn
+Short(BRK_NO) 	; BRK post byte
 
 .NOLIST
 #include "Modules.a65"
@@ -55,7 +55,7 @@ Short(BRK_NO)       ; BRK post byte
 .echo " bytes available in system variables (0300-03FF)\r\n"
 
 
-;================================================================ I/O
+;===================================================================== I/O
 .org $300
 ; this is mapped to page 3 (see IOMap.a65)
 
