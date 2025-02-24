@@ -28,6 +28,7 @@
 ;;
 ;#endif
 ;
+#include	"Error.a65"
 #include	"Calc.a65"
 #include	"Monitor.a65"
 #include	"Test.a65"

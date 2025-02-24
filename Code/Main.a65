@@ -1,18 +1,18 @@
 
-#include "Macro.a65"		 			; macro definitions
-#include "Vars.a65"		 			; Z-Page, Stack and system ram
-#include "IOMap.a65"		 			; Define I/O port adresses
+#include "Macro.a65" 			; macro definitions
+#include "Vars.a65" 			; Z-Page, Stack and system ram
+#include "IOMap.a65" 			; Define I/O port adresses
 
 
 ROMBEG 		.ORG 	$E000
 ;.FILL $2000,$EA
 ;.org $E000
 
-CODEPAGE 	= 	1
+CODEPAGE 	= 1
 .LIST
-;===================================================================== 
+;=====================================================================
 ; CODE
-;===================================================================== 
+;=====================================================================
 ;
 
 #include "Cold.a65"
@@ -30,7 +30,7 @@ CODEPAGE 	= 	1
 
 
 ;--------------------------------------------------------------------- Main
-Main:; Main loop code
+Main: ; Main loop code
  		JSR 	DevDefault 	; Default input & output (CONSOLE => Simulator)
 
  		MARK(1)
@@ -38,16 +38,44 @@ Main:; Main loop code
  		LDA 	#CLS 		; output form-feed = Clear Screen
  		JSR 	CharOut
 
- 		MARK(2)
+ 		THROW(3)
+;
+; 		MARK(2)
+; 		JSR 	Calc 		; Init calc system (reset stack, TOS=0.0e0)
 
- 		PRINT("TESTING...\r\n")
+;                TEST(TOS_ML,$0000)      ; value
+;                TEST(TOS_EXP,$0000)     ; Exp , SGN
+;
+;                jsr     CalcPack        ; pack the sign and exponent
+;                TEST(TOS_EXP,$0040)     ; h:SGN, l:EXP
+;
+;                jsr     CalcUnpack      ; pack the sign and exponent
+;                TEST(TOS_EXP,$0000)     ; Exp , SGN
 
- 		JSR 	TestChar
+ 		LOAD_TOS( 123456, $C0) 	; -123456 e 0	123456=$01E240
+ 		TEST(TOS_ML,$E240) 	; value
+ 		TEST(TOS_MU,$C001) 	; Exp , SGN
 
- 		JSR 	Calc 		; Init calc system
+ 		JSR 	CalcDBugTOS
 
- 		PRINT("-- CONVERT --\r\n")
- 		JSR 	TestCvt
+ 		JSR 	CalcUnpack
+ 		JSR 	CalcDBugTOS
+
+ 		JSR 	CalcPack
+ 		JSR 	CalcDBugTOS
+
+
+;		ldx	#TOS		; point to TOS
+;		jsr	CalcNegX	; Negate it
+
+
+
+
+
+ 		BRK
+PARAGRAPH()
+NumStr:  	.DB 	"12E3",0
+.export NumStr
 
 ;            PRINT("-- RANDOM --\r\n")
 ;			PRINT("123 456 Add\r\n")
@@ -65,28 +93,28 @@ Main:; Main loop code
 ;            jsr CalcMulI
 ;            TSTRES(5535)
 ;
- 		PRINT("-- TEST1 --\r\n")
- 		JSR 	Test1
-
- 		PRINT("-- TEST2 --\r\n")
- 		JSR 	Test2
+; 		PRINT("-- TEST1 --\r\n")
+; 		JSR 	Test1
+;
+; 		PRINT("-- TEST2 --\r\n")
+; 		JSR 	Test2
 ;
 
 
 
-Stop 		; halt simulator
-			.db $DB
+Stop 		HALT() ; halt simulator
  		BRK
 
 ;--------------------------------------------------------------------- TestChar
-TestChar 	; test char routiones CharRd, CharWr
+TestChar: ; test char routiones CharRd, CharWr
  		JSR 	CharClear 	; wipe and point
  		POINT(Z_Rd,Msg) 	; source is message
  		JSR 	CharEcho 	; read input chars until null and send to output
  		RTS
 
 ;--------------------------------------------------------------------- TestCvt
-TestCvt 	; test conversions
+TestCvt: ; test conversions
+ 		PRINT("-- CONVERT --\r\n")
  		PRINT("Convert -1234 $FB2E\r\n")
 
  		POINT(Z_Rd,NumNeg)
@@ -205,19 +233,19 @@ LdVal2 		; 100, push, -50
 ;Show contents of TOS (kills tos)
 MShowTOS 	;Show contents of TOS (kills tos)
  		JSR 	CharClear 	; clear string buffer
- 		;-- 
+ 		;--
  		JSR 	CalcGetI 	; TOS -> AX
  		PUSHAXY() 		; store
- 		;-- 
+ 		;--
  		JSR 	CvtAXHex 	; append AX as hex (FB2E) OK
  		LDA 	#'='
  		JSR 	CharWr
- 		;-- 
- 		JSR 	CvtInt 	; Convert TOS to integer String and write to output (CharWr)
- 		;-- 
+ 		;--
+ 		JSR 	CvtInt 		; Convert TOS to integer String and write to output (CharWr)
+ 		;--
  		PULLAXY() 		; restore
  		JSR 	CalcSetI
- 		;-- 
+ 		;--
  		JSR 	CharPrint 	; print the buffer out
 
 NewLine 	; print CR,LF
@@ -228,7 +256,7 @@ NewLine 	; print CR,LF
 
 
 
-Msg: 		.DB 	" Hello World\r\nThis is me!",0
+Msg:  		.DB 	" Hello World\r\nThis is me!",0
 
 NumNeg 		.DB 	"-1234",0 	; -1234=FB2E
 NumPos 		.DB 	"1234",0 	; +1234=$04D2
@@ -245,16 +273,16 @@ NumPos 		.DB 	"1234",0 	; +1234=$04D2
 
 ;#include	"Test.a65"
 
-;===================================================================== 
+;=====================================================================
 ; MODULES
-;===================================================================== 
+;=====================================================================
 ;
 #include 	"Modules.a65"
 
 #include 	"Irq.a65"
 
 
-ROMEND 		= 	$
+ROMEND 		= $
 .echo "\rTOTAL "
 .echo (ROMEND - ROMBEG)
 .echo " bytes : "
@@ -264,11 +292,11 @@ ROMEND 		= 	$
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
 .org $FFFA
-.dw Nmi	 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Nmi 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
 .dw Cold 				; FFFC,D=> RESET	Points to Reset address (cold start)
-.dw Irq	 				; FFFE,F=> IRQ		Points to Interrupt handler
+.dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
 .echo ($FFFA - ROMEND) / 256
 .echo "/32 pages (x256) available in the 8k ROM. E000-FFFF\r"
 
-	.END
+.END

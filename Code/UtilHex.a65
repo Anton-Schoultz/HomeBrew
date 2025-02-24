@@ -9,9 +9,9 @@ UtilHex:
 
 ;--------------------------------------------------------------------- A2Hex
 A2Hex 		; convert A to hex value (CY is set if valid, clear if not) [A]
- 		EOR 	#'0'        	; Map digits to 0-9
+ 		EOR 	#'0' 		; Map digits to 0-9
  		CMP 	#9+1 		; Is it a decimal digit?
- 		BCC 	A2Hex9 	; Yes!
+ 		BCC 	A2Hex9 		; Yes!
  		ADC 	#$08 		; Map letter "A"-"F" to $FA-FF
  		CMP 	#$7A 		; Hex letter?
  		BCC 	A2Hex_X 	;No! Character not hex
@@ -21,7 +21,7 @@ A2Hex_X 	AND 	#$0F
 
 
 ;--------------------------------------------------------------------- CvtAXHex
-PrAHex 		; print hex string
+PrAHex: ; print hex string
  		PHA
  		POINT(Z_Wr,RES)
  		PLA
@@ -30,14 +30,14 @@ PrAHex 		; print hex string
  		JMP 	PrStr
 
 ;--------------------------------------------------------------------- CvtAXHex
-CvtAXHex 	; print AX (lo/hi) as 4 hex digits [A]
+CvtAXHex: ; print AX (lo/hi) as 4 hex digits [A]
  		PHA 			; save low
  		TXA 			; get high
  		JSR 	CvtAHex 	; print hi as hex digits
  		PLA 			; restore low
  		;-- fall through to print low as hex digits
 ;--------------------------------------------------------------------- CvtAHex
-CvtAHex 	; Print A in hex form [A]
+CvtAHex: ; Print A in hex form [A]
  		PHA 			;Save A for LSD
  		LSR 	a
  		LSR 	a
@@ -47,7 +47,7 @@ CvtAHex 	; Print A in hex form [A]
  		PLA 			; Restore A and then
  		;-- fall through to print hex routine
 ;--------------------------------------------------------------------- CvtHexN
-CvtHexN 	; Convert hex nibble to output
+CvtHexN: ; Convert hex nibble to output
  		AND 	#$0F 		; Mask LSD for hex print
  		CMP 	#10
  		BCC 	CvtHexX
@@ -55,6 +55,35 @@ CvtHexN 	; Convert hex nibble to output
 CvtHexX 	EOR 	#'0'
  		JMP 	CharWr
 
+#ifdef DBUG
+;--------------------------------------------------------------------- DBugHex
+DBugHex: ; Print A in hex form [A]
+ 		PHA 			;Save A for LSD
+ 		LSR 	a
+ 		LSR 	a
+ 		LSR 	a 		; MSD to LSD position
+ 		LSR 	a
+ 		JSR 	DBugHexN 	; Output hex digit
+ 		PLA 			; Restore A and then
+ 		;-- fall through to print hex routine
+;--------------------------------------------------------------------- DBugHexN
+DBugHexN: ; Convert hex nibble to output
+ 		AND 	#$0F 		; Mask LSD for hex print
+ 		CMP 	#10
+ 		BCC 	DBugHexNX
+ 		ADC 	#'f'
+DBugHexNX 	EOR 	#'0'
+ 		JMP 	CharOut
+
+OutNL:; print CR,LF to CharOut
+ 		LDA 	#CR
+ 		JSR 	CharOut
+ 		LDA 	#LF
+ 		Jmp 	CharOut
+
+
+
+#endif
 
 ;.echo $-UtilHex
 ;.echo " bytes in UtilHex.a65\r"

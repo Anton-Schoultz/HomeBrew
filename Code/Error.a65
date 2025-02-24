@@ -1,0 +1,80 @@
+.NOLIST
+; Error
+;
+;
+;
+
+#if ($>>8)==0
+.LIST
+;--------------------------------------------------------------------- Error Z-Page
+; Variables required, specified using the macros:-
+;	Var(name,size) name .block size
+;	Short(name) name .block 1
+;	Int(name) name .block 2
+;	Long(name) name .block 4
+
+#DEFINE THROW(er) lda #er \ sta BRK_NO \ jmp Error
+
+#DEFINE E_OK 0
+#DEFINE E_STACK 1
+
+.NOLIST
+#endif
+
+
+#if CODEPAGE
+#ifndef _Error
+#define _Error
+.LIST
+PAGE()
+;===================================================================== ERROR
+Error: ; Show message no BRK_NO
+ 		POINT(Z_Rd,ErrMsg) 	; point at start of messages
+ 		LDX 	BRK_NO 		; get error no
+ 		INX
+ErrorCnt 	DEX
+ 		BEQ 	ErrorOut 	; X=0 -> found it!
+ 		;-- geat chars
+ErrorL 		JSR 	CharRd 		; read it
+ 		BMI 	ErrorGen 	; end of list
+ 		BEQ 	ErrorCnt 	; end of message, so count it off
+ 		BRA 	ErrorL 		; next char
+
+ErrorGen 	; general error (no message)
+		POINT(Z_Ptr,ErrGenMsg)
+ 		JSR 	PrStr 		; print "Error $"
+ 		;--
+ 		LDA 	BRK_NO
+ 		JSR 	DBugHex 	; error code as hex
+ 		JSR 	OutNL
+ 		HALT()
+
+ErrorOut
+		lda (Z_Rd)
+		bmi ErrorGen
+
+		lda Z_Rd
+		sta Z_Ptr
+		lda Z_Rd+1
+		sta Z_Ptr+1
+
+		JSR 	PrStr 		; print the message
+ 		JSR 	OutNL
+ 		HALT()
+
+
+ErrMsg:
+.DB "OK",0
+.DB "Stack Overflow/Underflow",0
+.DB "Calculator Overflow/Underflow",0
+
+.db $FF 				; end of list marker
+
+ErrGenMsg:  	.DB 	"ERROR $",0
+
+.export ErrMsg,ErrGenMsg
+
+.echo $-Error
+.echo " bytes for Error.a65\r"
+#endif
+#endif

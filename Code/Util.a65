@@ -6,10 +6,10 @@
 
 #define low Z_Tmp
 
-Util:
+Util: 
 
 ;--------------------------------------------------------------------- Bin2Dec
-Bin2Dec 	; convert binary value in A (0-99) into BCD in A
+Bin2Dec: ; convert binary value in A (0-99) into BCD in A
  		SED 			; all adds in decimal mode
  		STA 	low 		; save A
  		LDA 	#$00 		; clear A
@@ -17,7 +17,7 @@ Bin2Dec 	; convert binary value in A (0-99) into BCD in A
 Bin2DecL
  		LSR 	low 		; bit to carry
  		BCC 	Bin2DecS 	; branch if no add
- 		ADC 	Bin2DecTbl-1,X ; else add BCD value
+ 		ADC 	Bin2DecTbl-1,X 	; else add BCD value
 Bin2DecS
  		DEX 			; decrement bit count
  		BNE 	Bin2DecL 	; loop if more to do
@@ -52,17 +52,17 @@ Bin2DecTbl
 .byte	$63,$31,$15,$07,$03,$01,$00
 
 ;--------------------------------------------------------------------- PrStrAX
-PrStrAX 	; print a null-terminated string pointed to by AX [A]
+PrStrAX: ; print a null-terminated string pointed to by AX [A]
  		STAX(Z_Ptr)
 ;--------------------------------------------------------------------- PrStr
-PrStr 		; print a null-terminated string pointed to by Z_Ptr [A]
+PrStr: ; print a null-terminated string pointed to by Z_Ptr [A]
  		PHY
  		LDY 	#0
 PrStr1 		LDA 	(Z_Ptr),y
- 		BEQ 	PrStr2 	; zero -> exit
+ 		BEQ 	PrStr2 		; zero -> exit
  		JSR 	CharOut 	; print character
  		INY 			; move to next char
- 		BNE 	PrStr1 	; loop back
+ 		BNE 	PrStr1 		; loop back
 
 PrStr2 		STY 	Z_Tmp
  		PLY
@@ -75,7 +75,7 @@ _Print_ 	;Print in-line string
  		PLA
  		PLX
  		STAX(Z_Rd)
- 		JSR 	CharRd 	; skip over fisrt byte (end of jsr)
+ 		JSR 	CharRd 		; skip over fisrt byte (end of jsr)
  		JSR 	CharEcho 	; Read memory, send to output
  		JMP 	(Z_Rd)
 

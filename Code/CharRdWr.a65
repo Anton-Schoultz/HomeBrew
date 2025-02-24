@@ -1,0 +1,55 @@
+; CharRdWr
+;
+.org $00E8
+;--------------------------------------------------------------------- CharRd
+CharRd: ; Fetch the character into A and Incr Read Pointer Z_Rd
+ 		LDA 	$0400
+ 		INC 	CharRd+1 	; incr low byte Z_Rd
+ 		BNE 	CharRdX
+ 		INC 	CharRd+2 	; incr high byte Z_Rd
+CharRdX 	AND 	#$FF 		; sets flags again based on fetch char (Z,N)
+ 		RTS
+;.org $F0
+;--------------------------------------------------------------------- CharWr
+CharWr: ; store A into memory and Incr Write Pointer Z_Wr
+ 		STA 	$0400
+ 		INC 	CharWr+1 	; incr low byte Z_Wr
+ 		BNE 	CharWrX
+ 		INC 	CharWr+2 	; incr high byte Z_Wr
+CharWrX 	RTS
+
+Z_Rd = CharRd+1
+Z_Wr = CharWr+1
+
+.export CharRd,CharWr,Z_Rd,Z_Wr
+
+;0003   00E8             .org $00E8
+;0004   00E8             ;--------------------------------------------------------------------- CharRd
+;0005   00E8             CharRd: ; Fetch the character into A and Incr Read Pointer Z_Rd
+;0006   00E8 AD 00 04     		LDA 	$0400
+;0007   00EB E6 E9        		INC 	CharRd+1 	; incr low byte Z_Rd
+;0008   00ED D0 02        		BNE 	CharRdX
+;0009   00EF E6 EA        		INC 	CharRd+2 	; incr high byte Z_Rd
+;0010   00F1 29 FF       CharRdX 	AND 	#$FF 		; sets flags again based on fetch char (Z,N)
+;0011   00F3 60           		RTS
+;0012   00F4             ;.org $F0
+;0013   00F4             ;--------------------------------------------------------------------- CharWr
+;0014   00F4             CharWr: ; store A into memory and Incr Write Pointer Z_Wr
+;0015   00F4 8D 00 04     		STA 	$0400
+;0016   00F7 E6 F5        		INC 	CharWr+1 	; incr low byte Z_Wr
+;0017   00F9 D0 02        		BNE 	CharWrX
+;0018   00FB E6 F6        		INC 	CharWr+2 	; incr high byte Z_Wr
+;0019   00FD 60          CharWrX 	RTS
+;0020   00FE
+;0021   00FE             Z_Rd = CharRd+1
+;0022   00FE             Z_Wr = CharWr+1
+;0023   00FE
+;0024   00FE             .export CharRd,CharWr,Z_Rd,Z_Wr
+
+;CharRd           .EQU  $00E8
+;CharWr           .EQU  $00F4
+;Z_Rd             .EQU  $00E9
+;Z_Wr             .EQU  $00F5
+
+
+.end

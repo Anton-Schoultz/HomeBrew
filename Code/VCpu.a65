@@ -1,78 +1,97 @@
-.NOLIST
-; VCpu
+; VCPU
 ;
-; Virtual CPU		_XXX(args)
+;	0123 4567 89AB CDEF
+;  $#x  0123 4567 89:; <=>?
+;  $4x	@ABC DEFG HIJK LMNO
+;  $5x	PQRS TUVW XYZ[ \]^_
 ;
-; arg
-; W			Working register	16 	AX
-; m			16 bit constant
-; n			8 bit constant
-; O			Offset register		8 	Y
-; P			Register pair p			Z-Pg[p,p+1]
-; R			Register r				Z-Pg[r]
-
-#ifndef _VCpu
-#define _VCpu
-
-
-;------------------------------- VCpu Macros
-; Variables required, specified using the macros:-
-;	Var(name,size) name .block size
-;	Short(name) name .block 1
-;	Int(name) name .block 2
-;	Long(name) name .block 4
-
+;  @L,@H OP TL P1 P2
+;
 ; Returns high byte of a 16 bit vale
-#DEFINE _HI(m) (m>>8)
+#DEFINE HI(m)  (m>>8)
+#DEFINE LO(m)  (m&$FF)
 
-; Loads W with 16 bit value		(m->AX)
-#DEFINE _LDW(m) lda #(m) \ ldx #_HI(m)
-; Stores W to reg pair p  		(AX -> Z[p,p+1])
-#DEFINE _STW(p) STA p \ STX p+1
+; implied
+#DEFINE VINSTR(fn) .db (fn&$FF)
+; single 8 bit arg
+#DEFINE VINSTR1(fn,p1) .db LO(fn), LO(p1)
+; 16 bit arg
+#DEFINE VINSTR2(fn,m) .db LO(fn), LO(m), HI(m)
 
-; Add value P + W -> P
-#DEFINE _ADDW(p) ldy #p \ clc \ adc $00,y \ sta $00,y \ txa \ adc $01,y \ sta $01,y
+#DEFINE PAGE()  .org (($+256) & $FF00)
+#DEFINE ALIGN() .org (($+9) & $FFF8)
 
+.org 0
+VOP 		.BLOCK 	1 		; OP	OpCode
+VTBL 		.BLOCK 	2 		; TBL	Dispatch table
 
-
-; Set value W -> (P+o) 			a->(p+0), x->(p+1)
-#DEFINE _SET(p,o) ldy #o \ sta (p),y \ txa \ iny \ sta (p),y
-
-; Get value (P+o) -> W  			(p+1)->x, (p+0)->a
-#DEFINE _GET(p,o) ldy #o  \ lda(p),y \ pha \ iny \ lda (p),y \ tax \ pla
-
-
-
-#endif
-
-;--- some assembly to get appropiate codes for th macros
-#if 1
- .org $1000
- .list
-;-------------------------------------------------------------------------- VCpu
-
-	_LDW($0123)
-	nop
-	_STW($10)
-	nop
-
-	_LDW($1234)
-	_SET($10)
-
-VCpuZero:; Fill X bytes ay with 0
-	lda #0			; 2 A9
-VCpuFill:; Fill X bytes at Y with A
-	sta 0,y			; 5 99 00 00
-	dex				; 2 CA
-	bne VCpuFill	; 4 D0 FA		(FA= -6)
-	rts				; 6 60
-
-VCpuSet:; Set [Y] to AX
-	sta 0,y			; 5 99 00 00
-	stx 1,y			; 4 96 01
-	rts
-
-#endif
+VREG0 		.BLOCK 	8 		; low byte of registers
+VREG1 		.BLOCK 	8 		; high byte of registers
 
 
+VFetch: ; fetch next byte from stream (Self modifying code in Z-Page)
+VPC 		= $+1
+ 		LDA 	$8000 		; fetch from memory
+ 		INC 	VPC
+ 		BNE 	FetchX
+ 		INC 	VPC+1
+FetchX 		RTS
+
+
+.org $400
+VDo:  		JSR 	VFetch 		; get Op-code
+ 		STA 	VOP
+ 		AND 	#$F8 		; mask off xxxx.x000
+ 		STA 	VTBL 		; set low byte of jmp address from opcode
+ 		LDA 	VOP 		;
+ 		AND 	#$07 		; mask off 0000.0xxx
+ 		TAX 			; save in X
+ 		JMP 	(VTBL) 		; jump to dispatcher
+
+
+VPGTBL: ; table of high bytes for jump tables
+.db HI(VDISP0)
+;.db HI(VDISP1)
+
+
+
+
+;===================================================================== VDISP0
+PAGE()
+VDISP0: ; Dispatch Zero
+
+ALIGN()
+V0_Rst: ; reset to dispatcher[0] (replicate in all Dispatchers)
+ 		LDA 	VPGTBL 		; high byte fo dispatcher 0
+ 		STA 	VTBL+1
+ 		RTS
+;--------------------------------------------------------------------- V0_Tbl
+ALIGN()
+V0_Tbl: ; select table n (n is 0-7, in .X)
+ 		LDA 	VPGTBL,x 	; look up dispatcher's high byte address
+ 		STA 	TBL+1 		; save it in interpretter data
+ 		RTS
+;--------------------------------------------------------------------- V0_Load
+ALIGN()
+V0_Load: ; Load a value
+#define VLOAD(r,m) .db LO(V0_Load)|(r&7), LO(m), HI(m)
+ 		JSR 	VFetch 		; get low byte
+ 		STA 	VREG0,X
+ 		JSR 	VFetch 		; get highbyte
+ 		STA 	VREG1,X
+ 		RTS
+
+;===================================================================== VDISP1
+PAGE()
+VDISP1: ; Dispatch 1
+
+
+
+
+V_TEST: ; test VCPU
+ 		VLOAD(3,$1234)
+
+
+.export xyz
 .end
+

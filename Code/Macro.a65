@@ -1,32 +1,48 @@
 .NOLIST
 ; Macro.a65
 ;
+
+#DEFINE DBUG
+
 ;--------------------------------------------------------------------- ASCII Control Codes
 #DEFINE NULL	0
-#DEFINE BS 		8
-#DEFINE HT 		9
-#DEFINE LF 		10
-#DEFINE	VT		11
-#DEFINE CLS		12
-#DEFINE CR 		13
-#DEFINE ESC		27
+#DEFINE BS 	8
+#DEFINE HT 	9
+#DEFINE LF 	10
+#DEFINE	VT	11
+#DEFINE CLS	12
+#DEFINE CR 	13
+#DEFINE ESC	27
 
 ;--------------------------------------------------------------------- I/O device interface jump table offsets
-IO_INIT 	= 	0 		;Init
-IO_CHRIN 	= 	3 		;CharInput
-IO_CHROUT 	= 	6 		;CharOutput
-IO_RDSTATUS 	= 	9 		;RdStatus
-IO_WRCMD 	= 	1 		;WrCommand
+IO_INIT 	= 0 			;Init
+IO_CHRIN 	= 3 			;CharInput
+IO_CHROUT 	= 6 			;CharOutput
+IO_RDSTATUS 	= 9 			;RdStatus
+IO_WRCMD 	= 1 			;WrCommand
+
+#define HALT() BRK \ .db $DB ; halts simulator
+
+; STZ does not assemble correctlym, so use this inplace for now (replace with STZ z once fixed)
+#define ZZP(z) lda #0 \ sta z
 
 ;Allows outputing of text from inline, needs Util.a65 , which uses CharOut
 ; eg PRINT("this is some text to printout\r\n")
 ; NB dont use 'funny' chars like = brackets etc of assembler will choke
 #Define PRINT(str) jsr _Print_ \ .db str, 0
 
+; align to start of new page
+#DEFINE PAGE()  .org (($+256) & $FF00)
+
+; align to next 16
+#DEFINE PARAGRAPH() .org (($+16) & $FFF0)
+
+
+#DEFINE LOW(m)  (m & $FF)
 
 ; Returns high byte of a 16 bit vale
-#DEFINE HIGH(m)  (m>>8)
-#DEFINE UPPER(m) (m>>16)
+#DEFINE HIGH(m)  m>>8
+#DEFINE UPPER(m) m>>16
 
 ;--------------------------------------------------------------------- Declare variables
 #define Var(name,size) name .block size
@@ -51,7 +67,7 @@ IO_WRCMD 	= 	1 		;WrCommand
 #DEFINE LDAXY(m) lda #(m) \ ldx #HIGH(m) \ ldy #UPPER(m)
 ; Stores 24 bit value (AXY) into address A->(p), X->(p+1), Y-> (p+2)
 #DEFINE STAXY(p) STA p \ STX p+1 \ STY p+2
-; set z-pag to constant value
+; set z-page to constant value
 #DEFINE POINT(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 
 ; treats Z-Page as a bunch of register pairs and uses Y as index to the low byte

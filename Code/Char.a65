@@ -24,21 +24,24 @@
 .LIST
 ;===================================================================== CHAR
 ; Character Read / Write
-;===================================================================== 
-CharRd 		.EQU 	$00E8
-CharWr 		.EQU 	$00F4
+;=====================================================================
+CharRd           .EQU  $00E8
+CharWr           .EQU  $00F4
+Z_Rd             .EQU  $00E9
+Z_Wr             .EQU  $00F5
 
-Z_Rd 		= 	CharRd
-Z_Wr 		= 	CharWr
+PAGE()
 
 ;--------------------------------------------------------------------- Char
 Char
-;                E8  E9  EA   EB  EC   ED  EE   EF  F0   F1  F2   F3
-CharTbl 	.DB 	$AD,$00,$04,
-;                F4  F5  F6   F7  F8   F9  FA   FB  FC   FD
+; refer to CharRdWr.a65 for the code that goes into this table
+CharTbl:
+;    E8  E9  EA   EB  EC   ED  EE   EF  F0   F1  F2   F3
+.DB $AD,$00,$04, $E6,$E9, $D0,$02, $E6,$EA, $29,$FF, $60
+;    F4  F5  F6   F7  F8   F9  FA   FB  FC   FD
 .db $8D,$00,$04, $E6,$F5, $D0,$02, $E6,$F6, $60
-;              FE FF
-.db 0,0 				; avail Z-pg
+;    FE FF
+.db $00,$00 				; avail Z-pg
 
 CharCopy 	; Copy the CharGet & CharPut routines into Z-Page
  		LDY 	#$17
@@ -52,18 +55,18 @@ CharL 		LDA 	CharTbl,y
 ;--------------------------------------------------------------------- CharAppendAX
 CharAppendAX 	; Copy from AX to Z_Wr until a null
  		STAX(Z_Rd)
-	 	;-- fall through
+ 		;-- fall through
 ;--------------------------------------------------------------------- CharAppend
 CharAppend 	; Copy from Z_Rd to Z_Wr until a null
- 		JSR 	CharRd 	; read a char
- 		JSR 	CharWr 	; write it
+ 		JSR 	CharRd 		; read a char
+ 		JSR 	CharWr 		; write it
  		CMP 	#0 		; check if zero
  		BNE 	CharAppend 	; if not, loop back for more
  		RTS 			; done
 
 ;--------------------------------------------------------------------- CharEcho
 CharEcho 	; Read from Z_Rd (until null) and send to output
- 		JSR 	CharRd 	; read a char
+ 		JSR 	CharRd 		; read a char
  		JSR 	CharOut 	; write it
  		CMP 	#0 		; check if zero
  		BNE 	CharEcho 	; if not, loop back for more
@@ -85,40 +88,6 @@ CharPrint 	; send contents of STRBUF to output (CharOut)
  		POINT(Z_Ptr,STRBUF) 	; point Z_Ptr to the start of the stirng buffer
  		JMP 	PrStr 		; send it to CharOut
 
-
-
-;;------------------------------------------------------------------------ CharRd
-;CharRd:; Fetch the character into A and Incr Read Pointer Z_Rd
-;            lda $0400
-;            inc CharRd+1       ; incr low byte Z_Rd
-;            bne CharRdX
-;            inc CharRd+2       ; incr high byte Z_Rd
-;CharRdX    and #$FF            ; sets flags again based on fetch char (Z,N)
-;            rts
-;;------------------------------------------------------------------------ CharWr
-;CharWr:; store A into memory and Incr Write Pointer Z_Wr
-;            sta $0400
-;            inc CharWr+1       ; incr low byte Z_Wr
-;            bne CharWrX
-;            inc CharWr+2       ; incr high byte Z_Wr
-;CharWrX    rts
-
-;00E8             .org $00E8
-;00E8             ;------------------------------------------------------------------------ CharRd
-;00E8             CharRd:; Fetch the character into A and Incr Read Pointer Z_Rd
-;00E8 AD 00 04                lda $0400
-;00EB E6 E9                   inc CharRd+1       ; incr low byte Z_Rd
-;00ED D0 02                   bne CharRdX
-;00EF E6 EA                   inc CharRd+2       ; incr high byte Z_Rd
-;00F1 29 FF       CharRdX    and #$FF            ; sets flags again based on fetch char (Z,N)
-;00F3 60                      rts
-;00F4             ;------------------------------------------------------------------------ CharWr
-;00F4             CharWr:; store A into memory and Incr Write Pointer Z_Wr
-;00F4 8D 00 04                sta $0400
-;00F7 E6 F5                   inc CharWr+1       ; incr low byte Z_Wr
-;00F9 D0 02                   bne CharWrX
-;00FB E6 F6                   inc CharWr+2       ; incr high byte Z_Wr
-;00FD 60          CharWrX    rts
 
 
 .echo $-Char
