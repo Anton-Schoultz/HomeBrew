@@ -16,12 +16,14 @@
 .org ($+16)/16 * 16
 .LIST
 ;--------------------------------------------------------------------- Calc Z-Page
-Var(TOS,4) 	; Top-Of-Stack
-Var(NXT,4) 	; Next item on stack
-
+Var(TOS,5) 	; Top-Of-Stack
 Short(CSP) 	; Calc stack pointer (00->0F)
 Short(SGN) 	; sign
 Short(EXP) 	; exponent
+
+; 8
+Var(NXT,5) 	; Next item on stack
+
 Short(NUM) 	; number after the 'E'
 Short(DIG) 	; digits counter
 
@@ -133,7 +135,7 @@ CalcPush: ; Push TOS onto the stack [AX] !StackErr
  		LDA 	#CSTKSZ 	; check stack size
  		CMP 	CSP 		; C:(A GE mem) Z:A EQ m  N:m GT A
  		BCS 	CalcPushX 	; CSTKSZ is > CSP so OK
-CalcStkErr 	THROW(E_STACK) 		; if so, throw stack error
+CalcStkErr 	THROW(E_CSTK) 		; if so, throw stack error
 CalcPushX 	RTS
 ;--------------------------------------------------------------------- CalcDrop
 CalcDrop: ; Pop item into TOS item variable [AX]!StackErr
@@ -157,9 +159,66 @@ CalcPop: ; Reduce stack pointer, .X points to 'popped' item [X] !StackErr
  		BMI 	CalcStkErr 	; wrapped arround, so stack error
  		LDX 	CSP
  		RTS
+;--------------------------------------------------------------------- CalcNext
+CalcNext: ; Pop item into NXT item variable
+ 		JSR 	CalcPop
+ 		;--
+ 		LDA 	CSTK0,X
+ 		STA 	NXT+0
+ 		LDA 	CSTK1,X
+ 		STA 	NXT+1
+ 		LDA 	CSTK2,X
+ 		STA 	NXT+2
+ 		LDA 	CSTK3,X
+ 		STA 	NXT+3
+ 		LDA 	CSTK4,X
+ 		STA 	NXT+4
+ 		RTS
+;--------------------------------------------------------------------- CalcSL
+CalcSL: ; x2 shift the value pointed to by X one place to the left
+ 		ASL 	_ML,X
+ 		ROL 	_MH,X
+ 		ROL 	_MU,X
+ 		RTS
+
+;--------------------------------------------------------------------- CalcSR
+CalcSR: ; /2 shift the value pointed to by X one place to the right
+ 		CLC
+ 		ROR 	_MU,X
+ 		ROR 	_MH,X
+ 		ROR 	_ML,X
+ 		RTS
+
+;===================================================================== MARKER
 
 
-
+;--------------------------------------------------------------------- CalcRES2TOS
+CalcRES2TOS: ; Copy RES to TOS
+ 		LDX 	#RES
+ 		BRA 	CalcToTOS
+;--------------------------------------------------------------------- CalcNXT2TOS
+CalcNXT2TOS: ; Copy NXT to TOS
+ 		LDX 	#NXT
+;--------------------------------------------------------------------- CalcToTOS
+CalcToTOS:  	LDY 	#TOS
+;--------------------------------------------------------------------- CalcCopy
+CalcCopy: ; Copy value from Z,X to Z,Y
+ 		LDA 	_ML,X
+ 		STA 	_ML,Y
+ 		LDA 	_MH,X
+ 		STA 	_MH,Y
+ 		LDA 	_MU,X
+ 		STA 	_MU,Y
+ 		LDA 	_EXP,X
+ 		STA 	_EXP,Y
+ 		LDA 	_SGN,X
+ 		STA 	_SGN,Y
+ 		RTS
+;--------------------------------------------------------------------- CalcTOS2NXT
+CalcTOS2NXT: ; Copy TOS to NXT
+ 		LDX 	#TOS
+ 		LDY 	#NXT
+ 		BRA 	CalcCopy
 
 ;--------------------------------------------------------------------- CalcAbs
 ; make the mantissa positive, ready to pack
@@ -215,41 +274,8 @@ CalcFix: ; Fix sign of AX based on SGN (if SGN-ve, then Complement)
  		RTS 			; otherwise +ve and we're ok as is
 
 
-;--------------------------------------------------------------------- CalcRES2TOS
-CalcRES2TOS: ; Copy RES to TOS
- 		LDX 	#RES
- 		BRA 	CalcToTOS
-;--------------------------------------------------------------------- CalcNXT2TOS
-CalcNXT2TOS: ; Copy NXTS to TOS
- 		LDX 	#RES
-;--------------------------------------------------------------------- CalcToTOS
-CalcToTOS:  	LDX 	#TOS
-;--------------------------------------------------------------------- CalcCopy
-CalcCopy: ; Copy value from Z,X to Z,Y
- 		LDA 	$00,X
- 		STA 	$00,Y
- 		LDA 	$01,X
- 		STA 	$01,Y
- 		LDA 	$02,X
- 		STA 	$02,Y
- 		LDA 	$03,X
- 		STA 	$03,Y
- 		RTS
 
 
-;--------------------------------------------------------------------- CalcNext
-CalcNext: ; Pop item into NXT item variable
- 		JSR 	CalcPop
- 		;--
- 		LDA 	CSTK0,X
- 		STA 	NXT+0
- 		LDA 	CSTK1,X
- 		STA 	NXT+1
- 		LDA 	CSTK2,X
- 		STA 	NXT+2
- 		LDA 	CSTK3,X
- 		STA 	NXT+3
- 		RTS
 
 ;--------------------------------------------------------------------- CalcSetI
 CalcSetI: ; TOS = AX (16 bit signed integer A=lo,X=hi) [AY]
@@ -719,8 +745,15 @@ CvtInt: ; Convert TOS to integer String and write to output (CharWr)
 
 
 #ifdef DBUG
-CalcDBugTOS: ; dump TOS
 ;===================================================================== CALC DBUG
+CalcDBugNXT:  	LDA 	#'n'
+ 		JSR 	CharOut
+ 		LDX 	#NXT
+ 		BRA 	CalcDBug
+
+CalcDBugTOS: ; dump TOS
+ 		LDA 	#'t'
+ 		JSR 	CharOut
  		LDX 	#TOS
 ;--------------------------------------------------------------------- CalcDBug
 CalcDBug: ; sends raw form of TOS to screen

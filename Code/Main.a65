@@ -32,16 +32,11 @@ CODEPAGE 	= 1
 ;--------------------------------------------------------------------- Main
 Main: ; Main loop code
  		JSR 	DevDefault 	; Default input & output (CONSOLE => Simulator)
-
- 		MARK(1)
-
  		LDA 	#CLS 		; output form-feed = Clear Screen
  		JSR 	CharOut
 
- 		THROW(3)
-;
-; 		MARK(2)
-; 		JSR 	Calc 		; Init calc system (reset stack, TOS=0.0e0)
+ 		MARK(1)
+ 		JSR 	Calc 		; Init calc system (reset stack, TOS=0.0e0)
 
 ;                TEST(TOS_ML,$0000)      ; value
 ;                TEST(TOS_EXP,$0000)     ; Exp , SGN
@@ -55,14 +50,60 @@ Main: ; Main loop code
  		LOAD_TOS( 123456, $C0) 	; -123456 e 0	123456=$01E240
  		TEST(TOS_ML,$E240) 	; value
  		TEST(TOS_MU,$C001) 	; Exp , SGN
-
  		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
 
- 		JSR 	CalcUnpack
- 		JSR 	CalcDBugTOS
+ 		PRINT("--")
+ 		JSR 	OutNL
 
- 		JSR 	CalcPack
+ 		JSR 	CalcDup
+
+ 		NOP
+
+ 		JSR 	CalcNext
  		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
+
+ 		PRINT("-- SL")
+ 		JSR 	OutNL
+ 		LDX 	#TOS
+ 		JSR 	CalcSL
+ 		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
+
+ 		PRINT("-- N to T")
+ 		JSR 	OutNL
+ 		JSR 	CalcNXT2TOS
+ 		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
+
+ 		PRINT("-- SR")
+ 		JSR 	OutNL
+ 		LDX 	#TOS
+ 		JSR 	CalcSR
+ 		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
+
+
+ 		PRINT("-- T to N")
+ 		JSR 	OutNL
+ 		JSR 	CalcTOS2NXT
+ 		JSR 	CalcDBugTOS
+ 		JSR 	CalcDBugNXT
+
+
+ 		PRINT("-- POP error")
+ 		JSR 	OutNL
+ 		JSR 	CalcNext
+
+
+
+
+; 		JSR 	CalcUnpack
+; 		JSR 	CalcDBugTOS
+;
+; 		JSR 	CalcPack
+; 		JSR 	CalcDBugTOS
 
 
 ;		ldx	#TOS		; point to TOS
@@ -102,7 +143,7 @@ NumStr:  	.DB 	"12E3",0
 
 
 
-Stop 		HALT() ; halt simulator
+Stop 		HALT() 			; halt simulator
  		BRK
 
 ;--------------------------------------------------------------------- TestChar
