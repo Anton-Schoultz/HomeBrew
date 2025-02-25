@@ -15,7 +15,8 @@
 ; _SGN	[4]When unpacked, sign is separate and Exp is 2's compliment of base 10 exp
 ;
 ; float values are unpacked when you stick them in here,
-; values are pushed/popped, manipulated in unpacked form,
+; values are pushed/popped and manipulated in unpacked form,
+;
 ; pack before you store in main memory
 
 
@@ -122,6 +123,8 @@ CalcPackP 	; check for zero
 CalcPackX 	RTS
 
 ;--------------------------------------------------------------------- CalcUnpack
+; when a value is brought in from a memory variable,
+; it must be unpacked before we can work with it
 CalcUnpack: ; Unpack NA_EXP (into 2s exp and SGN) [A]
  		ZZP(NA_SGN) 		; assume +ve ($00)
  		LDA 	NA_EXP
@@ -142,11 +145,11 @@ CalcPush: ; Push NA onto the stack [AX] !StackErr
  		STA 	CSTK0,X
  		LDA 	NA+_MH
  		STA 	CSTK1,X
- 		LDA 	NA+2
+ 		LDA 	NA+_MU
  		STA 	CSTK2,X
- 		LDA 	NA+3
+ 		LDA 	NA+_EXP
  		STA 	CSTK3,X
- 		LDA 	NA+4
+ 		LDA 	NA+_SGN
  		STA 	CSTK4,X
  		;-- increase stack pointer
  		INC 	CSP 		; next location
@@ -164,11 +167,11 @@ CalcDrop: ; Pop item into NA item variable [AX]!StackErr
  		LDA 	CSTK1,X
  		STA 	NA+_MH
  		LDA 	CSTK2,X
- 		STA 	NA+2
+ 		STA 	NA+_MU
  		LDA 	CSTK3,X
- 		STA 	NA+3
+ 		STA 	NA+_EXP
  		LDA 	CSTK4,X
- 		STA 	NA+4
+ 		STA 	NA+_SGN
  		RTS
 ;--------------------------------------------------------------------- CalcPop
 CalcPop: ; Reduce stack pointer, .X points to 'popped' item [X] !StackErr
@@ -186,19 +189,19 @@ CalcNext: ; Pop item into NB item variable
  		LDA 	CSTK1,X
  		STA 	NB+_MH
  		LDA 	CSTK2,X
- 		STA 	NB+2
+ 		STA 	NB+_MU
  		LDA 	CSTK3,X
- 		STA 	NB+3
+ 		STA 	NB+_EXP
  		LDA 	CSTK4,X
- 		STA 	NB+4
+ 		STA 	NB+_SGN
  		RTS
+
 ;--------------------------------------------------------------------- CalcSL
 CalcSL: ; x2 shift the value pointed to by X one place to the left
  		ASL 	_ML,X
  		ROL 	_MH,X
  		ROL 	_MU,X
  		RTS
-
 ;--------------------------------------------------------------------- CalcSR
 CalcSR: ; /2 shift the value pointed to by X one place to the right
  		CLC
@@ -253,7 +256,6 @@ CalcT2A: ; Copt Temp -> A
  		JSR 	CalcCopy
  		PULLAXY()
  		RTS
-
 
 ;--------------------------------------------------------------------- CalcSetI
 ; place a 16bit signed number [AX] into NumA
@@ -434,7 +436,6 @@ CalcParse1 	;-- check for '.'
  		LDA 	#$80
  		STA 	DIG
  		BRA 	CalcParseL 	; loop back for next char
-
 CalcParse2 	; check for 'E' notation  (must use uppercase 'E')
  		CMP 	#'E'
  		BNE 	CalcParse3
@@ -444,7 +445,6 @@ CalcParse2 	; check for 'E' notation  (must use uppercase 'E')
  		ADC 	NA_EXP
  		STA 	NA_EXP
  		JMP 	CalcParseX 	; jump out to adjust based on digits after '.'
-
 CalcParse3 	; check for digits 0-9
  		CMP 	#$3A
  		BPL 	CalcParseX 	; >'9' -> exit
@@ -456,9 +456,7 @@ CalcParse3 	; check for digits 0-9
  		LDA 	DIG
  		BPL 	CalcParse4 	; not decimal point yet, so don't count
  		INC 	DIG 		; count another digit after the point
-
 CalcParse4 	;-- another digit
-
  		;-- check if we have space for another digit in NA
  		LDA 	NA_MU 		; top byte of NA
  		AND 	#$F0
@@ -466,7 +464,6 @@ CalcParse4 	;-- another digit
  		;-- NA is full so adjust E
  		INC 	NA_EXP
  		BRA 	CalcParseL 	; loop back for more digits
-
 CalcParse5 	; we have space, so roll it in (leaving E at 0 for now)
  		TXA 			; recall the digit character
  		JSR 	CalcMul10A 	; NA = NA * 10 (preserves AXY)
@@ -480,7 +477,6 @@ CalcParse5 	; we have space, so roll it in (leaving E at 0 for now)
  		BCC 	CalcParseL
  		INC 	NA_MU
  		BRA 	CalcParseL
-
 CalcParseX 	; done with valid characters, adjust E based on places after the point
  		LDA 	DIG 		; bit 7 is '1' if we had a '.'
  		BPL 	CalcParseX1 	; no '.' so we're done
@@ -511,7 +507,7 @@ CalcExpL
  		LDA 	#$FF
  		STA 	SGN
  		BRA 	CalcExpL
-CalcExp1
+CalcExp1 	; check for valid digit '0'..'9'
  		CMP 	#$3A
  		BPL 	CalcExpX 	; >'9' -> exit
  		CMP 	#$30
@@ -533,7 +529,6 @@ CalcExp1
  		STA 	NUM 		; NUM = NUM + digit
  		;--
  		BRA 	CalcExp1 	; get more digits
-
 CalcExpX 	; we have the value in NUM, and sign in SGN
  		LDA 	SGN
  		BPL 	CalcExpX1 	; poistive
@@ -542,7 +537,6 @@ CalcExpX 	; we have the value in NUM, and sign in SGN
  		EOR 	#$FF
  		INC 	A
  		STA 	NUM
-
 CalcExpX1 	LDA 	NUM
  		RTS
 
@@ -576,14 +570,11 @@ CalcStrF: ; Covert unpacked float to string in NR
 ;     SS '0' '3' '2' '7' '6' '7'  00
  		;-- convert mantisa part (with sign)
  		JSR 	CalcStr 	; mantissa to string in Result
-
  		LDY 	#1 		; reading from .x
  		LDX 	#1 		; writting to .y
-
  		LDA 	NA_EXP
  		BNE 	CalcStrF1
  		RTS 			; exponent is zero so return as is
-
  		;-- find first non '0'
 CalcStrF1 	LDA 	NR,x 		; get the digit
  		CMP 	#'0'
@@ -615,6 +606,8 @@ CalcStrF3 	;-- copy & adjust E
  		CPX 	#9 		; done?
  		BNE 	CalcStrF3 	; loop to copy the rest of the digits
 CalcStrF4 	;-- now for the E
+ 		LDA 	NA_EXP
+ 		BEQ 	CalcStrFX 	; if E is zero then leave it off
  		LDA 	#'E'
  		STA 	NR,y
  		INY
@@ -646,18 +639,18 @@ CalcStrF5 	STA 	NA_EXP
  		ORA 	#'0'
  		STA 	NR,y
  		INY
- 		LDA 	#0
+CalcStrFX 	LDA 	#0
  		STA 	NR,Y
  		RTS
-
-MARKER: ; ============================================================ MARKER
-
 
 ;--------------------------------------------------------------------- CvtFloat
 CvtFloat: ; Convert unpacked NA to Float String and write to output (CharWr)
  		JSR 	CalcStrF
  		LDAX(NR)
  		JMP 	CharAppendAX 	; append contents of NR to the output buffer
+
+MARKER: ; ============================================================ MARKER
+
 
 
 
@@ -820,14 +813,14 @@ PARAGRAPH()
 
 
 
-;--------------------------------------------------------------------- CalcI2F
-CalcI2F: ; Covert NA from Int to float
- 		JSR 	CalcAbsNA 	; sign in Y
- 		TYA
- 		AND 	#$80 		; Sign is top bit 1:-ve 0:+ve
- 		ORA 	#$40 		; Exp is offset $40 (so E-63 ... E+63)
- 		STA 	NA+2 		; save EXP flag in NA3
- 		RTS
+;;--------------------------------------------------------------------- CalcI2F
+;CalcI2F: ; Covert NA from Int to float
+; 		JSR 	CalcAbsNA 	; sign in Y
+; 		TYA
+; 		AND 	#$80 		; Sign is top bit 1:-ve 0:+ve
+; 		ORA 	#$40 		; Exp is offset $40 (so E-63 ... E+63)
+; 		STA 	NA+2 		; save EXP flag in NA3
+; 		RTS
 
 
 ;--------------------------------------------------------------------- CvtInt
@@ -882,10 +875,6 @@ CalcDBug: ; sends raw form of NumX to screen
  		JMP 	OutNL
 #endif
 
-;.export Calc,CalcAbs,CalcAbsNB,CalcAbsNA,CalcAddI,CalcCmpl,CalcD10,CalcDivI
-;.export CalcDrop,CalcDup,CalcFix,CalcGetI,CalcI2F,CalcModI,CalcMul10,CalcMulI
-;.export CalcNext,CalcParse,CalcParseAX,CalcPop,CalcPush,CalcRemI,CalcSetI
-;.export CalcSign,CalcStr,CalcSubI,CalcZero
 
 
 .echo MARKER - Calc

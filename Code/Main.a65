@@ -63,12 +63,13 @@ Main: ; Main loop code
 
 PARAGRAPH()
 NumStr:
+.db "0.0001234",0
 ;.DB 	"12.34",0 	;  1234 => UnP:fe 002EE0 FF
 ;.DB 	"-12E3",0 	; 12000 => P:C0 002EE0 UnP:00 002EE0 FF
 ;.db "3.1415",0		; 31415=
 ;.db "3.14159",0	; 314159  =$04 CB 2F
-.db "3.1415926535",0	; 3141592 =$2F EF D8  Packed.Mem:D8EF2F3Axx
-l; unpacked Mem:D8EF2FFA
+;.db "3.1415926535",0	; 3141592 =$2F EF D8  Packed.Mem:D8EF2F3Axx
+; unpacked Mem:D8EF2FFA
 
 .db 0
 
