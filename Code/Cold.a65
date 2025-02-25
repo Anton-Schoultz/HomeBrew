@@ -5,13 +5,13 @@
 #ifndef _Cold
 #define _Cold
 ;--------------------------------------------------------------------- Cold
-Cold:; Cold start entry point
+Cold: ; Cold start entry point
  		SEI 			; halt IRQs
  		LDX 	#$ff 		; Set Stack pointer to top of the stack space $0100-01FF
  		TXS
  		CLD 			; ensure binary mode
-
- 		JSR 	CharCopy 	; copy CharRd & CharWr to z-page
+ 		;-- copy CharRd & CharWr to z-page
+ 		JSR 	CharCopy
 
 ;.echo $-Cold
 ;.echo " bytes for Cold.a65\r"

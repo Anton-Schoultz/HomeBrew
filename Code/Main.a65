@@ -25,9 +25,10 @@ CODEPAGE 	= 1
 
 
 #define TSTNUM(one,two) LDAX(one)\ jsr CalcSetI\ jsr CalcPush \ LDAX(two)\ jsr CalcSetI
-#define TSTRES(res) TEST(TOS,res)\ jsr MShowTOS\ jsr NewLine
+#define TSTNR(res) TEST(NA,res)\ jsr MShowNA\ jsr NewLine
 
 
+; Cold start coppies the CharRd and CharWr routines to ZPg ram
 
 ;--------------------------------------------------------------------- Main
 Main: ; Main loop code
@@ -36,103 +37,58 @@ Main: ; Main loop code
  		JSR 	CharOut
 
  		MARK(1)
- 		JSR 	Calc 		; Init calc system (reset stack, TOS=0.0e0)
+ 		JSR 	Calc 		; Init calc system (reset stack, NA=0.0e0)
 
-;                TEST(TOS_ML,$0000)      ; value
-;                TEST(TOS_EXP,$0000)     ; Exp , SGN
-;
-;                jsr     CalcPack        ; pack the sign and exponent
-;                TEST(TOS_EXP,$0040)     ; h:SGN, l:EXP
-;
-;                jsr     CalcUnpack      ; pack the sign and exponent
-;                TEST(TOS_EXP,$0000)     ; Exp , SGN
+;    1234 0004d2 0
+;   12340 003034 1
+;  123400 01E208 2
+; 1234000 12D450 3
+;12340000 BC4B20 4
 
- 		LOAD_TOS( 123456, $C0) 	; -123456 e 0	123456=$01E240
- 		TEST(TOS_ML,$E240) 	; value
- 		TEST(TOS_MU,$C001) 	; Exp , SGN
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
+ 		POINT(Z_Rd,NumStr)
+ 		JSR 	CalcParse 	; parse string into unpacked form
+ 		JSR 	CalcA2B
+ 		JSR 	CalcDBugNA
+ 		JSR 	CalcDBugNB
 
- 		PRINT("--")
- 		JSR 	OutNL
+ 		JSR 	CalcStrF 	; unpacked -> string in result
 
- 		JSR 	CalcDup
-
- 		NOP
-
- 		JSR 	CalcNext
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
-
- 		PRINT("-- SL")
- 		JSR 	OutNL
- 		LDX 	#TOS
- 		JSR 	CalcSL
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
-
- 		PRINT("-- N to T")
- 		JSR 	OutNL
- 		JSR 	CalcNXT2TOS
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
-
- 		PRINT("-- SR")
- 		JSR 	OutNL
- 		LDX 	#TOS
- 		JSR 	CalcSR
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
-
-
- 		PRINT("-- T to N")
- 		JSR 	OutNL
- 		JSR 	CalcTOS2NXT
- 		JSR 	CalcDBugTOS
- 		JSR 	CalcDBugNXT
-
-
- 		PRINT("-- POP error")
- 		JSR 	OutNL
- 		JSR 	CalcNext
-
-
-
-
-; 		JSR 	CalcUnpack
-; 		JSR 	CalcDBugTOS
-;
-; 		JSR 	CalcPack
-; 		JSR 	CalcDBugTOS
-
-
-;		ldx	#TOS		; point to TOS
-;		jsr	CalcNegX	; Negate it
-
-
-
+ 		JSR 	CalcB2A
+ 		JSR 	CalcPack
+ 		JSR 	CalcDBugNA
+ 		JSR 	CalcDBugNB
 
 
  		BRK
+
 PARAGRAPH()
-NumStr:  	.DB 	"12E3",0
-.export NumStr
+NumStr:
+;.DB 	"12.34",0 	;  1234 => UnP:fe 002EE0 FF
+;.DB 	"-12E3",0 	; 12000 => P:C0 002EE0 UnP:00 002EE0 FF
+;.db "3.1415",0		; 31415=
+;.db "3.14159",0	; 314159  =$04 CB 2F
+.db "3.1415926535",0	; 3141592 =$2F EF D8  Packed.Mem:D8EF2F3Axx
+l; unpacked Mem:D8EF2FFA
+
+.db 0
+
+.export NumStr,CalcParse, NR
 
 ;            PRINT("-- RANDOM --\r\n")
 ;			PRINT("123 456 Add\r\n")
 ;            TSTNUM(123,456)
 ;            jsr CalcAddI
-;            TSTRES(579)
+;            TSTNR(579)
 ;
 ;			PRINT("123 45 Mul\r\n")
 ;            TSTNUM(123,45)
 ;            jsr CalcMulI
-;            TSTRES(5535)
+;            TSTNR(5535)
 ;
 ;			PRINT("-123 -45 Mul\r\n")
 ;            TSTNUM(-123,-45)
 ;            jsr CalcMulI
-;            TSTRES(5535)
+;            TSTNR(5535)
 ;
 ; 		PRINT("-- TEST1 --\r\n")
 ; 		JSR 	Test1
@@ -160,16 +116,16 @@ TestCvt: ; test conversions
 
  		POINT(Z_Rd,NumNeg)
  		JSR 	CalcParse 	; Read from memory, parse as Integer; -1234=FB2E
- 		TEST(TOS,-1234)
- 		JSR 	MShowTOS
+ 		TEST(NA,-1234)
+ 		JSR 	MShowNA
  		JSR 	NewLine
 
 ;            PRINT("Convert 1234 $04D2\r\n")
 ;			LDAX(NumPos)
 ;			jsr CalcParseAX		; convert string to value  ;+1234=$04D2
-;			TEST(TOS,1234)
-;			jsr MShowTOS
-;			TEST(TOS,1234)     ; this should not fail (MShow saves & restores)
+;			TEST(NA,1234)
+;			jsr MShowNA
+;			TEST(NA,1234)     ; this should not fail (MShow saves & restores)
 ;            jsr NewLine
 
  		RTS
@@ -179,36 +135,36 @@ Test1 		; tests with -100, 150
  		PRINT("-100 150 Add = 50\r\n")
  		JSR 	LdVal
  		JSR 	CalcAddI 	; -100 + 150 => 50
- 		JSR 	MShowTOS
- 		TEST(TOS,50)
+ 		JSR 	MShowNA
+ 		TEST(NA,50)
  		JSR 	NewLine
 
  		PRINT("-100 150 Sub = -250\r\n")
  		JSR 	LdVal
  		JSR 	CalcSubI
- 		JSR 	MShowTOS
- 		TEST(TOS,-250)
+ 		JSR 	MShowNA
+ 		TEST(NA,-250)
  		JSR 	NewLine
 
  		PRINT("-100 150 Mul = -15000\r\n")
  		JSR 	LdVal
  		JSR 	CalcMulI
- 		JSR 	MShowTOS
- 		TEST(TOS,-15000)
+ 		JSR 	MShowNA
+ 		TEST(NA,-15000)
  		JSR 	NewLine
 
  		PRINT("-100 150 Div = 0 -0.66\r\n")
  		JSR 	LdVal
  		JSR 	CalcDivI
- 		JSR 	MShowTOS
- 		TEST(TOS,0)
+ 		JSR 	MShowNA
+ 		TEST(NA,0)
  		JSR 	NewLine
 
  		PRINT("-100 150 Mod = 100\r\n")
  		JSR 	LdVal
  		JSR 	CalcModI
- 		JSR 	MShowTOS
- 		TEST(TOS,100)
+ 		JSR 	MShowNA
+ 		TEST(NA,100)
  		JSR 	NewLine
 
  		RTS
@@ -218,36 +174,36 @@ Test2 		; tests with 100, -50
  		PRINT("100 -50 Add = 50\r\n")
  		JSR 	LdVal2
  		JSR 	CalcAddI
- 		JSR 	MShowTOS
- 		TEST(TOS,50)
+ 		JSR 	MShowNA
+ 		TEST(NA,50)
  		JSR 	NewLine
 
  		PRINT("100 -50 Sub = 150\r\n")
  		JSR 	LdVal2
  		JSR 	CalcSubI
- 		JSR 	MShowTOS
- 		TEST(TOS,150)
+ 		JSR 	MShowNA
+ 		TEST(NA,150)
  		JSR 	NewLine
 
  		PRINT("100 -50 Mul = -5000\r\n")
  		JSR 	LdVal2
  		JSR 	CalcMulI
- 		JSR 	MShowTOS
- 		TEST(TOS,-5000)
+ 		JSR 	MShowNA
+ 		TEST(NA,-5000)
  		JSR 	NewLine
 
  		PRINT("100 -50 Div = -2\r\n")
  		JSR 	LdVal2
  		JSR 	CalcDivI
- 		JSR 	MShowTOS
- 		TEST(TOS,-2)
+ 		JSR 	MShowNA
+ 		TEST(NA,-2)
  		JSR 	NewLine
 
  		PRINT("100 -50 Mod = 0\r\n")
  		JSR 	LdVal2
  		JSR 	CalcModI
- 		JSR 	MShowTOS
- 		TEST(TOS,0)
+ 		JSR 	MShowNA
+ 		TEST(NA,0)
  		JSR 	NewLine
 
  		RTS
@@ -270,19 +226,19 @@ LdVal2 		; 100, push, -50
  		JSR 	CalcSetI
  		RTS
 
-;--------------------------------------------------------------------- MShowTOS
-;Show contents of TOS (kills tos)
-MShowTOS 	;Show contents of TOS (kills tos)
+;--------------------------------------------------------------------- MShowNA
+;Show contents of NA (kills tos)
+MShowNA 	;Show contents of NA (kills tos)
  		JSR 	CharClear 	; clear string buffer
  		;--
- 		JSR 	CalcGetI 	; TOS -> AX
+ 		JSR 	CalcGetI 	; NA -> AX
  		PUSHAXY() 		; store
  		;--
  		JSR 	CvtAXHex 	; append AX as hex (FB2E) OK
  		LDA 	#'='
  		JSR 	CharWr
  		;--
- 		JSR 	CvtInt 		; Convert TOS to integer String and write to output (CharWr)
+ 		JSR 	CvtInt 		; Convert NA to integer String and write to output (CharWr)
  		;--
  		PULLAXY() 		; restore
  		JSR 	CalcSetI
@@ -334,7 +290,7 @@ ROMEND 		= $
 ; FFFE,F	IRQ
 .org $FFFA
 .dw Nmi 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
-.dw Cold 				; FFFC,D=> RESET	Points to Reset address (cold start)
+.dw Cold 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
 .echo ($FFFA - ROMEND) / 256

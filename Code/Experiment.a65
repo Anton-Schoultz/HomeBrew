@@ -7,9 +7,9 @@
 ;===================================================================== Z-PAGE
 ;
 ;--------------------------------------------------------------------- Calc Z-Page
-Var(RES,16) 	;00-0F  Result
-Var(TOS,4) 	;10-13  Top-Of-Stack
-Var(NXT,4) 	;14-17  Next item on stack
+Var(NR,16) 	;00-0F  Result
+Var(NA,4) 	;10-13  Top-Of-Stack
+Var(NB,4) 	;14-17  Next item on stack
 Short(CSP) 	;18     Calc stack pointer (00->0F)
 Short(SGN) 	;19
 Int(Z_Ptr) 	;1A/B   general object pointer (used by print string )
@@ -49,21 +49,21 @@ Var(CSTK3,16) 	; Stack for MSB
 
 .org $E000
 ;            LDAX($7FFF)         ; 32767 = +3.2767E+04
-;            STAX(TOS)
+;            STAX(NA)
 ;            jsr CalcI2F         ; 39 30 40 (Exp=$40 +ve, 10^(64-64) = 10^0 = 1
 
 ; 12nF 12E-9
 
  		LDAXY($37000C) 	; 12E-9 => 1.2E-8
- 		STAXY(TOS)
+ 		STAXY(NA)
 
- 		LDX 	#TOS
- 		LDY 	#NXT
+ 		LDX 	#NA
+ 		LDY 	#NB
  		JSR 	CalcCopy
 
  		JSR 	CalcStrF
 
- 		LDAX(RES)
+ 		LDAX(NR)
  		JSR 	PrStrAX
 
  		BRK
@@ -74,63 +74,63 @@ TestRtn:
 
 
 ;--------------------------------------------------------------------- CalcMul10
-CalcMul10L 	; TOS = TOS * 10
+CalcMul10L 	; NA = NA * 10
 ;16bit= 74cycles
 ;24bit=104
- 		LDA 	TOS
- 		STA 	RES
- 		LDA 	TOS+1
- 		STA 	RES+1
- 		LDA 	TOS+2
- 		STA 	RES+2 		; RES = TOS
+ 		LDA 	NA
+ 		STA 	NR
+ 		LDA 	NA+1
+ 		STA 	NR+1
+ 		LDA 	NA+2
+ 		STA 	NR+2 		; NR = NA
 	 	;-- 
- 		ASL 	RES
- 		ROL 	RES+1
- 		ROL 	RES+2 		; RES = 2*TOS
+ 		ASL 	NR
+ 		ROL 	NR+1
+ 		ROL 	NR+2 		; NR = 2*NA
 	 	;-- 
- 		ASL 	RES
- 		ROL 	RES+1
- 		ROL 	RES+2 		; RES = 2*TOS
+ 		ASL 	NR
+ 		ROL 	NR+1
+ 		ROL 	NR+2 		; NR = 2*NA
 	 	;-- 
  		CLC
- 		LDA 	TOS
- 		ADC 	RES
- 		STA 	TOS
- 		LDA 	TOS+1
- 		ADC 	RES+1
- 		STA 	TOS+1
+ 		LDA 	NA
+ 		ADC 	NR
+ 		STA 	NA
+ 		LDA 	NA+1
+ 		ADC 	NR+1
+ 		STA 	NA+1
 	 	;-- 
- 		LDA 	TOS+2
- 		ADC 	RES+2
- 		STA 	TOS+2 		;TOS = 5*TOS
+ 		LDA 	NA+2
+ 		ADC 	NR+2
+ 		STA 	NA+2 		;NA = 5*NA
 	 	;-- 
- 		ASL 	TOS
- 		ROL 	TOS+1
- 		ROL 	TOS+2 		;TOS = 10*TOS
+ 		ASL 	NA
+ 		ROL 	NA+1
+ 		ROL 	NA+2 		;NA = 10*NA
  		RTS
 
 ;--------------------------------------------------------------------- 
-Mult 		; TOS * NXT -> RES
- 		LDA 	#0 		;Initialize RES to 0
- 		STA 	RES+2
- 		LDX 	#16 		;There are 16 bits in NXT
-L1 		LSR 	NXT+1 		;Get low bit of NXT
- 		ROR 	NXT
+Mult 		; NA * NB -> NR
+ 		LDA 	#0 		;Initialize NR to 0
+ 		STA 	NR+2
+ 		LDX 	#16 		;There are 16 bits in NB
+L1 		LSR 	NB+1 		;Get low bit of NB
+ 		ROR 	NB
  		BCC 	L2 		;0 or 1?
- 		TAY 			;If 1, add TOS (hi byte of RES is in A)
+ 		TAY 			;If 1, add NA (hi byte of NR is in A)
  		CLC
- 		LDA 	TOS
- 		ADC 	RES+2
- 		STA 	RES+2
+ 		LDA 	NA
+ 		ADC 	NR+2
+ 		STA 	NR+2
  		TYA
- 		ADC 	TOS+1
+ 		ADC 	NA+1
 L2 		ROR 	A 		;"Stairstep" shift
- 		ROR 	RES+2
- 		ROR 	RES+1
- 		ROR 	RES
+ 		ROR 	NR+2
+ 		ROR 	NR+1
+ 		ROR 	NR
  		DEX
  		BNE 	L1
- 		STA 	RES+3
+ 		STA 	NR+3
  		RTS
 
 

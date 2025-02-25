@@ -69,7 +69,7 @@ CharOut 	; Output character A to currently active output device [V_CHROUT]
 ; FFFE,F	IRQ
 .org $FFFA
 .dw Nmi 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
-.dw Cold 				; FFFC,D=> RESET	Points to Reset address (cold start)
+.dw Cold 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
 

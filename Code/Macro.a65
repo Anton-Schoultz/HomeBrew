@@ -37,6 +37,9 @@ IO_WRCMD 	= 1 			;WrCommand
 ; align to next 16
 #DEFINE PARAGRAPH() .org (($+16) & $FFF0)
 
+; align to n
+#DEFINE ALIGN(n) .org (($+n) & ($10000-n))
+
 
 #DEFINE LOW(m)  (m & $FF)
 
@@ -57,6 +60,10 @@ IO_WRCMD 	= 1 			;WrCommand
 #DEFINE PUSHAXY() pha \ phx \ phy
 #DEFINE PULLAXY() ply \ plx \ pla
 
+
+
+; Loads X,Y with the value provided
+#DEFINE LDXY(nx,ny) ldx #(nx) \ ldy #(ny)
 
 ; Loads AX with 16 bit value, low->A, high->X
 #DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)

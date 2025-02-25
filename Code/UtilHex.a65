@@ -23,10 +23,10 @@ A2Hex_X 	AND 	#$0F
 ;--------------------------------------------------------------------- CvtAXHex
 PrAHex: ; print hex string
  		PHA
- 		POINT(Z_Wr,RES)
+ 		POINT(Z_Wr,NR)
  		PLA
  		JSR 	CvtAXHex
- 		POINT(Z_Ptr,RES)
+ 		POINT(Z_Ptr,NR)
  		JMP 	PrStr
 
 ;--------------------------------------------------------------------- CvtAXHex
