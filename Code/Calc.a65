@@ -21,6 +21,7 @@
 ;
 ; parsing from string includes 'normalise' to try and keep as ~E00
 
+#define RES_SZ 15
 
 #if ($>>8)==0
 .LIST
@@ -42,10 +43,10 @@ Short(RND) 	; digits counter
 
 ; ----
 PARAGRAPH()
-Var(NR,15) 	; Result (also for convert to string)
+Var(NR,RES_SZ) 	; Result (also for convert to string)
 ; ----
 PARAGRAPH()
-Var(NT,15) 	; Temp
+Var(NT,RES_SZ) 	; Temp
 
 
 #DEFINE CSTKSZ  15
@@ -82,6 +83,13 @@ Var(CSTK1,16) 	; _MH
 Var(CSTK2,16) 	; _MU
 Var(CSTK3,16) 	; _EXP if this is zero, then the number is an integer
 Var(CSTK4,16) 	; _SGN
+.NOLIST
+#endif
+
+#if ($>>8)==2
+.LIST
+;--------------------------------------------------------------------- Calc SysVar
+
 .NOLIST
 #endif
 
@@ -268,6 +276,14 @@ CalcT2A: ; Copy Temp -> A
  		PUSHAXY()
  		LDX 	#NT
  		LDY 	#NA
+ 		JSR 	CalcCopy
+ 		PULLAXY()
+ 		RTS
+;--------------------------------------------------------------------- CalcA2T
+CalcA2T: ; Copy A -> Temp
+ 		PUSHAXY()
+ 		LDY 	#NT
+ 		LDX 	#NA
  		JSR 	CalcCopy
  		PULLAXY()
  		RTS
@@ -574,16 +590,16 @@ CalcExpX1 	LDA 	NUM
 CalcStr: ; convert Unpacked NA to string in NR (Padded with zeroes)
  		LDX 	#10
  		LDA 	#0
- 		STA 	NR,x
+ 		STA 	STRBUF,x
  		DEX
- 		STA 	NR,x
+ 		STA 	STRBUF,x
  		DEX
 CalcStrL 	;- num/10 remainder as digit
  		PHX 			; save output index
  		JSR 	CalcD10NA 	; div NA_LHU by 10, remainder in A
  		PLX 			; recall index
  		ORA 	#'0' 		; convert remainder to a digit
- 		STA 	NR,x 		; store the digit
+ 		STA 	STRBUF,x	; store the digit
  		DEX 			; back-up one pos to the left
  		BPL 	CalcStrL 	; loop until done
  		;-- Place sign in NR[0] based on SGN
@@ -606,7 +622,7 @@ CalcStrF: ; Covert unpacked float to string in NR
  		BNE 	CalcStrF1
  		RTS 			; exponent is zero so return as is
  		;-- find first non '0'
-CalcStrF1 	LDA 	NR,x 		; get the digit
+CalcStrF1 	LDA 	STRBUF,x 		; get the digit
  		CMP 	#'0'
  		BNE 	CalcStrF2
  		;-- skip leading zeroes
@@ -614,22 +630,22 @@ CalcStrF1 	LDA 	NR,x 		; get the digit
  		CPX 	#6 		; want at least one digit
  		BNE 	CalcStrF1 	; not all yet, loop back for next digit
  		;--
- 		LDA 	NR,x 		; first non-zero digit
+ 		LDA 	STRBUF,x 		; first non-zero digit
 CalcStrF2 	;-- first non-zero digit
- 		STA 	NR,y 		; save 1st digit
+ 		STA 	STRBUF,y 		; save 1st digit
  		;-- move on
  		INY
  		INX
- 		LDA 	NR,x
+ 		LDA 	STRBUF,x
  		BEQ 	CalcStrF4 	; end of string ->F4
  		;-- place the point
  		LDA 	#'.'
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INY
 CalcStrF3 	;-- copy & adjust E
- 		LDA 	NR,x
+ 		LDA 	STRBUF,x
  		BEQ 	CalcStrF4 	; null = done
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INX
  		INY
  		INC 	NA_EXP 		; adjust Exp based on how many digits we copy
@@ -639,7 +655,7 @@ CalcStrF4 	;-- now for the E
  		LDA 	NA_EXP
  		BEQ 	CalcStrFX 	; if E is zero then leave it off
  		LDA 	#'E'
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INY
  		;-- exp sign
  		LDX 	#'+'
@@ -651,7 +667,7 @@ CalcStrF4 	;-- now for the E
 CalcStrF5 	STA 	NA_EXP
  		;-- EXP sign to NR[y++]
  		TXA
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INY
  		;-- EXP to bcd and append to result
  		LDA 	NA_EXP
@@ -662,75 +678,111 @@ CalcStrF5 	STA 	NA_EXP
  		LSR 	a 		; MSD to LSD position
  		LSR 	a
  		ORA 	#'0'
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INY
  		PLA 			; Restore A and then
  		AND 	#$0F
  		ORA 	#'0'
- 		STA 	NR,y
+ 		STA 	STRBUF,y
  		INY
 CalcStrFX 	LDA 	#0
- 		STA 	NR,Y
+ 		STA 	STRBUF,Y
  		RTS
 
 ;--------------------------------------------------------------------- CvtFloat
 CvtFloat: ; Convert unpacked NA to Float String and write to output (CharWr)
  		;-- save Value A into Temp
- 		LDY 	#NT
- 		JSR 	CalcCopy 	; X -> Temp
+ 		JSR 	CalcA2T 	; X -> Temp
  		;-- convert to string in result
  		JSR 	CalcStrF
- 		;--
- 		LDAX(NR) 		; point to result
- 		JSR 	PrStrAX 	; echo it to screen
 
+ 		;-- send result to screen
+ 		LDAX(STRBUF) 		; point to result
+ 		JSR 	PrStrAX 	; echo it to screen
 ; 		; append result to output
 ; 		LDAX(NR)
 ; 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
 
  		JSR 	CalcT2A 	; copy back from temp
  		RTS
+;--------------------------------------------------------------------- CalcZeroR
+CalcZeroR: ; zero the result field
+ 		LDX 	#RES_SZ
+ 		LDA 	#0
+CalcZeroRL 	STA 	NR,X
+ 		DEX
+ 		BPL 	CalcZeroRL
+ 		RTS
+;--------------------------------------------------------------------- CalcResSL
+CalcResSL: ; shift result left
+ 		LDY 	#RES_SZ
+ 		LDX 	#0
+ 		CLC
+CalcResSLL 	ROL 	NR,X
+ 		INX
+ 		DEY
+ 		BPL 	CalcResSLL
+ 		RTS
+;--------------------------------------------------------------------- CalcResSR
+CalcResSR: ; shift result right
+ 		LDX 	#RES_SZ
+ 		CLC
+CalcResSRL 	ROR 	NR,X
+ 		DEX 			; does not affect CY
+ 		BPL 	CalcResSRL
+ 		RTS
+
+
 
 ;=====================================================================
-MARKER: ; ============================================================ MARKER
+MARKER: ; MARKER
 ;=====================================================================
-
-
 
 ;--------------------------------------------------------------------- CalcMul
 CalcMul: ; NA = NB * NA	(16 bit signed integer)
 ; 726 cycles for 123 * 27
-; 		JSR 	CalcNext 	; pop into NB
+ 		JSR 	CalcNext 	; pop into NB
 ; 		JSR 	CalcSign
+
+ 		;-- Initialize NR to 0
+ 		JSR 	CalcZeroR
+ 		LDX 	#24 		;There are 16 bits in NA
+
+CalcMul1 	; -- Shift NA to the right, lowest bit into C
+ 		LSR 	NA+_MU
+ 		ROR 	NA+_MH
+ 		ROR 	NA+_ML
  		;--
- 		LDA 	#0 		;Initialize NR to 0
- 		STA 	NR+2
- 		LDX 	#16 		;There are 16 bits in NA
-CalcMul1 	LSR 	NA+_MH 		;Get low bit of NA
- 		ROR 	NA
  		BCC 	CalcMul2 	;0 or 1?
- 		TAY 			;If 1, add NB (hi byte of NR is in A)
+ 		;-- bit is 1 so add
  		CLC
- 		LDA 	NB
- 		ADC 	NR+2
- 		STA 	NR+2
- 		TYA
- 		ADC 	NB+_MH
-CalcMul2 	ROR 	A 		; shift
- 		ROR 	NR+2
- 		ROR 	NR+_MH
- 		ROR 	NR
+ 		LDA 	NB+_ML
+ 		ADC 	NR+3
+ 		STA 	NR+3
+ 		;--
+ 		LDA 	NB+_MH
+ 		ADC 	NR+4
+ 		STA 	NR+4
+ 		;--
+ 		LDA 	NB+_MU
+ 		ADC 	NR+5
+ 		STA 	NR+5
+ 		;--
+CalcMul2 	;shift result right (equivalent to shift B left )
+ 		phx
+ 		JSR 	CalcResSR
+ 		plx
+ 		;-- loop for each bit
  		DEX
  		BNE 	CalcMul1
- 		STA 	NR+3
- 		;-- place result in NA
- 		;--
- 		;-- ** copy NR->NA, then fix NA *************************************
- 		LDA 	NR
- 		LDX 	NR+_MH
-; 		JSR 	CalcFix
- 		;--
- 		JMP 	CalcSetI 	; AX -> NA
+		; result is now in RES[0..5]
+
+
+
+ 		RTS
+
+
+
 
 ;--------------------------------------------------------------------- CalcDivI
 CalcDivI: ; NA = NB / NA	(16 bit signed integer)
@@ -859,6 +911,22 @@ CalcDBug: ; sends raw form of NumX to screen
  		;--
  		JSR 	CvtFloat
  		RTS
+
+;--------------------------------------------------------------------- CalcDBugRES
+CalcDBugRES: ; display result as hexvalues from high to low
+ 		LDX 	#RES_SZ
+CalcDBugRESl 	LDA 	NR,x
+ 		JSR 	DBugHex 	; print as hex
+ 		txa
+ 		and #$01
+ 		bne CalcDBugRES2
+ 		LDA 	#' '
+ 		JSR 	CharOut
+CalcDBugRES2	DEX
+ 		BPL 	CalcDBugRESl
+ 		JMP 	OutNL
+
+
 #endif
 
 

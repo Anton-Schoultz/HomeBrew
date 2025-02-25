@@ -30,6 +30,7 @@ CODEPAGE 	= 1
 
 ; Cold start coppies the CharRd and CharWr routines to ZPg ram
 
+
 ;--------------------------------------------------------------------- Main
 Main: ; Main loop code
  		JSR 	DevDefault 	; Default input & output (CONSOLE => Simulator)
@@ -39,30 +40,86 @@ Main: ; Main loop code
  		MARK(1)
  		JSR 	Calc 		; Init calc system (reset stack, NA=0.0e0)
 
+ 		JSR 	CalcZeroR 	; zero result
+
+;#define SHFT CalcResSR
+;; 		LDA 	#$05
+;; 		STA 	NR
+; 		LDA 	#$50
+; 		STA 	NR+15
+; 		JSR 	CalcDBugRES
+;
+;
+; 		JSR 	SHFT
+; 		JSR 	CalcDBugRES
+;;
+;;
+; 		JSR 	SHFT
+; 		JSR 	SHFT
+; 		JSR 	SHFT
+; 		JSR 	CalcDBugRES
+;
+; 		LDY 	#31
+;
+;MainL 		PHY
+;
+; 		JSR 	SHFT
+; 		JSR 	SHFT
+; 		JSR 	SHFT
+; 		JSR 	SHFT
+; 		JSR 	CalcDBugRES
+;
+; 		PLY
+; 		DEY
+; 		BNE 	MainL
+
+
+
+
+
+
+
+
 ;    1234 0004d2 0
 ;   12340 003034 1
 ;  123400 01E208 2
 ; 1234000 12D450 3
 ;12340000 BC4B20 4
 
- 		POINT(Z_Rd,NumStr)
+ 		POINT(Z_Rd,NumOne)
  		JSR 	CalcParse 	; parse string into unpacked form
- 		JSR 	CalcA2B
+ 		JSR 	CalcPush
+ 		JSR 	CalcDBugNA
+ 		;--
+ 		POINT(Z_Rd,NumTwo)
+ 		JSR 	CalcParse 	; parse string into unpacked form
+
+ 		JSR 	CalcDBugNA
+
+ 		PRINT("--\r\n") 	; 123x456=>56088 	$00 DB 18
+ 					; 1234x4567=> 5635678  	$55 FE 5E
+ 					;12345x45678=563894910  219c 5a7e
+ 		JSR 	CalcMul
+
+ 		JSR 	CalcDBugRES
+
  		JSR 	CalcDBugNA
  		JSR 	CalcDBugNB
 
  		BRK
 
 PARAGRAPH()
+NumOne:  	.DB 	"12345",0
+NumTwo:  	.DB 	"45678",0
+
+
 NumStr:
 ;.db "2.7182818284590",0
-
-
 ;.DB 	"12.34",0 	;  1234 => UnP:fe 002EE0 FF
 ;.DB 	"-12E3",0 	; 12000 => P:C0 002EE0 UnP:00 002EE0 FF
 ;.db "3.1415",0		; 31415=
 ;.db "3.141592",0	; 314159  =$04 CB 2F
-.db "3.1415926535",0	; 3141593 =$2F EF D9  Packed.Mem:D9EF2F3Axx
+.db "3.1415926535",0 			; 3141593 =$2F EF D9  Packed.Mem:D9EF2F3Axx
 ;           ^rounds this up as it is followed by '6'
 ; unpacked Mem:D8EF2FFA
 
