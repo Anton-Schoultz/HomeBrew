@@ -21,6 +21,8 @@ Short(CSP) 	; Calc stack pointer (00->0F)
 Short(SGN) 	; sign
 Short(EXP) 	; exponent
 
+PARAGRAPH()
+
 ; 8
 Var(NXT,5) 	; Next item on stack
 
@@ -189,9 +191,6 @@ CalcSR: ; /2 shift the value pointed to by X one place to the right
  		ROR 	_ML,X
  		RTS
 
-;===================================================================== MARKER
-
-
 ;--------------------------------------------------------------------- CalcRES2TOS
 CalcRES2TOS: ; Copy RES to TOS
  		LDX 	#RES
@@ -202,23 +201,27 @@ CalcNXT2TOS: ; Copy NXT to TOS
 ;--------------------------------------------------------------------- CalcToTOS
 CalcToTOS:  	LDY 	#TOS
 ;--------------------------------------------------------------------- CalcCopy
-CalcCopy: ; Copy value from Z,X to Z,Y
- 		LDA 	_ML,X
+CalcCopy: ; Copy Exponent, Sign and mantissa from X to Y [A]
+ 		LDA 	_EXP,X
+ 		STA 	_EXP,Y
+ 		LDA 	_SGN,X
+ 		STA 	_SGN,Y
+CalcCpyMan:; Copy the mantissa part from X to Y
+		LDA 	_ML,X
  		STA 	_ML,Y
  		LDA 	_MH,X
  		STA 	_MH,Y
  		LDA 	_MU,X
  		STA 	_MU,Y
- 		LDA 	_EXP,X
- 		STA 	_EXP,Y
- 		LDA 	_SGN,X
- 		STA 	_SGN,Y
  		RTS
 ;--------------------------------------------------------------------- CalcTOS2NXT
 CalcTOS2NXT: ; Copy TOS to NXT
  		LDX 	#TOS
  		LDY 	#NXT
  		BRA 	CalcCopy
+
+;===================================================================== MARKER
+
 
 ;--------------------------------------------------------------------- CalcAbs
 ; make the mantissa positive, ready to pack
