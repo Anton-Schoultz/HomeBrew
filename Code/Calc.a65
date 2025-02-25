@@ -18,6 +18,8 @@
 ; values are pushed/popped and manipulated in unpacked form,
 ;
 ; pack before you store in main memory
+;
+; parsing from string includes 'normalise' to try and keep as ~E00
 
 
 #if ($>>8)==0
@@ -32,8 +34,12 @@ Var(NB,5) 	; Next item on stack
 Short(SGN) 	; sign
 Short(EXP) 	; exponent
 Short(CSP) 	; Calc stack pointer (00->0F)
+
 Short(NUM) 	; number after the 'E'
 Short(DIG) 	; digits counter
+
+Short(RND) 	; digits counter
+
 ; ----
 PARAGRAPH()
 Var(NR,15) 	; Result (also for convert to string)
@@ -210,6 +216,15 @@ CalcSR: ; /2 shift the value pointed to by X one place to the right
  		ROR 	_ML,X
  		RTS
 
+;--------------------------------------------------------------------- CalcIncr
+CalcIncr: ; increment the mantissa of NA
+ 		INC 	NA_ML
+ 		BNE 	CalcIncrX
+ 		INC 	NA_MH
+ 		BNE 	CalcIncrX
+ 		INC 	NA_MU
+CalcIncrX 	RTS
+
 ;--------------------------------------------------------------------- CalcCopy
 CalcCopy: ; Copy Exponent, Sign and mantissa from X to Y [A]
  		LDA 	_EXP,X
@@ -249,7 +264,7 @@ CalcR2A: ; Copy NR to NA
  		PULLAXY()
  		RTS
 ;--------------------------------------------------------------------- CalcT2A
-CalcT2A: ; Copt Temp -> A
+CalcT2A: ; Copy Temp -> A
  		PUSHAXY()
  		LDX 	#NT
  		LDY 	#NA
@@ -349,32 +364,6 @@ CalcSubMan: ; Subtract manitssa parts [X] = [Y] - [X] 	(S24)
  		;--
  		RTS
 
-;--------------------------------------------------------------------- CalcNorm
-CalcNorm: ; 'Normalize' NA  (Try to get the EXP to zero)
- 		LDA 	NA_EXP
- 		BEQ 	CalcNormX 	; EXP=0 already , so we're done
- 		BMI 	CalcNormR 	; EXP<0 so shift to the right
- 		;-- exp is >0 so shift left if possible
- 		LDA 	NA_MU
- 		BNE 	CalcNormX 	; no space - so exit
-
- 		JSR 	CalcMul10 	; X * 10
- 		DEC 	NA_EXP 		; EXP--
- 		BRA 	CalcNorm
-CalcNormR 	; digits to the right, incr exp
- 		LDX 	#NA
- 		LDY 	#NT
- 		JSR 	CalcCopy 	; copy NA -> Temp
- 		;--
- 		LDX 	#NT 		; point at temp
- 		JSR 	CalcD10 	; try Temp/10
- 		AND 	#$FF 		; remainder = zero?
- 		BNE 	CalcNormX 	; no, so leave it alone
- 		INC 	NT+_EXP 	; bump up exponent
- 		;-- copy Temp -> NA
- 		JSR 	CalcT2A
- 		BRA 	CalcNorm
-CalcNormX 	RTS
 ;--------------------------------------------------------------------- CalcMul10A
 CalcMul10A: ; A = A * 10 (uses NT=Temp)
  		LDX 	#NA
@@ -416,6 +405,7 @@ CalcD102 	ROL 	_ML,X 		; NA
 CalcParse: ; Read string (CharRd) and parse into number value -> NA
  		JSR 	CalcZero 	; Set NA to m0000 e00 s00 (uppacked form)
  		STA 	DIG 		; zero digit counter
+ 		STA 	RND 		; haven't rounded yet
 
 CalcParseL 	JSR 	CharRd 		; Read next character in
  		BEQ 	CalcParseX 	; null -> exit
@@ -463,7 +453,21 @@ CalcParse4 	;-- another digit
  		BEQ 	CalcParse5 	; got space so go mult x 10 and add
  		;-- NA is full so adjust E
  		INC 	NA_EXP
+
+; 		;-- check for rounding
+ 		LDA 	RND
+ 		BNE 	CalcParseL 	; already rounded
+
+ 		;-- check for and apply rounding
+ 		STX 	RND 		; save rounding character
+ 		CPX 	#'5' 		; compare with 5
+ 		BCC 	CalcParseL 	; less than 5 so just get the next one
+ 		JSR 	CalcIncr 	; increment the mantissa (round off)
+
+ 		;-- loop back for more
  		BRA 	CalcParseL 	; loop back for more digits
+
+
 CalcParse5 	; we have space, so roll it in (leaving E at 0 for now)
  		TXA 			; recall the digit character
  		JSR 	CalcMul10A 	; NA = NA * 10 (preserves AXY)
@@ -477,18 +481,44 @@ CalcParse5 	; we have space, so roll it in (leaving E at 0 for now)
  		BCC 	CalcParseL
  		INC 	NA_MU
  		BRA 	CalcParseL
+
 CalcParseX 	; done with valid characters, adjust E based on places after the point
  		LDA 	DIG 		; bit 7 is '1' if we had a '.'
  		BPL 	CalcParseX1 	; no '.' so we're done
- 		AND 	#$7F 		; mask off the flag
+ 		AND 	#$7F 		; mask off the flags
  		STA 	DIG
  		;-- subtract places after point from E
  		SEC
  		LDA 	NA_EXP
  		SBC 	DIG
  		STA 	NA_EXP 		; EXP = EXP - DIG
-CalcParseX1 	; done convertion
- 		JMP 	CalcNorm 	; try to keep as integer value (E=0)
+CalcParseX1 	; done convertion, try to keep as integer value (E=0)
+ 		;-- fall through to 'Normalise' ;JMP 	CalcNorm
+;--------------------------------------------------------------------- CalcNorm
+CalcNorm: ; 'Normalise' NA  (Try to get the EXP to zero)
+ 		LDA 	NA_EXP
+ 		BEQ 	CalcNormX 	; EXP=0 already , so we're done
+ 		BMI 	CalcNormR 	; EXP<0 so shift to the right
+ 		;-- exp is >0 so shift left if possible
+ 		LDA 	NA_MU
+ 		BNE 	CalcNormX 	; no space - so exit
+ 		JSR 	CalcMul10 	; X * 10
+ 		DEC 	NA_EXP 		; EXP--
+ 		BRA 	CalcNorm
+CalcNormR 	; digits to the right, incr exp
+ 		LDX 	#NA
+ 		LDY 	#NT
+ 		JSR 	CalcCopy 	; copy NA -> Temp
+ 		;--
+ 		LDX 	#NT 		; point at temp
+ 		JSR 	CalcD10 	; try Temp/10
+ 		AND 	#$FF 		; remainder = zero?
+ 		BNE 	CalcNormX 	; no, so leave it alone
+ 		INC 	NT+_EXP 	; bump up exponent
+ 		;-- copy Temp -> NA
+ 		JSR 	CalcT2A
+ 		BRA 	CalcNorm
+CalcNormX 	RTS
 
 ;--------------------------------------------------------------------- CalcExp
 CalcExp: ; Reads [+/-][0..9*] return value in A (no error checking)
@@ -645,99 +675,40 @@ CalcStrFX 	LDA 	#0
 
 ;--------------------------------------------------------------------- CvtFloat
 CvtFloat: ; Convert unpacked NA to Float String and write to output (CharWr)
+ 		;-- save Value A into Temp
+ 		LDY 	#NT
+ 		JSR 	CalcCopy 	; X -> Temp
+ 		;-- convert to string in result
  		JSR 	CalcStrF
- 		LDAX(NR)
- 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
+ 		;--
+ 		LDAX(NR) 		; point to result
+ 		JSR 	PrStrAX 	; echo it to screen
 
+; 		; append result to output
+; 		LDAX(NR)
+; 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
+
+ 		JSR 	CalcT2A 	; copy back from temp
+ 		RTS
+
+;=====================================================================
 MARKER: ; ============================================================ MARKER
+;=====================================================================
 
 
 
-
-;--------------------------------------------------------------------- CalcGetI
-; return value as 16 bit unsigned integer in AX
-CalcGetI: ; Return NA in AX (16 bit signed integer A=lo,X=hi)
- 		LDA 	NA+_ML
- 		LDX 	NA+_MH
- 		RTS
-
-
-
-
-
-;--------------------------------------------------------------------- CalcFix
-CalcFix: ; Fix sign of AX based on SGN (if SGN-ve, then Complement)
- 		LDY 	SGN 		; N=1 if -ve
- 		BMI 	CalcNegX 	; -ve so go and complement
- 		RTS 			; otherwise +ve and we're ok as is
-
-
-
-
-
-;--------------------------------------------------------------------- CalcAddI
-CalcAddI: ; NA = NB + NA	(16 bit signed integer)
- 		JSR 	CalcPop 	; Pop but access onstack with X
- 		CLC
- 		LDA 	CSTK0,X
- 		ADC 	NA+_ML
- 		STA 	NA+_ML
- 		;--
- 		LDA 	CSTK1,X
- 		ADC 	NA+_MH
- 		STA 	NA+_MH
- 		;--
- 		RTS
-
-;--------------------------------------------------------------------- CalcSubI
-CalcSubI: ; NA = NB - NA	(16 bit signed integer)
- 		JSR 	CalcPop 	; Pop but access onstack with X
- 		SEC
- 		LDA 	CSTK0,X
- 		SBC 	NA+_ML
- 		STA 	NA+_ML
- 		;--
- 		LDA 	CSTK1,X
- 		SBC 	NA+_MH
- 		STA 	NA+_MH
- 		;--
- 		RTS
-
-;--------------------------------------------------------------------- CalcAbsNA
-CalcAbsNA: ; Cvt NA to absolute, with sign in .Y and SGN
- 		LDX 	NA
- 		JSR 	CalcAbsX
- 		STY 	SGN
- 		RTS
-
-;--------------------------------------------------------------------- CalcAbsNB
-CalcAbsNB: ; Cvt NA to absolute, with sign in Y
- 		LDX 	NB
- 		JSR 	CalcAbsX
- 		RTS
-
-;--------------------------------------------------------------------- CalcSign
-CalcSign: ; Set Result SGN and make NA & NB positive
- 		;-- NA
- 		JSR 	CalcAbsNA
- 		JSR 	CalcAbsNB
- 		TYA
- 		EOR 	SGN
- 		STA 	SGN
- 		RTS
-
-;--------------------------------------------------------------------- CalcMulI
-CalcMulI: ; NA = NB * NA	(16 bit signed integer)
+;--------------------------------------------------------------------- CalcMul
+CalcMul: ; NA = NB * NA	(16 bit signed integer)
 ; 726 cycles for 123 * 27
- 		JSR 	CalcNext 	; pop into NB
- 		JSR 	CalcSign
+; 		JSR 	CalcNext 	; pop into NB
+; 		JSR 	CalcSign
  		;--
  		LDA 	#0 		;Initialize NR to 0
  		STA 	NR+2
  		LDX 	#16 		;There are 16 bits in NA
-CalcMulI1 	LSR 	NA+_MH 		;Get low bit of NA
+CalcMul1 	LSR 	NA+_MH 		;Get low bit of NA
  		ROR 	NA
- 		BCC 	CalcMulI2 	;0 or 1?
+ 		BCC 	CalcMul2 	;0 or 1?
  		TAY 			;If 1, add NB (hi byte of NR is in A)
  		CLC
  		LDA 	NB
@@ -745,26 +716,26 @@ CalcMulI1 	LSR 	NA+_MH 		;Get low bit of NA
  		STA 	NR+2
  		TYA
  		ADC 	NB+_MH
-CalcMulI2 	ROR 	A 		; shift
+CalcMul2 	ROR 	A 		; shift
  		ROR 	NR+2
  		ROR 	NR+_MH
  		ROR 	NR
  		DEX
- 		BNE 	CalcMulI1
+ 		BNE 	CalcMul1
  		STA 	NR+3
  		;-- place result in NA
  		;--
  		;-- ** copy NR->NA, then fix NA *************************************
  		LDA 	NR
  		LDX 	NR+_MH
- 		JSR 	CalcFix
+; 		JSR 	CalcFix
  		;--
  		JMP 	CalcSetI 	; AX -> NA
 
 ;--------------------------------------------------------------------- CalcDivI
 CalcDivI: ; NA = NB / NA	(16 bit signed integer)
  		JSR 	CalcNext 	; pop into NB
- 		JSR 	CalcSign
+; 		JSR 	CalcSign
 
 ; NB / NA => NB, remainder in NR
  		LDA 	#0 		;Initialize NR to 0
@@ -791,7 +762,7 @@ CalcDivL2 	DEX
  		;-- ** copy NB-> NA, then fix NA *************************************
  		LDA 	NB
  		LDX 	NB+_MH
- 		JSR 	CalcFix
+; 		JSR 	CalcFix
  		JMP 	CalcSetI 	; AX -> NA
 ;--------------------------------------------------------------------- CalcModI
 CalcModI: ; NA = NB % NA
@@ -829,6 +800,15 @@ CvtInt: ; Convert NA to integer String and write to output (CharWr)
  		LDAX(NR)
  		JMP 	CharAppendAX 	; append contents of NR to the output buffer
 
+
+;===================================================================== CONSTANTS
+K_PI: ; pi in unpacked form               3.1415926535
+.db $D9,$EF,$2F,$FA,$00 		; 3.141593
+
+K_E: ; e in unpacked form  		  2,7182818284590
+.db $4A,$7A,$29,$FA,$00 		; 2.718282
+
+
 .export Calc, CalcParse
 
 
@@ -839,23 +819,25 @@ CalcDBugNB: ; dump NB
  		LDA 	#'B'
  		JSR 	CharOut
  		LDX 	#NB
- 		BRA 	CalcDBug
-
-CalcDBugNT: ; dump Temp
- 		LDA 	#'T'
- 		JSR 	CharOut
- 		LDX 	#NT
- 		BRA 	CalcDBug
+ 		JSR 	CalcDBug
+ 		JMP 	OutNL
 
 CalcDBugNA: ; dump NA
  		LDA 	#'A'
  		JSR 	CharOut
  		LDX 	#NA
+ 		JSR 	CalcDBug
+
+
+ 		JMP 	OutNL
+
+
 ;--------------------------------------------------------------------- CalcDBug
 CalcDBug: ; sends raw form of NumX to screen
+
+ 		;-- display hex form
  		LDA 	#'='
  		JSR 	CharOut
-
  		LDA 	_EXP,X
  		JSR 	DBugHex
  		LDA 	#':'
@@ -872,7 +854,11 @@ CalcDBug: ; sends raw form of NumX to screen
  		LDA 	_SGN,X
  		JSR 	DBugHex
  		;--
- 		JMP 	OutNL
+ 		LDA 	#' '
+ 		JSR 	CharOut
+ 		;--
+ 		JSR 	CvtFloat
+ 		RTS
 #endif
 
 
