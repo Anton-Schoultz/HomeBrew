@@ -175,7 +175,7 @@ CalcPushX 	RTS
 ;--------------------------------------------------------------------- CalcDrop
 CalcDrop: ; Pop item into NA item variable [AX]!StackErr
  		JSR 	CalcPop
- 		;--
+ 		;-- 
  		LDA 	CSTK0,X
  		STA 	NA+_ML
  		LDA 	CSTK1,X
@@ -197,7 +197,7 @@ CalcPop: ; Reduce stack pointer, .X points to 'popped' item [X] !StackErr
 ;--------------------------------------------------------------------- CalcNext
 CalcNext: ; Pop item into NB item variable
  		JSR 	CalcPop
- 		;--
+ 		;-- 
  		LDA 	CSTK0,X
  		STA 	NB+_ML
  		LDA 	CSTK1,X
@@ -305,7 +305,7 @@ CalcSetINeg 	;-- negative value
  		LDA 	#$FF
  		STA 	NA+_MU 		; sign extend to upper
  		LDX 	#NA
- 		;--
+ 		;-- 
  		BRA 	CalcNegX 	; go negate the value
 
 ;--------------------------------------------------------------------- CalcAbs
@@ -324,7 +324,7 @@ CalcNegX: ; Two's compliment of value at X [A]
  		LDA 	#$FF
  		EOR 	_SGN,X
  		STA 	_SGN,X
- 		;--
+ 		;-- 
  		;-- exor mantissa L
  		LDA 	#$FF
  		EOR 	_ML,X
@@ -353,15 +353,15 @@ CalcAddMan: ; Add manitssa parts [X] = [Y] + [X]	(S24)
  		LDA 	_ML,Y
  		ADC 	_ML,X
  		STA 	_ML,X
- 		;--
+ 		;-- 
  		LDA 	_MH,Y
  		ADC 	_MH,X
  		STA 	_MH,X
- 		;--
+ 		;-- 
  		LDA 	_MU,Y
  		ADC 	_MU,X
  		STA 	_MU,X
- 		;--
+ 		;-- 
  		RTS
 ;--------------------------------------------------------------------- CalcSubMan
 CalcSubMan: ; Subtract manitssa parts [X] = [Y] - [X] 	(S24)
@@ -369,15 +369,15 @@ CalcSubMan: ; Subtract manitssa parts [X] = [Y] - [X] 	(S24)
  		LDA 	_ML,Y
  		SBC 	_ML,X
  		STA 	_ML,X
- 		;--
+ 		;-- 
  		LDA 	_MH,Y
  		SBC 	_MH,X
  		STA 	_MH,X
- 		;--
+ 		;-- 
  		LDA 	_MU,Y
  		SBC 	_MU,X
  		STA 	_MU,X
- 		;--
+ 		;-- 
  		RTS
 
 ;--------------------------------------------------------------------- CalcMul10A
@@ -445,7 +445,7 @@ CalcParse1 	;-- check for '.'
 CalcParse2 	; check for 'E' notation  (must use uppercase 'E')
  		CMP 	#'E'
  		BNE 	CalcParse3
- 		;--
+ 		;-- 
  		JSR 	CalcExp 	; read [+/-] digits into A as signed short
  		CLC
  		ADC 	NA_EXP
@@ -525,7 +525,7 @@ CalcNormR 	; digits to the right, incr exp
  		LDX 	#NA
  		LDY 	#NT
  		JSR 	CalcCopy 	; copy NA -> Temp
- 		;--
+ 		;-- 
  		LDX 	#NT 		; point at temp
  		JSR 	CalcD10 	; try Temp/10
  		AND 	#$FF 		; remainder = zero?
@@ -567,13 +567,13 @@ CalcExp1 	; check for valid digit '0'..'9'
  		ADC 	NUM 		; A = NUM * 5
  		ASL 	A
  		STA 	NUM 		; NUM = NUM * 10
- 		;--
+ 		;-- 
  		TYA 			; get digit back
  		AND 	#$0F 		; strip the value out
  		CLC
  		ADC 	NUM
  		STA 	NUM 		; NUM = NUM + digit
- 		;--
+ 		;-- 
  		BRA 	CalcExp1 	; get more digits
 CalcExpX 	; we have the value in NUM, and sign in SGN
  		LDA 	SGN
@@ -630,7 +630,7 @@ CalcStrF1 	LDA 	STRBUF,x 	; get the digit
  		INX
  		CPX 	#6 		; want at least one digit
  		BNE 	CalcStrF1 	; not all yet, loop back for next digit
- 		;--
+ 		;-- 
  		LDA 	STRBUF,x 	; first non-zero digit
 CalcStrF2 	;-- first non-zero digit
  		STA 	STRBUF,y 	; save 1st digit
@@ -707,23 +707,26 @@ CvtFloat: ; Convert unpacked NA to Float String and write to output (CharWr)
  		JSR 	CalcT2A 	; copy back from temp
  		RTS
 ;--------------------------------------------------------------------- CalcZeroR
-CalcZeroR: ; zero the result field
+CalcZeroR: ; zero the result field, SGN and EXP
  		LDX 	#RES_SZ
  		LDA 	#0
 CalcZeroRL 	STA 	NR,X
  		DEX
  		BPL 	CalcZeroRL
+ 		STA 	SGN
+ 		STA 	EXP
  		RTS
-;--------------------------------------------------------------------- CalcResSL
-CalcResSL: ; shift result left
- 		LDY 	#RES_SZ
- 		LDX 	#0
- 		CLC
-CalcResSLL 	ROL 	NR,X
- 		INX
- 		DEY
- 		BPL 	CalcResSLL
- 		RTS
+;;--------------------------------------------------------------------- CalcResSL
+;CalcResSL: ; shift result left
+; 		LDY 	#RES_SZ
+; 		LDX 	#0
+; 		CLC
+;CalcResSLL 	ROL 	NR,X
+; 		INX
+; 		DEY
+; 		BPL 	CalcResSLL
+; 		RTS
+
 ;--------------------------------------------------------------------- CalcResSR
 CalcResSR: ; shift result right
  		LDX 	#RES_SZ
@@ -733,40 +736,43 @@ CalcResSRL 	ROR 	NR,X
  		BPL 	CalcResSRL
  		RTS
 
-
-
-;=====================================================================
-MARKER: ; MARKER
-;=====================================================================
+;--------------------------------------------------------------------- CalcSign
+CalcSign: ;work out resulting sign (A xor B)
+ 		LDA 	NA+_SGN
+ 		EOR 	NB+_SGN
+ 		STA 	SGN
+ 		RTS
 
 ;--------------------------------------------------------------------- CalcMul
 CalcMul: ; NA = NB * NA	(16 bit signed integer)
 ; 726 cycles for 123 * 27
  		JSR 	CalcNext 	; pop into NB
-; 		JSR 	CalcSign
- 		;-- Initialize NR to 0
+ 		;-- Initialize NR to 0, SGN=0, EXP=0
  		JSR 	CalcZeroR
+ 		;-- resultant sign
+ 		JSR 	CalcSign
+ 		;-- 
  		LDX 	#24 		;There are 24 bits in NA
 CalcMul1 	; -- Shift NA to the right, lowest bit into C
  		LSR 	NA+_MU
  		ROR 	NA+_MH
  		ROR 	NA+_ML
- 		;--
+ 		;-- 
  		BCC 	CalcMul2 	;0 or 1?
  		;-- bit is 1 so add
  		CLC
  		LDA 	NB+_ML
  		ADC 	NR+3
  		STA 	NR+3
- 		;--
+ 		;-- 
  		LDA 	NB+_MH
  		ADC 	NR+4
  		STA 	NR+4
- 		;--
+ 		;-- 
  		LDA 	NB+_MU
  		ADC 	NR+5
  		STA 	NR+5
- 		;--
+ 		;-- 
 CalcMul2 	;shift result right (equivalent to shift B left )
  		PHX
  		JSR 	CalcResSR
@@ -775,10 +781,6 @@ CalcMul2 	;shift result right (equivalent to shift B left )
  		DEX
  		BNE 	CalcMul1
  		;-- product is now in RES[0..5]
- 		;-- work out resulting sign
- 		LDA 	NA+_SGN
- 		EOR 	NB+_SGN
- 		STA 	SGN
  		;-- work out exponent
  		CLC
  		LDA 	NA+_EXP
@@ -798,16 +800,16 @@ CalcAdj: ; Adjust size of result to 3 bytes, adjusr EXP as you go
  		;-- test under size
  		;-- todo
  		;-- all good so copy it to NA (TOS)
- 		lda NR+0
- 		sta NA+_ML
- 		lda NR+1
- 		sta NA+_MH
- 		lda NR+2
- 		sta NA+_MU
- 		lda EXP
- 		sta NA+_EXP
- 		lda SGN
- 		sta NA+_SGN
+ 		LDA 	NR+0
+ 		STA 	NA+_ML
+ 		LDA 	NR+1
+ 		STA 	NA+_MH
+ 		LDA 	NR+2
+ 		STA 	NA+_MU
+ 		LDA 	EXP
+ 		STA 	NA+_EXP
+ 		LDA 	SGN
+ 		STA 	NA+_SGN
 
  		RTS
 ;--------------------------------------------------------------------- CalcDown
@@ -835,56 +837,67 @@ CalcResDR2 	ROL 	NR+0
  		BPL 	CalcResDR1
  		RTS
 
-;--------------------------------------------------------------------- CalcResD10
-CalcResD10: ; Divide value at 0,X  by 10, remainder in A [AY]
- 		LDY 	#24 		; make this 24 for 24 bit version
- 		LDA 	#0
- 		CLC
-CalcResD101 	ROL 	a
- 		CMP 	#10
- 		BCC 	CalcResD102
- 		SBC 	#10
-CalcResD102 	ROL 	_ML,X 		; NA
- 		ROL 	_MH,X 		; NA+_MH
- 		ROL 	_MU,X 		; NA+2  - include for 24 bit version
- 		DEY
- 		BPL 	CalcResD101
+;===================================================================== 
+MARKER: ; MARKER
+;===================================================================== 
+
+
+;--------------------------------------------------------------------- CalcDiv
+CalcDiv: ; NA = NB / NA	(16 bit signed integer)
+ 		JSR 	CalcNext 	; pop into NB
+ 		;-- Initialize NR to 0, SGN=0, EXP=0
+ 		JSR 	CalcZeroR
+ 		;-- resultant sign
+ 		JSR 	CalcSign
+ 		;-- 
+#DEFINE REM  NR
+#DEFINE NUM1 NB
+#DEFINE NUM2 NA
+#DEFINE TMP  NT
+; NUM1(b) / NUM2(a) => NUM1(b) r REM
+ 		;-- 
+ 		LDX 	#24 		; 24 bit mantissa
+ 		;-- 
+CalcDivL1 	ASL 	NUM1
+ 		ROL 	NUM1+1
+ 		ROL 	NUM1+2
+ 		;-- 
+ 		ROL 	REM
+ 		ROL 	REM+1
+ 		ROL 	REM+2
+ 		;-- 
+ 		SEC 			;Trial subtraction
+ 		LDA 	REM
+ 		SBC 	NUM2
+ 		STA 	TMP
+ 		;-- 
+ 		LDA 	REM+1
+ 		SBC 	NUM2+1
+ 		STA 	TMP+1
+ 		;-- 
+ 		LDA 	REM+2
+ 		SBC 	NUM2+2
+ 		STA 	TMP+2
+ 		;-- check if it worked
+ 		BCC 	CalcDivL2
+ 		;-- subtract ok, so save
+ 		LDA 	TMP+2
+ 		STA 	REM+2
+ 		LDA 	TMP+1
+ 		STA 	REM+1
+ 		LDA 	TMP+0
+ 		STA 	REM+0
+ 		;-- 
+ 		INC 	NUM1 		;and record a 1 in the quotient
+
+CalcDivL2 	DEX
+ 		BNE 	CalcDivL1
+ 		;-- fix and store
  		RTS
 
 
 
-;;--------------------------------------------------------------------- CalcDivI
-;CalcDivI: ; NA = NB / NA	(16 bit signed integer)
-; 		JSR 	CalcNext 	; pop into NB
-;; 		JSR 	CalcSign
-;
-;; NB / NA => NB, remainder in NR
-; 		LDA 	#0 		;Initialize NR to 0
-; 		STA 	NR
-; 		STA 	NR+_MH
-; 		LDX 	#16 		;There are 16 bits in NB
-;CalcDivL1 	ASL 	NB 		;Shift hi bit of NB into NR
-; 		ROL 	NB+_MH 		;(vacating the lo bit, which will be used for the quotient)
-; 		ROL 	NR
-; 		ROL 	NR+_MH
-; 		LDA 	NR
-; 		SEC 			;Trial subtraction
-; 		SBC 	NA
-; 		TAY
-; 		LDA 	NR+_MH
-; 		SBC 	NA+_MH
-; 		BCC 	CalcDivL2 	;Did subtraction succeed?
-; 		STA 	NR+_MH 		;If yes, save it
-; 		STY 	NR
-; 		INC 	NB 		;and record a 1 in the quotient
-;CalcDivL2 	DEX
-; 		BNE 	CalcDivL1
-; 		;--
-; 		;-- ** copy NB-> NA, then fix NA *************************************
-; 		LDA 	NB
-; 		LDX 	NB+_MH
-;; 		JSR 	CalcFix
-; 		JMP 	CalcSetI 	; AX -> NA
+
 ;;--------------------------------------------------------------------- CalcModI
 ;CalcModI: ; NA = NB % NA
 ; 		JSR 	CalcDivI 	; divide with remainder in NR
@@ -948,10 +961,12 @@ CalcDBugNA: ; dump NA
  		JSR 	CharOut
  		LDX 	#NA
  		JSR 	CalcDBug
-
-
+ 		;-- 
+ 		LDA 	#' '
+ 		JSR 	CharOut
+ 		;-- 
+ 		JSR 	CvtFloat
  		JMP 	OutNL
-
 
 ;--------------------------------------------------------------------- CalcDBug
 CalcDBug: ; sends raw form of NumX to screen
@@ -959,9 +974,15 @@ CalcDBug: ; sends raw form of NumX to screen
  		;-- display hex form
  		LDA 	#'='
  		JSR 	CharOut
- 		LDA 	_EXP,X
+ 		;-- sgn
+ 		LDA 	#'s'
+ 		JSR 	CharOut
+ 		LDA 	_SGN,X
  		JSR 	DBugHex
- 		LDA 	#':'
+ 		;-- man
+ 		LDA 	#' '
+ 		JSR 	CharOut
+ 		LDA 	#'m'
  		JSR 	CharOut
  		LDA 	_MU,X
  		JSR 	DBugHex
@@ -969,17 +990,17 @@ CalcDBug: ; sends raw form of NumX to screen
  		JSR 	DBugHex
  		LDA 	_ML,X
  		JSR 	DBugHex
- 		;--
+ 		;-- exp
  		LDA 	#' '
  		JSR 	CharOut
- 		LDA 	_SGN,X
+ 		LDA 	#'e'
+ 		JSR 	CharOut
+ 		LDA 	_EXP,X
  		JSR 	DBugHex
- 		;--
+ 		;-- 
  		LDA 	#' '
- 		JSR 	CharOut
- 		;--
- 		JSR 	CvtFloat
- 		RTS
+ 		JMP 	CharOut
+
 
 ;--------------------------------------------------------------------- CalcDBugRES
 CalcDBugRES: ; display result as hexvalues from high to low
@@ -993,14 +1014,14 @@ CalcDBugRESl 	LDA 	NR,x
  		JSR 	CharOut
 CalcDBugRES2 	DEX
  		BPL 	CalcDBugRESl
- 		;--
+ 		;-- 
  		LDA 	#' '
  		JSR 	CharOut
  		LDA 	#'e'
  		JSR 	CharOut
  		LDA 	EXP
  		JSR 	DBugHex
- 		;--
+ 		;-- 
  		LDA 	#'s'
  		JSR 	CharOut
  		LDA 	SGN

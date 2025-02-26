@@ -93,26 +93,31 @@ Main: ; Main loop code
  		;--
  		POINT(Z_Rd,NumTwo)
  		JSR 	CalcParse 	; parse string into unpacked form
-
  		JSR 	CalcDBugNA
 
- 		PRINT("--\r\n") 	; 123x456=>56088 	$00 DB 18
- 					; 1234x4567=> 5635678  	$55 FE 5E
- 					;12345x45678=563894910  219c 5a7e
- 		JSR 	CalcMul
+ 		PRINT("--")
+ 		jsr	OutNL
 
- 		JSR 	CalcDBugRES
+; 123x456=>56088 	$00 DB 18
+; 1234x4567=> 5635678  	$55 FE 5E
+;12345x45678=563894910  219c 5a7e
+
+ 		JSR 	CalcDiv
 
  		JSR 	CalcDBugNA
-; 		JSR 	CalcDBugNB
+ 		JSR 	CalcDBugNB
 
  		BRK
 
 PARAGRAPH()
-NumOne:  	.DB 	"-999999",0	;    0F423F 3
-NumTwo:  	.DB 	"-888888",0	;    0D9038 3
+NumOne:  	.DB 	"999999",0	;    0F423F 3
+;NumTwo:  	.DB 	"-888888",0	;    0D9038 3
+NumTwo:  	.DB 	"1234",0	;    0004D2 3
+
 ; * 888887111112 = 			;CEF5CCEDC8 5
 ;   888887100000
+; 999999/1234=> 810 r 459	00032A r 0001CB
+
 
 
 NumStr:
