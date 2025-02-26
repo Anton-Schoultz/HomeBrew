@@ -1,5 +1,5 @@
 echo off
-rem echo p1=%1, p2=%2, p3=%3, p4=%4, p5=%5
+echo p1=%1, p2=%2, p3=%3, p4=%4, p5=%5
 rem p0=Full Path of bat file
 rem .. passed from tool configuration
 rem p1=path	(%P)
