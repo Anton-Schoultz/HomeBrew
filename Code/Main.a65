@@ -42,43 +42,6 @@ Main: ; Main loop code
 
  		JSR 	CalcZeroR 	; zero result
 
-;#define SHFT CalcResSR
-;; 		LDA 	#$05
-;; 		STA 	NR
-; 		LDA 	#$50
-; 		STA 	NR+15
-; 		JSR 	CalcDBugRES
-;
-;
-; 		JSR 	SHFT
-; 		JSR 	CalcDBugRES
-;;
-;;
-; 		JSR 	SHFT
-; 		JSR 	SHFT
-; 		JSR 	SHFT
-; 		JSR 	CalcDBugRES
-;
-; 		LDY 	#31
-;
-;MainL 		PHY
-;
-; 		JSR 	SHFT
-; 		JSR 	SHFT
-; 		JSR 	SHFT
-; 		JSR 	SHFT
-; 		JSR 	CalcDBugRES
-;
-; 		PLY
-; 		DEY
-; 		BNE 	MainL
-
-
-
-
-
-
-
 
 ;    1234 0004d2 0
 ;   12340 003034 1
@@ -95,28 +58,41 @@ Main: ; Main loop code
  		JSR 	CalcParse 	; parse string into unpacked form
  		JSR 	CalcDBugNA
 
- 		PRINT("--")
- 		jsr	OutNL
+; 		PRINT("--")
+; 		JSR 	OutNL
 
 ; 123x456=>56088 	$00 DB 18
 ; 1234x4567=> 5635678  	$55 FE 5E
 ;12345x45678=563894910  219c 5a7e
 
+; 		JSR 	CalcMul
+; 		JSR 	CalcDBugRES
+;		jsr	CalcResDL
+; 		JSR 	CalcDBugRES
+
+		nop
+; 999999 / 1234 = 810.3719611		; 00032A.5F38D7 Binary fraction
+; 00 7BA727 FC once 'fixed' => 8103719 e-4 => 810.3719
+
+
  		JSR 	CalcDiv
 
+ 		JSR 	CalcDBugRES
  		JSR 	CalcDBugNA
- 		JSR 	CalcDBugNB
+
+ 		JSR 	CalcStrF
 
  		BRK
 
 PARAGRAPH()
-NumOne:  	.DB 	"999999",0	;    0F423F 3
+;NumOne:  	.DB 	"810.3719611",0 ; 00 0C5D85 FD 8.10372 E+02
+NumOne:  	.DB 	"999999",0 	;    0F423F 3
 ;NumTwo:  	.DB 	"-888888",0	;    0D9038 3
-NumTwo:  	.DB 	"1234",0	;    0004D2 3
+NumTwo:  	.DB 	"1234",0 	;    0004D2 3
 
 ; * 888887111112 = 			;CEF5CCEDC8 5
 ;   888887100000
-; 999999/1234=> 810 r 459	00032A r 0001CB
+; 999999/1234=>810,3719611 	810 r 459	00032A r 0001CB
 
 
 

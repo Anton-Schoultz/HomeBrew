@@ -42,8 +42,6 @@ IO_WRCMD 	= 1 			;WrCommand
 
 
 #DEFINE LOW(m)  (m & $FF)
-
-; Returns high byte of a 16 bit vale
 #DEFINE HIGH(m)  m>>8
 #DEFINE UPPER(m) m>>16
 

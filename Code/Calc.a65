@@ -21,17 +21,11 @@
 ;
 ; parsing from string includes 'normalise' to try and keep as ~E00
 
-#define RES_SZ 15
+#define RES_SZ 9
 
 #if ($>>8)==0
 .LIST
 ;--------------------------------------------------------------------- Calc Z-Page
-PARAGRAPH()
-Var(NA,5) 	; Top-Of-Stack
-; ---
-ALIGN(8)
-Var(NB,5) 	; Next item on stack
-
 Short(SGN) 	; sign
 Short(EXP) 	; exponent
 Short(CSP) 	; Calc stack pointer (00->0F)
@@ -41,6 +35,12 @@ Short(DIG) 	; digits counter
 
 Short(RND) 	; digits counter
 
+
+PARAGRAPH()
+Var(NA,5) 	; Top-Of-Stack
+; ---
+PARAGRAPH()
+Var(NB,5) 	; Next item on stack
 ; ----
 PARAGRAPH()
 Var(NR,RES_SZ) 	; Result (also for convert to string)
@@ -48,8 +48,11 @@ Var(NR,RES_SZ) 	; Result (also for convert to string)
 PARAGRAPH()
 Var(NT,RES_SZ) 	; Temp
 
+Var(REM,4) 	; Remainder from division
 
-#DEFINE CSTKSZ  15
+.export NA,NB,NT,NR
+
+#DEFINE CSTKSZ  10
 
 _ML 		= 0
 _MH 		= 1
@@ -175,7 +178,7 @@ CalcPushX 	RTS
 ;--------------------------------------------------------------------- CalcDrop
 CalcDrop: ; Pop item into NA item variable [AX]!StackErr
  		JSR 	CalcPop
- 		;-- 
+ 		;--
  		LDA 	CSTK0,X
  		STA 	NA+_ML
  		LDA 	CSTK1,X
@@ -197,7 +200,7 @@ CalcPop: ; Reduce stack pointer, .X points to 'popped' item [X] !StackErr
 ;--------------------------------------------------------------------- CalcNext
 CalcNext: ; Pop item into NB item variable
  		JSR 	CalcPop
- 		;-- 
+ 		;--
  		LDA 	CSTK0,X
  		STA 	NB+_ML
  		LDA 	CSTK1,X
@@ -305,7 +308,7 @@ CalcSetINeg 	;-- negative value
  		LDA 	#$FF
  		STA 	NA+_MU 		; sign extend to upper
  		LDX 	#NA
- 		;-- 
+ 		;--
  		BRA 	CalcNegX 	; go negate the value
 
 ;--------------------------------------------------------------------- CalcAbs
@@ -324,7 +327,7 @@ CalcNegX: ; Two's compliment of value at X [A]
  		LDA 	#$FF
  		EOR 	_SGN,X
  		STA 	_SGN,X
- 		;-- 
+ 		;--
  		;-- exor mantissa L
  		LDA 	#$FF
  		EOR 	_ML,X
@@ -353,15 +356,15 @@ CalcAddMan: ; Add manitssa parts [X] = [Y] + [X]	(S24)
  		LDA 	_ML,Y
  		ADC 	_ML,X
  		STA 	_ML,X
- 		;-- 
+ 		;--
  		LDA 	_MH,Y
  		ADC 	_MH,X
  		STA 	_MH,X
- 		;-- 
+ 		;--
  		LDA 	_MU,Y
  		ADC 	_MU,X
  		STA 	_MU,X
- 		;-- 
+ 		;--
  		RTS
 ;--------------------------------------------------------------------- CalcSubMan
 CalcSubMan: ; Subtract manitssa parts [X] = [Y] - [X] 	(S24)
@@ -369,15 +372,15 @@ CalcSubMan: ; Subtract manitssa parts [X] = [Y] - [X] 	(S24)
  		LDA 	_ML,Y
  		SBC 	_ML,X
  		STA 	_ML,X
- 		;-- 
+ 		;--
  		LDA 	_MH,Y
  		SBC 	_MH,X
  		STA 	_MH,X
- 		;-- 
+ 		;--
  		LDA 	_MU,Y
  		SBC 	_MU,X
  		STA 	_MU,X
- 		;-- 
+ 		;--
  		RTS
 
 ;--------------------------------------------------------------------- CalcMul10A
@@ -445,7 +448,7 @@ CalcParse1 	;-- check for '.'
 CalcParse2 	; check for 'E' notation  (must use uppercase 'E')
  		CMP 	#'E'
  		BNE 	CalcParse3
- 		;-- 
+ 		;--
  		JSR 	CalcExp 	; read [+/-] digits into A as signed short
  		CLC
  		ADC 	NA_EXP
@@ -525,7 +528,7 @@ CalcNormR 	; digits to the right, incr exp
  		LDX 	#NA
  		LDY 	#NT
  		JSR 	CalcCopy 	; copy NA -> Temp
- 		;-- 
+ 		;--
  		LDX 	#NT 		; point at temp
  		JSR 	CalcD10 	; try Temp/10
  		AND 	#$FF 		; remainder = zero?
@@ -567,13 +570,13 @@ CalcExp1 	; check for valid digit '0'..'9'
  		ADC 	NUM 		; A = NUM * 5
  		ASL 	A
  		STA 	NUM 		; NUM = NUM * 10
- 		;-- 
+ 		;--
  		TYA 			; get digit back
  		AND 	#$0F 		; strip the value out
  		CLC
  		ADC 	NUM
  		STA 	NUM 		; NUM = NUM + digit
- 		;-- 
+ 		;--
  		BRA 	CalcExp1 	; get more digits
 CalcExpX 	; we have the value in NUM, and sign in SGN
  		LDA 	SGN
@@ -630,7 +633,7 @@ CalcStrF1 	LDA 	STRBUF,x 	; get the digit
  		INX
  		CPX 	#6 		; want at least one digit
  		BNE 	CalcStrF1 	; not all yet, loop back for next digit
- 		;-- 
+ 		;--
  		LDA 	STRBUF,x 	; first non-zero digit
 CalcStrF2 	;-- first non-zero digit
  		STA 	STRBUF,y 	; save 1st digit
@@ -716,16 +719,27 @@ CalcZeroRL 	STA 	NR,X
  		STA 	SGN
  		STA 	EXP
  		RTS
-;;--------------------------------------------------------------------- CalcResSL
-;CalcResSL: ; shift result left
-; 		LDY 	#RES_SZ
-; 		LDX 	#0
-; 		CLC
-;CalcResSLL 	ROL 	NR,X
-; 		INX
-; 		DEY
-; 		BPL 	CalcResSLL
-; 		RTS
+;--------------------------------------------------------------------- CalcZeroT
+CalcZeroT: ; zero the result field, SGN and EXP
+ 		LDY 	#7
+ 		LDX 	#0
+ 		TXA
+CalcZeroTL 	STA 	NT,X
+ 		INX
+ 		DEY
+ 		BNE 	CalcZeroTL
+ 		RTS
+
+;--------------------------------------------------------------------- CalcResSL
+CalcResSL: ; shift result left
+ 		LDY 	#RES_SZ
+ 		LDX 	#0
+ 		CLC
+CalcResSLL 	ROL 	NR,X
+ 		INX
+ 		DEY
+ 		BPL 	CalcResSLL
+ 		RTS
 
 ;--------------------------------------------------------------------- CalcResSR
 CalcResSR: ; shift result right
@@ -751,28 +765,28 @@ CalcMul: ; NA = NB * NA	(16 bit signed integer)
  		JSR 	CalcZeroR
  		;-- resultant sign
  		JSR 	CalcSign
- 		;-- 
+ 		;--
  		LDX 	#24 		;There are 24 bits in NA
 CalcMul1 	; -- Shift NA to the right, lowest bit into C
  		LSR 	NA+_MU
  		ROR 	NA+_MH
  		ROR 	NA+_ML
- 		;-- 
+ 		;--
  		BCC 	CalcMul2 	;0 or 1?
  		;-- bit is 1 so add
  		CLC
  		LDA 	NB+_ML
  		ADC 	NR+3
  		STA 	NR+3
- 		;-- 
+ 		;--
  		LDA 	NB+_MH
  		ADC 	NR+4
  		STA 	NR+4
- 		;-- 
+ 		;--
  		LDA 	NB+_MU
  		ADC 	NR+5
  		STA 	NR+5
- 		;-- 
+ 		;--
 CalcMul2 	;shift result right (equivalent to shift B left )
  		PHX
  		JSR 	CalcResSR
@@ -814,9 +828,11 @@ CalcAdj: ; Adjust size of result to 3 bytes, adjusr EXP as you go
  		RTS
 ;--------------------------------------------------------------------- CalcDown
 CalcDown: ; down size = div 10, incr exp
- 		JSR 	CalcResDR
+ 		JSR 	CalcResDR 	; /10
  		INC 	EXP
  		BRA 	CalcAdj
+
+
 
 ;--------------------------------------------------------------------- CalcResDR
 CalcResDR: ; Divide Result by 10, remainder in A [AY]
@@ -837,10 +853,35 @@ CalcResDR2 	ROL 	NR+0
  		BPL 	CalcResDR1
  		RTS
 
-;===================================================================== 
+;=====================================================================
 MARKER: ; MARKER
-;===================================================================== 
+;=====================================================================
 
+;--------------------------------------------------------------------- CalcResDL
+CalcResDL: ; Result = result * 10
+ 		LDX 	#0
+CalcResDL1 	; copy res to temp
+ 		LDA 	NR,x
+ 		STA 	NT,x
+ 		INX
+ 		CPX 	#RES_SZ
+ 		BNE 	CalcResDL1
+ 		;-- res = res *4
+ 		JSR 	CalcResSL 	; res *= 2
+ 		JSR 	CalcResSL 	; res *= 2
+ 		;-- add tmp to get *5
+ 		LDX 	#0
+ 		LDY 	#(RES_SZ)
+ 		CLC
+CalcResDL2 	LDA 	NR,x
+ 		ADC 	NT,x
+ 		STA 	NR,x
+ 		INX
+ 		DEY
+ 		BNE 	CalcResDL2
+ 		;--
+ 		JSR 	CalcResSL 	; res *= 2
+ 		RTS
 
 ;--------------------------------------------------------------------- CalcDiv
 CalcDiv: ; NA = NB / NA	(16 bit signed integer)
@@ -849,53 +890,109 @@ CalcDiv: ; NA = NB / NA	(16 bit signed integer)
  		JSR 	CalcZeroR
  		;-- resultant sign
  		JSR 	CalcSign
- 		;-- 
-#DEFINE REM  NR
-#DEFINE NUM1 NB
-#DEFINE NUM2 NA
-#DEFINE TMP  NT
-; NUM1(b) / NUM2(a) => NUM1(b) r REM
- 		;-- 
- 		LDX 	#24 		; 24 bit mantissa
- 		;-- 
-CalcDivL1 	ASL 	NUM1
- 		ROL 	NUM1+1
- 		ROL 	NUM1+2
- 		;-- 
- 		ROL 	REM
- 		ROL 	REM+1
- 		ROL 	REM+2
- 		;-- 
- 		SEC 			;Trial subtraction
- 		LDA 	REM
- 		SBC 	NUM2
- 		STA 	TMP
- 		;-- 
- 		LDA 	REM+1
- 		SBC 	NUM2+1
- 		STA 	TMP+1
- 		;-- 
- 		LDA 	REM+2
- 		SBC 	NUM2+2
- 		STA 	TMP+2
- 		;-- check if it worked
- 		BCC 	CalcDivL2
- 		;-- subtract ok, so save
- 		LDA 	TMP+2
- 		STA 	REM+2
- 		LDA 	TMP+1
- 		STA 	REM+1
- 		LDA 	TMP+0
- 		STA 	REM+0
- 		;-- 
- 		INC 	NUM1 		;and record a 1 in the quotient
+ 		;-- start with exp of the dividend
+ 		LDA 	NB+_EXP
+ 		STA 	EXP
+ 		;-- clear result
+ 		JSR 	CalcZeroT
 
-CalcDivL2 	DEX
- 		BNE 	CalcDivL1
- 		;-- fix and store
+; Quotient is in Result (offset by 3 bytes so as binary fractional parts)
+; Divisor is in A 3 bytes of mantissa
+; dividing 6 byte(NR) by 3byte(NA)
+
+ 		NOP
+
+;
+ 		LDX 	#48 		; bit count
+CalcDivL 	;-- shift a bit from dividend into temp
+ 		ASL 	NB
+ 		ROL 	NB+1
+ 		ROL 	NB+2
+ 		;-- now pull the bit into NT
+ 		ROL 	NT
+ 		ROL 	NT+1
+ 		ROL 	NT+2
+ 		;-- try subtract divisor from temp
+ 		SEC
+ 		LDA 	NT
+ 		SBC 	NA
+ 		STA 	NT
+ 		LDA 	NT+1
+ 		SBC 	NA+1
+ 		STA 	NT+1
+ 		LDA 	NT+2
+ 		SBC 	NA+2
+ 		STA 	NT+2
+ 		;-- if ok, shift 1 into result
+ 		BCS 	CalcDivL2 	; continue C=1
+ 		;-- subtract failed, put it back (C=0) at this point
+ 		LDA 	NT
+ 		ADC 	NA
+ 		STA 	NT
+ 		LDA 	NT+1
+ 		ADC 	NA+1
+ 		STA 	NT+1
+ 		LDA 	NT+2
+ 		ADC 	NA+2
+ 		STA 	NT+2 		; carry should be zero here
+ 		CLC
+ 		;--
+CalcDivL2 	; save result bit
+ 		ROL 	NR
+ 		ROL 	NR+1
+ 		ROL 	NR+2
+ 		ROL 	NR+3
+ 		ROL 	NR+4
+ 		ROL 	NR+5
+ 		;-- next bit
+ 		DEX
+ 		BNE 	CalcDivL
+ 		;--
+ 		;-- result is binary6 fraction in RES 0..6
+ 		;--
+ 		JSR 	CalcDBugRES
+ 		;-- 5 4 3  2 1 0  Res
+ 		;-- 00032A.5F38D7 Binary fraction
+CalcDivL3 	; adjust result to fit
+ 		LDA 	NR+5
+ 		AND 	#$F0
+ 		BNE 	CalcDivL4 	; highbyte is full -> exit
+ 		;-- up size = *10, decr exp
+ 		JSR 	CalcResDL 	; *10
+ 		DEC 	EXP
+ 		BRA 	CalcDivL3
+CalcDivL4 	; Rounding
+ 		ASL 	NR+2
+ 		BCC 	CalcDivL5
+ 		INC 	NR+3
+ 		BNE 	CalcDivL4
+ 		INC 	NR+4
+ 		BNE 	CalcDivL4
+ 		INC 	NR+5
+ 		;
+CalcDivL5 	; copy SGN & EXP to NumA
+ 		LDA 	EXP
+ 		STA 	NA+_EXP
+ 		LDA 	SGN
+ 		STA 	NA+_SGN
+ 		;-- copy result 3,4,5 to NumA
+ 		LDX 	#NR+3
+ 		LDY 	#NA
+ 		JSR 	CalcCpyMan
  		RTS
 
 
+ 		RTS
+
+;;--------------------------------------------------------------------- CalcEnlarge
+;CalcEnlarge: ; enlarge Result to 6 bytes (mult by 10, adjext EXP)
+; 		;-- multiply by 10 until we have ~ 6bytes
+;CalcDivL 	LDA 	NR+5
+; 		AND 	#$F0
+; 		BNE 	CalcDivL0
+; 		JSR 	CalcUp
+; 		BRA 	CalcDivL
+; 		RTS
 
 
 ;;--------------------------------------------------------------------- CalcModI
@@ -961,11 +1058,12 @@ CalcDBugNA: ; dump NA
  		JSR 	CharOut
  		LDX 	#NA
  		JSR 	CalcDBug
- 		;-- 
- 		LDA 	#' '
- 		JSR 	CharOut
- 		;-- 
- 		JSR 	CvtFloat
+; 		;--
+; 		LDA 	#' '
+; 		JSR 	CharOut
+; 		;--
+; 		JSR 	CvtFloat
+
  		JMP 	OutNL
 
 ;--------------------------------------------------------------------- CalcDBug
@@ -997,7 +1095,7 @@ CalcDBug: ; sends raw form of NumX to screen
  		JSR 	CharOut
  		LDA 	_EXP,X
  		JSR 	DBugHex
- 		;-- 
+ 		;--
  		LDA 	#' '
  		JMP 	CharOut
 
@@ -1014,14 +1112,14 @@ CalcDBugRESl 	LDA 	NR,x
  		JSR 	CharOut
 CalcDBugRES2 	DEX
  		BPL 	CalcDBugRESl
- 		;-- 
+ 		;--
  		LDA 	#' '
  		JSR 	CharOut
  		LDA 	#'e'
  		JSR 	CharOut
  		LDA 	EXP
  		JSR 	DBugHex
- 		;-- 
+ 		;--
  		LDA 	#'s'
  		JSR 	CharOut
  		LDA 	SGN
