@@ -104,13 +104,15 @@ Main: ; Main loop code
  		JSR 	CalcDBugRES
 
  		JSR 	CalcDBugNA
- 		JSR 	CalcDBugNB
+; 		JSR 	CalcDBugNB
 
  		BRK
 
 PARAGRAPH()
-NumOne:  	.DB 	"12345",0
-NumTwo:  	.DB 	"45678",0
+NumOne:  	.DB 	"-999999",0	;    0F423F 3
+NumTwo:  	.DB 	"-888888",0	;    0D9038 3
+; * 888887111112 = 			;CEF5CCEDC8 5
+;   888887100000
 
 
 NumStr:

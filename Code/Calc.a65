@@ -599,7 +599,7 @@ CalcStrL 	;- num/10 remainder as digit
  		JSR 	CalcD10NA 	; div NA_LHU by 10, remainder in A
  		PLX 			; recall index
  		ORA 	#'0' 		; convert remainder to a digit
- 		STA 	STRBUF,x	; store the digit
+ 		STA 	STRBUF,x 	; store the digit
  		DEX 			; back-up one pos to the left
  		BPL 	CalcStrL 	; loop until done
  		;-- Place sign in NR[0] based on SGN
@@ -616,13 +616,14 @@ CalcStrF: ; Covert unpacked float to string in NR
 ;     SS '0' '3' '2' '7' '6' '7'  00
  		;-- convert mantisa part (with sign)
  		JSR 	CalcStr 	; mantissa to string in Result
+
  		LDY 	#1 		; reading from .x
  		LDX 	#1 		; writting to .y
  		LDA 	NA_EXP
  		BNE 	CalcStrF1
  		RTS 			; exponent is zero so return as is
  		;-- find first non '0'
-CalcStrF1 	LDA 	STRBUF,x 		; get the digit
+CalcStrF1 	LDA 	STRBUF,x 	; get the digit
  		CMP 	#'0'
  		BNE 	CalcStrF2
  		;-- skip leading zeroes
@@ -630,9 +631,9 @@ CalcStrF1 	LDA 	STRBUF,x 		; get the digit
  		CPX 	#6 		; want at least one digit
  		BNE 	CalcStrF1 	; not all yet, loop back for next digit
  		;--
- 		LDA 	STRBUF,x 		; first non-zero digit
+ 		LDA 	STRBUF,x 	; first non-zero digit
 CalcStrF2 	;-- first non-zero digit
- 		STA 	STRBUF,y 		; save 1st digit
+ 		STA 	STRBUF,y 	; save 1st digit
  		;-- move on
  		INY
  		INX
@@ -743,11 +744,9 @@ CalcMul: ; NA = NB * NA	(16 bit signed integer)
 ; 726 cycles for 123 * 27
  		JSR 	CalcNext 	; pop into NB
 ; 		JSR 	CalcSign
-
  		;-- Initialize NR to 0
  		JSR 	CalcZeroR
- 		LDX 	#24 		;There are 16 bits in NA
-
+ 		LDX 	#24 		;There are 24 bits in NA
 CalcMul1 	; -- Shift NA to the right, lowest bit into C
  		LSR 	NA+_MU
  		ROR 	NA+_MH
@@ -769,63 +768,133 @@ CalcMul1 	; -- Shift NA to the right, lowest bit into C
  		STA 	NR+5
  		;--
 CalcMul2 	;shift result right (equivalent to shift B left )
- 		phx
+ 		PHX
  		JSR 	CalcResSR
- 		plx
+ 		PLX
  		;-- loop for each bit
  		DEX
  		BNE 	CalcMul1
-		; result is now in RES[0..5]
+ 		;-- product is now in RES[0..5]
+ 		;-- work out resulting sign
+ 		LDA 	NA+_SGN
+ 		EOR 	NB+_SGN
+ 		STA 	SGN
+ 		;-- work out exponent
+ 		CLC
+ 		LDA 	NA+_EXP
+ 		ADC 	NB+_EXP
+ 		STA 	EXP
+ 		;-- now adjust result field and EXP
+ 		JSR 	CalcAdj
+ 		RTS
 
+;--------------------------------------------------------------------- CalcAdj
+CalcAdj: ; Adjust size of result to 3 bytes, adjusr EXP as you go
+ 		;-- test over size
+ 		LDA 	NR+3
+ 		ORA 	NR+4
+ 		ORA 	NR+5
+ 		BNE 	CalcDown
+ 		;-- test under size
+ 		;-- todo
+ 		;-- all good so copy it to NA (TOS)
+ 		lda NR+0
+ 		sta NA+_ML
+ 		lda NR+1
+ 		sta NA+_MH
+ 		lda NR+2
+ 		sta NA+_MU
+ 		lda EXP
+ 		sta NA+_EXP
+ 		lda SGN
+ 		sta NA+_SGN
 
+ 		RTS
+;--------------------------------------------------------------------- CalcDown
+CalcDown: ; down size = div 10, incr exp
+ 		JSR 	CalcResDR
+ 		INC 	EXP
+ 		BRA 	CalcAdj
 
+;--------------------------------------------------------------------- CalcResDR
+CalcResDR: ; Divide Result by 10, remainder in A [AY]
+ 		LDY 	#48 		; 6 bytes
+ 		LDA 	#0
+ 		CLC
+CalcResDR1 	ROL 	a
+ 		CMP 	#10
+ 		BCC 	CalcResDR2
+ 		SBC 	#10
+CalcResDR2 	ROL 	NR+0
+ 		ROL 	NR+1
+ 		ROL 	NR+2
+ 		ROL 	NR+3
+ 		ROL 	NR+4
+ 		ROL 	NR+5
+ 		DEY
+ 		BPL 	CalcResDR1
+ 		RTS
+
+;--------------------------------------------------------------------- CalcResD10
+CalcResD10: ; Divide value at 0,X  by 10, remainder in A [AY]
+ 		LDY 	#24 		; make this 24 for 24 bit version
+ 		LDA 	#0
+ 		CLC
+CalcResD101 	ROL 	a
+ 		CMP 	#10
+ 		BCC 	CalcResD102
+ 		SBC 	#10
+CalcResD102 	ROL 	_ML,X 		; NA
+ 		ROL 	_MH,X 		; NA+_MH
+ 		ROL 	_MU,X 		; NA+2  - include for 24 bit version
+ 		DEY
+ 		BPL 	CalcResD101
  		RTS
 
 
 
-
-;--------------------------------------------------------------------- CalcDivI
-CalcDivI: ; NA = NB / NA	(16 bit signed integer)
- 		JSR 	CalcNext 	; pop into NB
-; 		JSR 	CalcSign
-
-; NB / NA => NB, remainder in NR
- 		LDA 	#0 		;Initialize NR to 0
- 		STA 	NR
- 		STA 	NR+_MH
- 		LDX 	#16 		;There are 16 bits in NB
-CalcDivL1 	ASL 	NB 		;Shift hi bit of NB into NR
- 		ROL 	NB+_MH 		;(vacating the lo bit, which will be used for the quotient)
- 		ROL 	NR
- 		ROL 	NR+_MH
- 		LDA 	NR
- 		SEC 			;Trial subtraction
- 		SBC 	NA
- 		TAY
- 		LDA 	NR+_MH
- 		SBC 	NA+_MH
- 		BCC 	CalcDivL2 	;Did subtraction succeed?
- 		STA 	NR+_MH 		;If yes, save it
- 		STY 	NR
- 		INC 	NB 		;and record a 1 in the quotient
-CalcDivL2 	DEX
- 		BNE 	CalcDivL1
- 		;--
- 		;-- ** copy NB-> NA, then fix NA *************************************
- 		LDA 	NB
- 		LDX 	NB+_MH
-; 		JSR 	CalcFix
- 		JMP 	CalcSetI 	; AX -> NA
-;--------------------------------------------------------------------- CalcModI
-CalcModI: ; NA = NB % NA
- 		JSR 	CalcDivI 	; divide with remainder in NR
- 		;-- fall through to get remainder into NA
-;--------------------------------------------------------------------- CalcRemI
-CalcRemI: ; Remainder of division into NA (also in AX) - Call CalcDivI before
- 		LDA 	NR
- 		LDX 	NR+_MH
- 		JMP 	CalcSetI
-
+;;--------------------------------------------------------------------- CalcDivI
+;CalcDivI: ; NA = NB / NA	(16 bit signed integer)
+; 		JSR 	CalcNext 	; pop into NB
+;; 		JSR 	CalcSign
+;
+;; NB / NA => NB, remainder in NR
+; 		LDA 	#0 		;Initialize NR to 0
+; 		STA 	NR
+; 		STA 	NR+_MH
+; 		LDX 	#16 		;There are 16 bits in NB
+;CalcDivL1 	ASL 	NB 		;Shift hi bit of NB into NR
+; 		ROL 	NB+_MH 		;(vacating the lo bit, which will be used for the quotient)
+; 		ROL 	NR
+; 		ROL 	NR+_MH
+; 		LDA 	NR
+; 		SEC 			;Trial subtraction
+; 		SBC 	NA
+; 		TAY
+; 		LDA 	NR+_MH
+; 		SBC 	NA+_MH
+; 		BCC 	CalcDivL2 	;Did subtraction succeed?
+; 		STA 	NR+_MH 		;If yes, save it
+; 		STY 	NR
+; 		INC 	NB 		;and record a 1 in the quotient
+;CalcDivL2 	DEX
+; 		BNE 	CalcDivL1
+; 		;--
+; 		;-- ** copy NB-> NA, then fix NA *************************************
+; 		LDA 	NB
+; 		LDX 	NB+_MH
+;; 		JSR 	CalcFix
+; 		JMP 	CalcSetI 	; AX -> NA
+;;--------------------------------------------------------------------- CalcModI
+;CalcModI: ; NA = NB % NA
+; 		JSR 	CalcDivI 	; divide with remainder in NR
+; 		;-- fall through to get remainder into NA
+;;--------------------------------------------------------------------- CalcRemI
+;CalcRemI: ; Remainder of division into NA (also in AX) - Call CalcDivI before
+; 		LDA 	NR
+; 		LDX 	NR+_MH
+; 		JMP 	CalcSetI
+;
 
 
 PARAGRAPH()
@@ -846,11 +915,11 @@ PARAGRAPH()
 ; 		RTS
 
 
-;--------------------------------------------------------------------- CvtInt
-CvtInt: ; Convert NA to integer String and write to output (CharWr)
- 		JSR 	CalcStr
- 		LDAX(NR)
- 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
+;;--------------------------------------------------------------------- CvtInt
+;CvtInt: ; Convert NA to integer String and write to output (CharWr)
+; 		JSR 	CalcStr
+; 		LDAX(NR)
+; 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
 
 
 ;===================================================================== CONSTANTS
@@ -917,13 +986,25 @@ CalcDBugRES: ; display result as hexvalues from high to low
  		LDX 	#RES_SZ
 CalcDBugRESl 	LDA 	NR,x
  		JSR 	DBugHex 	; print as hex
- 		txa
- 		and #$01
- 		bne CalcDBugRES2
+ 		TXA
+ 		AND 	#$01
+ 		BNE 	CalcDBugRES2
  		LDA 	#' '
  		JSR 	CharOut
-CalcDBugRES2	DEX
+CalcDBugRES2 	DEX
  		BPL 	CalcDBugRESl
+ 		;--
+ 		LDA 	#' '
+ 		JSR 	CharOut
+ 		LDA 	#'e'
+ 		JSR 	CharOut
+ 		LDA 	EXP
+ 		JSR 	DBugHex
+ 		;--
+ 		LDA 	#'s'
+ 		JSR 	CharOut
+ 		LDA 	SGN
+ 		JSR 	DBugHex
  		JMP 	OutNL
 
 
