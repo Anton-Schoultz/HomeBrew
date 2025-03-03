@@ -1,0 +1,19 @@
+; TestUtil
+;
+.LIST
+;===================================================================== TESTUTIL
+#if CODEPAGE==2
+ 		JSR 	TestUtil
+#endif
+
+#if CODEPAGE==1
+;--------------------------------------------------------------------- TestUtil
+TestUtil 	PRINT(">TestUtil<")
+
+ 		PRINT(" 1:Bin2Dec ")
+ 		LDA 	#56
+ 		JSR 	Bin2Dec
+ 		CMP 	#$56
+ 		JSR 	TestEQ
+ 		RTS
+#endif

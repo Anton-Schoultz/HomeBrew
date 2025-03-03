@@ -1,0 +1,78 @@
+.NOLIST
+; VCpu
+;
+; Virtual CPU		_XXX(args)
+;
+; arg
+; W			Working register	16 	AX
+; m			16 bit constant
+; n			8 bit constant
+; O			Offset register		8 	Y
+; P			Register pair p			Z-Pg[p,p+1]
+; R			Register r				Z-Pg[r]
+
+#ifndef _VCpu
+#define _VCpu
+
+
+;------------------------------- VCpu Macros
+; Variables required, specified using the macros:-
+;	Var(name,size) name .block size
+;	Short(name) name .block 1
+;	Int(name) name .block 2
+;	Long(name) name .block 4
+
+; Returns high byte of a 16 bit vale
+#DEFINE _HI(m) (m>>8)
+
+; Loads W with 16 bit value		(m->AX)
+#DEFINE _LDW(m) lda #(m) \ ldx #_HI(m)
+; Stores W to reg pair p  		(AX -> Z[p,p+1])
+#DEFINE _STW(p) STA p \ STX p+1
+
+; Add value P + W -> P
+#DEFINE _ADDW(p) ldy #p \ clc \ adc $00,y \ sta $00,y \ txa \ adc $01,y \ sta $01,y
+
+
+
+; Set value W -> (P+o) 			a->(p+0), x->(p+1)
+#DEFINE _SET(p,o) ldy #o \ sta (p),y \ txa \ iny \ sta (p),y
+
+; Get value (P+o) -> W  			(p+1)->x, (p+0)->a
+#DEFINE _GET(p,o) ldy #o  \ lda(p),y \ pha \ iny \ lda (p),y \ tax \ pla
+
+
+
+#endif
+
+;--- some assembly to get appropiate codes for th macros
+#if 1
+ .org $1000
+ .list
+;-------------------------------------------------------------------------- VCpu
+
+	_LDW($0123)
+	nop
+	_STW($10)
+	nop
+
+	_LDW($1234)
+	_SET($10)
+
+VCpuZero:; Fill X bytes ay with 0
+	lda #0			; 2 A9
+VCpuFill:; Fill X bytes at Y with A
+	sta 0,y			; 5 99 00 00
+	dex				; 2 CA
+	bne VCpuFill	; 4 D0 FA		(FA= -6)
+	rts				; 6 60
+
+VCpuSet:; Set [Y] to AX
+	sta 0,y			; 5 99 00 00
+	stx 1,y			; 4 96 01
+	rts
+
+#endif
+
+
+.end

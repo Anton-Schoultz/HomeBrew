@@ -1,0 +1,126 @@
+; TestCalc
+;
+.LIST
+;===================================================================== TEST_CALC
+#if CODEPAGE==2
+ 		JSR 	TestCalc
+#endif
+
+#if CODEPAGE==1
+;--------------------------------------------------------------------- TestCalc
+TestCalc
+;		PRINT(">TestCalc<")
+;
+; 		PRINT(" 1:Bin2Dec ")
+; 		LDA 	#56
+; 		JSR 	Bin2Dec
+; 		CMP 	#$56
+; 		JSR 	TestEQ
+;
+; 		PRINT(" 2: 000000 A ") 	;
+; 		JSR 	Calc 		; init
+; 		LDX 	#NA
+; 		JSR 	CalcDBug
+; 		POINT(Z_Rd,Zeroes)
+; 		LDX 	#NA
+; 		JSR 	TestChkValue
+; 		JSR 	TestEQ
+;
+; 		PRINT(" 3: 999999 A ") 	;
+; 		POINT(Z_Rd,Num999)
+; 		JSR 	TestParseCheck
+;
+; 		PRINT(" 4:-888888 A ") 	;
+; 		POINT(Z_Rd,Num888)
+; 		JSR 	TestParseCheck
+;
+; 		PRINT(" 5: 001234 A ") 	;
+; 		POINT(Z_Rd,Num1234)
+; 		JSR 	TestParseCheck
+;
+; 		PRINT(" 6: 004567 A ") 	;
+; 		POINT(Z_Rd,Num4567)
+; 		JSR 	TestParseCheck
+;
+; 		PRINT(" 7: -888888/1234 ")
+; 		JSR 	TestLd888
+; 		JSR 	CalcPush
+; 		JSR 	TestLd1234
+; 		JSR 	CalcDiv
+; 		LDA 	#':'
+; 		JSR 	CharOut
+; 		TESTMEM(NA,NumDiv,5)
+;
+; 		JSR 	CalcStrF
+; 		JSR 	PrStrBuf
+;
+		JSR 	Calc		; init calc
+
+ 		PRINT(" 8:root2 x root2 ")
+
+ 		JSR 	TestLdR2
+; 		jsr	CalcDBugNA
+ 		JSR 	CalcPush
+ 		JSR 	TestLdR2
+ 		NOP
+BrkPoint	JSR 	CalcMul
+		NOP
+		jsr	CalcDBugNA
+		jsr	CalcStrF
+		JSR 	PrStrBuf
+
+
+.export BrkPoint
+
+ 		RTS
+
+TestLd999 	POINT(Z_Rd,Num999)
+ 		JMP 	CalcParse
+TestLd888 	POINT(Z_Rd,Num888)
+ 		JMP 	CalcParse
+TestLd1234 	POINT(Z_Rd,Num1234)
+ 		JMP 	CalcParse
+TestLd4567 	POINT(Z_Rd,Num4567)
+ 		JMP 	CalcParse
+TestLdR2 	POINT(Z_Rd,NumR2)
+ 		JMP 	CalcParse
+
+
+
+TestParseCheck 	; parse and check
+ 		JSR 	CalcParse 	; parse string into unpacked form
+ 		LDX 	#NA
+ 		JSR 	CalcDBug
+ 		LDX 	#NA
+ 		JSR 	TestChkValue
+ 		JMP 	TestEQ
+
+TestChkValue 	; check value inline vs memory at X
+ 		LDY 	#5
+TestChkValueL 	JSR 	CharRd 		; read next byte after the string
+ 		CMP 	_ML,X 		; compare
+ 		BNE 	TestChkValueX
+ 		INX
+ 		DEY
+ 		BNE 	TestChkValueL
+TestChkValueX 	RTS
+;                                         L   H   U  EXP SGN
+Num999:  	.DB 	"999999",0	,$3f,$42,$0f,$00,$00 ;    0F423F 3
+Num888:  	.DB 	"-888888",0 	,$38,$90,$0D,$00,$FF ;    0D9038 3
+Num1234:  	.DB 	"1234",0 	,$D2,$04,$00,$00,$00 ;    0004D2 3
+Num4567:  	.DB 	"4567",0 	,$D7,$11,$00,$00,$00 ;    0004D2 3
+NumR2 		.DB 	"1.414214",0 	,$46,$94,$15,$FA,$00
+
+Zeroes 		.DW 	0,0,0
+;                        L   H   U  EXP SGN
+NumDiv:  	.DB 	$EA,$E9,$6D,$FC,$FF ; -720.3306 6DE9EA
+
+; "810.3719611"   8.10372 E+02
+
+; PC float calc results		MyResults
+;    N=-888888.0		-888888.0
+;    D=1234.0			1234.0
+;R=N/D=-720.3306		-720.3306
+;T=R*D=-888888.0		-888887.9
+
+#endif
