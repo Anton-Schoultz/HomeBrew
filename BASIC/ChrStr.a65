@@ -396,8 +396,8 @@ PrNum: ; print NUMBER as digits to output (mem/io)
  		JMP 	PrStrAX
 
 ;----------------------------------------------- CvtNum
-CvtNum: ; Convert NUMBER to digits in CVTBUF
- 		LDX 	#6
+CvtNum: ; Convert NUMBER(24Bit) to digits in CVTBUF
+ 		LDX 	#7
  		LDA 	#0
  		STA 	CVTBUF,x
  		DEX
@@ -419,7 +419,7 @@ CvtNumL 	;- num/10 remainder as digit
 ;   CvtNumM 	STA 	CVTBUF 		; place sign at Res[0]
  		RTS
 ;----------------------------------------------- CvtNumD10
-NumD10: ; NUMBER = NUMBER / 10, remainder in A [AXY]
+NumD10: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUMTMP  by 10, remainder in A [AY]
  		LDY 	#24 		; 24 bits
  		LDA 	#0
@@ -435,7 +435,7 @@ NumD10b 	ROL 	NUMBER+0 	; L
  		BPL 	NumD10a
  		RTS
 ;----------------------------------------------- NumZero
-NumZero: ; place zero into NUMBER
+NumZero: ; place zero into NUMBER (24Bit)
  		LDA 	#0 		; zero number
  		STA 	NUMBER
  		STA 	NUMBER+1
@@ -443,7 +443,7 @@ NumZero: ; place zero into NUMBER
  		RTS
 
 ;----------------------------------------------- RdNum
-RdNum: ;-- parse a number into NUMBER - destorys NUMTMP
+RdNum: ;-- parse a number into NUMBER (24Bit) - destorys NUMTMP
  		JSR 	NumZero
 RdNumL 		JSR 	IsDigit 	; messes with A
  		BCS 	RdNumX 		; no more digits
@@ -465,7 +465,7 @@ RdNumX
  		RTS
 
 ;----------------------------------------------- NumM10
-NumM10: ; NUMBER = NUMBER * 10  (preserves AXY) - destorys NUMTMP
+NumM10: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destorys NUMTMP
  		PHA
  		ZCPY3(NUMTMP,NUMBER) 	; TMP = NUMBER
  		ZSL3(NUMBER) 		; NUMBER * 2
