@@ -6,7 +6,7 @@ NUMTMP           .EQU  $0058
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
-TblKeyword       .EQU  $1300
+TblKeyword       .EQU  $1310
 TblRun           .EQU  $1380
 T_Break          .EQU  $1380
 T_LineNo         .EQU  $1382
@@ -14,6 +14,6 @@ T_Rem            .EQU  $1384
 T_Return         .EQU  $1386
 TblList          .EQU  $13C0
 TblParse         .EQU  $1400
-Parse            .EQU  $140A
-TokFind          .EQU  $14FF
-TokFound         .EQU  $152B
+Parse            .EQU  $1410
+TokFind          .EQU  $14F3
+TokFound         .EQU  $151F

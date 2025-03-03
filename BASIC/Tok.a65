@@ -17,6 +17,7 @@
  		;-- .NOLIST
 #endif
 
+PARAGRAPH()
 _Tok 		= $
 
 ;----------------------------------------------- Parse
@@ -123,16 +124,11 @@ SkipBlank: ; Skip over leading blank/tabs,  ERR if null
  		CLC
 SkipBlankX 	RTS
 
-PARAGRAPH()
-
-ChkList:
-RelOp 		.DB 	"<>=!", 0
-Digit 		.DB 	"0123456789",0
-
 ;----------------------------------------------- IsRelOp
 IsRelOp: ; returns C=0 if CHRGOT is a relational opperator <>=!
  		LDX 	#(RelOp-ChkList)
  		JMP 	OneOf
+
 ;----------------------------------------------- IsDigit
 IsDigit: ; returns C=0 if CHRGOT is a digit 0..9
  		LDX 	#(Digit-ChkList)
