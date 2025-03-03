@@ -19,8 +19,6 @@ P_Rem: ; Parse REM
  		;-- place the token
  		LDA 	#T_Rem 		; token for Rem
  		JSR 	ChrWr 		; output it
- 		;
- 		;JSR 	RdCh
  		;-- copy  rest of input line
  		JSR 	ChrCopy
  		;-- end the line

@@ -15,16 +15,15 @@ P_Return: ; Parse REM
  		;-- place the token
  		LDA 	#T_Return 	; token for Return
  		JSR 	PrCh 		; output it
- 		;-- copy  rest of input line
- 		JSR 	ChrCopy
  		;-- end the line
- 		JMP 	PrTerm 		; terminating null
+ 		JMP 	TokEnd 		; terminating null
+
 ;----------------------------------------------- L_Return
 L_Return: ; list Return
  		;-- output keyword expansion
- 		;--
- 		;-- copy rest to output
- 		JMP 	ChrCopy
+ 		JSR 	TokExpand
+ 		JMP 	ListLn
+
 ;----------------------------------------------- X_Return
 X_Return: ; code to execute the Return
  		;-- code to jump to the next line (no processing)
