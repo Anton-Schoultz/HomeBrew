@@ -5,7 +5,10 @@ NUMTMP           .EQU  $0042
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
-T_Break          .EQU  $1300
-T_LineNo         .EQU  $1302
-T_Rem            .EQU  $1304
-T_Return         .EQU  $1306
+TblKeyword       .EQU  $1300
+TblRun           .EQU  $1380
+T_Break          .EQU  $1380
+T_LineNo         .EQU  $1382
+T_Rem            .EQU  $1384
+T_Return         .EQU  $1386
+TblList          .EQU  $13C0

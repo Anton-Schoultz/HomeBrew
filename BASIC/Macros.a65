@@ -24,10 +24,13 @@
 #endif
 
 ;----------------------------------------------- Alignment
+; align to next n (power of 2)
+#DEFINE ALIGN(n) .org (($/n + 1) * n)
 ; align to start of new page
-#DEFINE PAGE()  .org (($+256) & $FF00)
+#DEFINE PAGE()  ALIGN(256);.org (($+256) & $FF00)
 ; align to next 16
-#DEFINE PARAGRAPH() .org (($+16) & $FFF0)
+#DEFINE PARAGRAPH() ALIGN(16);.org (($+16) & $FFF0)
+
 
 ;----------------------------------------------- Instructions
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)

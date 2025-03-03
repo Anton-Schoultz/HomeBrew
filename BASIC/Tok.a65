@@ -21,15 +21,22 @@ Parse: ;Parse INBUF into TOKBUF
  		;-- read from memory INBUF
  		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
  		PR_RD_MEM() 		; read from memory (ZRd)
+ 		PR_ECHO_OFF() 		; don't echo it
+
  		;-- write to TOKBUF
  		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
  		PR_WR_MEM() 		; write to memory
+
+ 		NOP
+
  		;-- prime pump -> CHRGOT
  		JSR 	RdCh
+
  		;-- line number ?
  		JSR 	SkipBlank 	; skipover leading blank/tabs
  		JSR 	IsDigit
  		BCS 	Parse1 		; not a digit so try next thing
+
  		;-- digit - so do line number
  		JSR 	P_LineNo
 Parse1
@@ -53,34 +60,33 @@ Parse2
 SkipBlankL 	; read next
  		JSR 	RdCh 		; get from io or mem
 SkipBlank: ; Skip over leading blank/tabs,  ERR if null
- 		LDA 	CHRGOT
- 		SEC
  		;-- null -> exit C=1
- 		AND 	#0
+ 		SEC
+ 		LDA 	CHRGOT
  		BEQ 	SkipBlankX
  		;-- blank -> loop
  		CMP 	#' '
- 		BEQ 	SkipBlankL
+ 		BEQ 	SkipBlankL 	; next charand test again
  		;-- TAB -> loop
  		CMP 	#HT
- 		BEQ 	SkipBlankL
+ 		BEQ 	SkipBlankL 	; next charand test again
  		;-- other exit with C=0
  		CLC
 SkipBlankX 	RTS
 
-
 PARAGRAPH()
+
 ChkList:
 RelOp 		.DB 	"<>=!", 0
 Digit 		.DB 	"0123456789",0
 
 ;----------------------------------------------- IsRelOp
 IsRelOp: ; returns C=0 if CHRGOT is a relational opperator <>=!
- 		LDX 	#RelOp
+ 		LDX 	#(RelOp-ChkList)
  		JMP 	OneOf
 ;----------------------------------------------- IsDigit
 IsDigit: ; returns C=0 if CHRGOT is a digit 0..9
- 		LDX 	#Digit
+ 		LDX 	#(Digit-ChkList)
  		JMP 	OneOf
 
 ;----------------------------------------------- OneOf
@@ -91,19 +97,11 @@ OneOf: ; see if CHRGOT is one of char in ChkList starting at X
  		BEQ 	OneOfYes
  		INX
  		BNE 	OneOf
-OneOfNo 	RTN_ERR() 		; NOPE, set carry & exit
-OneOfYes 	RTN_OK() 		; YES, clear carry & exit
+OneOfNo 	LDA 	CHRGOT
+ 		RTN_ERR() 		; NOPE, set carry & exit
+OneOfYes 	LDA 	CHRGOT
+ 		RTN_OK() 		; YES, clear carry & exit
 
-;----------------------------------------------- NumX10
-NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
- 		PHA
- 		ZCPY(NUMTMP,LNNUM) 	; TMP = NUM
- 		ZSL(LNNUM) 		; NUM * 2
- 		ZSL(LNNUM) 		; NUM * 4
- 		ZADD(LNNUM,NUMTMP) 	; TMP = NUM *5
- 		ZSL(LNNUM) 		; LNNUM = num * 10
- 		PLA
- 		RTS
 
 
 .echo $-_Tok
@@ -123,7 +121,7 @@ BLD 		= BLD_CODE
 .echo " Bytes in Basic code\n"
 
 
-PARAGRAPH()
+PAGE() 		; XX00
 _TBL 		= $
 .list
 ;----------------------------------------------- TblKeyword
@@ -136,7 +134,7 @@ BLD 		= BLD_KEYWORD
 .echo " Bytes in TblKeyword\n"
 
 
-PAGE()
+ALIGN($80) 	;XX80
 .list
 ;----------------------------------------------- TblRun
 TblRun: ; Table of addresses to execute keyword
@@ -149,7 +147,7 @@ BLD 		= BLD_TBL_RUN
 .echo " Bytes in TblRun\n"
 
 
-PAGE()
+ALIGN($40) 	;XXC0
 .list
 ;----------------------------------------------- TblList
 TblList: ; Table of addresses to list keyword
@@ -161,6 +159,7 @@ BLD 		= BLD_TBL_LIST
 .echo $-TblList
 .echo " Bytes in TblList\n"
 
+.export TblKeyword,TblRun,TblList
 
 .echo $-_TBL
 .echo " Total Bytes in Tables\n"

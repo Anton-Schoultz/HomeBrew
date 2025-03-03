@@ -18,7 +18,7 @@ P_LineNo: ; Parse LineNo
  		ZSET(LNNUM,0) 		; zero line number
 
  		;-- parse the line number into LNNUM
-P_LineNo1 	JSR 	IsDigit
+P_LineNo1 	JSR 	IsDigit		; messes with A
  		BCS 	P_LineNo2 	; no more digits
  		;-- LNNUM *= 10 (preserves AXY) - destroys NUMTMP
  		JSR 	NumX10
@@ -28,21 +28,32 @@ P_LineNo1 	JSR 	IsDigit
  		LDA 	#0
  		STA 	NUMTMP+1
  		ZADD(LNNUM,NUMTMP) 	; add it in
- 		JSR 	RdCh
+ 		JSR 	RdCh 		; next character
  		BRA 	P_LineNo1
-P_LineNo2	;-- have line number
+P_LineNo2 	;-- have line number
  		;-- write token
  		LDA 	#T_LineNo 	; token for LineNo
- 		JSR 	PrCh 		; output it
+ 		JSR 	ChrWr 		; output it
  		;-- write line number
  		LDA 	LNNUM
- 		JSR 	PrCh
+ 		JSR 	ChrWr
  		LDA 	LNNUM+1
- 		JSR 	PrCh
+ 		JSR 	ChrWr
  		;-- place holder for the length
- 		LDA 	#$FF
- 		JSR 	PrCh
+ 		LDA 	#$AA
+ 		JSR 	ChrWr
+ 		;--
+ 		RTS
 
+;----------------------------------------------- NumX10
+NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
+ 		PHA
+ 		ZCPY(NUMTMP,LNNUM) 	; TMP = NUM
+ 		ZSL(LNNUM) 		; NUM * 2
+ 		ZSL(LNNUM) 		; NUM * 4
+ 		ZADD(LNNUM,NUMTMP) 	; TMP = NUM *5
+ 		ZSL(LNNUM) 		; LNNUM = num * 10
+ 		PLA
  		RTS
 
 ;----------------------------------------------- L_LineNo
