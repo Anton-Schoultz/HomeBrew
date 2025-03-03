@@ -50,7 +50,7 @@ Warm: ;Warm Start entry point
  		JSR 	PrNL
 
 
- 		;JSR 	List
+ 		JSR 	List
 
 ; 		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
 ; 		PR_RD_MEM() 		; read from memory (ZRd)

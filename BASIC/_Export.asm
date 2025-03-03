@@ -15,5 +15,5 @@ T_Return         .EQU  $1386
 TblList          .EQU  $13C0
 TblParse         .EQU  $1400
 Parse            .EQU  $140A
-TokFind          .EQU  $14CE
-TokFound         .EQU  $14FA
+TokFind          .EQU  $14FF
+TokFound         .EQU  $152B

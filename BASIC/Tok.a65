@@ -8,6 +8,7 @@
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  SkipBlank           Skip over leading blank/tabs,  ERR if null
 ;*  TokEnd              place end of line
+;*  TokExpand           Expand the token to key word (X is index)
 ;*  TokFind             try to find a matching token
 ;*
 #ifdef hide
@@ -83,9 +84,6 @@ NextLine: ; point ZRd to the next line NXTLN
 
 ;----------------------------------------------- TokEnd
 TokEnd: ; place end of line
-; 		LDA 	#0
-; 		JSR 	ChrWr
- 		;--
  		;-- check if there was line no,
  		;-- if so, go fill in the length
  		LDA 	TOKBUF
@@ -97,7 +95,12 @@ TokEnd: ; place end of line
  		SBC 	#LOW(TOKBUF+2)
  		STA 	TOKBUF+3
  		;--
-TokEndX 	RTS
+TokEndX
+ 		LDA 	#0
+ 		JSR 	ChrWr
+ 		JSR 	ChrWr
+
+ 		RTS
 
 ;----------------------------------------------- SkipBlank
 ; returns with ending chr in A, (C=1 if A==null)
@@ -146,8 +149,41 @@ OneOfNo 	LDA 	CHRGOT
 OneOfYes 	LDA 	CHRGOT
  		RTN_OK() 		; YES, clear carry & exit
 
+;----------------------------------------------- TokExpand
+TokExpand: ; Expand the token to key word (X is index)
+ 		TXA
+ 		STA 	TOKNO
+ 		CLC
+ 		ROR 	a
+ 		TAX
+ 		LDY 	#$FF
+ 		;--
+TokExpNxt 	CPX 	#0
+ 		BEQ 	TokExpX
+ 		;-- move to next word
+TokExpNxtL 	INY
+ 		LDA 	TblKeyword,y
+ 		BEQ 	TokExpXX
+ 		BPL 	TokExpNxtL
+ 		;-- got the marker
+ 		DEX
+ 		BNE 	TokExpNxtL
 
+TokExpL 	INY
+ 		LDA 	TblKeyword,y
+ 		BEQ 	TokExpX
+ 		BMI 	TokExpLX
+ 		JSR 	PrCh
+ 		BRA 	TokExpL
 
+TokExpLX 	AND 	#$7F
+ 		JSR 	PrCh
+ 		BRA 	TokExpX
+
+TokExpXX 	; not found
+ 		LDA 	TOKNO
+ 		JSR 	PrAHex
+TokExpX 	RTS
 
 ;----------------------------------------------- TokFind
 ; TblKeyword	has list of keywords, ending char has $80
@@ -165,7 +201,7 @@ TokWord 	;- test next word
 TokWordL 	;-- test a character of the word
  		LDA 	TblKeyword,X
  		BEQ 	TokFail 	; end of Token list
- 		BMI 	TokEndChar	; bit7=1 marks end
+ 		BMI 	TokEndChar 	; bit7=1 marks end
  		;--
  		CMP 	(ZRd),Y 	; source char
  		BNE 	TokNextWord

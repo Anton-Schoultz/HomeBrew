@@ -18,7 +18,9 @@ _Rem 		= $
 P_Rem: ; Parse REM
  		;-- place the token
  		LDA 	#T_Rem 		; token for Rem
- 		JSR 	PrCh 		; output it
+ 		JSR 	ChrWr 		; output it
+ 		;
+ 		;JSR 	RdCh
  		;-- copy  rest of input line
  		JSR 	ChrCopy
  		;-- end the line
@@ -27,18 +29,19 @@ P_Rem: ; Parse REM
 ;----------------------------------------------- L_Rem
 L_Rem: ; list Rem
  		;-- output keyword expansion
- 		;--
+ 		JSR 	TokExpand
  		;-- copy rest to output
- 		JMP 	ChrCopy
+ 		JSR 	ChrCopy
+ 		JMP 	ListLn
 
 ;----------------------------------------------- X_Rem
 X_Rem: ; code to execute the Rem
  		;-- code to jump to the next line (no processing)
- 		lda NXTLN		; NXTLN is set up by line no token
- 		sta ZRd
- 		lda NXTLN+1
- 		sta ZRd+1
- 		rts
+ 		LDA 	NXTLN 		; NXTLN is set up by line no token
+ 		STA 	ZRd
+ 		LDA 	NXTLN+1
+ 		STA 	ZRd+1
+ 		RTS
 
 
 
