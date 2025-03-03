@@ -1,7 +1,8 @@
 VCHRIN           .EQU  $0010
 VCHROUT          .EQU  $0012
 LNNUM            .EQU  $0040
-NUMTMP           .EQU  $0042
+NUMTMP           .EQU  $0044
+TOKNO            .EQU  $0046
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
@@ -12,3 +13,7 @@ T_LineNo         .EQU  $1382
 T_Rem            .EQU  $1384
 T_Return         .EQU  $1386
 TblList          .EQU  $13C0
+TblParse         .EQU  $1400
+Parse            .EQU  $140A
+TokFind          .EQU  $14CE
+TokFound         .EQU  $14FA

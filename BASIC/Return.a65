@@ -3,14 +3,14 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== RETURN =========== 
+;=================================================================== RETURN ===========
 ;*  L_Return            list Return
 ;*  P_Return            Parse REM
 ;*  X_Return            code to execute the Return
 ;*
 _Return 	= $
 
-;----------------------------------------------- P_Return 
+;----------------------------------------------- P_Return
 P_Return: ; Parse REM
  		;-- place the token
  		LDA 	#T_Return 	; token for Return
@@ -19,13 +19,13 @@ P_Return: ; Parse REM
  		JSR 	ChrCopy
  		;-- end the line
  		JMP 	PrTerm 		; terminating null
-;----------------------------------------------- L_Return 
+;----------------------------------------------- L_Return
 L_Return: ; list Return
  		;-- output keyword expansion
- 		;-- 
+ 		;--
  		;-- copy rest to output
  		JMP 	ChrCopy
-;----------------------------------------------- X_Return 
+;----------------------------------------------- X_Return
 X_Return: ; code to execute the Return
  		;-- code to jump to the next line (no processing)
 
@@ -36,10 +36,16 @@ X_Return: ; code to execute the Return
 #endif
 
 
-;----------------------------------------------- Tables 
+;----------------------------------------------- Tables
 #if BLD = BLD_KEYWORD
 .list
 W_Return 	.DB 	"RETUR",'N'+$80
+.nolist
+#endif
+
+#if BLD = BLD_TBL_PARSE
+.list
+.dw P_Return
 .nolist
 #endif
 

@@ -1,13 +1,14 @@
 ;=================================================================== TOK ==============
 ;*  IsDigit             returns C=0 if CHRGOT is a digit 0..9
 ;*  IsRelOp             returns C=0 if CHRGOT is a relational opperator <>=!
-;*  NumX10              LNNUM *= 10 (preserves AXY) - destorys NUMTMP
+;*  List                List from start of program
+;*  ListLn              List line pointed to by ZRd
+;*  NextLine            point ZRd to the next line NXTLN
 ;*  OneOf               see if CHRGOT is one of char in ChkList starting at X
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  SkipBlank           Skip over leading blank/tabs,  ERR if null
-;*  TblKeyword          table of keywords text
-;*  TblList             Table of addresses to list keyword
-;*  TblRun              Table of addresses to execute keyword
+;*  TokEnd              place end of line
+;*  TokFind             try to find a matching token
 ;*
 #ifdef hide
  		;-- .NOLIST
@@ -15,9 +16,9 @@
 
 _Tok 		= $
 
-
 ;----------------------------------------------- Parse
 Parse: ;Parse INBUF into TOKBUF
+ 		NOP
  		;-- read from memory INBUF
  		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
  		PR_RD_MEM() 		; read from memory (ZRd)
@@ -35,25 +36,68 @@ Parse: ;Parse INBUF into TOKBUF
  		;-- line number ?
  		JSR 	SkipBlank 	; skipover leading blank/tabs
  		JSR 	IsDigit
- 		BCS 	Parse1 		; not a digit so try next thing
-
+ 		BCS 	PStmt 		; not a digit -> Statement?
  		;-- digit - so do line number
  		JSR 	P_LineNo
-Parse1
+PStmt 		; check for opening statement
  		JSR 	SkipBlank 	; skipover blank/tabs
- 		;-- check for keyword
-
-
-Parse2
-
+ 		JSR 	TokFind
+ 		BCC 	PStmtBody
+ 		;-- no keyword -> Syntax Error
+ 		PR_WR_IO()
+ 		PRINTLN("SYNTAX ERROR")
+ 		RTS
+PStmtBody 	; have a primary token, now go parse accordingly
+ 		TAX 			; tok index to X
+ 		JMP 	(TblParse,X)
  		RTS
 
-
 ;----------------------------------------------- List Scrn
- 		PR_WR_IO() 		; write to IO device (eg screen/serial)
- 		;-- set to read from start of program
+List: ; List from start of program
+ 		;-- set ZRd to point to first line of Program
+ 		ZSET(ZRd,TOKBUF-1)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
+ 		;-- set to read from memory
  		PR_RD_MEM() 		; read from memory (code space)
- 		ZSET(ZRd,$400) 		; read memory from INBUF
+ 		;--
+
+;----------------------------------------------- ListLn
+ListLn: ; List line pointed to by ZRd
+ 		JSR 	RdCh 		; (++ZRd)->A
+ 		BEQ 	ListLnX 	; null = done
+ 		;-- jump to appropriate lister
+ 		AND 	#$7F
+ 		TAX
+ 		JMP 	(TblList,X)
+ListLnX 	RTS
+
+;----------------------------------------------- NextLine
+NextLine: ; point ZRd to the next line NXTLN
+ 		;-- point ZRd to the start of the lilne
+ 		LDA 	NXTLN
+ 		STA 	ZRd
+ 		LDA 	NXTLN+1
+ 		STA 	ZRd+1
+ 		RTS
+
+;----------------------------------------------- TokEnd
+TokEnd: ; place end of line
+; 		LDA 	#0
+; 		JSR 	ChrWr
+ 		;--
+ 		;-- check if there was line no,
+ 		;-- if so, go fill in the length
+ 		LDA 	TOKBUF
+ 		CMP 	#T_LineNo
+ 		BNE 	TokEndX
+ 		;-- calc length (-1) & save it
+ 		LDA 	ZWr
+ 		CLC
+ 		SBC 	#LOW(TOKBUF+2)
+ 		STA 	TOKBUF+3
+ 		;--
+TokEndX 	RTS
 
 ;----------------------------------------------- SkipBlank
 ; returns with ending chr in A, (C=1 if A==null)
@@ -104,63 +148,66 @@ OneOfYes 	LDA 	CHRGOT
 
 
 
+
+;----------------------------------------------- TokFind
+; TblKeyword	has list of keywords, ending char has $80
+; ZRd		points to input, 1st char to try and match Y=0..
+; TOKNO		Counts up token number while we search
+TokFind: ;try to find a matching token
+ 		;-- sart with first token no
+ 		LDA 	#0
+ 		STA 	TOKNO
+ 		;-- start index in keyword list
+ 		LDX 	#$FF
+TokWord 	;- test next word
+ 		LDY 	#0
+ 		INX
+TokWordL 	;-- test a character of the word
+ 		LDA 	TblKeyword,X
+ 		BEQ 	TokFail 	; end of Token list
+ 		BMI 	TokEndChar	; bit7=1 marks end
+ 		;--
+ 		CMP 	(ZRd),Y 	; source char
+ 		BNE 	TokNextWord
+ 		;-- next char
+ 		INY
+ 		INX
+ 		BRA 	TokWordL
+TokEndChar
+ 		AND 	#$7F
+ 		CMP 	(ZRd),Y
+ 		BEQ 	TokFound 	; match so we got it!
+ 		;-- no match, so next word
+TokNextWord 	; no match
+ 		INC 	TOKNO
+TokNextWordL 	LDA 	TblKeyword,X
+ 		BEQ 	TokFail
+ 		BMI 	TokWord
+ 		INX
+ 		BRA 	TokNextWordL
+
+TokFail 	;-- not found, return with CY=1
+ 		RTN_ERR()
+
+TokFound 	;-- found return with token in A and CY=0
+ 		NOP
+ 		CLC 			; move ZRd to after the keyword
+ 		TYA
+ 		ADC 	ZRd
+ 		STA 	ZRd
+ 		LDA 	#0
+ 		ADC 	ZRd+1
+ 		STA 	ZRd+1
+ 		;--
+ 		LDA 	TOKNO
+ 		ASL 	A 		; token nos incr in 2s
+ 		RTN_OK()
+
+.export TokFind,TOKNO,TokFound,Parse
+
+.export TblKeyword,TblRun,TblList,TblParse
+
+
 .echo $-_Tok
 .echo " Bytes in _Tok\n"
-
-;=================================================================== BASIC ============
-BLD_CODE=0
-BLD_KEYWORD= 	1
-BLD_TBL_LIST= 	2
-BLD_TBL_RUN= 	3
-
-_basic 		= $
-
-BLD 		= BLD_CODE
-#include "All.a65"
-.echo $-_basic
-.echo " Bytes in Basic code\n"
-
-
-PAGE() 		; XX00
-_TBL 		= $
-.list
-;----------------------------------------------- TblKeyword
-TblKeyword: ; table of keywords text
-.nolist
-BLD 		= BLD_KEYWORD
-#include "All.a65"
-.dw 0
-.echo $-TblKeyword
-.echo " Bytes in TblKeyword\n"
-
-
-ALIGN($80) 	;XX80
-.list
-;----------------------------------------------- TblRun
-TblRun: ; Table of addresses to execute keyword
-.nolist
-BLD 		= BLD_TBL_RUN
-#include "All.a65"
-.dw 0
-.list
-.echo $-TblRun
-.echo " Bytes in TblRun\n"
-
-
-ALIGN($40) 	;XXC0
-.list
-;----------------------------------------------- TblList
-TblList: ; Table of addresses to list keyword
-.nolist
-BLD 		= BLD_TBL_LIST
-#include "All.a65"
-.list
-.dw 0
-.echo $-TblList
-.echo " Bytes in TblList\n"
-
-.export TblKeyword,TblRun,TblList
-
-.echo $-_TBL
-.echo " Total Bytes in Tables\n"
 

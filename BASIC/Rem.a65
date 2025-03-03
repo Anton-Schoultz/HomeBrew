@@ -13,6 +13,7 @@
 ;*
 
 _Rem 		= $
+
 ;----------------------------------------------- P_Rem
 P_Rem: ; Parse REM
  		;-- place the token
@@ -21,16 +22,23 @@ P_Rem: ; Parse REM
  		;-- copy  rest of input line
  		JSR 	ChrCopy
  		;-- end the line
- 		JMP 	PrTerm 		; terminating null
+ 		JMP 	TokEnd 		; terminating null
+
 ;----------------------------------------------- L_Rem
 L_Rem: ; list Rem
  		;-- output keyword expansion
  		;--
  		;-- copy rest to output
  		JMP 	ChrCopy
+
 ;----------------------------------------------- X_Rem
 X_Rem: ; code to execute the Rem
  		;-- code to jump to the next line (no processing)
+ 		lda NXTLN		; NXTLN is set up by line no token
+ 		sta ZRd
+ 		lda NXTLN+1
+ 		sta ZRd+1
+ 		rts
 
 
 
@@ -47,6 +55,12 @@ W_Rem 		.DB 	"RE",'M'+$80
 .nolist
 #endif
 
+#if BLD = BLD_TBL_PARSE
+.list
+.dw P_Rem
+.nolist
+#endif
+
 #if BLD = BLD_TBL_LIST
 .list
 .dw L_Rem
@@ -57,5 +71,7 @@ W_Rem 		.DB 	"RE",'M'+$80
 .list
 T_Rem 		.DW 	X_Rem
 .nolist
+
+
 .export T_Rem
 #endif

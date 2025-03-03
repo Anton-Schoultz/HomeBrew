@@ -34,19 +34,28 @@ X_Break: ; code to execute the Break
 .nolist
 #endif
 
-;----------------------------------------------- Tables 
+;----------------------------------------------- keyword 
 #if BLD = BLD_KEYWORD
 .list
 W_Break 	.DB 	"BREA",'K'+$80
 .nolist
 #endif
 
+;----------------------------------------------- parse 
+#if BLD = BLD_TBL_PARSE
+.list
+.dw P_Break
+.nolist
+#endif
+
+;----------------------------------------------- list 
 #if BLD = BLD_TBL_LIST
 .list
 .dw L_Break
 .nolist
 #endif
 
+;----------------------------------------------- run 
 #if BLD = BLD_TBL_RUN
 .list
 T_Break 	.DW 	X_Break

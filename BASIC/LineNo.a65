@@ -8,17 +8,19 @@
 ; {LineNo} [*..] 00
 ;
 ;*  L_LineNo            list LineNo
+;*  NumX10              LNNUM *= 10 (preserves AXY) - destorys NUMTMP
 ;*  P_LineNo            Parse LineNo
-;*  X_LineNo            code to execute the LineNo
+;*  X_LineNo            Get LNNUM & Set up NXTLN
 ;*
 
 _LineNo 	= $
+
 ;----------------------------------------------- P_LineNo
 P_LineNo: ; Parse LineNo
  		ZSET(LNNUM,0) 		; zero line number
 
  		;-- parse the line number into LNNUM
-P_LineNo1 	JSR 	IsDigit		; messes with A
+P_LineNo1 	JSR 	IsDigit 	; messes with A
  		BCS 	P_LineNo2 	; no more digits
  		;-- LNNUM *= 10 (preserves AXY) - destroys NUMTMP
  		JSR 	NumX10
@@ -58,13 +60,45 @@ NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
 
 ;----------------------------------------------- L_LineNo
 L_LineNo: ; list LineNo
- 		;-- output keyword expansion
- 		;--
+; ChrRd will get first byte afer the token
+ 		JSR 	X_LineNo 	; Get LNNUM & Set up NXTLN
+ 		;-- output line no - as hex for now :-)
+ 		LDA 	LNNUM
+ 		LDX 	LNNUM+1
+ 		JSR 	PrAXHex
  		;-- copy rest to output
- 		JMP 	ChrCopy
+ 		JSR 	ChrCopy
+ 		;-- jump to continue listing
+ 		JMP 	ListLn
+
+
+; when executing, token into X, jmp(TblRun,X) comes here
+; ZRd points to first byte after the token
+
+;    0   1 2 3 4
+; [LnNo] L H s xxxxxxx
+; L=Lo Line number
+; H=Hi Line Number
+; s=length of line (exluding LineNo stuff)
+
 ;----------------------------------------------- X_LineNo
-X_LineNo: ; code to execute the LineNo
- 		;-- code to jump to the next line (no processing)
+X_LineNo: ; Get LNNUM & Set up NXTLN
+ 		;-- save line no
+ 		JSR 	ChrRd
+ 		STA 	LNNUM
+ 		JSR 	ChrRd
+ 		STA 	LNNUM+1
+ 		;-- get length
+ 		JSR 	ChrRd
+ 		;-- Now ZRd points to the first char of the line [4]
+ 		CLC
+ 		ADC 	ZRd
+ 		STA 	NXTLN
+ 		LDA 	#0
+ 		ADC 	ZRd+1
+ 		STA 	NXTLN+1
+ 		;--
+ 		RTS
 
 
 
@@ -74,19 +108,28 @@ X_LineNo: ; code to execute the LineNo
 .nolist
 #endif
 
-;----------------------------------------------- Tables
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
-W_LineNo 	.DB 	"RE",'M'+$80
+W_LineNo 	.DB 	$80
 .nolist
 #endif
 
+;----------------------------------------------- parse
+#if BLD = BLD_TBL_PARSE
+.list
+.dw P_LineNo
+.nolist
+#endif
+
+;----------------------------------------------- list
 #if BLD = BLD_TBL_LIST
 .list
 .dw L_LineNo
 .nolist
 #endif
 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
 T_LineNo 	.DW 	X_LineNo
