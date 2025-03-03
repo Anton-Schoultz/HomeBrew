@@ -1,8 +1,8 @@
 VCHRIN           .EQU  $0010
 VCHROUT          .EQU  $0012
 LNNUM            .EQU  $0040
-NUMTMP           .EQU  $0044
-TOKNO            .EQU  $0046
+TOKNO            .EQU  $0044
+NUMTMP           .EQU  $005C
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280

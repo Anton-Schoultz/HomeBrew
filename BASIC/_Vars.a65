@@ -49,8 +49,13 @@ Short(ZTmp) 	; Temp byte
 .org $0040
 Int(LNNUM)	; Line number
 Int(NXTLN)	; address of next line
-Int(NUMTMP)	; Temp number
 Short(TOKNO)	; Token number
+
+.org $0050
+Var(CVTBUF,12)	; Conversion work area
+Var(NUMTMP,4)	; Temp number
+
+
 .export LNNUM,NUMTMP
 
 ;=================================================================== STACK ============

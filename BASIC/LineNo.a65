@@ -3,7 +3,7 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== LINENO ============== 
+;=================================================================== LINENO ==============
 ;
 ; {LineNo} [*..] 00
 ;
@@ -15,7 +15,7 @@
 
 _LineNo 	= $
 
-;----------------------------------------------- P_LineNo 
+;----------------------------------------------- P_LineNo
 P_LineNo: ; Parse LineNo
  		ZSET(LNNUM,0) 		; zero line number
 
@@ -44,10 +44,10 @@ P_LineNo2 	;-- have line number
  		;-- place holder for the length
  		LDA 	#$AA
  		JSR 	ChrWr
- 		;-- 
+ 		;--
  		RTS
 
-;----------------------------------------------- NumX10 
+;----------------------------------------------- NumX10
 NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
  		PHA
  		ZCPY(NUMTMP,LNNUM) 	; TMP = NUM
@@ -58,14 +58,19 @@ NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
  		PLA
  		RTS
 
-;----------------------------------------------- L_LineNo 
+;----------------------------------------------- L_LineNo
 L_LineNo: ; list LineNo
 ; ChrRd will get first byte afer the token
  		JSR 	X_LineNo 	; Get LNNUM & Set up NXTLN
- 		;-- output line no - as hex for now :-)
- 		LDA 	LNNUM
- 		LDX 	LNNUM+1
- 		JSR 	PrAXHex
+ 		;-- output line no
+ 		lda LNNUM
+ 		sta NUMTMP
+ 		lda LNNUM+1
+ 		sta NUMTMP+1
+ 		lda #0
+ 		sta NUMTMP+2		; U=0
+ 		;
+ 		JSR 	PrNum
  		LDA 	#' '
  		JSR 	PrCh
  		;-- jump to continue listing
@@ -81,7 +86,7 @@ L_LineNo: ; list LineNo
 ; H=Hi Line Number
 ; s=length of line (exluding LineNo stuff)
 
-;----------------------------------------------- X_LineNo 
+;----------------------------------------------- X_LineNo
 X_LineNo: ; Get LNNUM & Set up NXTLN
  		;-- save line no
  		JSR 	ChrRd
@@ -97,7 +102,7 @@ X_LineNo: ; Get LNNUM & Set up NXTLN
  		LDA 	#0
  		ADC 	ZRd+1
  		STA 	NXTLN+1
- 		;-- 
+ 		;--
  		RTS
 
 
@@ -108,28 +113,28 @@ X_LineNo: ; Get LNNUM & Set up NXTLN
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
 W_LineNo 	.DB 	$80
 .nolist
 #endif
 
-;----------------------------------------------- parse 
+;----------------------------------------------- parse
 #if BLD = BLD_TBL_PARSE
 .list
 .dw P_LineNo
 .nolist
 #endif
 
-;----------------------------------------------- list 
+;----------------------------------------------- list
 #if BLD = BLD_TBL_LIST
 .list
 .dw L_LineNo
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
 T_LineNo 	.DW 	X_LineNo
