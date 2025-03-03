@@ -18,19 +18,19 @@
 
 ;CODEPAGE =1
 
-#if CODEPAGE
+#if CODEPAGE == 1
 #ifndef _Char
 #define _Char
 .LIST
 ;===================================================================== CHAR
 ; Character Read / Write
 ;=====================================================================
-CharRd           .EQU  $00E8
-CharWr           .EQU  $00F4
-Z_Rd             .EQU  $00E9
-Z_Wr             .EQU  $00F5
+CharRd 		.EQU 	$00E8
+CharWr 		.EQU 	$00F4
+Z_Rd 		.EQU 	$00E9
+Z_Wr 		.EQU 	$00F5
 
-PAGE()
+;PAGE()
 
 ;--------------------------------------------------------------------- Char
 Char
@@ -43,7 +43,9 @@ CharTbl:
 ;    FE FF
 .db $00,$00 				; avail Z-pg
 
-CharCopy 	; Copy the CharGet & CharPut routines into Z-Page
+;--------------------------------------------------------------------- CharCopy
+; Called from warm start to place CharRd and CharWr routines into z-page
+CharCopy: ; Copy the CharGet & CharPut routines into Z-Page
  		LDY 	#$17
 CharL 		LDA 	CharTbl,y
  		STA 	$E8,y
@@ -53,11 +55,11 @@ CharL 		LDA 	CharTbl,y
 
 
 ;--------------------------------------------------------------------- CharAppendAX
-CharAppendAX 	; Copy from AX to Z_Wr until a null
+CharAppendAX: ; Copy from AX to Z_Wr until a null
  		STAX(Z_Rd)
  		;-- fall through
 ;--------------------------------------------------------------------- CharAppend
-CharAppend 	; Copy from Z_Rd to Z_Wr until a null
+CharAppend: ; Copy from Z_Rd to Z_Wr until a null
  		JSR 	CharRd 		; read a char
  		JSR 	CharWr 		; write it
  		CMP 	#0 		; check if zero
@@ -65,15 +67,16 @@ CharAppend 	; Copy from Z_Rd to Z_Wr until a null
  		RTS 			; done
 
 ;--------------------------------------------------------------------- CharEcho
-CharEcho 	; Read from Z_Rd (until null) and send to output
+CharEcho: ; Read from Z_Rd (until null) and send to output (last nonZero char in X)
  		JSR 	CharRd 		; read a char
+ 		BEQ 	CharEchoX
+ 		TAX 			; save last non-zero char in X
  		JSR 	CharOut 	; write it
- 		CMP 	#0 		; check if zero
- 		BNE 	CharEcho 	; if not, loop back for more
- 		RTS 			; done
+ 		BRA 	CharEcho 	; if not, loop back for more
+CharEchoX 	RTS 			; done
 
 ;--------------------------------------------------------------------- CharClear
-CharClear 	; Clear the STRBUF to nulls and set to write to it
+CharClear: ; Clear the STRBUF to nulls and set to write to it
  		POINT(Z_Wr,STRBUF) 	; point CharWr to go into STRBUF
  		LDA 	#0
  		LDY 	#(STRBUFLEN-1)
@@ -84,8 +87,10 @@ CharClearL 	STA 	(Z_Wr),y
  		RTS
 
 ;--------------------------------------------------------------------- CharPrint
-CharPrint 	; send contents of STRBUF to output (CharOut)
- 		POINT(Z_Ptr,STRBUF) 	; point Z_Ptr to the start of the stirng buffer
+CharPrint: ; send contents of STRBUF to output (CharOut)
+ 		LDA 	#0
+ 		JSR 	CharWr
+ 		POINT(Z_Ptr,STRBUF) 	; point Z_Ptr to the start of the string buffer
  		JMP 	PrStr 		; send it to CharOut
 
 

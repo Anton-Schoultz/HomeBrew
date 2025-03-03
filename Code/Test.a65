@@ -1,23 +1,27 @@
 .NOLIST
 ; Test
 ;
-
-
-#if ($>>8)==2
+#if ($>>8)==0
 .LIST
-;--------------------------------------------------------------------- Test SysVars
-Short(TestAdr) 	; low byte of test caller address
+;--------------------------------------------------------------------- Test Z-Pg
+Int(TestAdr) 	; low byte of test caller address
 Int(TestExp) 	; test expected result
 Int(TestRes) 	; test actual result
 
 .NOLIST
-;--------------------------------------------------------------------- this defines the macro while setting up z-page (iow before any code segments)
+;--------------------------------------------------------------------- Test Macros
+
+; test to see if Z-Pg has the provided value -reports call address, ZPG, expected, value & pass/fail
 #DEFINE TEST(z,val) LDY #z \ LDAX(val) \ jsr Test
+
+; compare momory (mem) against expected values table(exp) for (len)th.
+#DEFINE TESTMEM(mem,exp,len) POINT(TestAdr,mem) \ POINT(TestExp,exp) \ LDX #len \ jsr TestMem
+
 
 #endif
 
 
-#if CODEPAGE
+#if CODEPAGE == 1
 #ifndef _Test
 #define _Test
 .LIST
@@ -44,27 +48,38 @@ Test 		; Test if RegPair at 0000,Y is equal to .A.X
  		BNE 	TestFail
  		LDA 	TestRes
  		CMP 	TestExp
- 		BNE 	TestFail
-
+ 		BNE 	TestFailDmp
  		;-- OK
  		JSR 	TestDump
+ 		;-- fall through
+;--------------------------------------------------------------------- TestEQ
+TestEQ: ; Output EQ:'OK'or NE:'Fail' based on EQ flag
+ 		PHP
+ 		JSR 	CharClear
+ 		PLP
+TestEQMsg	BNE 	TestFail
+ 		;-- fall through to OK
+;--------------------------------------------------------------------- TestOK
+TestOK: ; Print " OK\r\n"
  		LDAX(TestACK)
  		BRA 	TestMsg
-
-TestFail: 	JSR 	TestDump
+;--------------------------------------------------------------------- TestFailDmp
+TestFailDmp 	JSR 	TestDump
+;--------------------------------------------------------------------- TestFail
+TestFail: ; Print " ** FAIL **\r\n"
  		LDAX(TestNAK)
  		;-- fall to TestMsg
-TestMsg: 	JSR 	CharAppendAX
+TestMsg 	JSR 	CharAppendAX
  		JMP 	CharPrint
-
-TestDump:; dump calling address, expect, result
+;--------------------------------------------------------------------- TestDump
+TestDump: ; dump calling address, expect, result
  		;-- clear STRBUF
  		JSR 	CharClear
- 		;-- 
+ 		;--
  		TSX
- 		LDA 	$103,x 	;lo
+ 		LDA 	$103,x 		;lo
  		STA 	TestAdr
- 		LDA 	$104,x 	; hi
+ 		LDA 	$104,x 		; hi
  		TAX
  		;-- adjust address to find start of the test call
  		SEC
@@ -74,24 +89,64 @@ TestDump:; dump calling address, expect, result
  		BCS 	TestDump0
  		DEX
 TestDump0 	JSR 	TextHex 	; print the return address in hex
+ 		;-- expected
  		LDA 	TestExp
  		LDX 	TestExp+1
  		JSR 	TextHex 	; print expected value in hex
- 		;-- 
+ 		;--
  		LDA 	TestRes 	; result in Hex
  		LDX 	TestRes+1
  		;-- fall through to print result as hex
-TextHex: 	JSR 	CvtAXHex 	; write AX to STRBUF as hex digits
+TextHex:  	JSR 	CvtAXHex 	; write AX to STRBUF as hex digits
  		LDA 	#' '
- 		JMP 	CharWr 	; print a space and return
+ 		JMP 	CharWr 		; print a space and return
 
+;--------------------------------------------------------------------- TestMem
+TestMem: ; comare memory at TestAdr vs Memory at TestExp for X bytes
+ 		PHX
+ 		JSR 	CharClear
+ 		PLX
+ 		LDY 	#0
+TestMemL 	LDA 	(TestExp),Y 	; expected byte
+ 		PHA
+ 		JSR 	CvtAHex 	; output as hex
+ 		lda #' '
+ 		jsr	CharWr
+ 		PLA
+ 		CMP 	(TestAdr),Y 	; compare to actaul
+ 		BNE 	TestMemR 	; mismatch
+ 		;--
+ 		INY
+ 		DEX
+ 		BNE 	TestMemL
+ 		;-- end all the same EQ=1
+TestMemR 	; output result EQ / NE
+ 		BEQ 	TestMemX 	; ok, just output the message
+ 		;-- fail with index
+ 		PHP 			; save result
+ 		PHY
+ 		;-- output index in hex in braces
+ 		LDA 	#'['
+ 		JSR 	CharWr
+ 		TYA
+ 		JSR 	CvtAHex 	;
+ 		LDA 	#']'
+ 		JSR 	CharWr
+ 		;-- output actual
+ 		PLY
+ 		CMP 	(TestAdr),Y
+ 		JSR 	CvtAHex
+ 		;--
+ 		PLP 			; restore result (EQ=0)
+TestMemX 	JMP 	TestEQMsg
 
 TestACK 	.DB 	" OK\r\n",0
-
 TestNAK 	.DB 	" ** FAIL **\r\n",0
-
 ;.echo $-Test
 ;.echo " bytes for Test\r"
 #endif
 ; end of Test
 #endif
+
+;#include "TestUtil.a65"
+#include "TestCalc.a65"

@@ -1,0 +1,61 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if BLD == BLD_CODE
+;=================================================================== REM ==============
+;
+; {REM} [*..] 00
+;
+;*  L_Rem               list Rem
+;*  P_Rem               Parse REM
+;*  X_Rem               code to execute the Rem
+;*
+
+_Rem 		= $
+;----------------------------------------------- P_Rem
+P_Rem: ; Parse REM
+ 		;-- place the token
+ 		LDA 	#T_Rem 		; token for Rem
+ 		JSR 	PrCh 		; output it
+ 		;-- copy  rest of input line
+ 		JSR 	ChrCopy
+ 		;-- end the line
+ 		JMP 	PrTerm 		; terminating null
+;----------------------------------------------- L_Rem
+L_Rem: ; list Rem
+ 		;-- output keyword expansion
+ 		;--
+ 		;-- copy rest to output
+ 		JMP 	ChrCopy
+;----------------------------------------------- X_Rem
+X_Rem: ; code to execute the Rem
+ 		;-- code to jump to the next line (no processing)
+
+
+
+
+.echo $-_Rem
+.echo " Bytes in _Rem\n"
+.nolist
+#endif
+
+;----------------------------------------------- Tables
+#if BLD = BLD_KEYWORD
+.list
+W_Rem 		.DB 	"RE",'M'+$80
+.nolist
+#endif
+
+#if BLD = BLD_TBL_LIST
+.list
+.dw L_Rem
+.nolist
+#endif
+
+#if BLD = BLD_TBL_RUN
+.list
+T_Rem 		.DW 	X_Rem
+.nolist
+.export T_Rem
+#endif

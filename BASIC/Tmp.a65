@@ -1,0 +1,13 @@
+;== Tmp
+;*
+#ifdef hide
+.NOLIST
+#endif
+_Tmp = $
+
+
+
+.echo $-_Tmp
+.echo " Bytes in _Tmp\n"
+.LIST
+ 		;-- End of Tmp

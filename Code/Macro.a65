@@ -23,8 +23,8 @@ IO_WRCMD 	= 1 			;WrCommand
 
 #define HALT() BRK \ .db $DB ; halts simulator
 
-; STZ does not assemble correctlym, so use this inplace for now (replace with STZ z once fixed)
-#define ZZP(z) lda #0 \ sta z
+; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
+#define ZZP(z) .db $64, z
 
 ;Allows outputing of text from inline, needs Util.a65 , which uses CharOut
 ; eg PRINT("this is some text to printout\r\n")
@@ -72,10 +72,14 @@ IO_WRCMD 	= 1 			;WrCommand
 #DEFINE LDAXY(m) lda #(m) \ ldx #HIGH(m) \ ldy #UPPER(m)
 ; Stores 24 bit value (AXY) into address A->(p), X->(p+1), Y-> (p+2)
 #DEFINE STAXY(p) STA p \ STX p+1 \ STY p+2
+
 ; set z-page to constant value
 #DEFINE POINT(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 
 ; treats Z-Page as a bunch of register pairs and uses Y as index to the low byte
+
+; copy zpg pair at src to zpg at tgt
+#DEFINE ZPGCPY(tgt,src) lda src \ sta tgt \ lda src+1 \ sta tgt+1
 
 ; Stores AX into the reg pair indexed by y : A->(y), X->(y+1)
 #DEFINE SETAX(n) LDY #n \ STA $00,y \ TXA \ STA $01,y

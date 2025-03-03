@@ -1,6 +1,11 @@
 ; CharRdWr
 ;
 .org $00E8
+
+#DEFINE POST_INCR 1
+
+#if POST_INCR
+;===================================================================== POST-INCR
 ;--------------------------------------------------------------------- CharRd
 CharRd: ; Fetch the character into A and Incr Read Pointer Z_Rd
  		LDA 	$0400
@@ -18,8 +23,35 @@ CharWr: ; store A into memory and Incr Write Pointer Z_Wr
  		INC 	CharWr+2 	; incr high byte Z_Wr
 CharWrX 	RTS
 
-Z_Rd = CharRd+1
-Z_Wr = CharWr+1
+#else
+
+;===================================================================== PRE-INCR
+;--------------------------------------------------------------------- CharRd
+CharRd: ; (++Z_Pg)-> A
+ 		INC 	CharRdX+1 	; incr low byte Z_Rd
+ 		BNE 	CharRdX
+ 		INC 	CharRdX+2 	; incr high byte Z_Rd
+CharRdX 	LDA 	$0400
+ 		RTS
+
+;.org $F0
+;--------------------------------------------------------------------- CharWr
+CharWr: ; store A into memory and Incr Write Pointer Z_Wr
+ 		STA 	$0400
+ 		INC 	CharWr+1 	; incr low byte Z_Wr
+ 		BNE 	CharWrX
+ 		INC 	CharWr+2 	; incr high byte Z_Wr
+CharWrX 	RTS
+
+
+
+#endif
+
+
+
+
+Z_Rd 		= CharRd+1
+Z_Wr 		= CharWr+1
 
 .export CharRd,CharWr,Z_Rd,Z_Wr
 

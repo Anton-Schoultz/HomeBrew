@@ -34,7 +34,7 @@ Int(MonVal) 	; Monitor value
 #endif
 
 
-#if CODEPAGE
+#if CODEPAGE==1
 #ifndef _Montor
 #define _Monitor
 .LIST

@@ -1,0 +1,119 @@
+;=================================================================== MACROS ===========
+;*m BR_EQ(v,tgt)        if .A==v then jump to tgt
+;*m BR_ERR(tgt)         branch to tgt if ERROR (Carry set to 1)
+;*m BR_NE(v,tgt)        if .A!=v then jump to tgt
+;*m BR_OK(tgt)          branch to tgt if OK (Carry clear to 0)
+;*m GETAX(p)            Fetch 16 bit value from address into AX (p)->A, (p+1)->X
+;*m HIGH(m)             High byte 1
+;*m Int(name)           Reserve 2 bytes for variable name
+;*m Long(name)          Reserve 4 bytes for variable name
+;*m MZERO(a)            Zero memory at address
+;*m PRINT(str)          echo str to output, with CR,LF
+;*m PULLAXY()           Pulls Y,X,A
+;*m RTN_OK()            return ERROR (Carry set)
+;*m RTN_OK()            return OK (Carry clear)
+;*m SETAX(p)            Stores 16 bit value (AX) into address A->(p), X->(p+1)
+;*m Short(name)         Reserve 1 byte for variable name
+;*m UPPER(m)            Upper byte 2
+;*m ZCPY(zTo,zFr)       Coppies z-pg pair from zFr to zTo
+;*m ZDEC(z)             Decrement z-pg pair at z,z+1
+;*m ZINC(z)             Increment z-pg pair at z,z+1
+;*
+#ifdef hide
+.NOLIST
+#endif
+
+;----------------------------------------------- Alignment
+; align to start of new page
+#DEFINE PAGE()  .org (($+256) & $FF00)
+; align to next 16
+#DEFINE PARAGRAPH() .org (($+16) & $FFF0)
+
+;----------------------------------------------- Instructions
+; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
+; ZZERO(z)	Zero a z-pg z
+#define ZZERO(z) 	.db $64, z
+; MZERO(a) 	Zero memory at address
+#define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
+;----------------------------------------------- LOW,HIGH,UPPER
+; LOW(m)	Low byte	0
+#DEFINE LOW(m)  (m & $FF)
+; HIGH(m)	High byte	1
+#DEFINE HIGH(m)  m>>8
+; UPPER(m)	Upper byte	2
+#DEFINE UPPER(m) m>>16
+;----------------------------------------------- VarDef
+; Var(name,sz)	Reserve sz bytes for variable name (uses .block)
+#define Var(name,sz) name .block sz
+; Short(name)	Reserve 1 byte for variable name
+#define Short(name) name .block 1
+; Int(name)	Reserve 2 bytes for variable name
+#define Int(name) name .block 2
+; Long(name)	Reserve 4 bytes for variable name
+#define Long(name) name .block 4
+;----------------------------------------------- Stack
+; PUSHAXY()	Pushes A,X,Y
+#DEFINE PUSHAXY() pha \ phx \ phy
+; PULLAXY()	Pulls Y,X,A
+#DEFINE PULLAXY() ply \ plx \ pla
+;----------------------------------------------- ZPg
+; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
+#DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
+; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
+#DEFINE ZCPY(zTo,zFr) lda zFr \ sta zTo \ lda zFr+1 \ sta zTo+1
+; ZINC(z)	Increment z-pg pair at z,z+1
+#DEFINE ZINC(z) inc z \ bne $+4 \ inc z+1
+; ZDEC(z)	Decrement z-pg pair at z,z+1
+#DEFINE ZDEC(z) dec z \ bpl $+4 \ dec z+1
+; ZSL(z) 	Shift Z,z+1 left (*2)
+#define ZSL(z)	asl z \ rol z+1
+; ZSR(z) 	Shift Z,z+1 right (/2)
+#define ZSR(z)	clc \ ror z+1 \ ror z
+; ZADD(r,n)	r = r+n
+#define ZADD(r,n) clc \ lda r \ adc n \ sta r \ lda r+1 \ adc n+1 \ sta r+1
+; ZSUB(r,n)	r = r-n
+#define ZADD(r,n) sec \ lda r \ sbc n \ sta r \ lda r+1 \ sbc n+1 \ sta r+1
+
+
+;----------------------------------------------- 16 bit AX
+; LDAX(m) 	Loads AX with 16 bit value, low->A, high->X
+#DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
+; SETAX(p)	Stores 16 bit value (AX) into address A->(p), X->(p+1)
+#DEFINE SETAX(p) STA p \ STX p+1
+; GETAX(p)	Fetch 16 bit value from address into AX (p)->A, (p+1)->X
+#DEFINE GETAX(p) LDA p \ LDX p+1
+
+;----------------------------------------------- ASCII Control Codes
+#DEFINE NULL	0
+#DEFINE BS 	8
+#DEFINE HT 	9
+#DEFINE LF 	10
+#DEFINE	VT	11
+#DEFINE CLS	12
+#DEFINE CR 	13
+#DEFINE ESC	27
+
+
+;----------------------------------------------- PSEUDO-CODE
+; PRINT(str) echo str to output
+#define PRINT(str) jsr _Print_ \ .db str,0
+; PRINT(str) echo str to output, with CR,LF
+#define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
+
+; RTN_OK() return OK (Carry clear)
+#define RTN_OK() clc \ rts
+; RTN_OK() return ERROR (Carry set)
+#define RTN_ERR() sec \ rts
+; BR_OK(tgt) branch to tgt if OK (Carry clear to 0)
+#define BR_OK(tgt) bcc tgt
+; BR_ERR(tgt) branch to tgt if ERROR (Carry set to 1)
+#define BR_ERR(tgt) bcs tgt
+
+; BR_EQ(v,tgt) if .A==v then jump to tgt
+#define BR_EQ(v,tgt) cmp #v \ bne $+5 \ jmp tgt
+; BR_NE(v,tgt) if .A!=v then jump to tgt
+#define BR_NE(v,tgt) cmp #v \ beq $+5 \ jmp tgt
+
+.LIST
+ 		;-- End of Macros
+

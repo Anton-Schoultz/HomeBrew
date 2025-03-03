@@ -1,0 +1,167 @@
+;=================================================================== TOK ==============
+;*  IsDigit             returns C=0 if CHRGOT is a digit 0..9
+;*  IsRelOp             returns C=0 if CHRGOT is a relational opperator <>=!
+;*  NumX10              LNNUM *= 10 (preserves AXY) - destorys NUMTMP
+;*  OneOf               see if CHRGOT is one of char in ChkList starting at X
+;*  Parse               Parse INBUF into TOKBUF
+;*  SkipBlank           Skip over leading blank/tabs,  ERR if null
+;*  TblKeyword          table of keywords text
+;*  TblList             Table of addresses to list keyword
+;*  TblRun              Table of addresses to execute keyword
+;*
+#ifdef hide
+ 		;-- .NOLIST
+#endif
+
+_Tok 		= $
+
+
+;----------------------------------------------- Parse
+Parse: ;Parse INBUF into TOKBUF
+ 		;-- read from memory INBUF
+ 		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
+ 		PR_RD_MEM() 		; read from memory (ZRd)
+ 		;-- write to TOKBUF
+ 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
+ 		PR_WR_MEM() 		; write to memory
+ 		;-- prime pump -> CHRGOT
+ 		JSR 	RdCh
+ 		;-- line number ?
+ 		JSR 	SkipBlank 	; skipover leading blank/tabs
+ 		JSR 	IsDigit
+ 		BCS 	Parse1 		; not a digit so try next thing
+ 		;-- digit - so do line number
+ 		JSR 	P_LineNo
+Parse1
+ 		JSR 	SkipBlank 	; skipover blank/tabs
+ 		;-- check for keyword
+
+
+Parse2
+
+ 		RTS
+
+
+;----------------------------------------------- List Scrn
+ 		PR_WR_IO() 		; write to IO device (eg screen/serial)
+ 		;-- set to read from start of program
+ 		PR_RD_MEM() 		; read from memory (code space)
+ 		ZSET(ZRd,$400) 		; read memory from INBUF
+
+;----------------------------------------------- SkipBlank
+; returns with ending chr in A, (C=1 if A==null)
+SkipBlankL 	; read next
+ 		JSR 	RdCh 		; get from io or mem
+SkipBlank: ; Skip over leading blank/tabs,  ERR if null
+ 		LDA 	CHRGOT
+ 		SEC
+ 		;-- null -> exit C=1
+ 		AND 	#0
+ 		BEQ 	SkipBlankX
+ 		;-- blank -> loop
+ 		CMP 	#' '
+ 		BEQ 	SkipBlankL
+ 		;-- TAB -> loop
+ 		CMP 	#HT
+ 		BEQ 	SkipBlankL
+ 		;-- other exit with C=0
+ 		CLC
+SkipBlankX 	RTS
+
+
+PARAGRAPH()
+ChkList:
+RelOp 		.DB 	"<>=!", 0
+Digit 		.DB 	"0123456789",0
+
+;----------------------------------------------- IsRelOp
+IsRelOp: ; returns C=0 if CHRGOT is a relational opperator <>=!
+ 		LDX 	#RelOp
+ 		JMP 	OneOf
+;----------------------------------------------- IsDigit
+IsDigit: ; returns C=0 if CHRGOT is a digit 0..9
+ 		LDX 	#Digit
+ 		JMP 	OneOf
+
+;----------------------------------------------- OneOf
+OneOf: ; see if CHRGOT is one of char in ChkList starting at X
+ 		LDA 	ChkList,X
+ 		BEQ 	OneOfNo
+ 		CMP 	CHRGOT
+ 		BEQ 	OneOfYes
+ 		INX
+ 		BNE 	OneOf
+OneOfNo 	RTN_ERR() 		; NOPE, set carry & exit
+OneOfYes 	RTN_OK() 		; YES, clear carry & exit
+
+;----------------------------------------------- NumX10
+NumX10: ; LNNUM *= 10 (preserves AXY) - destorys NUMTMP
+ 		PHA
+ 		ZCPY(NUMTMP,LNNUM) 	; TMP = NUM
+ 		ZSL(LNNUM) 		; NUM * 2
+ 		ZSL(LNNUM) 		; NUM * 4
+ 		ZADD(LNNUM,NUMTMP) 	; TMP = NUM *5
+ 		ZSL(LNNUM) 		; LNNUM = num * 10
+ 		PLA
+ 		RTS
+
+
+.echo $-_Tok
+.echo " Bytes in _Tok\n"
+
+;=================================================================== BASIC ============
+BLD_CODE=0
+BLD_KEYWORD= 	1
+BLD_TBL_LIST= 	2
+BLD_TBL_RUN= 	3
+
+_basic 		= $
+
+BLD 		= BLD_CODE
+#include "All.a65"
+.echo $-_basic
+.echo " Bytes in Basic code\n"
+
+
+PARAGRAPH()
+_TBL 		= $
+.list
+;----------------------------------------------- TblKeyword
+TblKeyword: ; table of keywords text
+.nolist
+BLD 		= BLD_KEYWORD
+#include "All.a65"
+.dw 0
+.echo $-TblKeyword
+.echo " Bytes in TblKeyword\n"
+
+
+PAGE()
+.list
+;----------------------------------------------- TblRun
+TblRun: ; Table of addresses to execute keyword
+.nolist
+BLD 		= BLD_TBL_RUN
+#include "All.a65"
+.dw 0
+.list
+.echo $-TblRun
+.echo " Bytes in TblRun\n"
+
+
+PAGE()
+.list
+;----------------------------------------------- TblList
+TblList: ; Table of addresses to list keyword
+.nolist
+BLD 		= BLD_TBL_LIST
+#include "All.a65"
+.list
+.dw 0
+.echo $-TblList
+.echo " Bytes in TblList\n"
+
+
+.echo $-_TBL
+.echo " Total Bytes in Tables\n"
+

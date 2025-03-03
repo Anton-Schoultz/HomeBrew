@@ -31,7 +31,7 @@ Short(SFX) 	; Sub-Frame offset index
 
 
 
-#if CODEPAGE
+#if CODEPAGE==1
 #ifndef _Frame
 #define _Frame
 

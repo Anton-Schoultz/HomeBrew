@@ -6,6 +6,8 @@
 #define _Warm
 ;--------------------------------------------------------------------- Warm
 Warm:; Warm Start entry point
+ 		;-- copy CharRd & CharWr to z-page
+ 		JSR 	CharCopy
 
 
 

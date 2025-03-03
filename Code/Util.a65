@@ -6,10 +6,10 @@
 
 #define low Z_Tmp
 
-Util: 
+Util:
 
 ;--------------------------------------------------------------------- Bin2Dec
-Bin2Dec: ; convert binary value in A (0-99) into BCD in A
+Bin2Dec: ; convert binary value in A (0-99) into BCD in A, (high digit in X)
  		SED 			; all adds in decimal mode
  		STA 	low 		; save A
  		LDA 	#$00 		; clear A
@@ -26,22 +26,19 @@ Bin2DecS
 ; if you only require conversion of numbers between $00 and $63 (0 to 99
 ; decimal) then omit all code between the "*"s
 ;
-;	BCC	skip_100	; branch if no 100's carry
-;				; if Cb set here (and can only be set by the
-;				; last loop add) then there was a carry into
-;	INX			; the 100's so add 100's carry to the high byte
-;skip_100
-;				; now check the 2^7 (128) bit
-;	LSR	low		; bit 7 to carry
-;	BCC	skip_fin	; branch if no add
-;
-;	INX			; else effectively add 100 part of 128
-;	ADC	#$27		; and then add 128 (-1) part of 128
-;	BCC	skip_fin	; branch if no further carry
-;
-;	INX			; else add 200's carry
-;skip_fin
-;	STX	high		; save result high byte
+ 		BCC 	Bin2DecS1 	; branch if no 100's carry
+ 		;-- if Cb set here (and can only be set by the
+ 		;-- last loop add) then there was a carry into
+ 		INX 			; the 100's so add 100's carry to the high byte
+Bin2DecS1
+ 		;-- now check the 2^7 (128) bit
+ 		LSR 	low 		; bit 7 to carry
+ 		BCC 	Bin2DecS2 	; branch if no add
+ 		INX 			; else effectively add 100 part of 128
+ 		ADC 	#$27 		; and then add 128 (-1) part of 128
+ 		BCC 	Bin2DecS2 	; branch if no further carry
+ 		INX 			; else add 200's carry
+Bin2DecS2
 ;
 ; end of 100's code
 ;***********************************************************************
@@ -51,6 +48,9 @@ Bin2DecS
 Bin2DecTbl
 .byte	$63,$31,$15,$07,$03,$01,$00
 
+;--------------------------------------------------------------------- PrStrBuf
+PrStrBuf: ; Print string buffer out
+ 		LDAX(STRBUF)
 ;--------------------------------------------------------------------- PrStrAX
 PrStrAX: ; print a null-terminated string pointed to by AX [A]
  		STAX(Z_Ptr)
@@ -69,15 +69,26 @@ PrStr2 		STY 	Z_Tmp
  		RTS 			; exit
 
 ;--------------------------------------------------------------------- _Print_
-_Print_ 	;Print in-line string
+_Print_ 	;Print in-line string to CharOut
 ;jsr _Print_
 ;.db "text",0
  		PLA
  		PLX
  		STAX(Z_Rd)
  		JSR 	CharRd 		; skip over fisrt byte (end of jsr)
- 		JSR 	CharEcho 	; Read memory, send to output
- 		JMP 	(Z_Rd)
+ 		JSR 	CharEcho 	; Read memory, send to output until null
+ 		CPX 	#' ' 		; ends with space ?
+ 		BEQ 	_Print_X 	; yes, skip the newline
+ 		JSR 	PrNL 		; newLine
+_Print_X 	JMP 	(Z_Rd) 		; jump to code after the in-line string
+ 		;-- fall through for new line
+;--------------------------------------------------------------------- PrNL
+PrNL: ; print CR,LF to CharOut
+ 		LDA 	#CR
+ 		JSR 	CharOut
+ 		LDA 	#LF
+ 		JMP 	CharOut
+
 
 ;.echo $-Util
 ;.echo " bytes for Util\r"

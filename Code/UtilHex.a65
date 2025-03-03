@@ -37,7 +37,7 @@ CvtAXHex: ; print AX (lo/hi) as 4 hex digits [A]
  		PLA 			; restore low
  		;-- fall through to print low as hex digits
 ;--------------------------------------------------------------------- CvtAHex
-CvtAHex: ; Print A in hex form [A]
+CvtAHex: ; Convert A to Hex digits and write them out via CharWr
  		PHA 			;Save A for LSD
  		LSR 	a
  		LSR 	a
@@ -47,7 +47,7 @@ CvtAHex: ; Print A in hex form [A]
  		PLA 			; Restore A and then
  		;-- fall through to print hex routine
 ;--------------------------------------------------------------------- CvtHexN
-CvtHexN: ; Convert hex nibble to output
+CvtHexN: ; Convert hex nibble to output via CharWr
  		AND 	#$0F 		; Mask LSD for hex print
  		CMP 	#10
  		BCC 	CvtHexX
@@ -75,11 +75,6 @@ DBugHexN: ; Convert hex nibble to output
 DBugHexNX 	EOR 	#'0'
  		JMP 	CharOut
 
-OutNL:; print CR,LF to CharOut
- 		LDA 	#CR
- 		JSR 	CharOut
- 		LDA 	#LF
- 		Jmp 	CharOut
 
 
 

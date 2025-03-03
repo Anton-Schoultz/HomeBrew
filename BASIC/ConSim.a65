@@ -1,0 +1,79 @@
+;=================================================================== CONSIM ===========
+; Simulator Implementation of console functions
+;
+;*  ConCls              Clear Screen (CLS / FormFeed)
+;*  ConIn               Read character from input (keyboard), null if none
+;*  ConOut              Write character to output (screen)
+;*
+#ifdef hide
+.NOLIST
+#endif
+
+; Print to screen, Read from keyboard
+IO_AREA 	= $8000 		; Must match Simulator's Options screen.
+
+;-----------------------------------------------
+SIM_CLS 	= IO_AREA + 0
+SIM_OUT 	= IO_AREA + 1
+SIM_IN 		= IO_AREA + 4
+
+_ConSim = $
+
+;----------------------------------------------- ConOut
+ConOut: ;Write character to output (screen)
+ 		CMP 	#CLS 		; Form Feed = Clear Screen
+ 		BEQ 	ConCls
+ 		STA 	SIM_OUT 	; Sends A to output screen (interprets CR LF BS)
+ 		RTS
+
+;----------------------------------------------- SimCls
+ConCls: ; Clear Screen (CLS / FormFeed)
+ 		STA 	SIM_CLS
+ 		RTS
+;----------------------------------------------- KeyGet
+ConIn: ; Read character from input (keyboard), null if none
+ 		LDA 	SIM_IN
+ 		RTS
+
+.NOLIST
+; The 6502 Simulator simulates cpu and also some "I/O"
+ 		;--
+; The variable "IO_AREA" is reserved and will return the start address of the IO page.
+; Data is passed through the accumulator register.
+ 		;--
+; IO_AREA+0: SIM_CLS (w)
+; IO_AREA+1: SIM_OUT (w)
+; IO_AREA+2: SIM_OUT_CHR (w)
+; IO_AREA+3: SIM_OUT_HEX (w)
+; IO_AREA+4: SIM_IN (r)
+; IO_AREA+5: SIM_X_POS (r/w)
+; IO_AREA+6: SIM_Y_POS (r/w)
+ 		;--
+; (w) means write only port, (r) read only, (r/w) read/write.
+ 		;--
+; SIM_CLS - clear terminal window, set cursor at (0,0) position.
+ 		;--
+; SIM_OUT - output single character interpreting control characters.
+; 	Terminal can only recognize these control characters:
+; 		ASCII $0D (carriage return) moving cursor to the beginning of line,
+; 		ASCII $0A (line feed) moving cursor to the next line and scrolling window if necessary,
+; 		ASCII $08 (backspace) moving one position to the left and erasing char below cursor.
+ 		;--
+; SIM_OUT_CHR - outputs single character; pass control chars as it
+ 		;--
+; SIM_OUT_HEX - outputs single byte as a two-digit hexadecimal number.
+ 		;--
+; SIM_IN - input single byte, returns 0 if there's no characters available in terminal's buffer
+;     	When I/O terminal window is active, it can accept keyboard input;
+ 		;-- press [Ins] key to paste clipboard's contents into terminal.
+ 		;--
+; SIM_X_POS - cursor X position (column).
+ 		;--
+; SIM_Y_POS - cursor Y position (row).
+
+.echo $-_ConSim
+.echo " Bytes in _ConSim\n"
+
+.LIST
+ 		;-- End of ConStr
+

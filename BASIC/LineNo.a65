@@ -1,0 +1,84 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if BLD == BLD_CODE
+;=================================================================== LINENO ==============
+;
+; {LineNo} [*..] 00
+;
+;*  L_LineNo            list LineNo
+;*  P_LineNo            Parse LineNo
+;*  X_LineNo            code to execute the LineNo
+;*
+
+_LineNo 	= $
+;----------------------------------------------- P_LineNo
+P_LineNo: ; Parse LineNo
+ 		ZSET(LNNUM,0) 		; zero line number
+
+ 		;-- parse the line number into LNNUM
+P_LineNo1 	JSR 	IsDigit
+ 		BCS 	P_LineNo2 	; no more digits
+ 		;-- LNNUM *= 10 (preserves AXY) - destroys NUMTMP
+ 		JSR 	NumX10
+ 		;-- digit value into NUMTMP
+ 		AND 	#$0F
+ 		STA 	NUMTMP
+ 		LDA 	#0
+ 		STA 	NUMTMP+1
+ 		ZADD(LNNUM,NUMTMP) 	; add it in
+ 		JSR 	RdCh
+ 		BRA 	P_LineNo1
+P_LineNo2	;-- have line number
+ 		;-- write token
+ 		LDA 	#T_LineNo 	; token for LineNo
+ 		JSR 	PrCh 		; output it
+ 		;-- write line number
+ 		LDA 	LNNUM
+ 		JSR 	PrCh
+ 		LDA 	LNNUM+1
+ 		JSR 	PrCh
+ 		;-- place holder for the length
+ 		LDA 	#$FF
+ 		JSR 	PrCh
+
+ 		RTS
+
+;----------------------------------------------- L_LineNo
+L_LineNo: ; list LineNo
+ 		;-- output keyword expansion
+ 		;--
+ 		;-- copy rest to output
+ 		JMP 	ChrCopy
+;----------------------------------------------- X_LineNo
+X_LineNo: ; code to execute the LineNo
+ 		;-- code to jump to the next line (no processing)
+
+
+
+
+.echo $-_LineNo
+.echo " Bytes in _LineNo\n"
+.nolist
+#endif
+
+;----------------------------------------------- Tables
+#if BLD = BLD_KEYWORD
+.list
+W_LineNo 	.DB 	"RE",'M'+$80
+.nolist
+#endif
+
+#if BLD = BLD_TBL_LIST
+.list
+.dw L_LineNo
+.nolist
+#endif
+
+#if BLD = BLD_TBL_RUN
+.list
+T_LineNo 	.DW 	X_LineNo
+.nolist
+.export T_LineNo
+#endif

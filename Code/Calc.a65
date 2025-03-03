@@ -97,14 +97,14 @@ Var(CSTK4,16) 	; _SGN
 #endif
 
 
-#if CODEPAGE
+#if CODEPAGE == 1
 #ifndef _Calc
 #define _Calc
 
 
 
 .LIST
-PAGE() 		; new page
+;PAGE() 		; new page
 ;===================================================================== CALC
 Calc 		;Initialise calculator stack, and zero NA (unpacked form) [A]
  		ZZP(CSP) 		; Init calc stack pointer to zero
@@ -175,6 +175,16 @@ CalcPush: ; Push NA onto the stack [AX] !StackErr
  		BCS 	CalcPushX 	; CSTKSZ is > CSP so OK
 CalcStkErr 	THROW(E_CSTK) 		; if so, throw stack error
 CalcPushX 	RTS
+
+;--------------------------------------------------------------------- CalcPop
+CalcPop: ; Pop item index X
+ 		;-- Reduce stack pointer, .X points to 'popped' item [X] !StackErr
+ 		;-- force CSP to 0-15
+ 		DEC 	CSP
+ 		BMI 	CalcStkErr 	; wrapped arround, so stack error
+ 		LDX 	CSP
+ 		RTS
+
 ;--------------------------------------------------------------------- CalcDrop
 CalcDrop: ; Pop item into NA item variable [AX]!StackErr
  		JSR 	CalcPop
@@ -190,15 +200,8 @@ CalcDrop: ; Pop item into NA item variable [AX]!StackErr
  		LDA 	CSTK4,X
  		STA 	NA+_SGN
  		RTS
-;--------------------------------------------------------------------- CalcPop
-CalcPop: ; Reduce stack pointer, .X points to 'popped' item [X] !StackErr
- 		;-- force CSP to 0-15
- 		DEC 	CSP
- 		BMI 	CalcStkErr 	; wrapped arround, so stack error
- 		LDX 	CSP
- 		RTS
 ;--------------------------------------------------------------------- CalcNext
-CalcNext: ; Pop item into NB item variable
+CalcNext: ; Pop item into NB item variable, throws stack error
  		JSR 	CalcPop
  		;--
  		LDA 	CSTK0,X
@@ -311,6 +314,10 @@ CalcSetINeg 	;-- negative value
  		;--
  		BRA 	CalcNegX 	; go negate the value
 
+;--------------------------------------------------------------------- CalcNeg
+CalcNeg: ; Negate the value in NumA
+ 		LDX 	#NA
+ 		BRA 	CalcNegX
 ;--------------------------------------------------------------------- CalcAbs
 ; make the mantissa positive, ready to pack
 ; X points to NA / NB
@@ -405,10 +412,10 @@ CalcD10NA: ; NA = NA / 10, remainder in A [AXY]
 
 ;--------------------------------------------------------------------- CalcD10
 CalcD10: ; Divide value at 0,X  by 10, remainder in A [AY]
- 		LDY 	#24 		; make this 24 for 24 bit version
+ 		LDY 	#24 		; 24 bits
  		LDA 	#0
  		CLC
-CalcD101 	ROL 	a
+CalcD101 	ROL 	A
  		CMP 	#10
  		BCC 	CalcD102
  		SBC 	#10
@@ -614,7 +621,7 @@ CalcStrX 	STA 	NR 		; place sign at Res[0]
  		RTS
 
 ;--------------------------------------------------------------------- CalcStrF
-CalcStrF: ; Covert unpacked float to string in NR
+CalcStrF: ; Covert unpacked float to string into STRBUF
 ;NR  0   1   2   3   4   5   6   7   8   9   10   11   12
 ;     SS '0' '3' '2' '7' '6' '7'  00
  		;-- convert mantisa part (with sign)
@@ -805,15 +812,17 @@ CalcMul2 	;shift result right (equivalent to shift B left )
  		RTS
 
 ;--------------------------------------------------------------------- CalcAdj
-CalcAdj: ; Adjust size of result to 3 bytes, adjusr EXP as you go
+CalcAdj: ; Adjust size of result to 3 bytes, adjust EXP as you go
  		;-- test over size
  		LDA 	NR+3
  		ORA 	NR+4
  		ORA 	NR+5
- 		BNE 	CalcDown
- 		;-- test under size
- 		;-- todo
- 		;-- all good so copy it to NA (TOS)
+ 		BEQ 	CalcAdjOK
+ 		;-- res /= 10, EXP++
+ 		JSR 	CalcResDR
+ 		INC 	EXP
+ 		BRA 	CalcAdj
+CalcAdjOK 	;-- all good so copy it to NA (TOS)
  		LDA 	NR+0
  		STA 	NA+_ML
  		LDA 	NR+1
@@ -824,15 +833,7 @@ CalcAdj: ; Adjust size of result to 3 bytes, adjusr EXP as you go
  		STA 	NA+_EXP
  		LDA 	SGN
  		STA 	NA+_SGN
-
  		RTS
-;--------------------------------------------------------------------- CalcDown
-CalcDown: ; down size = div 10, incr exp
- 		JSR 	CalcResDR 	; /10
- 		INC 	EXP
- 		BRA 	CalcAdj
-
-
 
 ;--------------------------------------------------------------------- CalcResDR
 CalcResDR: ; Divide Result by 10, remainder in A [AY]
@@ -852,10 +853,6 @@ CalcResDR2 	ROL 	NR+0
  		DEY
  		BPL 	CalcResDR1
  		RTS
-
-;=====================================================================
-MARKER: ; MARKER
-;=====================================================================
 
 ;--------------------------------------------------------------------- CalcResDL
 CalcResDL: ; Result = result * 10
@@ -879,7 +876,6 @@ CalcResDL2 	LDA 	NR,x
  		INX
  		DEY
  		BNE 	CalcResDL2
- 		;--
  		JSR 	CalcResSL 	; res *= 2
  		RTS
 
@@ -895,14 +891,9 @@ CalcDiv: ; NA = NB / NA	(16 bit signed integer)
  		STA 	EXP
  		;-- clear result
  		JSR 	CalcZeroT
-
 ; Quotient is in Result (offset by 3 bytes so as binary fractional parts)
 ; Divisor is in A 3 bytes of mantissa
 ; dividing 6 byte(NR) by 3byte(NA)
-
- 		NOP
-
-;
  		LDX 	#48 		; bit count
 CalcDivL 	;-- shift a bit from dividend into temp
  		ASL 	NB
@@ -950,9 +941,10 @@ CalcDivL2 	; save result bit
  		;--
  		;-- result is binary6 fraction in RES 0..6
  		;--
- 		JSR 	CalcDBugRES
+ 		;-- JSR 	CalcDBugRES
  		;-- 5 4 3  2 1 0  Res
  		;-- 00032A.5F38D7 Binary fraction
+
 CalcDivL3 	; adjust result to fit
  		LDA 	NR+5
  		AND 	#$F0
@@ -962,14 +954,15 @@ CalcDivL3 	; adjust result to fit
  		DEC 	EXP
  		BRA 	CalcDivL3
 CalcDivL4 	; Rounding
- 		ASL 	NR+2
- 		BCC 	CalcDivL5
+ 		LDA 	NR+2
+ 		CMP 	#$70
+ 		BCS 	CalcDivL5
  		INC 	NR+3
  		BNE 	CalcDivL4
  		INC 	NR+4
  		BNE 	CalcDivL4
  		INC 	NR+5
- 		;
+ 		;--
 CalcDivL5 	; copy SGN & EXP to NumA
  		LDA 	EXP
  		STA 	NA+_EXP
@@ -978,58 +971,60 @@ CalcDivL5 	; copy SGN & EXP to NumA
  		;-- copy result 3,4,5 to NumA
  		LDX 	#NR+3
  		LDY 	#NA
- 		JSR 	CalcCpyMan
+ 		JMP 	CalcCpyMan
+
+;=====================================================================
+MARKER: ; MARKER
+;=====================================================================
+;--------------------------------------------------------------------- CalcSub
+FSUB: ; A = B - A
+ 		JSR 	CalcNeg 	;CMPL MANT1 CLEARS CARRY UNLESS ZERO
+;--------------------------------------------------------------------- CalcSwpAln
+SWPALG: ; Swap / align
+ 		JSR 	ALGNSW 		;RIGHT SHIFT A OR SWAP WITH B ON CARRY
+
+;--------------------------------------------------------------------- CalcAdd
+CalcAdd: ; A = B + A
+FADD 		LDA 	NB+_EXP 	;
+ 		CMP 	NA+_EXP 	;COMPARE EXP1 WITH EXP2
+ 		BNE 	SWPALG 		;IF UNEQUAL, SWAP ADDENDS OR ALIGN MANTISSAS
+ 		JSR 	ADD 		;ADD ALIGNED MANTISSAS
+ADDEND 		BVC 	NORM 		;NO OVERFLOW, NORMALIZE RESULTS
+ 		BVS 	RTLOG 		;OV: SHIFT MANT1 RIGHT. NOTE CARRY IS CORRECT SIGN
+ALGNSW 		BCC 	SWAP 		;SWAP IF CARRY CLEAR, ELSE SHIFT RIGHT ARITH.
+
+RTAR 		LDA 	NA+_SGN 	;SIGN OF MANT1 INTO CARRY FOR
+ 		ASL 	A 		;RIGHT ARITH SHIFT
+
+RTLOG 		INC 	X1 		;INCR EXP1 TO COMPENSATE FOR RT SHIFT
+ 		BEQ 	OVFL 		;EXP1 OUT OF RANGE.
+
+RTLOG1 		LDX 	#$FA 		;INDEX FOR 6 BYTE RIGHT SHIFT (FA = -6)
+
+ROR1 		LDA 	#$80 		;
+ 		BCS 	ROR2 		;
+ 		ASL 	A 		;
+ROR2 		LSR 	E+3,X 		;SIMULATE ROR E+3,X
+ 		ORA 	E+3,X 		;
+ 		STA 	E+3,X 		;
+
+ 		INX 			;NEXT BYTE OF SHIFT
+ 		BNE 	ROR1 		;LOOP UNTIL DONE
+
+ 		RTS 			;RETURN
+
+
+;--------------------------------------------------------------------- CalcSwap
+CalcSwap: ; A <-> B
+ 		LDX 	#5 		; 5 bytes
+CalcSwapL 	LDA 	NA-1,X
+ 		LDY 	NB-1,X
+ 		STY 	NA-1,X
+ 		STA 	NB-1,X
+ 		DEX
+ 		BNE 	CalcSwapL
  		RTS
 
-
- 		RTS
-
-;;--------------------------------------------------------------------- CalcEnlarge
-;CalcEnlarge: ; enlarge Result to 6 bytes (mult by 10, adjext EXP)
-; 		;-- multiply by 10 until we have ~ 6bytes
-;CalcDivL 	LDA 	NR+5
-; 		AND 	#$F0
-; 		BNE 	CalcDivL0
-; 		JSR 	CalcUp
-; 		BRA 	CalcDivL
-; 		RTS
-
-
-;;--------------------------------------------------------------------- CalcModI
-;CalcModI: ; NA = NB % NA
-; 		JSR 	CalcDivI 	; divide with remainder in NR
-; 		;-- fall through to get remainder into NA
-;;--------------------------------------------------------------------- CalcRemI
-;CalcRemI: ; Remainder of division into NA (also in AX) - Call CalcDivI before
-; 		LDA 	NR
-; 		LDX 	NR+_MH
-; 		JMP 	CalcSetI
-;
-
-
-PARAGRAPH()
-;--------------------------------------------------------------------- CalcParseAX
-;CalcParseAX: ; Parse value in string at AX (null terminated) -> NA
-; 		STAX(Z_Rd)
-
-
-
-
-;;--------------------------------------------------------------------- CalcI2F
-;CalcI2F: ; Covert NA from Int to float
-; 		JSR 	CalcAbsNA 	; sign in Y
-; 		TYA
-; 		AND 	#$80 		; Sign is top bit 1:-ve 0:+ve
-; 		ORA 	#$40 		; Exp is offset $40 (so E-63 ... E+63)
-; 		STA 	NA+2 		; save EXP flag in NA3
-; 		RTS
-
-
-;;--------------------------------------------------------------------- CvtInt
-;CvtInt: ; Convert NA to integer String and write to output (CharWr)
-; 		JSR 	CalcStr
-; 		LDAX(NR)
-; 		JMP 	CharAppendAX 	; append contents of NR to the output buffer
 
 
 ;===================================================================== CONSTANTS
@@ -1040,38 +1035,36 @@ K_E: ; e in unpacked form  		  2,7182818284590
 .db $4A,$7A,$29,$FA,$00 		; 2.718282
 
 
-.export Calc, CalcParse
+.export Calc
+.export CalcParse, CalcStrF
+.export CalcNeg
+;.export CalcAdd, CalcSub
+.export CalcMul, CalcDiv
+.export CalcPack, CalcUnpack
 
 
 
 #ifdef DBUG
 ;===================================================================== CALC DBUG
+;--------------------------------------------------------------------- CalcDBugNB
 CalcDBugNB: ; dump NB
  		LDA 	#'B'
  		JSR 	CharOut
  		LDX 	#NB
  		JSR 	CalcDBug
- 		JMP 	OutNL
-
+ 		JMP 	PrNL
+;--------------------------------------------------------------------- CalcDBugNA
 CalcDBugNA: ; dump NA
  		LDA 	#'A'
  		JSR 	CharOut
+ 		LDA 	#'='
+ 		JSR 	CharOut
  		LDX 	#NA
  		JSR 	CalcDBug
-; 		;--
-; 		LDA 	#' '
-; 		JSR 	CharOut
-; 		;--
-; 		JSR 	CvtFloat
-
- 		JMP 	OutNL
+ 		JMP 	PrNL
 
 ;--------------------------------------------------------------------- CalcDBug
 CalcDBug: ; sends raw form of NumX to screen
-
- 		;-- display hex form
- 		LDA 	#'='
- 		JSR 	CharOut
  		;-- sgn
  		LDA 	#'s'
  		JSR 	CharOut
@@ -1124,7 +1117,7 @@ CalcDBugRES2 	DEX
  		JSR 	CharOut
  		LDA 	SGN
  		JSR 	DBugHex
- 		JMP 	OutNL
+ 		JMP 	PrNL
 
 
 #endif

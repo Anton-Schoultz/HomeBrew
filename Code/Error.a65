@@ -18,16 +18,18 @@
 #DEFINE E_OK 0
 #DEFINE E_STK 1
 #DEFINE E_CSTK 2
+#DEFINE E_ILGL 3
+#DEFINE E_OVFLW 4
 
 .NOLIST
 #endif
 
 
-#if CODEPAGE
+#if CODEPAGE==1
 #ifndef _Error
 #define _Error
 .LIST
-PAGE()
+;PAGE()
 ;===================================================================== ERROR
 Error: ; Show message no BRK_NO
  		POINT(Z_Rd,ErrMsg) 	; point at start of messages
@@ -47,7 +49,7 @@ ErrorGen 	; general error (no message)
  		;--
  		LDA 	BRK_NO
  		JSR 	DBugHex 	; error code as hex
- 		JSR 	OutNL
+ 		JSR 	PrNL
  		HALT()
 
 ErrorOut
@@ -60,7 +62,7 @@ ErrorOut
  		STA 	Z_Ptr+1
 
  		JSR 	PrStr 		; print the message
- 		JSR 	OutNL
+ 		JSR 	PrNL
  		HALT()
 
 
@@ -68,6 +70,8 @@ ErrMsg:
 .DB "OK",0 				; 0
 .DB "Stack Overflow/Underflow",0 	; 1
 .DB "Calculator Overflow/Underflow",0 	; 2
+.DB "Illegal argument",0 		; 3
+.DB "Overflow",0 			; 4
 
 .db $FF 				; end of list marker
 

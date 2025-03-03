@@ -10,8 +10,6 @@ Cold: ; Cold start entry point
  		LDX 	#$ff 		; Set Stack pointer to top of the stack space $0100-01FF
  		TXS
  		CLD 			; ensure binary mode
- 		;-- copy CharRd & CharWr to z-page
- 		JSR 	CharCopy
 
 ;.echo $-Cold
 ;.echo " bytes for Cold.a65\r"

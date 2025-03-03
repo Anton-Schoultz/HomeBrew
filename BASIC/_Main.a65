@@ -1,0 +1,72 @@
+; _MAIN
+
+#define BUFSZ 64
+
+;#define hide
+
+
+#include "Macros.a65"
+#include "_Vars.a65"
+
+
+.org $1000
+_ROM 		=$
+.LIST
+;======================================================================================
+; 		START OF ROM
+ 		JMP 	Reset
+
+#include "ConSim.a65" 			; Console Implementation
+#include "ChrStr.a65" 			; Base IO (incl macros)
+
+
+;=================================================================== MAIN CODE ========
+;*  Reset               Reset (Cold start)
+;*  Warm                Warm Start entry point
+;*
+;----------------------------------------------- Reset
+Reset: ;Reset (Cold start)
+ 		;-- Halt IRQs
+ 		SEI
+ 		;-- Set Stack pointer to top of the stack space $0100-01FF
+ 		LDX 	#$ff
+ 		TXS
+ 		;-- Binary mode
+ 		CLD
+;----------------------------------------------- Warm
+Warm: ;Warm Start entry point
+ 		;-- Copy ZPage Code
+ 		JSR 	ChrInit
+
+; 		PR_RD_IO()
+; 		PR_WR_IO()
+; 		PR_ECHO_OFF()
+;
+;
+;Loop:		jsr RdCh		; jsr(VCHRIN)->ConIn, sta, rts
+;		beq Loop
+;
+;		jsr ChrOut		; jmp(VCHROUT)-> ConOut
+;		bra Loop
+
+
+ 		;-- input a line of text until RETURN
+ 		JSR 	InputIOEcho
+
+; 		JSR 	PrNL
+
+; 		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
+; 		PR_RD_MEM() 		; read from memory (ZRd)
+; 		PR_WR_IO() 		; write to IO
+; 		JSR 	ChrCopy 	; copy from in to out
+;
+; 		JSR 	Parse		; parse line into TOKBUF
+
+ 		BRK
+
+#include "Tok.a65"
+
+.echo $-_ROM
+.echo " Total Bytes used\n"
+
+.end

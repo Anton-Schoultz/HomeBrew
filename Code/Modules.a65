@@ -31,9 +31,10 @@
 #include	"Error.a65"
 #include	"Calc.a65"
 #include	"Monitor.a65"
-#include	"Test.a65"
 #include	"Char.a65"
-
 ;#include	"Object.a65"
 ;#include 	"Frame.a65"
+
+
+#include	"Test.a65"
 

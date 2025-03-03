@@ -1,0 +1,37 @@
+[Project ID]
+Signature=UE Proj: v.1
+[Project Information]
+Filter=*.a65
+Project Directory=D:\GitHub\HomeBrew\BASIC\
+Use Relative Directory=0
+Relative to Project File=1
+Project Wordfile=
+Project Tagfile=
+Create Tagfile=0
+[Open Files]
+Open File0=D:\GitHub\HomeBrew\BASIC\_Main.a65
+Open File Pos0=88
+Open File Line0=99
+Active File Index=0
+Open File Window Pos0=2,3,-1,-1,-8,-31,130,130,744,591
+Open File1=D:\GitHub\HomeBrew\BASIC\Macros.a65
+Open File Pos1=2998
+Open File Line1=2721
+Open File Window Pos1=0,1,-1,-1,-8,-31,156,156,774,621
+Open File2=D:\GitHub\HomeBrew\BASIC\ChrStr.a65
+Open File Pos2=1540
+Open File Line2=0
+Open File Window Pos2=0,1,-1,-1,-8,-31,182,182,800,647
+Open File3=D:\GitHub\HomeBrew\BASIC\ConSim.a65
+Open File Pos3=336
+Open File Line3=0
+Open File Window Pos3=0,1,-1,-1,-8,-31,208,208,826,673
+Open File4=D:\GitHub\HomeBrew\BASIC\_Vars.a65
+Open File Pos4=91
+Open File Line4=0
+Open File Window Pos4=0,1,-1,-1,-8,-31,0,0,873,465
+Open File5=
+Active File Display Mode=3
+[File View]
+Current Select=Open Files\
+Scroll Position=100
