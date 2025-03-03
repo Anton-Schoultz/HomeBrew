@@ -64,22 +64,38 @@
 #DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 ; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
 #DEFINE ZCPY(zTo,zFr) lda zFr \ sta zTo \ lda zFr+1 \ sta zTo+1
-; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
+; ZCPY3(zTo,zFr) Coppies 3 bytes from zFr to zTo
+#DEFINE ZCPY3(zTo,zFr) lda zFr\ sta zTo\ lda zFr+1\ sta zTo+1\ lda zFr+2\ sta zTo+2
+; ZCPY4(zTo,zFr) Coppies 4 bytes from zFr to zTo
 #DEFINE ZCPY4(zTo,zFr) lda zFr\ sta zTo\ lda zFr+1\ sta zTo+1\ lda zFr+2\ sta zTo+2\ lda zFr+3\ sta zTo+3
+
 
 
 ; ZINC(z)	Increment z-pg pair at z,z+1
 #DEFINE ZINC(z) inc z \ bne $+4 \ inc z+1
+
 ; ZDEC(z)	Decrement z-pg pair at z,z+1
 #DEFINE ZDEC(z) dec z \ bpl $+4 \ dec z+1
+
 ; ZSL(z) 	Shift Z,z+1 left (*2)
-#define ZSL(z)	asl z \ rol z+1
+#define ZSL(z)	asl z\ rol z+1
+; ZSL3(z) 	Shift Z,z+1 left (*2)
+#define ZSL3(z)	asl z\ rol z+1\ rol z+2
+
 ; ZSR(z) 	Shift Z,z+1 right (/2)
-#define ZSR(z)	clc \ ror z+1 \ ror z
+#define ZSR(z)	clc \ror z+1 \ror z
+; ZSR(z) 	Shift Z,z+1 right (/2)
+#define ZSR3(z)	clc \ ror z+2 \ ror z+1 \ror z
+
 ; ZADD(r,n)	r = r+n
-#define ZADD(r,n) clc \ lda r \ adc n \ sta r \ lda r+1 \ adc n+1 \ sta r+1
+#define ZADD(r,n) clc\ lda r\ adc n\ sta r\ lda r+1\ adc n+1\ sta r+1
+; ZADD3(r,n)	r = r+n
+#define ZADD3(r,n) clc\ lda r\ adc n\ sta r\ lda r+1\ adc n+1\ sta r+1\ lda r+2\ adc n+2\ sta r+2
+
 ; ZSUB(r,n)	r = r-n
-#define ZADD(r,n) sec \ lda r \ sbc n \ sta r \ lda r+1 \ sbc n+1 \ sta r+1
+#define ZSUB(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1
+; ZSUB3(r,n)	r = r-n
+#define ZSUB3(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1\ lda r+2\ sbc n+2\ sta r+2
 
 
 ;----------------------------------------------- 16 bit AX
