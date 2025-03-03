@@ -4,8 +4,10 @@
 ;*  List                List from start of program
 ;*  ListLn              List line pointed to by ZRd
 ;*  NextLine            point ZRd to the next line NXTLN
+;*  NumX10              NUMBER *= 10 (preserves AXY) - destorys NUMTMP
 ;*  OneOf               see if CHRGOT is one of char in ChkList starting at X
 ;*  Parse               Parse INBUF into TOKBUF
+;*  ParseNum            -- parse a number into NUMBER,
 ;*  SkipBlank           Skip over leading blank/tabs,  ERR if null
 ;*  TokEnd              place end of line
 ;*  TokExpand           Expand the token to key word (X is index)
@@ -238,6 +240,9 @@ TokFound 	;-- found return with token in A and CY=0
  		LDA 	TOKNO
  		ASL 	A 		; token nos incr in 2s
  		RTN_OK()
+
+
+
 
 .export TokFind,TOKNO,TokFound,Parse
 

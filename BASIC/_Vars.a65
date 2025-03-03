@@ -52,8 +52,9 @@ Int(NXTLN)	; address of next line
 Short(TOKNO)	; Token number
 
 .org $0050
-Var(CVTBUF,12)	; Conversion work area
+Var(CVTBUF,8)	; Conversion work area
 Var(NUMTMP,4)	; Temp number
+Var(NUMBER,4)	; Number parsed
 
 
 .export LNNUM,NUMTMP
