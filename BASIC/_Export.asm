@@ -11,9 +11,10 @@ TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
 TblKeyword       .EQU  $1300
 TblRun           .EQU  $1380
-T_Break          .EQU  $1380
-T_Rem            .EQU  $1382
-T_Return         .EQU  $1384
+T_Rem            .EQU  $1380
+T_Print          .EQU  $1382
+T_Break          .EQU  $1384
+T_Return         .EQU  $1386
 Parse            .EQU  $13A0
-TokFind          .EQU  $14BF
-TokFound         .EQU  $14EB
+TokFind          .EQU  $14FB
+TokFound         .EQU  $1527

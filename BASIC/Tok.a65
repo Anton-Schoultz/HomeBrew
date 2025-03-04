@@ -1,4 +1,5 @@
-;=================================================================== TOK ==============
+;=================================================================== TOK ============== 
+;*  BasTop              Setup to read from start of basic
 ;*  ChkList             List of characters used by IsOneOf
 ;*  Digit               List of digits 0..9
 ;*  FetchNum            fetch number from the code -> NUMBER
@@ -17,6 +18,10 @@
 ;*  P_String            parse quoted string into token
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  RelOp               Relational opperators
+;*  Run                 Run from start
+;*  RunJmp              run via jump table
+;*  RunLn               Run line pointed to by ZRd
+;*  RunTok              run token
 ;*  SkipBlank           Skip over leading blank/tabs,  ERR if null
 ;*  TokEnd              place end of line
 ;*  TokExpand           Expand the token to key word (X is index)
@@ -30,7 +35,7 @@
 PARAGRAPH()
 _Tok 		= $
 
-;----------------------------------------------- ChkList
+;----------------------------------------------- ChkList 
 ChkList: ; List of characters used by IsOneOf
 RelOp: ; Relational opperators
 .DB 	"<>=!", 0
@@ -42,7 +47,7 @@ Digit: ; List of digits 0..9
 #define T_String $FD
 
 
-;----------------------------------------------- Parse
+;----------------------------------------------- Parse 
 Parse: ;Parse INBUF into TOKBUF
  		;-- read from memory INBUF
  		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
@@ -53,132 +58,169 @@ Parse: ;Parse INBUF into TOKBUF
  		PR_WR_MEM() 		; write to memory
 
  		;-- prime pump -> CHRGOT
- 		JSR 	RdCh
+ 		jsr 	RdCh
 
  		;-- line number ?
- 		JSR 	SkipBlank 	; skipover leading blank/tabs
- 		JSR 	IsDigit
+ 		jsr 	SkipBlank 	; skipover leading blank/tabs
+ 		jsr 	IsDigit
  		BR_F(P_Stmnt) 		; not a digit -> Statement?
  		;-- digit - so do line number
- 		JSR 	P_LineNo
+ 		jsr 	P_LineNo
  		;-- fall through for the rest of the statement
 
 P_Stmnt 	;-- return if end of line NULL
- 		JSR 	RdCh
- 		BNE 	P_KeyWord
- 		;-- end of input line, check for T_LnNo
- 		LDA 	TOKBUF
+ 		jsr 	RdCh
+ 		bne 	P_KeyWord
+ 		;-- end of input line
+ 		lda 	#0 		; end-of-line marker
+ 		jsr 	ChrWr
+ 		;-- check for T_LnNo
+ 		lda 	TOKBUF
  		BR_ANE(T_LineNo,P_StmntX)
  		;-- line no, so get line length
- 		SEC
- 		LDA 	ZWr
- 		SBC 	#LOW(TOKBUF+2)
+ 		sec
+ 		lda 	ZWr
+ 		sbc 	#LOW(TOKBUF+2)
  		;-- fill it in
- 		STA 	TOKBUF+3
- 		;--
-
-
-P_StmntX 	RTS
+ 		sta 	TOKBUF+3
+ 		;-- 
+P_StmntX 	lda 	#0
+ 		jsr 	ChrWr 		; extras null (end-of-program)
+ 		rts
 
  		;-- check for keyword
-P_KeyWord 	JSR 	P_IsToken 	; check if a keyword
+P_KeyWord 	jsr 	P_IsToken 	; check if a keyword
  		BR_F(PNotKey) 		; no -> PNotKey
  		;-- have a token in A, place it and continue
- 		JSR 	ChrWr
- 		BRA 	P_Stmnt 	; loop for more
+ 		jsr 	ChrWr
+ 		bra 	P_Stmnt 	; loop for more
 
 PNotKey 	;-- not a keyword, see if we have a number
- 		JSR 	IsDigit 	; check if CHRGOT is a digit
+ 		jsr 	IsDigit 	; check if CHRGOT is a digit
  		BR_F(PNotDigit)
  		;-- digit, so collect as number
- 		JSR 	P_Number 	; parse number and tokenise it
- 		BRA 	P_Stmnt 	; loop for more
+ 		jsr 	P_Number 	; parse number and tokenise it
+ 		bra 	P_Stmnt 	; loop for more
 
 PNotDigit 	; not number, is it a quoted string?
- 		LDA 	CHRGOT
+ 		lda 	CHRGOT
  		BR_ANE('"',PNotStr) 	; A<>" -> PNotStr
  		;-- do parse for [Str] xxxxxx 00
- 		JSR 	P_String
- 		BRA 	P_Stmnt 	; more
+ 		jsr 	P_String
+ 		bra 	P_Stmnt 	; more
 
 PNotStr 	; not string, if alpha then varname
  		;-- PR_WR_IO()
  		;-- PRINTLN("SYNTAX ERROR")
 
 PNotVar 	; not varname, so copy as-is
- 		LDA 	CHRGOT
- 		JSR 	ChrWr
- 		BRA 	P_Stmnt
+ 		lda 	CHRGOT
+ 		jsr 	ChrWr
+ 		bra 	P_Stmnt
 
-
-
-;----------------------------------------------- List Scrn
-List: ; List from start of program
+;----------------------------------------------- BasTop 
+BasTop: ; Setup to read from start of basic
+; for now, just TOKBUF
  		;-- set ZRd to point to first line of Program
  		ZSET(ZRd,TOKBUF-1)
- 		;-- list to output device IO
- 		PR_WR_IO()
  		;-- set to read from memory
  		PR_RD_MEM() 		; read from memory (code space)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
+ 		rts
+
+;----------------------------------------------- Run 
+Run: ; Run from start
+ 		jsr 	BasTop
+RunL 		jsr 	RdCh 		; (++ZRd)->A
+ 		beq 	RunX 		; null = End-of-program
+ 		jsr 	RunLnX
+ 		bra 	RunL
+RunX 		rts 			; done, return
+
+
+RunLn: ; Run line pointed to by ZRd
+ 		jsr 	RdCh 		; (++ZRd)->A
+ 		bne 	RunLnX 		; null = End-of-line
+ 		rts 			; done, return
+RunLnX 		jsr 	RunTok
+ 		bra 	RunLn
+RunTok: ; run token
+ 		lda 	CHRGOT
+ 		CASE(T_LineNo,X_LineNo)
+ 		;-- otherwise token?
+ 		tax
+ 		BR_AGE($80,RunJmp)
+ 		;-- not token, treat as ASCII
+ 		jsr 	PrCh
+ 		rts
+RunJmp: ; run via jump table
+ 		jmp 	(TblRun,X)
+
+
+
+;----------------------------------------------- List Scrn 
+List: ; List from start of program
+ 		jsr 	BasTop
  		;-- fall through to list line(s)
 
-;----------------------------------------------- ListLn
+;----------------------------------------------- ListLn 
 ListLn: ; List line pointed to by ZRd
- 		JSR 	RdCh 		; (++ZRd)->A
- 		BEQ 	ListLnX 	; null = done
+ 		jsr 	RdCh 		; (++ZRd)->A
+ 		beq 	ListLnX 	; null = done
  		;-- expand as needed
- 		JSR 	ListTok
- 		BRA 	ListLn
+ 		jsr 	ListTok
+ 		bra 	ListLn
 
-ListLnX 	RTS
+ListLnX 	rts
 
 ListTok 	; detokenise
- 		LDA 	CHRGOT
+ 		lda 	CHRGOT
  		CASE(T_Number,L_Number)
  		CASE(T_String,L_String)
  		CASE(T_LineNo,L_LineNo)
  		;-- otherwise token?
- 		TAX
+ 		tax
  		BR_AGE($80,TokExpand)
  		;-- not token, treat as ASCII
- 		JSR 	PrCh
- 		RTS
+ 		jsr 	PrCh
+ 		rts
 
-;----------------------------------------------- NextLine
+;----------------------------------------------- NextLine 
 NextLine: ; point ZRd to the next line NXTLN
  		;-- point ZRd to the start of the lilne
- 		LDA 	NXTLN
- 		STA 	ZRd
- 		LDA 	NXTLN+1
- 		STA 	ZRd+1
- 		RTS
+ 		lda 	NXTLN
+ 		sta 	ZRd
+ 		lda 	NXTLN+1
+ 		sta 	ZRd+1
+ 		rts
 
-;----------------------------------------------- TokEnd
+;----------------------------------------------- TokEnd 
 TokEnd: ; place end of line
  		;-- check if there was line no,
  		;-- if so, go fill in the length
- 		LDA 	TOKBUF
- 		CMP 	#T_LineNo
- 		BNE 	TokEndX
+ 		lda 	TOKBUF
+ 		cmp 	#T_LineNo
+ 		bne 	TokEndX
  		;-- calc length (-1) & save it
- 		LDA 	ZWr
- 		CLC
- 		SBC 	#LOW(TOKBUF+2)
- 		STA 	TOKBUF+3
- 		;--
-TokEndX 	LDA 	#0
- 		JSR 	ChrWr
- 		JSR 	ChrWr
- 		RTS
+ 		lda 	ZWr
+ 		clc
+ 		sbc 	#LOW(TOKBUF+2)
+ 		sta 	TOKBUF+3
+ 		;-- 
+TokEndX 	lda 	#0
+ 		jsr 	ChrWr
+ 		jsr 	ChrWr
+ 		rts
 
-;----------------------------------------------- SkipBlank
+;----------------------------------------------- SkipBlank 
 ; returns with ending chr in A, (C=1 if A==null)
 SkipBlankL 	; read next
- 		JSR 	RdCh 		; get from io or mem
+ 		jsr 	RdCh 		; get from io or mem
 SkipBlank: ; Skip over leading blank/tabs,  ERR if null
  		;-- null -> exit flase
- 		LDA 	CHRGOT
- 		BEQ 	SkipBlankF
+ 		lda 	CHRGOT
+ 		beq 	SkipBlankF
  		;-- blank
  		BR_AEQ(' ',SkipBlankL) 	; Space -> Loop
  		BR_AEQ(HT,SkipBlankL) 	; TAB   -> loop
@@ -186,250 +228,249 @@ SkipBlank: ; Skip over leading blank/tabs,  ERR if null
 SkipBlankT 	RTN_T()
 SkipBlankF 	RTN_F()
 
-;----------------------------------------------- IsRelOp
+;----------------------------------------------- IsRelOp 
 IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=!
- 		LDX 	#(RelOp-ChkList)
- 		JMP 	OneOf
+ 		ldx 	#(RelOp-ChkList)
+ 		jmp 	OneOf
 
-;----------------------------------------------- IsDigit
+;----------------------------------------------- IsDigit 
 IsDigit: ; returns T/F if CHRGOT is a digit 0..9
- 		LDX 	#(Digit-ChkList)
- 		JMP 	OneOf
+ 		ldx 	#(Digit-ChkList)
+ 		jmp 	OneOf
 
-;----------------------------------------------- OneOf
+;----------------------------------------------- OneOf 
 OneOf: ; see if CHRGOT is one of char in ChkList starting at X
- 		LDA 	ChkList,X
- 		BEQ 	OneOfNo
- 		CMP 	CHRGOT
- 		BEQ 	OneOfYes
- 		INX
- 		BNE 	OneOf
-OneOfNo 	LDA 	CHRGOT
+ 		lda 	ChkList,X
+ 		beq 	OneOfNo
+ 		cmp 	CHRGOT
+ 		beq 	OneOfYes
+ 		inx
+ 		bne 	OneOf
+OneOfNo 	lda 	CHRGOT
  		RTN_F() 		; NOPE, set carry & exit
-OneOfYes 	LDA 	CHRGOT
+OneOfYes 	lda 	CHRGOT
  		RTN_T() 		; YES, clear carry & exit
 
-;----------------------------------------------- TokExpand
+;----------------------------------------------- TokExpand 
 TokExpand: ; Expand the token to key word (X is index)
- 		LDY 	#0
- 		TXA
- 		AND 	#$7F
- 		STA 	TOKNO
- 		CLC
- 		ROR 	a 		; A = TokNo / 2
- 		TAX 			; index in table
- 		CPX 	#0
- 		BEQ 	TokExpL0 	; token 80 is special ;P
- 		DEY
+ 		ldy 	#0
+ 		txa
+ 		and 	#$7F
+ 		sta 	TOKNO
+ 		clc
+ 		ror 	a 		; A = TokNo / 2
+ 		tax 			; index in table
+ 		cpx 	#0
+ 		beq 	TokExpL0 	; token 80 is special ;P
+ 		dey
 
- 		;--
-TokExpNxt 	CPX 	#0 		; no more
- 		BEQ 	TokExpX
+ 		;-- 
+TokExpNxt 	cpx 	#0 		; no more
+ 		beq 	TokExpX
  		;-- move to next word
-TokExpNxtL 	INY
- 		LDA 	TblKeyword,y
- 		BEQ 	TokExpXX 	; end of list, not found
- 		BPL 	TokExpNxtL
+TokExpNxtL 	iny
+ 		lda 	TblKeyword,y
+ 		beq 	TokExpXX 	; end of list, not found
+ 		bpl 	TokExpNxtL
  		;-- got the marker
- 		DEX
- 		BNE 	TokExpNxtL
+ 		dex
+ 		bne 	TokExpNxtL
 TokExpL 	; found the start of the word
- 		INY
-TokExpL0 	LDA 	TblKeyword,y
- 		BEQ 	TokExpX 	; end of list -> done
- 		BMI 	TokExpLX 	; last char
- 		JSR 	PrCh 		; echo
- 		BRA 	TokExpL 	; loop next char
+ 		iny
+TokExpL0 	lda 	TblKeyword,y
+ 		beq 	TokExpX 	; end of list -> done
+ 		bmi 	TokExpLX 	; last char
+ 		jsr 	PrCh 		; echo
+ 		bra 	TokExpL 	; loop next char
 
-TokExpLX 	AND 	#$7F 		; mask off bit7
- 		JSR 	PrCh 		; output it
+TokExpLX 	and 	#$7F 		; mask off bit7
+ 		jsr 	PrCh 		; output it
  		;-- auto space
  		;-- BR_ALT('A',TokExpX) 	; last char was not A-Z -> done
  		;-- LDA 	#' '
  		;-- JSR 	PrCh 		; space and return
- 		RTS
+ 		rts
 
 TokExpXX 	; not found
- 		LDA 	TOKNO
- 		JSR 	PrAHex
- 		;--
-TokExpX 	RTS
+ 		lda 	TOKNO
+ 		jsr 	PrAHex
+ 		;-- 
+TokExpX 	rts
 
-;----------------------------------------------- P_IsToken
+;----------------------------------------------- P_IsToken 
 P_IsToken: ; Parse for a token TOKNO, returns found T/F
  		;-- JSR 	SkipBlank
  		;-- fall through to TokFind
-;----------------------------------------------- TokFind
+;----------------------------------------------- TokFind 
 ; TblKeyword	has list of keywords, ending char has $80
 ; ZRd		points to input, 1st char to try and match Y=0..
 ; TOKNO		Counts up token number while we search
 TokFind: ;try to find a matching token
  		;-- sart with first token no
- 		LDA 	#0
- 		STA 	TOKNO
+ 		lda 	#0
+ 		sta 	TOKNO
  		;-- start index in keyword list
- 		LDX 	#$FF
+ 		ldx 	#$FF
 TokWord 	;- test next word
- 		LDY 	#0
- 		INX
+ 		ldy 	#0
+ 		inx
 TokWordL 	;-- test a character of the word
- 		LDA 	TblKeyword,X
- 		BEQ 	TokFail 	; end of Token list
- 		BMI 	TokLast 	; bit7=1 marks end
- 		;--
- 		CMP 	(ZRd),Y 	; source char
- 		BNE 	TokNxt
+ 		lda 	TblKeyword,X
+ 		beq 	TokFail 	; end of Token list
+ 		bmi 	TokLast 	; bit7=1 marks end
+ 		;-- 
+ 		cmp 	(ZRd),Y 	; source char
+ 		bne 	TokNxt
  		;-- next char
- 		INY
- 		INX
- 		BRA 	TokWordL
+ 		iny
+ 		inx
+ 		bra 	TokWordL
 TokLast 	; last character fo keyword
- 		AND 	#$7F
- 		CMP 	(ZRd),Y
- 		BEQ 	TokFound 	; match so we got it!
+ 		and 	#$7F
+ 		cmp 	(ZRd),Y
+ 		beq 	TokFound 	; match so we got it!
  		;-- no match, so next word
 TokNxt 		; no match
- 		INC 	TOKNO
-TokNxtL 	LDA 	TblKeyword,X
- 		BEQ 	TokFail
- 		BMI 	TokWord
- 		INX
- 		BRA 	TokNxtL
+ 		inc 	TOKNO
+TokNxtL 	lda 	TblKeyword,X
+ 		beq 	TokFail
+ 		bmi 	TokWord
+ 		inx
+ 		bra 	TokNxtL
 TokFail 	;-- not found, return with CY=1
  		RTN_F()
 TokFound 	;-- found !
- 		CLC 			; move ZRd to after the keyword
- 		TYA
- 		ADC 	ZRd
- 		STA 	ZRd
- 		BCC 	TokRtn
- 		INC 	ZRd+1
+ 		clc 			; move ZRd to after the keyword
+ 		tya
+ 		adc 	ZRd
+ 		sta 	ZRd
+ 		bcc 	TokRtn
+ 		inc 	ZRd+1
  		;-- get token number from the counter
-TokRtn 		LDA 	TOKNO
- 		ASL 	A 		; token nos incr in 2s
- 		ORA 	#$80 		; and have high bit set
+TokRtn 		lda 	TOKNO
+ 		asl 	A 		; token nos incr in 2s
+ 		ora 	#$80 		; and have high bit set
  		;-- return Found=True, A=token
  		RTN_T()
 
-;=================================================================== NUMBER ===========
+;=================================================================== NUMBER =========== 
 
-;----------------------------------------------- P_Number
+;----------------------------------------------- P_Number 
 P_Number: ; parse a number into token & value
 ; for now were only doing 16bit int numbers
  		;-- Write Number token
- 		LDA 	#T_Number
- 		JSR 	ChrWr
+ 		lda 	#T_Number
+ 		jsr 	ChrWr
  		;-- Parse number value
- 		JSR 	RdNum
+ 		jsr 	RdNum
  		;-- write number value
- 		LDA 	NUMBER
- 		JSR 	ChrWr
- 		LDA 	NUMBER+1
- 		JSR 	ChrWr
- 		;--
- 		RTS
-;----------------------------------------------- L_Number
+ 		lda 	NUMBER
+ 		jsr 	ChrWr
+ 		lda 	NUMBER+1
+ 		jsr 	ChrWr
+ 		;-- 
+ 		rts
+;----------------------------------------------- L_Number 
 L_Number: ; list number
  		;-- get number from code -> NUMBER
- 		JSR 	FetchNum
+ 		jsr 	FetchNum
  		;-- convert & output number
- 		JSR 	PrNum
- 		LDA 	#' '
- 		JSR 	PrCh
- 		;--
- 		RTS
-;----------------------------------------------- FetchNum
+ 		jsr 	PrNum
+ 		lda 	#' '
+ 		jsr 	PrCh
+ 		;-- 
+ 		rts
+;----------------------------------------------- FetchNum 
 FetchNum: ; fetch number from the code -> NUMBER
- 		JSR 	ChrRd
- 		STA 	NUMBER
- 		JSR 	ChrRd
- 		STA 	NUMBER+1
- 		LDA 	#0
- 		STA 	NUMBER+2
- 		RTS
+ 		jsr 	ChrRd
+ 		sta 	NUMBER
+ 		jsr 	ChrRd
+ 		sta 	NUMBER+1
+ 		lda 	#0
+ 		sta 	NUMBER+2
+ 		rts
 
-;=================================================================== STRING ===========
+;=================================================================== STRING =========== 
 
-;----------------------------------------------- P_String
+;----------------------------------------------- P_String 
 P_String: ; parse quoted string into token
  		;-- Write Number token
- 		LDA 	#T_String
- 		JSR 	ChrWr
+ 		lda 	#T_String
+ 		jsr 	ChrWr
  		;-- Copy until the closing quote
-P_StrL 		JSR 	ChrRd
- 		BEQ 	P_StrX 		; null -> done
+P_StrL 		jsr 	ChrRd
+ 		beq 	P_StrX 		; null -> done
  		BR_AEQ('"',P_StrX) 	; quote -> done
- 		JSR 	ChrWr 		; copy to TOKBUF
- 		BRA 	P_StrL 		; loop back for more
-P_StrX 		LDA 	#0
- 		JSR 	ChrWr 		; place temrinating null and return
- 		RTS
+ 		jsr 	ChrWr 		; copy to TOKBUF
+ 		bra 	P_StrL 		; loop back for more
+P_StrX 		lda 	#0
+ 		jsr 	ChrWr 		; place temrinating null and return
+ 		rts
 
-;----------------------------------------------- L_String
+;----------------------------------------------- L_String 
 L_String: ; list out string text
- 		LDA 	#'"'
- 		JSR 	PrCh
- 		JSR 	ChrCopy
- 		LDA 	#'"'
- 		JSR 	PrCh
- 		RTS
+ 		lda 	#'"'
+ 		jsr 	PrCh
+ 		jsr 	ChrCopy
+ 		lda 	#'"'
+ 		jsr 	PrCh
+ 		rts
 
+;=================================================================== LINE_NO ========== 
 
-;=================================================================== LINE_NO ==========
-
-;----------------------------------------------- P_LineNo
+;----------------------------------------------- P_LineNo 
 P_LineNo: ; Parse line numebr and place int TOKBUF
  		;-- Write LineNo token
- 		LDA 	#T_LineNo
- 		JSR 	ChrWr
+ 		lda 	#T_LineNo
+ 		jsr 	ChrWr
  		;-- Parse number value
- 		JSR 	RdNum
+ 		jsr 	RdNum
  		;-- write line number
- 		LDA 	NUMBER
- 		JSR 	ChrWr
- 		LDA 	NUMBER+1
- 		JSR 	ChrWr
+ 		lda 	NUMBER
+ 		jsr 	ChrWr
+ 		lda 	NUMBER+1
+ 		jsr 	ChrWr
  		;-- place holder for the length
- 		LDA 	#$AA
- 		JSR 	ChrWr
- 		RTS
+ 		lda 	#$AA
+ 		jsr 	ChrWr
+ 		rts
 
-;----------------------------------------------- X_LineNo
+;----------------------------------------------- X_LineNo 
 X_LineNo: ; Get LNNUM & Set up NXTLN
  		;-- save line no
- 		JSR 	ChrRd
- 		STA 	LNNUM
- 		JSR 	ChrRd
- 		STA 	LNNUM+1
+ 		jsr 	ChrRd
+ 		sta 	LNNUM
+ 		jsr 	ChrRd
+ 		sta 	LNNUM+1
  		;-- get length
- 		JSR 	ChrRd
+ 		jsr 	ChrRd
  		;-- Now ZRd points to the first char of the line [4]
- 		CLC
- 		ADC 	ZRd
- 		STA 	NXTLN
- 		LDA 	#0
- 		ADC 	ZRd+1
- 		STA 	NXTLN+1
- 		;--
- 		RTS
+ 		clc
+ 		adc 	ZRd
+ 		sta 	NXTLN
+ 		lda 	#0
+ 		adc 	ZRd+1
+ 		sta 	NXTLN+1
+ 		;-- 
+ 		rts
 
-;----------------------------------------------- L_LineNo
+;----------------------------------------------- L_LineNo 
 L_LineNo: ; list LineNo
 ; ChrRd will get first byte afer the token
- 		JSR 	X_LineNo 	; Get LNNUM & Set up NXTLN
+ 		jsr 	X_LineNo 	; Get LNNUM & Set up NXTLN
  		;-- output line no
- 		LDA 	LNNUM
- 		STA 	NUMBER
- 		LDA 	LNNUM+1
- 		STA 	NUMBER+1
- 		LDA 	#0
- 		STA 	NUMBER+2 	; U=0
- 		;--
- 		JSR 	PrNum
- 		LDA 	#' '
- 		JSR 	PrCh
+ 		lda 	LNNUM
+ 		sta 	NUMBER
+ 		lda 	LNNUM+1
+ 		sta 	NUMBER+1
+ 		lda 	#0
+ 		sta 	NUMBER+2 	; U=0
+ 		;-- 
+ 		jsr 	PrNum
+ 		lda 	#' '
+ 		jsr 	PrCh
  		;-- jump to continue listing
- 		RTS
+ 		rts
 
 
 .export TokFind,TOKNO,TokFound,Parse

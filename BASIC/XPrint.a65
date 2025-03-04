@@ -1,0 +1,35 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if BLD == BLD_CODE
+;=================================================================== PRINT =========== 
+;*  X_Print             code to execute the Print
+;*
+_Print 		= $
+
+;----------------------------------------------- X_Print 
+X_Print: ; code to execute the Print
+
+
+
+.echo $-_Print
+.echo " Bytes in _Print\n"
+.nolist
+#endif
+
+
+;----------------------------------------------- keyword 
+#if BLD = BLD_KEYWORD
+.list
+W_Print 	.DB 	"PRIN",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run 
+#if BLD = BLD_TBL_RUN
+.list
+T_Print 	.DW 	X_Print
+.nolist
+.export T_Print
+#endif
+

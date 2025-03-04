@@ -122,9 +122,9 @@ _ChrStr 	= $
 ;----------------------------------------------- ChrNext 
 ; increment the ZRd pointer (inside the lda) and then fetch the character
 RChrRd 		ZINC(ZRd) 		; 0001 0203 0405
- 		LDA 	$1234 		; 060708
- 		STA 	CHRGOT 		; 090A
- 		RTS 			; 0B
+ 		lda 	$1234 		; 060708
+ 		sta 	CHRGOT 		; 090A
+ 		rts 			; 0B
 
 .db $FF 				; 0C = CHRGOT
 .db $FF 				; OD
@@ -144,75 +144,75 @@ RChrRd 		ZINC(ZRd) 		; 0001 0203 0405
 
 ;----------------------------------------------- CharInit 
 ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
- 		LDX 	#0
-ChrInitL 	LDA 	RChrRd,X
- 		STA 	$00,X
- 		INX
- 		CPX 	#$20 		; 16 code, 8 x vectors
- 		BNE 	ChrInitL
+ 		ldx 	#0
+ChrInitL 	lda 	RChrRd,X
+ 		sta 	$00,X
+ 		inx
+ 		cpx 	#$20 		; 16 code, 8 x vectors
+ 		bne 	ChrInitL
  		;-- reset control flags
  		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
  		;-- point writing to STRBUF
  		ZSET(ZWr,STRBUF)
- 		RTS
+ 		rts
 
 
 ;----------------------------------------------- PrTerm 
 PrTerm: ; write terminating null
- 		LDA 	#0
+ 		lda 	#0
 ;----------------------------------------------- PrCh 
 PrCh: ; Print character - Write/Send as per flag
  		;-- don't send null
- 		CMP 	#0
- 		BEQ 	ChrWrX
+ 		cmp 	#0
+ 		beq 	ChrWrX
  		;-- outp[ut or memory
  		BR_WR(ChrWr) 		;wr=1?
  		;-- 0=fall through to send via ChrOut
 ;----------------------------------------------- ChrOut 
 ChrOut: ; Send character to output device (SCR,COM..)
- 		JMP 	(VCHROUT)
+ 		jmp 	(VCHROUT)
 ;----------------------------------------------- ChrWr 
 ChrWr: ; Write character to (ZWr)
- 		STA 	(ZWr)
+ 		sta 	(ZWr)
  		;-- bump to next address
  		ZINC(ZWr)
  		;-- ensure terminating null
- 		LDA 	#0
- 		STA 	(ZWr)
-ChrWrX 		RTS
+ 		lda 	#0
+ 		sta 	(ZWr)
+ChrWrX 		rts
 
 ;----------------------------------------------- RdCh 
 RdCh: ; read character from memory or input device -> A, CHRGOT
  		BR_NECHO(RdCh1) 	; if echo is off, just go get the char
- 		JSR 	RdCh1 		; fetch char
- 		BEQ 	RdChX 		; Null? ->exit (no echo)
- 		PHA 			; save it
- 		JSR 	ChrOut 		; echo to IO out
- 		PLA 			; restore
-RdChX 		RTS 			; return
+ 		jsr 	RdCh1 		; fetch char
+ 		beq 	RdChX 		; Null? ->exit (no echo)
+ 		pha 			; save it
+ 		jsr 	ChrOut 		; echo to IO out
+ 		pla 			; restore
+RdChX 		rts 			; return
 ; 1:ChrRd(mem) 0:ChrIn(IO)
 RdCh1 		BR_NRD(ChrIn) 		;Rd=1? ChrRd
- 		JMP 	ChrRd 		;ChrRd is code in Z Page, saves in CHRGOT
+ 		jmp 	ChrRd 		;ChrRd is code in Z Page, saves in CHRGOT
 
 ;----------------------------------------------- ChrIn 
 ChrIn: ; Read character from input device (KBD,COM..) -> CHRGOT
- 		JSR 	ChrInV
- 		STA 	CHRGOT
- 		RTS
-ChrInV 		JMP 	(VCHRIN)
+ 		jsr 	ChrInV
+ 		sta 	CHRGOT
+ 		rts
+ChrInV 		jmp 	(VCHRIN)
 ;----------------------------------------------- ChrRd 
 ;ChrRd is code in Z Page
 
 ;----------------------------------------------- ChrCopy 
 ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
- 		JSR 	RdCh 		; get from Mem / IO
- 		BEQ 	ChrCopyX 	; Null -> exit
+ 		jsr 	RdCh 		; get from Mem / IO
+ 		beq 	ChrCopyX 	; Null -> exit
  		BR_ND7(ChrCopy2) 	; MARK=Off, skip bit test
- 		BMI 	ChrCopyX 	; bit 7 set -> exit
- 		AND 	#$7F 		; force ascii
-ChrCopy2 	JSR 	PrCh 		; put Mem / IO
- 		BRA 	ChrCopy 	; loop
-ChrCopyX 	RTS
+ 		bmi 	ChrCopyX 	; bit 7 set -> exit
+ 		and 	#$7F 		; force ascii
+ChrCopy2 	jsr 	PrCh 		; put Mem / IO
+ 		bra 	ChrCopy 	; loop
+ChrCopyX 	rts
 
 ;----------------------------------------------- InputIOEcho 
 InputIOEcho: ; Input from IO, also echo chars to IO
@@ -223,39 +223,39 @@ InputIO: ; input from IO
  		PR_RD_IO() 		; Read from IO
 ;----------------------------------------------- Input 
 Input: ; Read from Mem/IO and place in INBUF, until CR
- 		LDX 	#0
- 		TXA
- 		STA 	INBUF,x
-InputL:  	JSR 	RdCh 		; get char from mem/io
+ 		ldx 	#0
+ 		txa
+ 		sta 	INBUF,x
+InputL:  	jsr 	RdCh 		; get char from mem/io
 ; 		LDA 	CHRGOT
- 		BEQ 	InputL
+ 		beq 	InputL
  		;-- ignore LF
- 		CMP 	#LF
- 		BEQ 	InputL
+ 		cmp 	#LF
+ 		beq 	InputL
  		;-- exit on CR
- 		CMP 	#CR
- 		BEQ 	InputX
+ 		cmp 	#CR
+ 		beq 	InputX
  		;-- back-space
- 		CMP 	#BS
- 		BNE 	Input1
+ 		cmp 	#BS
+ 		bne 	Input1
  		;-- back & null
- 		TAY 			; save BS char
- 		LDA 	#0 		; null
- 		STA 	INBUF,x 	; place in buf
- 		DEX 			; back-up a position
+ 		tay 			; save BS char
+ 		lda 	#0 		; null
+ 		sta 	INBUF,x 	; place in buf
+ 		dex 			; back-up a position
 
- 		STA 	INBUF,x 	; place in buf
- 		TYA
-Input1 		STA 	INBUF,x 	; place in buf
+ 		sta 	INBUF,x 	; place in buf
+ 		tya
+Input1 		sta 	INBUF,x 	; place in buf
  		;-- check buffer full
- 		CPX 	#BUFSZ
- 		BPL 	InputX 		; full -> exit
+ 		cpx 	#BUFSZ
+ 		bpl 	InputX 		; full -> exit
  		;-- move on
- 		INX
- 		BRA 	InputL
-InputX 		LDA 	#0 		; terminate with a null
- 		STA 	INBUF,X
- 		RTS
+ 		inx
+ 		bra 	InputL
+InputX 		lda 	#0 		; terminate with a null
+ 		sta 	INBUF,X
+ 		rts
 
 
 ;----------------------------------------------- PrStrBuf 
@@ -267,48 +267,48 @@ PrStrAX: ; Print string at AX [A]
 ;----------------------------------------------- PrStr 
 PrStr: ; Print string pointed to by ZPtr [A]
 ; last index saved into ZTmp
- 		PHY
- 		LDY 	#0
-PrStr1 		LDA 	(ZPtr),y
- 		BEQ 	PrStrX 		; zero -> exit
+ 		phy
+ 		ldy 	#0
+PrStr1 		lda 	(ZPtr),y
+ 		beq 	PrStrX 		; zero -> exit
  		;-- end of bit 7=1 ?
  		BR_ND7(PrStr2) 		; MARK=Off, skip bit test
- 		BMI 	PrStrX 		; bit 7 set -> exit
- 		AND 	#$7F 		; force ascii
+ 		bmi 	PrStrX 		; bit 7 set -> exit
+ 		and 	#$7F 		; force ascii
  		;-- 
-PrStr2 		JSR 	PrCh 		; print character
- 		INY 			; move to next char
- 		BNE 	PrStr1 		; loop back (no more than 255 chars)
-PrStrX 		STY 	ZTmp
- 		PLY 			; restore Y
- 		RTS 			; exit
+PrStr2 		jsr 	PrCh 		; print character
+ 		iny 			; move to next char
+ 		bne 	PrStr1 		; loop back (no more than 255 chars)
+PrStrX 		sty 	ZTmp
+ 		ply 			; restore Y
+ 		rts 			; exit
 
 ;----------------------------------------------- _Print_ 
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
  		;-- pop the return address from the jsr call
- 		PLA
- 		PLX
+ 		pla
+ 		plx
  		;-- set up to print from there (ZPtr)
  		SETAX(ZPtr)
 ; skip over fisrt byte (end of jsr)
  		ZINC(ZPtr)
- 		JSR 	PrStr 		; output up to null/term
+ 		jsr 	PrStr 		; output up to null/term
  		;-- Calculate the return address
- 		SEC 			; adjust one more
- 		LDA 	ZPtr 		; lo
- 		ADC 	ZTmp 		; + Len
- 		STA 	ZPtr 		; -> lo
- 		BCC 	_Print_X 	; carry?
- 		INC 	ZPtr+1 		; yes, incr hi
-_Print_X 	JMP 	(ZPtr) 		; jump to code after the in-line string
+ 		sec 			; adjust one more
+ 		lda 	ZPtr 		; lo
+ 		adc 	ZTmp 		; + Len
+ 		sta 	ZPtr 		; -> lo
+ 		bcc 	_Print_X 	; carry?
+ 		inc 	ZPtr+1 		; yes, incr hi
+_Print_X 	jmp 	(ZPtr) 		; jump to code after the in-line string
 
 ;----------------------------------------------- PrNL 
 PrNL: ; print CR,LF to CharOut
- 		LDA 	#CR
- 		JSR 	PrCh
- 		LDA 	#LF
- 		JMP 	PrCh
+ 		lda 	#CR
+ 		jsr 	PrCh
+ 		lda 	#LF
+ 		jmp 	PrCh
 
 
 .echo $-_ChrStr

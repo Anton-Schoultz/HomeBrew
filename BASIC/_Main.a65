@@ -14,7 +14,7 @@ _ROM 		=$
 .LIST
 ;======================================================================================
 ; 		START OF ROM
- 		JMP 	Reset
+ 		jmp 	Reset
 
 
 #include "ConSim.a65" 			; Console Implementation
@@ -22,59 +22,60 @@ _ROM 		=$
 #include "Math.a65" 			; Number code
 
 
-;=================================================================== MAIN CODE ========
+;=================================================================== MAIN CODE ======== 
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
 ;*
-;----------------------------------------------- Reset
+;----------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		;-- Halt IRQs
- 		SEI
+ 		sei
  		;-- Set Stack pointer to top of the stack space $0100-01FF
- 		LDX 	#$ff
- 		TXS
+ 		ldx 	#$ff
+ 		txs
  		;-- Binary mode
- 		CLD
-;----------------------------------------------- Warm
+ 		cld
+;----------------------------------------------- Warm 
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
- 		JSR 	ChrInit
+ 		jsr 	ChrInit
 
  		;-- input a line of text until RETURN
- 		JSR 	InputIOEcho
- 		JSR 	PrNL
+ 		jsr 	InputIOEcho
+ 		jsr 	PrNL
 
- 		JSR 	Parse 		; parse line into TOKBUF
+ 		jsr 	Parse 		; parse line into TOKBUF
 
  		PR_WR_IO()
 
  		PRINTLN("--") 		;
- 		JSR 	PrNL
+ 		jsr 	PrNL
 
- 		JSR 	List
- 		JSR 	PrNL
+ 		jsr 	List
 
-		; check the LineNo size
-		ZSET(ZRd,TOKBUF-1) 	; read memory from TOKBUF
+ 		jsr 	PrNL
+
+ 		;-- check the LineNo size
+ 		ZSET(ZRd,TOKBUF-1) 	; read memory from TOKBUF
  		PR_RD_MEM() 		; read from memory (ZRd)
-		;
-		PR_WR_IO()		; write to IO (screen)
-		;
-		JSR 	ChrRd		; TOK[LineNo]
-		jsr 	X_LineNo	; 'execute' set LNNUM and NXTLN address
-		;
-		GETAX(LNNUM)
-		jsr PrAXHex		; line no as hex
-		lda #' '
-		jsr PrCh		; space
-		GETAX(NXTLN)
-		jsr PrAXHex		; address as hex
- 		JSR 	PrNL
+ 		;-- 
+ 		PR_WR_IO() 		; write to IO (screen)
+ 		;-- 
+ 		jsr 	ChrRd 		; TOK[LineNo]
+ 		jsr 	X_LineNo 	; 'execute' set LNNUM and NXTLN address
+ 		;-- 
+ 		GETAX(LNNUM)
+ 		jsr 	PrAXHex 	; line no as hex
+ 		lda 	#' '
+ 		jsr 	PrCh 		; space
+ 		GETAX(NXTLN)
+ 		jsr 	PrAXHex 	; address as hex
+ 		jsr 	PrNL
 
 .export LNNUM,NXTLN
 
 
- 		BRK
+ 		brk
 
 #include "Tables.a65"
 #include "Tok.a65"
