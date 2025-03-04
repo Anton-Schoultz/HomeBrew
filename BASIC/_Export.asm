@@ -1,6 +1,7 @@
 VCHRIN           .EQU  $0010
 VCHROUT          .EQU  $0012
 LNNUM            .EQU  $0040
+NXTLN            .EQU  $0042
 TOKNO            .EQU  $0044
 CVTBUF           .EQU  $0050
 NUMTMP           .EQU  $0058

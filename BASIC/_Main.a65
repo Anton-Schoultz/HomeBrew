@@ -22,11 +22,11 @@ _ROM 		=$
 #include "Math.a65" 			; Number code
 
 
-;=================================================================== MAIN CODE ======== 
+;=================================================================== MAIN CODE ========
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
 ;*
-;----------------------------------------------- Reset 
+;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		;-- Halt IRQs
  		SEI
@@ -35,7 +35,7 @@ Reset: ;Reset (Cold start)
  		TXS
  		;-- Binary mode
  		CLD
-;----------------------------------------------- Warm 
+;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		JSR 	ChrInit
@@ -51,13 +51,27 @@ Warm: ;Warm Start entry point
  		PRINTLN("--") 		;
  		JSR 	PrNL
 
-
  		JSR 	List
+ 		JSR 	PrNL
 
-; 		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
-; 		PR_RD_MEM() 		; read from memory (ZRd)
-; 		PR_WR_IO() 		; write to IO
-; 		JSR 	ChrCopy 	; copy from in to out
+		; check the LineNo size
+		ZSET(ZRd,TOKBUF-1) 	; read memory from TOKBUF
+ 		PR_RD_MEM() 		; read from memory (ZRd)
+		;
+		PR_WR_IO()		; write to IO (screen)
+		;
+		JSR 	ChrRd		; TOK[LineNo]
+		jsr 	X_LineNo	; 'execute' set LNNUM and NXTLN address
+		;
+		GETAX(LNNUM)
+		jsr PrAXHex		; line no as hex
+		lda #' '
+		jsr PrCh		; space
+		GETAX(NXTLN)
+		jsr PrAXHex		; address as hex
+ 		JSR 	PrNL
+
+.export LNNUM,NXTLN
 
 
  		BRK
