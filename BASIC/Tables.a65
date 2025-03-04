@@ -1,0 +1,49 @@
+;=================================================================== TABLES ===========
+;*  ChkList             List of characters used by IsOneOf
+;*  Digit               List of digits 0..9
+;*  RelOp               Relational opperators
+;*  TblKeyword          Table of keywords text
+;*  TblList             Table of addresses to list keyword
+;*  TblParse            Table of addresses to parse keyword
+;*  TblRun              Table of addresses to execute keyword
+;*
+#ifdef hide
+.NOLIST
+#endif
+ 		;-- #define TBLSZ	$40
+BLD_CODE= 	0
+BLD_KEYWORD= 	1
+BLD_TBL_RUN= 	2
+
+_basic 		= $
+BLD 		= BLD_CODE
+#include "All.a65"
+.echo $-_basic
+.echo " Bytes in Basic code\n"
+
+PAGE() 		; XX00
+_TBL 		= $
+
+;----------------------------------------------- TblKeyword
+TblKeyword: ; Table of keywords text
+.nolist
+BLD 		= BLD_KEYWORD
+#include "All.a65"
+.dw 0
+;.echo $-TblKeyword
+;.echo " Bytes in TblKeyword\n"
+
+ALIGN($80) 	;XX80
+.list
+;----------------------------------------------- TblRun
+TblRun: ; Table of addresses to execute keyword
+.nolist
+BLD 		= BLD_TBL_RUN
+#include "All.a65"
+.dw 0
+.list
+;.echo $-TblRun
+;.echo " Bytes in TblRun\n"
+
+.echo $-_TBL
+.echo " Total Bytes in Tables\n"

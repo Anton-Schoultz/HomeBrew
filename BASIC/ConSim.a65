@@ -71,9 +71,8 @@ ConIn: ; Read character from input (keyboard), null if none
  		;--
 ; SIM_Y_POS - cursor Y position (row).
 
-.echo $-_ConSim
-.echo " Bytes in _ConSim\n"
+;.echo $-_ConSim
+;.echo " Bytes in _ConSim\n"
 
-.LIST
- 		;-- End of ConStr
+.LIST 		;-- End of ConSim
 

@@ -1,0 +1,35 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if BLD == BLD_CODE
+;=================================================================== RETURN =========== 
+;*  X_Return            code to execute the Return
+;*
+_Return 	= $
+
+;----------------------------------------------- X_Return 
+X_Return: ; code to execute the Return
+
+
+
+.echo $-_Return
+.echo " Bytes in _Return\n"
+.nolist
+#endif
+
+
+;----------------------------------------------- keyword 
+#if BLD = BLD_KEYWORD
+.list
+W_Return 	.DB 	"RETUR",'N'+$80
+.nolist
+#endif
+;----------------------------------------------- run 
+#if BLD = BLD_TBL_RUN
+.list
+T_Return 	.DW 	X_Return
+.nolist
+.export T_Return
+#endif
+

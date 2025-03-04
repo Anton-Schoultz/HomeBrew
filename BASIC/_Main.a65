@@ -2,7 +2,7 @@
 
 #define BUFSZ 64
 
- 		;-- #define hide
+; #define hide
 
 
 #include "Macros.a65"
@@ -16,15 +16,17 @@ _ROM 		=$
 ; 		START OF ROM
  		JMP 	Reset
 
+
 #include "ConSim.a65" 			; Console Implementation
 #include "ChrStr.a65" 			; Base IO (incl macros)
+#include "Math.a65" 			; Number code
 
 
-;=================================================================== MAIN CODE ========
+;=================================================================== MAIN CODE ======== 
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
 ;*
-;----------------------------------------------- Reset
+;----------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		;-- Halt IRQs
  		SEI
@@ -33,7 +35,7 @@ Reset: ;Reset (Cold start)
  		TXS
  		;-- Binary mode
  		CLD
-;----------------------------------------------- Warm
+;----------------------------------------------- Warm 
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		JSR 	ChrInit

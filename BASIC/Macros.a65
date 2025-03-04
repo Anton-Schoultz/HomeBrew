@@ -1,51 +1,73 @@
-;=================================================================== MACROS ===========
-;*m BR_EQ(v,tgt)        if .A==v then jump to tgt
-;*m BR_ERR(tgt)         branch to tgt if ERROR (Carry set to 1)
-;*m BR_NE(v,tgt)        if .A!=v then jump to tgt
-;*m BR_OK(tgt)          branch to tgt if OK (Carry clear to 0)
+;=================================================================== MACROS =========== 
+;*m BR_AEQ(n,tgt)       if(A==n) branch -> tgt
+;*m BR_AGE(n,tgt)       if(A>=n) branch -> tgt
+;*m BR_AGT(n,tgt)       if(A>n) branch -> tgt
+;*m BR_ALE(n,tgt)       if(A<=n) branch -> tgt
+;*m BR_ALT(n,tgt)       if(A<n) branch -> tgt
+;*m BR_ANE(n,tgt)       if(A!=n) branch -> tgt
+;*m BR_EQ(tgt)          beq tgt
+;*m BR_F(tgt)           branch to tgt if ERROR (Carry=1)
+;*m BR_GE(tgt)          bcs tgt
+;*m BR_GT(tgt)          beq $+4\ bcs tgt
+;*m BR_LE(tgt)          bmi tgt\ beq tgt
+;*m BR_LT(tgt)          bmi tgt
+;*m BR_NE(tgt)          bne tgt
+;*m BR_T(tgt)           branch to tgt if OK (Carry=0)
+;*m CASE(v,tgt)         if .A==v then jump to tgt
 ;*m GETAX(p)            Fetch 16 bit value from address into AX (p)->A, (p+1)->X
 ;*m HIGH(m)             High byte 1
 ;*m Int(name)           Reserve 2 bytes for variable name
 ;*m Long(name)          Reserve 4 bytes for variable name
 ;*m MZERO(a)            Zero memory at address
+;*m NCASE(v,tgt)        if .A!=v then jump to tgt
 ;*m PRINT(str)          echo str to output, with CR,LF
 ;*m PULLAXY()           Pulls Y,X,A
-;*m RTN_OK()            return ERROR (Carry set)
-;*m RTN_OK()            return OK (Carry clear)
+;*m RTN_F()             return ERROR (Carry=1)
+;*m RTN_T()             return OK (Carry=0)
 ;*m SETAX(p)            Stores 16 bit value (AX) into address A->(p), X->(p+1)
 ;*m Short(name)         Reserve 1 byte for variable name
 ;*m UPPER(m)            Upper byte 2
+;*m ZADD(r,n)           r = r+n
+;*m ZADD3(r,n)          r = r+n
 ;*m ZCPY(zTo,zFr)       Coppies z-pg pair from zFr to zTo
+;*m ZCPY3(zTo,zFr)      Coppies 3 bytes from zFr to zTo
+;*m ZCPY4(zTo,zFr)      Coppies 4 bytes from zFr to zTo
 ;*m ZDEC(z)             Decrement z-pg pair at z,z+1
 ;*m ZINC(z)             Increment z-pg pair at z,z+1
+;*m ZSL(z)              Shift Z,z+1 left (*2)
+;*m ZSL3(z)             Shift Z,z+1 left (*2)
+;*m ZSR(z)              Shift Z,z+1 right (/2)
+;*m ZSR(z)              Shift Z,z+1 right (/2)
+;*m ZSUB(r,n)           r = r-n
+;*m ZSUB3(r,n)          r = r-n
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
-;----------------------------------------------- Alignment
+;----------------------------------------------- Alignment 
 ; align to next n (power of 2)
 #DEFINE ALIGN(n) .org (($/n + 1) * n)
 ; align to start of new page
-#DEFINE PAGE()  ALIGN(256);.org (($+256) & $FF00)
+#DEFINE PAGE()  ALIGN(256) 		;.org (($+256) & $FF00)
 ; align to next 16
-#DEFINE PARAGRAPH() ALIGN(16);.org (($+16) & $FFF0)
+#DEFINE PARAGRAPH() ALIGN(16) 		;.org (($+16) & $FFF0)
 
 
-;----------------------------------------------- Instructions
+;----------------------------------------------- Instructions 
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
 ; ZZERO(z)	Zero a z-pg z
 #define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
-;----------------------------------------------- LOW,HIGH,UPPER
+;----------------------------------------------- LOW,HIGH,UPPER 
 ; LOW(m)	Low byte	0
 #DEFINE LOW(m)  (m & $FF)
 ; HIGH(m)	High byte	1
 #DEFINE HIGH(m)  m>>8
 ; UPPER(m)	Upper byte	2
 #DEFINE UPPER(m) m>>16
-;----------------------------------------------- VarDef
+;----------------------------------------------- VarDef 
 ; Var(name,sz)	Reserve sz bytes for variable name (uses .block)
 #define Var(name,sz) name .block sz
 ; Short(name)	Reserve 1 byte for variable name
@@ -54,12 +76,12 @@
 #define Int(name) name .block 2
 ; Long(name)	Reserve 4 bytes for variable name
 #define Long(name) name .block 4
-;----------------------------------------------- Stack
+;----------------------------------------------- Stack 
 ; PUSHAXY()	Pushes A,X,Y
 #DEFINE PUSHAXY() pha \ phx \ phy
 ; PULLAXY()	Pulls Y,X,A
 #DEFINE PULLAXY() ply \ plx \ pla
-;----------------------------------------------- ZPg
+;----------------------------------------------- ZPg 
 ; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
 #DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 ; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
@@ -98,7 +120,7 @@
 #define ZSUB3(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1\ lda r+2\ sbc n+2\ sta r+2
 
 
-;----------------------------------------------- 16 bit AX
+;----------------------------------------------- 16 bit AX 
 ; LDAX(m) 	Loads AX with 16 bit value, low->A, high->X
 #DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
 ; SETAX(p)	Stores 16 bit value (AX) into address A->(p), X->(p+1)
@@ -106,7 +128,7 @@
 ; GETAX(p)	Fetch 16 bit value from address into AX (p)->A, (p+1)->X
 #DEFINE GETAX(p) LDA p \ LDX p+1
 
-;----------------------------------------------- ASCII Control Codes
+;----------------------------------------------- ASCII Control Codes 
 #DEFINE NULL	0
 #DEFINE BS 	8
 #DEFINE HT 	9
@@ -117,26 +139,59 @@
 #DEFINE ESC	27
 
 
-;----------------------------------------------- PSEUDO-CODE
+; 	LDA #2	; N Z C
+; 	CMP #1	;     t
+; 	CMP #2	;   t t
+; 	CMP #3	; t
+
+; BR_EQ(tgt) beq tgt
+#define BR_EQ(tgt) beq tgt
+; BR_NE(tgt) bne tgt
+#define BR_NE(tgt) bne tgt
+; BR_LT(tgt) bmi tgt
+#define BR_LT(tgt) bmi tgt
+; BR_GE(tgt) bcs tgt
+#define BR_GE(tgt) bcs tgt
+; BR_LE(tgt) bmi tgt\ beq tgt
+#define BR_LE(tgt) bmi tgt\ beq tgt
+; BR_GT(tgt) beq $+4\ bcs tgt
+#define BR_GT(tgt) beq $+4\ bcs tgt
+
+; BR_AEQ(n,tgt) if(A==n) branch -> tgt
+#define BR_AEQ(n,tgt) cmp #n \ beq tgt
+; BR_ANE(n,tgt) if(A!=n) branch -> tgt
+#define BR_ANE(n,tgt) cmp #n \ bne tgt
+; BR_ALT(n,tgt) if(A<n) branch -> tgt
+#define BR_ALT(n,tgt) cmp #n \ bmi tgt
+; BR_AGE(n,tgt) if(A>=n) branch -> tgt
+#define BR_AGE(n,tgt) cmp #n \ bcs tgt
+; BR_ALE(n,tgt) if(A<=n) branch -> tgt
+#define BR_ALE(n,tgt) cmp #n \ bmi tgt\ beq tgt
+; BR_AGT(n,tgt) if(A>n) branch -> tgt
+#define BR_AGT(n,tgt) cmp #n \ beq $+4\ bcs tgt
+
+
+;----------------------------------------------- PSEUDO-CODE 
 ; PRINT(str) echo str to output
 #define PRINT(str) jsr _Print_ \ .db str,0
 ; PRINT(str) echo str to output, with CR,LF
 #define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
 
-; RTN_OK() return OK (Carry clear)
-#define RTN_OK() clc \ rts
-; RTN_OK() return ERROR (Carry set)
-#define RTN_ERR() sec \ rts
-; BR_OK(tgt) branch to tgt if OK (Carry clear to 0)
-#define BR_OK(tgt) bcc tgt
-; BR_ERR(tgt) branch to tgt if ERROR (Carry set to 1)
-#define BR_ERR(tgt) bcs tgt
+; RTN_T() return OK (Carry=0)
+#define RTN_T() clc \ rts
+; RTN_F() return ERROR (Carry=1)
+#define RTN_F() sec \ rts
+; BR_T(tgt) branch to tgt if OK (Carry=0)
+#define BR_T(tgt) bcc tgt
+; BR_F(tgt) branch to tgt if ERROR (Carry=1)
+#define BR_F(tgt) bcs tgt
 
-; BR_EQ(v,tgt) if .A==v then jump to tgt
-#define BR_EQ(v,tgt) cmp #v \ bne $+5 \ jmp tgt
-; BR_NE(v,tgt) if .A!=v then jump to tgt
-#define BR_NE(v,tgt) cmp #v \ beq $+5 \ jmp tgt
 
-.LIST
- 		;-- End of Macros
+; CASE(v,tgt) if .A==v then jump to tgt
+#define CASE(v,tgt) cmp #v \ bne $+5 \ jmp tgt
+
+; NCASE(v,tgt) if .A!=v then jump to tgt
+#define NCASE(v,tgt) cmp #v \ beq $+5 \ jmp tgt
+
+.LIST 					;-- End of Macros
 

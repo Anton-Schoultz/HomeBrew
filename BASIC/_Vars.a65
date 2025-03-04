@@ -1,24 +1,24 @@
-;=================================================================== VARIABLES ========
+;=================================================================== VARIABLES ======== 
 ;*
-;----------------------------------------------- ZPg Code	$000x
+;----------------------------------------------- ZPg Code	$000x 
 ; ZRd		ChrRd  address to read next char from
 ; ZWr		ChrWr  address to send char to
-;----------------------------------------------- Vectors	$001x
+;----------------------------------------------- Vectors	$001x 
 ; VCHRIN	ChrIn  Read character from input device
 ; VCHROUT 	ChrOut Send character to output device
 ;
-;----------------------------------------------- ZPage		$002x
+;----------------------------------------------- ZPage		$002x 
 ; ZBuf 		pointer to a buffer
 ; ZPtr 		general pointer
 ; ZPrFlg	Print/convert mode  - See ChrStr for details
 ; ZTmp		Temp byte
 
-;----------------------------------------------- STACK		$01xx
+;----------------------------------------------- STACK		$01xx 
 ; Calculator stack at the bottom, CPU stack at the top
-;----------------------------------------------- SysVars	$02xx
+;----------------------------------------------- SysVars	$02xx 
 ; STRBUF	String buffer
 ; TOKBUF	Token buffer
-;----------------------------------------------- IO Dev		$03xx
+;----------------------------------------------- IO Dev		$03xx 
 #ifdef hide
 .NOLIST
 #endif
@@ -35,37 +35,40 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 .export VCHROUT,VCHRIN,
 
 
-;=================================================================== ZVARS ============
+;=================================================================== ZVARS ============ 
 ; Zero page variables, calculator work area etc
 .org $0020
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
 
- 		;--
+ 		;-- 
 .org $0030
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 
 .org $0040
-Int(LNNUM)	; Line number
-Int(NXTLN)	; address of next line
-Short(TOKNO)	; Token number
+Int(LNNUM) 	; Line number
+Int(NXTLN) 	; address of next line
+Short(TOKNO) 	; Token number
+
+.org $48
+Var(DBUGNUM,6)
 
 .org $0050
-Var(CVTBUF,8)	; Conversion work area
-Var(NUMTMP,4)	; Temp number
-Var(NUMBER,4)	; Number parsed
+Var(CVTBUF,8) 	; Conversion work area
+Var(NUMTMP,4) 	; Temp number
+Var(NUMBER,4) 	; Number parsed
 
 
-.export LNNUM,NUMTMP
+.export LNNUM,NUMTMP,NUMBER,CVTBUF
 
-;=================================================================== STACK ============
+;=================================================================== STACK ============ 
 .org $0100
 ; calc stack at bottom, cpu stack at the top
 
-;=================================================================== SYSVARS ==========
+;=================================================================== SYSVARS ========== 
 .org $0200
-Var(INBUF,BUFSZ)  ; buffer for input
+Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 Var(STRBUF,BUFSZ) ; buffer for strings
 
@@ -75,6 +78,5 @@ Var(STRBUF,BUFSZ) ; buffer for strings
 ; reserved space for memory mapped IO devices
 .org $0300
 
-.LIST
- 		;-- End of Vars
+.LIST 					;-- End of Vars
 

@@ -1,0 +1,34 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if BLD == BLD_CODE
+;=================================================================== BREAK ============ 
+;*  X_Break             code to execute the Break
+;*
+
+_Break 		= $
+
+;----------------------------------------------- X_Break 
+X_Break: ; code to execute the Break
+
+
+.echo $-_Break
+.echo " Bytes in _Break\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword 
+#if BLD = BLD_KEYWORD
+.list
+W_Break 	.DB 	"BREA",'K'+$80
+.nolist
+#endif
+
+;----------------------------------------------- run 
+#if BLD = BLD_TBL_RUN
+.list
+T_Break 	.DW 	X_Break
+.nolist
+.export T_Break
+#endif

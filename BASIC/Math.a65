@@ -1,0 +1,208 @@
+;=================================================================== MATH =============
+;*  Bin2BCD             Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;*  CvtNum              Convert NUMBER(24Bit) to digits in CVTBUF
+;*  Hex2Nib             '0..9A..F' -> to nibble in A (C=1 Valid) [A]
+;*  NumDT               NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
+;*  NumMT               NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
+;*  NumZero             place zero into NUMBER (24Bit)
+;*  PrADec2             Print A as decimal digits 00-99
+;*  PrADec3             Print A as decimal digits 000-255
+;*  PrAHex              Print A as Hex digits (send/write) [A]
+;*  PrAXHex             Print AX(lo/hi) as 4 hex digits [A]
+;*  PrNib               Convert hex nibble and Print it
+;*  PrNum               print NUMBER as digits to output (mem/io)
+;*  RdNum               -- parse a number into NUMBER (24Bit) - destorys NUMTMP
+;*
+#ifdef hide
+.NOLIST
+#endif
+
+_Math 		= $
+
+Bin2BCDTbl
+.byte	$63,$31,$15,$07,$03,$01,$00
+
+Nib2HexTbl
+;    ____ BCD:0______===== BCD:1 ====
+.db "0123456789ABCDEF0123456789+-e.E "
+;   "0123456789ABCDEF0123456789abcdef"
+
+;----------------------------------------------- PrADec2
+PrADec2: ; Print A as decimal digits 00-99
+ 		JSR 	Bin2BCD
+ 		JMP 	PrAHex
+
+;----------------------------------------------- PrADec2
+PrADec3: ; Print A as decimal digits 000-255
+ 		JSR 	Bin2BCD
+ 		PHA
+ 		TXA
+ 		JSR 	PrNib 		; hundreds
+ 		PLA
+ 		JMP 	PrAHex 		; Tens,Unit
+
+;----------------------------------------------- Bin2BCD
+Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
+ 		SED 			; all adds in decimal mode
+ 		STA 	ZTmp 		; save A
+ 		LDA 	#$00 		; clear A
+ 		LDX 	#$07 		; set bit count
+Bin2BCDL 	LSR 	ZTmp 		; bit to carry
+ 		BCC 	Bin2BCD1 	; branch if no add
+ 		ADC 	Bin2BCDTbl-1,X 	; else add BCD value
+Bin2BCD1 	DEX 			; decrement bit count
+ 		BNE 	Bin2BCDL 	; loop if more to do
+ 		;-- 3digit {
+ 		BCC 	Bin2BCD2 	; branch if no 100's carry
+ 		;-- if Cb set here (and can only be set by the
+ 		;-- last loop add) then there was a carry into
+ 		INX 			; the 100's so add 100's carry to the high byte
+Bin2BCD2 	;-- now check the 2^7 (128) bit
+ 		LSR 	ZTmp 		; bit 7 to carry
+ 		BCC 	Bin2BCD3 	; branch if no add
+ 		INX 			; else effectively add 100 part of 128
+ 		ADC 	#$27 		; and then add 128 (-1) part of 128
+ 		BCC 	Bin2BCD3 	; branch if no further carry
+ 		INX 			; else add 200's carry
+Bin2BCD3 	;-- }
+ 		STA 	ZTmp 		; save result ZTmp byte
+ 		CLD 			; clear decimal mode
+ 		RTS
+
+;----------------------------------------------- Hex2Nib
+Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
+ 		EOR 	#'0' 		; Map digits to 0-9
+ 		CMP 	#9+1 		; Is it a decimal digit?
+ 		BCC 	Hex2Nib9 	; Yes!
+ 		ADC 	#$08 		; Map letter "A"-"F" to $FA-FF
+ 		CMP 	#$7A 		; Hex letter?
+ 		BCC 	Hex2Nib_X 	; No! Character not hex
+Hex2Nib9 	SEC 			; set carry flag to indicate valid
+Hex2Nib_X 	AND 	#$0F
+ 		RTS 			; carry clear if invalid char
+
+;----------------------------------------------- PrAXHex
+PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
+ 		PHA 			; save ZTmp
+ 		TXA 			; get high
+ 		JSR 	PrAHex 		; print hi as hex digits
+ 		PLA 			; restore ZTmp
+ 		;-- fall through to print ZTmp as hex digits
+;----------------------------------------------- PrAHex
+PrAHex: ; Print A as Hex digits (send/write) [A]
+ 		PHA 			;Save A for LSD
+ 		LSR 	a
+ 		LSR 	a
+ 		LSR 	a 		; MSD to LSD position
+ 		LSR 	a
+ 		JSR 	PrNib 		; Output hex digit
+ 		PLA 			; Restore A and then
+ 		;-- fall through to print hex routine
+;----------------------------------------------- PrNib
+PrNib: ; Convert hex nibble and Print it
+ 		PHX 			; save X
+ 		AND 	#$0F 		; Mask LSD for hex print
+ 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
+ 		;-- BCD so add 16 for second part of table
+ 		CLC
+ 		ADC 	#$10 		; add 16 for BCD part of table
+PrNibX 		TAX
+ 		LDA 	Nib2HexTbl,X 	; Look Up
+ 		PLX
+ 		JMP 	PrCh 		; Write/Send
+
+;----------------------------------------------- CvtNumDT
+NumDT: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
+; Divide value at NUMTMP  by 10, remainder in A [AY]
+ 		LDY 	#24 		; 24 bits
+ 		LDA 	#0
+ 		CLC
+NumDTa 		ROL 	A
+ 		CMP 	#10
+ 		BCC 	NumDTb
+ 		SBC 	#10
+NumDTb 		ROL 	NUMBER+0 	; L
+ 		ROL 	NUMBER+1 	; H
+ 		ROL 	NUMBER+2 	; U
+ 		DEY
+ 		BPL 	NumDTa
+ 		RTS
+;----------------------------------------------- NumZero
+NumZero: ; place zero into NUMBER (24Bit)
+ 		LDA 	#0 		; zero number
+ 		STA 	NUMBER
+ 		STA 	NUMBER+1
+ 		STA 	NUMBER+2
+ 		RTS
+
+;----------------------------------------------- NumMT
+NumMT: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
+ 		PHA
+ 		ZCPY3(NUMTMP,NUMBER) 	; TMP = NUMBER
+ 		ZSL3(NUMBER) 		; NUMBER * 2
+ 		ZSL3(NUMBER) 		; NUMBER * 4
+ 		ZADD3(NUMBER,NUMTMP) 	; TMP = NUMBER *5
+ 		ZSL3(NUMBER) 		; NUMBER = NUMBER * 10
+ 		PLA
+ 		RTS
+
+
+;----------------------------------------------- PrNum
+PrNum: ; print NUMBER as digits to output (mem/io)
+ 		JSR 	CvtNum
+ 		LDAX(CVTBUF)
+ 		JMP 	PrStrAX
+
+;----------------------------------------------- RdNum
+RdNum: ;-- parse a number into NUMBER (24Bit) - destorys NUMTMP
+ 		JSR 	NumZero
+RdNumL 		JSR 	IsDigit 	; messes with A
+ 		BCS 	RdNumX 		; no more digits
+ 		;-- NUMBER *= 10
+ 		JSR 	NumMT 		; destroys NUMTMP
+ 		;-- digit value into NUMBER
+ 		AND 	#$0F
+ 		CLC
+ 		ADC 	NUMBER
+ 		STA 	NUMBER
+ 		BCC 	RdNumAX
+ 		INC 	NUMBER+1
+ 		BCC 	RdNumAX
+ 		INC 	NUMBER+2
+RdNumAX 	JSR 	RdCh 		; next character
+ 		BRA 	RdNumL
+RdNumX 		ZCPY4(DBUGNUM,NUMBER)	; just for me to see it !
+ 		RTS
+
+;----------------------------------------------- CvtNum
+CvtNum: ; Convert NUMBER(24Bit) to digits in CVTBUF
+
+		lda #'+'
+		sta CVTBUF
+
+ 		LDX 	#7
+ 		LDA 	#0
+ 		STA 	CVTBUF,x
+ 		DEX
+ 		STA 	CVTBUF,x
+ 		DEX
+CvtNumL 	;- num/10 remainder as digit
+ 		PHX 			; save output index
+ 		JSR 	NumDT 		; div NUMTMP by 10, remainder in A
+ 		PLX 			; recall index
+ 		ORA 	#'0' 		; convert remainder to a digit
+ 		STA 	CVTBUF,x 	; store the digit
+ 		DEX 			; back-up one pos to the left
+ 		BPL 	CvtNumL 	; loop until done
+ 		;-- Place sign in NR[0] based on SGN
+; 		LDA 	#'+'
+; 		LDY 	NA_SGN
+; 		BPL 	CvtNumM
+; 		LDA 	#'-'
+;   CvtNumM 	STA 	CVTBUF 		; place sign at Res[0]
+ 		RTS
+
+
+.echo $-_Math
+.echo " Bytes in _Math\n"
+
