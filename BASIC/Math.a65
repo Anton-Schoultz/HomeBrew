@@ -1,7 +1,8 @@
-;=================================================================== MATH ============= 
+;=================================================================== MATH =============
 ;*  Bin2BCD             Convert binary value in A (0-99) into BCD in A, (high digit in X)
 ;*  CvtNum              Convert NUMBER(24Bit) to digits in CVTBUF
 ;*  Hex2Nib             '0..9A..F' -> to nibble in A (C=1 Valid) [A]
+;*  HexDump             hex dump memory (ZPtr) to output io/mem
 ;*  NumDT               NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
 ;*  NumMT               NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
 ;*  NumZero             place zero into NUMBER (24Bit)
@@ -9,13 +10,19 @@
 ;*  PrADec3             Print A as decimal digits 000-255
 ;*  PrAHex              Print A as Hex digits (send/write) [A]
 ;*  PrAXHex             Print AX(lo/hi) as 4 hex digits [A]
-;*  PrNib               Convert hex nibble and Print it
+;*  PrNib               Convert hex nibble and Print it (preserves XY)
 ;*  PrNum               print NUMBER as digits to output (mem/io)
 ;*  RdNum               -- parse a number into NUMBER (24Bit) - destorys NUMTMP
+;*m HEX_DUMP(adr)       Print hex dump to IO/Mem [Zptr++]
 ;*
 #ifdef hide
 .NOLIST
 #endif
+
+; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
+#define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
+
+#define HEXSZ 16
 
 _Math 		= $
 
@@ -27,12 +34,12 @@ Nib2HexTbl
 .db "0123456789ABCDEF0123456789+-e.E "
 ;   "0123456789ABCDEF0123456789abcdef"
 
-;----------------------------------------------- PrADec2 
+;----------------------------------------------- PrADec2
 PrADec2: ; Print A as decimal digits 00-99
  		jsr 	Bin2BCD
  		jmp 	PrAHex
 
-;----------------------------------------------- PrADec2 
+;----------------------------------------------- PrADec2
 PrADec3: ; Print A as decimal digits 000-255
  		jsr 	Bin2BCD
  		pha
@@ -41,7 +48,7 @@ PrADec3: ; Print A as decimal digits 000-255
  		pla
  		jmp 	PrAHex 		; Tens,Unit
 
-;----------------------------------------------- Bin2BCD 
+;----------------------------------------------- Bin2BCD
 Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
  		sed 			; all adds in decimal mode
  		sta 	ZTmp 		; save A
@@ -69,7 +76,7 @@ Bin2BCD3 	;-- }
  		cld 			; clear decimal mode
  		rts
 
-;----------------------------------------------- Hex2Nib 
+;----------------------------------------------- Hex2Nib
 Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
  		eor 	#'0' 		; Map digits to 0-9
  		cmp 	#9+1 		; Is it a decimal digit?
@@ -81,14 +88,58 @@ Hex2Nib9 	sec 			; set carry flag to indicate valid
 Hex2Nib_X 	and 	#$0F
  		rts 			; carry clear if invalid char
 
-;----------------------------------------------- PrAXHex 
+
+
+
+;----------------------------------------------- HexDump
+HexDump: ; hex dump memory (ZPtr) to output io/mem
+ 		lda 	ZPtr+1
+ 		jsr 	PrAHex
+ 		lda 	ZPtr
+ 		jsr 	PrAHex
+ 		lda 	#':'
+ 		jsr 	PrCh
+ 		ldy 	#0
+HexDumpL 	; dump a line of bytes
+ 		lda 	(ZPtr),y
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jsr 	PrCh
+ 		iny
+ 		cpy 	#HEXSZ
+ 		bne 	HexDumpL
+ 		ldy 	#0
+HexDumpL1 	; dump a line of bytes
+ 		lda 	(ZPtr),y
+ 		BR_ALT(32,HexDump1) 	; a<' '?
+ 		BR_AGT(127,HexDump1)
+ 		jsr 	PrCh 		;printable
+ 		bra 	HexDump2
+HexDump1 	; non printable
+ 		lda 	#'.'
+ 		jsr 	PrCh
+HexDump2 	iny
+ 		cpy 	#HEXSZ
+ 		bne 	HexDumpL1
+ 		jsr 	PrNL
+ 		;-- move ZPtr to next line
+ 		clc
+ 		lda 	#HEXSZ
+ 		adc 	ZPtr
+ 		sta 	ZPtr
+ 		bcc 	HexDumpX
+ 		inc 	ZPtr+1
+HexDumpX 	rts
+
+
+;----------------------------------------------- PrAXHex
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
  		pha 			; save ZTmp
  		txa 			; get high
  		jsr 	PrAHex 		; print hi as hex digits
  		pla 			; restore ZTmp
  		;-- fall through to print ZTmp as hex digits
-;----------------------------------------------- PrAHex 
+;----------------------------------------------- PrAHex
 PrAHex: ; Print A as Hex digits (send/write) [A]
  		pha 			;Save A for LSD
  		lsr 	a
@@ -98,8 +149,8 @@ PrAHex: ; Print A as Hex digits (send/write) [A]
  		jsr 	PrNib 		; Output hex digit
  		pla 			; Restore A and then
  		;-- fall through to print hex routine
-;----------------------------------------------- PrNib 
-PrNib: ; Convert hex nibble and Print it
+;----------------------------------------------- PrNib
+PrNib: ; Convert hex nibble and Print it (preserves XY)
  		phx 			; save X
  		and 	#$0F 		; Mask LSD for hex print
  		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
@@ -111,7 +162,7 @@ PrNibX 		tax
  		plx
  		jmp 	PrCh 		; Write/Send
 
-;----------------------------------------------- CvtNumDT 
+;----------------------------------------------- CvtNumDT
 NumDT: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUMTMP  by 10, remainder in A [AY]
  		ldy 	#24 		; 24 bits
@@ -127,7 +178,7 @@ NumDTb 		rol 	NUMBER+0 	; L
  		dey
  		bpl 	NumDTa
  		rts
-;----------------------------------------------- NumZero 
+;----------------------------------------------- NumZero
 NumZero: ; place zero into NUMBER (24Bit)
  		lda 	#0 		; zero number
  		sta 	NUMBER
@@ -135,7 +186,7 @@ NumZero: ; place zero into NUMBER (24Bit)
  		sta 	NUMBER+2
  		rts
 
-;----------------------------------------------- NumMT 
+;----------------------------------------------- NumMT
 NumMT: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
  		pha
  		ZCPY3(NUMTMP,NUMBER) 	; TMP = NUMBER
@@ -147,17 +198,20 @@ NumMT: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
  		rts
 
 
-;----------------------------------------------- PrNum 
+;----------------------------------------------- PrNum
 PrNum: ; print NUMBER as digits to output (mem/io)
  		jsr 	CvtNum
  		LDAX(CVTBUF)
  		jmp 	PrStrAX
 
-;----------------------------------------------- RdNum 
+;----------------------------------------------- RdNum
 RdNum: ;-- parse a number into NUMBER (24Bit) - destorys NUMTMP
  		jsr 	NumZero
-RdNumL 		jsr 	IsDigit 	; messes with A
- 		bcs 	RdNumX 		; no more digits
+RdNumL 		lda 	CHRGOT 		; term null
+ 		beq 	RdNumX
+ 		;--
+ 		jsr 	IsDigit 	; messes with A
+ 		BR_F(RdNumX) 		; no more digits
  		;-- NUMBER *= 10
  		jsr 	NumMT 		; destroys NUMTMP
  		;-- digit value into NUMBER
@@ -171,10 +225,11 @@ RdNumL 		jsr 	IsDigit 	; messes with A
  		inc 	NUMBER+2
 RdNumAX 	jsr 	RdCh 		; next character
  		bra 	RdNumL
+
 RdNumX 		ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
  		rts
 
-;----------------------------------------------- CvtNum 
+;----------------------------------------------- CvtNum
 CvtNum: ; Convert NUMBER(24Bit) to digits in CVTBUF
 
  		lda 	#'+'

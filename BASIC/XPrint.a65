@@ -3,14 +3,37 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== PRINT =========== 
+;=================================================================== PRINT ===========
 ;*  X_Print             code to execute the Print
 ;*
 _Print 		= $
 
-;----------------------------------------------- X_Print 
+;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
+ 		jsr 	RdCh 		; get the char
+X_PrintL	beq 	X_Print3 	; end of print
+ 		;-- "xyz"
+ 		BR_ANE(T_String,X_Print1)
+ 		jsr 	ChrCopy
+ 		bra 	X_Print
 
+X_Print1 	;- Number (this will later go to evaluate, no just literal)
+ 		BR_ANE(T_Number,X_Print2)
+ 		jsr 	FetchNum
+ 		jsr 	PrNum
+ 		lda CHRGOT
+ 		bra 	X_PrintL
+
+X_Print2 	;- ';'
+ 		BR_AEQ($3B,X_Print) 	; ';'$3B
+ 		BR_ANE($2C,X_Print3) 	;  ',' $2C
+ 		lda 	#HT 		; tab
+ 		jsr 	PrCh
+ 		bra 	X_Print
+
+
+X_Print3 	;-
+ 		rts
 
 
 .echo $-_Print
@@ -19,16 +42,17 @@ X_Print: ; code to execute the Print
 #endif
 
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-T_Print 	.DW 	X_Print
+T_Print 	= LOW($)
+.DW 	X_Print
 .nolist
 .export T_Print
 #endif

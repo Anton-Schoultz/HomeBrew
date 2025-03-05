@@ -45,6 +45,8 @@
 .NOLIST
 #endif
 
+#DEFINE MARK(n) .db $22,n
+
 ;----------------------------------------------- Alignment
 ; align to next n (power of 2)
 #DEFINE ALIGN(n) .org (($/n + 1) * n)
@@ -137,6 +139,7 @@
 #DEFINE CLS	12
 #DEFINE CR 	13
 #DEFINE ESC	27
+#DEFINE SPC	32
 
 
 ; 	LDA #2	; N Z C
@@ -177,14 +180,14 @@
 ; PRINT(str) echo str to output, with CR,LF
 #define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
 
-; RTN_T() return OK (Carry=0)
-#define RTN_T() clc \ rts
-; RTN_F() return ERROR (Carry=1)
-#define RTN_F() sec \ rts
-; BR_T(tgt) branch to tgt if OK (Carry=0)
-#define BR_T(tgt) bcc tgt
-; BR_F(tgt) branch to tgt if ERROR (Carry=1)
-#define BR_F(tgt) bcs tgt
+; RTN_T() return OK (Carry=1)
+#define RTN_T() sec \ rts
+; RTN_F() return ERROR (Carry=0)
+#define RTN_F() clc \ rts
+; BR_T(tgt) branch to tgt if OK (Carry=1)
+#define BR_T(tgt) bcs tgt
+; BR_F(tgt) branch to tgt if ERROR (Carry=0)
+#define BR_F(tgt) bcc tgt
 
 
 ; CASE(v,tgt) if .A==v then jump to tgt
