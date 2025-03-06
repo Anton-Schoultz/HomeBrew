@@ -385,15 +385,11 @@ ListTok 	; detokenise A=CHRGOT
  		CASE(T_Var,L_Var)
  		CASE(T_VarName,L_VarName)
 ; 		;-- otherwise token?
-
- 		BREAK($30)
  		tax
  		BR_ALT($80,ListTokErr)
  		;-- expand the token
  		jsr 	TokExpand
  		rts
-
- 		HALT()
 ListTokErr 	;-- not token, treat as ASCII
  		jsr 	PutChr
  		rts

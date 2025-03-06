@@ -1,3 +1,4 @@
+.list
 #ifdef hide
 .NOLIST
 #endif
@@ -40,7 +41,5 @@ W_Rem 		.DB 	"RE",'M'+$80
 T_Rem 		= LOW($)
 .DW 	X_Rem
 .nolist
-
-
 .export T_Rem
 #endif

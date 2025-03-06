@@ -1,11 +1,13 @@
-#ifdef hide
-.NOLIST
-#endif
 
 #if BLD == BLD_CODE
 ;=================================================================== PRINT ===========
 ;*  X_Print             code to execute the Print
 ;*
+.list
+#ifdef hide
+.NOLIST
+#endif
+
 _Print 		= $
 
 #define NONL() RMB2 ZPrFlg
@@ -27,8 +29,7 @@ X_Print1 	;- Number (this will later go to evaluate, for now just literal)
  		jsr 	FetchNum
  		jsr 	PrNum
  		DONL()
- 		lda 	CHRGOT
- 		bra 	X_PrintL
+ 		bra 	X_Print
 
 X_Print2 	;
  		;--

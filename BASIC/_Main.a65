@@ -24,9 +24,9 @@ _ROM 		=$
 ALIGN(16)
  		;-- Src010 		.DB 	"10 REM hello",0
 Src020
-.DB "PRINT 1234,456,9"
-; .db QT,"Hi",QT
-; .db ",A=12"
+.DB "PRINT 1234,456,9,"
+ .db QT,"Hi",QT
+ .db ";12"
 ; .db ",VAR=123"
 .db 0
 

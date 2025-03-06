@@ -4,6 +4,7 @@
 ;*  ConCls              Clear Screen (CLS / FormFeed)
 ;*  ConIn               Read character from input (keyboard), null if none
 ;*  ConOut              Write character to output (screen)
+;*  ConTab              tab the output
 ;*
 #ifdef hide
 .NOLIST
@@ -16,6 +17,8 @@ IO_AREA 	= $0300 		; Must match Simulator's Options screen.
 SIM_CLS 	= IO_AREA + 0
 SIM_OUT 	= IO_AREA + 1
 SIM_IN 		= IO_AREA + 4
+SIM_X 		= IO_AREA + 5
+SIM_Y 		= IO_AREA + 6
 
 _ConSim 	= $
 
@@ -23,6 +26,10 @@ _ConSim 	= $
 ConOut: ;Write character to output (screen)
  		cmp 	#CLS 		; Form Feed = Clear Screen
  		beq 	ConCls
+
+ 		cmp 	#HT 		; TAB
+ 		beq 	ConTab
+
  		sta 	SIM_OUT 	; Sends A to output screen (interprets CR LF BS)
  		rts
 
@@ -30,6 +37,19 @@ ConOut: ;Write character to output (screen)
 ConCls: ; Clear Screen (CLS / FormFeed)
  		sta 	SIM_CLS
  		rts
+
+;----------------------------------------------- ConTab
+ConTab: ; tab the output
+ 		LDA 	SIM_X
+ 		and 	#7
+ 		beq 	ConTabX
+ 		lda 	#' '
+ 		sta 	SIM_OUT
+ 		bra 	ConTab
+
+
+ConTabX 	rts
+
 ;----------------------------------------------- KeyGet
 ConIn: ; Read character from input (keyboard), null if none
  		lda 	SIM_IN
