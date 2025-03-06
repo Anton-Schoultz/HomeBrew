@@ -10,9 +10,9 @@ NUMBER           .EQU  $005C
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
-Src020           .EQU  $12A0
-TblKeyword       .EQU  $1400
-TblRun           .EQU  $1480
+Src020           .EQU  $F2A0
+TblKeyword       .EQU  $F400
+TblRun           .EQU  $F480
 T_Rem            .EQU  $0080
 T_Print          .EQU  $0082
 T_Break          .EQU  $0084
@@ -20,7 +20,7 @@ T_Return         .EQU  $0086
 T_LineNo         .EQU  $00FF
 T_Number         .EQU  $00FE
 T_String         .EQU  $00FD
-Parse            .EQU  $14AD
-TokFind          .EQU  $160C
-TokFound         .EQU  $1638
-L_LineNo         .EQU  $16CF
+Parse            .EQU  $F49F
+TokFind          .EQU  $F566
+TokFound         .EQU  $F592
+L_LineNo         .EQU  $F6C7

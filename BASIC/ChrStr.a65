@@ -3,10 +3,10 @@
 ;*  ChrIn               Read character from input device (KBD,COM..) -> CHRGOT
 ;*  ChrInit             Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
 ;*  ChrOut              Send character to output device (SCR,COM..)
-;*  ChrWr               Write character to (ZWr)
+;*  ChrWr               Write Character  A -> (ZWr++) , 00->(ZWr)
 ;*  Input               Read from Mem/IO and place in INBUF, until CR
-;*  InputIO             input from IO
-;*  InputIOEcho         Input from IO, also echo chars to IO
+;*  InputIO             Input INBUF from IO
+;*  InputIOEcho         Input INBUF from IO, echo chars to IO
 ;*  PrCh                Print character - Write/Send as per flag
 ;*  PrNL                print CR,LF to CharOut
 ;*  PrStr               Print string pointed to by ZPtr [A]
@@ -117,6 +117,7 @@
 ChrRd 		= $0000 		; increment pointer and fetch, save in CHRGOT
 ZRd 		= $07 			; points to character just fetched
 CHRGOT 		= $0C 			; most recently fetched character
+HLTFLG 		= $0D 			; halt flag 00=run (error code)
 ZWr 		= $0E 			; address for ChrWr to write to
 
 _ChrStr 	= $
@@ -127,8 +128,8 @@ RChrRd 		ZINC(ZRd) 		; 0001 0203 0405
  		sta 	CHRGOT 		; 090A
  		rts 			; 0B
 
-.db $FF 				; 0C = CHRGOT
-.db $FF 				; OD
+.db $0 					; 0C = CHRGOT
+.db $0 					; OD = Halt
 .db 0,0 				; 0E0F = ZWr
 
 ; Initial values for 8 vectors in here, copied along with the above to zero page
@@ -208,7 +209,7 @@ ChrInV 		jmp 	(VCHRIN)
 ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
  		jsr 	RdCh 		; get from Mem / IO
  		beq 	ChrCopyX 	; Null -> exit
- 		BR_ND7(ChrCopy2) 	; MARK=Off, skip bit test
+ 		BR_ND7(ChrCopy2) 	; BREAK=Off, skip bit test
  		bmi 	ChrCopyX 	; bit 7 set -> exit
  		and 	#$7F 		; force ascii
 ChrCopy2 	jsr 	PrCh 		; put Mem / IO
@@ -274,7 +275,7 @@ PrStr: ; Print string pointed to by ZPtr [A]
 PrStr1 		lda 	(ZPtr),y
  		beq 	PrStrX 		; zero -> exit
  		;-- end of bit 7=1 ?
- 		BR_ND7(PrStr2) 		; MARK=Off, skip bit test
+ 		BR_ND7(PrStr2) 		; BREAK=Off, skip bit test
  		bmi 	PrStrX 		; bit 7 set -> exit
  		and 	#$7F 		; force ascii
  		;--

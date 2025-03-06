@@ -1,4 +1,5 @@
 ;=================================================================== MACROS ===========
+;*m BREAK(n)            Break interrupt with data byte read in Irq Rtn
 ;*m BR_AEQ(n,tgt)       if(A==n) branch -> tgt
 ;*m BR_AGE(n,tgt)       if(A>=n) branch -> tgt
 ;*m BR_AGT(n,tgt)       if(A>n) branch -> tgt
@@ -6,15 +7,16 @@
 ;*m BR_ALT(n,tgt)       if(A<n) branch -> tgt
 ;*m BR_ANE(n,tgt)       if(A!=n) branch -> tgt
 ;*m BR_EQ(tgt)          beq tgt
-;*m BR_F(tgt)           branch to tgt if ERROR (Carry=1)
+;*m BR_F(tgt)           branch to tgt if ERROR (Carry=0)
 ;*m BR_GE(tgt)          bcs tgt
 ;*m BR_GT(tgt)          beq $+4\ bcs tgt
 ;*m BR_LE(tgt)          bmi tgt\ beq tgt
 ;*m BR_LT(tgt)          bmi tgt
 ;*m BR_NE(tgt)          bne tgt
-;*m BR_T(tgt)           branch to tgt if OK (Carry=0)
+;*m BR_T(tgt)           branch to tgt if OK (Carry=1)
 ;*m CASE(v,tgt)         if .A==v then jump to tgt
 ;*m GETAX(p)            Fetch 16 bit value from address into AX (p)->A, (p+1)->X
+;*m HALT()              Stop simulator
 ;*m HIGH(m)             High byte 1
 ;*m Int(name)           Reserve 2 bytes for variable name
 ;*m Long(name)          Reserve 4 bytes for variable name
@@ -22,8 +24,8 @@
 ;*m NCASE(v,tgt)        if .A!=v then jump to tgt
 ;*m PRINT(str)          echo str to output, with CR,LF
 ;*m PULLAXY()           Pulls Y,X,A
-;*m RTN_F()             return ERROR (Carry=1)
-;*m RTN_T()             return OK (Carry=0)
+;*m RTN_F()             return ERROR (Carry=0)
+;*m RTN_T()             return OK (Carry=1)
 ;*m SETAX(p)            Stores 16 bit value (AX) into address A->(p), X->(p+1)
 ;*m Short(name)         Reserve 1 byte for variable name
 ;*m UPPER(m)            Upper byte 2
@@ -45,7 +47,13 @@
 .NOLIST
 #endif
 
-#DEFINE MARK(n) .db $22,n
+; 00=BRK x, 02=NOP x
+
+; BREAK(n) Break interrupt with data byte read in Irq Rtn
+#DEFINE BREAK(n) .db $02,n \ nop
+
+; HALT() Stop simulator
+#DEFINE HALT()  .db $DB
 
 ;----------------------------------------------- Alignment
 ; align to next n (power of 2)

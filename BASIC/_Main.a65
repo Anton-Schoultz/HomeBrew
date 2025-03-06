@@ -9,7 +9,7 @@
 #include "_Vars.a65"
 
 
-.org $1000
+.org $F000
 _ROM 		=$
 .LIST
 ;======================================================================================
@@ -22,28 +22,31 @@ _ROM 		=$
 #include "Math.a65" 			; Number code
 
 ALIGN(16)
-;Src010 		.DB 	"10 REM hello",0
-Src020 		.DB 	"20 1234",0
+ 		;-- Src010 		.DB 	"10 REM hello",0
+Src020 		.DB 	"20 PRINT 1234", 0
 
 .export Src020
 
 ;=================================================================== MAIN CODE ========
+;*  Main                MAIN code
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
 ;*
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
- 		;-- Halt IRQs
- 		sei
- 		;-- Set Stack pointer to top of the stack space $0100-01FF
- 		ldx 	#$ff
+ 		sei 			; Halt IRQs
+ 		ldx 	#$ff 		; Set Stack pointer
  		txs
- 		;-- Binary mode
- 		cld
+ 		cld 			; Binary mode
+ 		cli 			; Enable irqs
+
 ;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit
+
+;----------------------------------------------- Main
+Main: ; MAIN code
 
  		PR_RD_MEM() 		; read from memory (ZRd)
  		PR_ECHO_OFF() 		; don't echo it
@@ -54,43 +57,10 @@ Warm: ;Warm Start entry point
 
  		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
 
-; 		MARK(1)
-;
-; 		jsr 	RdCh
-;
-; 		jsr 	ParseClr 	; clear TOKBUF
-;
-; 		MARK(2)
-;
-; 		;-- line number ?
-; 		jsr 	SkipBlank 	; skipover leading blank/tabs
-;
-; 		MARK(3)
-;
-; 		;-- digit - so do line number
-; 		jsr 	P_LineNo
-; 		;-- fall through for the rest of the statement
-;
-; 		MARK(4)
-;
-; 		jsr 	SkipBlank 	; skipover leading blank/tabs
-;
-; 		MARK(5)
-; 		jsr 	RdNum
-;
-; 		MARK(6)
-;		jsr 	SkipBlank
-;
-; 		MARK(7)
-;
-;
-;		brk
-;
-
- 		MARK(1)
+ 		BREAK(1)
  		jsr 	ParseIn 	;parse from input (memory)
- 		MARK(2)
- brk
+ 		BREAK(2)
+
  		PR_WR_IO()
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
@@ -136,8 +106,28 @@ Warm: ;Warm Start entry point
 
 #include "Tables.a65"
 #include "Tok.a65"
+ROMEND 		= $
 
 .echo $-_ROM
 .echo " Total Bytes used\n"
+
+
+#include "IrqNmi.a65"
+
+
+;----------------------------------------------- hardware vectors
+; FFFA,B	NMI
+; FFFC,D	Reset
+; FFFE,F	IRQ
+.org $FFFA
+.dw Nmi 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
+.dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
+
+.echo ($FFFA - ROMEND) / 256
+.echo "/16 pages (x256) available in the 4k ROM. F000-FFFF\r"
+ 		;-- .echo "/32 pages (x256) available in the 4k ROM. E000-FFFF\r"
+
+
 
 .end

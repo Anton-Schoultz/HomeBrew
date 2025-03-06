@@ -59,6 +59,8 @@ Var(CVTBUF,8) 	; Conversion work area
 Var(NUMTMP,4) 	; Temp number
 Var(NUMBER,4) 	; Number parsed
 
+.org $60
+Int(Z_IrqPtr)	; used in IRQ code
 
 .export LNNUM,NXTLN,NUMTMP,NUMBER,CVTBUF,DBUGNUM
 
