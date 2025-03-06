@@ -44,7 +44,7 @@
 ; Bit5 Term	NULL 		Non-ASCII term
 ; Bit4 BCD	'0..9ABCDEF'	'0..9+-e.E '
 ; Bit3 Echo     No		Yes->PutChr
-; Bit2
+; Bit2 NL	no Cr LF	Need CR LF
 ; Bit1 ZSpc	' '		Suppressed
 ; Bit0 ZSup	'0'		Suppress leading zeros
 
@@ -336,7 +336,7 @@ PrNL: ; print CR,LF to CharOut
  		lda 	#LF
  		jmp 	PutChr
 
-
+.echo "  "
 .echo $-_ChrStr
 .echo " Bytes in _ChrStr\n"
 

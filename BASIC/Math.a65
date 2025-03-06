@@ -304,7 +304,7 @@ CvtNumL 	;- num/10 remainder as digit
 ;   CvtNumM 	STA 	CVTBUF 		; place sign at Res[0]
  		rts
 
-
+.echo "  "
 .echo $-_Math
 .echo " Bytes in _Math\n"
 

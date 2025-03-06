@@ -1,7 +1,7 @@
 ; IRQ.a65
- 		;-- 
+ 		;--
 ; Interrupt handler for BRK, IRQ and NMI
- 		;-- 
+ 		;--
 ; BRK interrupt goes via vector V_IRQBRK,
 ; IRQ is handled via vector V_IRQ
 ; NMI is handled via vector V_NMI
@@ -9,11 +9,11 @@
 #ifndef _Irq
 #define _Irq
 
-;----------------------------------------------- IRQ 
+;----------------------------------------------- IRQ
 Irq: ; Interrupt Request service routine
 ; Interrupt low level, reset the source as early as posible
 ; PC & Status are pushed, then cpu comes here
- 		;-- 
+ 		;--
  		;-- Save registers
  		PUSHAXY() 		; Y,X,Z,S,PC
 
@@ -25,12 +25,12 @@ Irq: ; Interrupt Request service routine
 
  		;-- jsr 	IrqDo
 
-;----------------------------------------------- IrqRtn 
+;----------------------------------------------- IrqRtn
 IrqRtn: ; Restore registers and return from IRQ
  		PULLAXY()
  		rti 			; pop status & PC, return, re-enabling IRQ
 
-;----------------------------------------------- IrqBrk 
+;----------------------------------------------- IrqBrk
 ; fetch the post byte and store it in ERRNO, then return from interrupt
 IrqBrk: ; Handle BRK interrupt
  		lda 	$105,X 		;
@@ -44,14 +44,48 @@ IrqBrk0 	dec 	Z_IrqPtr 	; decr low
  		lda 	(Z_IrqPtr) 	; get the byte after the BRK (post byte)
  		sta 	HLTFLG 		; save it
 
-IrqWait 	lda 	HLTFLG
- 		bne 	IrqWait 	; Wait for NMI to zero the HLTFLG
+ 		;-- save print flag
+ 		lda 	ZPrFlg
+ 		pha
+ 		;-- force IO output (screen)
+ 		PR_WR_IO()
+ 		jsr 	PrNL
+ 		lda 	#'*'
+ 		jsr 	ChrOut
+ 		;-- print Address where BRK is from
+ 		ZDEC(Z_IrqPtr)
+ 		GETAX(Z_IrqPtr)
+ 		jsr 	PrAXHex
+ 		;-- print error code
+ 		lda 	#':'
+ 		JSR 	ChrOut
+ 		lda 	HLTFLG
+ 		JSR 	PrAHex
+ 		lda 	#'*'
+ 		jsr 	ChrOut
+ 		jsr 	PrNL
+
+ 		;-- restore print flags
+ 		pla
+ 		sta 	ZPrFlg
+
+ 		ldx 	#0
+IrqWait 	lda 	HLTFLG 		; check flag value
+ 		beq 	IrqRtn 		; cleared by NMI so exit
+ 		dex 			; count down
+ 		bne 	IrqWait 	;
+
+IrqWait2 	lda 	HLTFLG 		; check flag value
+ 		beq 	IrqRtn 		; cleared by NMI so exit
+ 		dex 			; count down
+ 		bne 	IrqWait2 	;
+
  		bra 	IrqRtn 		; exit from interrupt
 
  		;-- IrqBrkDo 	JMP 	(V_BRK) 	; the rts in the body goes back to caller
  		;-- IrqDo: 	JMP 	(V_IRQ) 	; the rts in the body goes back to caller
 
-;----------------------------------------------- NMI 
+;----------------------------------------------- NMI
 Nmi: ; Non-Maskable interrupt service handler
 ; Negative-edge triggered interrupt
 ; use this for timer interrupts straight from binary divider ?

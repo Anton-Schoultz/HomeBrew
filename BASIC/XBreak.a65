@@ -3,29 +3,30 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== BREAK ============ 
+;=================================================================== BREAK ============
 ;*  X_Break             code to execute the Break
 ;*
 
 _Break 		= $
 
-;----------------------------------------------- X_Break 
+;----------------------------------------------- X_Break
 X_Break: ; code to execute the Break
 
 
+.echo "  "
 .echo $-_Break
 .echo " Bytes in _Break\n"
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
 W_Break 	.DB 	"BREA",'K'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
 T_Break 	= LOW($)

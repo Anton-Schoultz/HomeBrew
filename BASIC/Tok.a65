@@ -24,7 +24,7 @@
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  ParseIn             Parse from memory into TOKBUF
 ;*  Run                 Run from start
-;*  RunJmp              run via jump table
+;*  RunJmp              run via jump table, return to (*2)
 ;*  RunLn               Run line pointed to by ZRd
 ;*  RunTok              run token
 ;*  SkipBlank           Skip blank/tabs, end char in A, T if not null
@@ -55,6 +55,8 @@ T_VarName 	= $FB 			; long varname
 BAS_EOL 	= $00 			; end of line
 BAS_PRG 	= $00 			; end of program
 
+#define TOKLEN (TOKBUF+3)
+
 ;----------------------------------------------- Parse
 Parse: ;Parse INBUF into TOKBUF
  		;-- read from memory INBUF
@@ -76,9 +78,10 @@ ParseIn: ;Parse from memory into TOKBUF
  		;-- digit - so do line number
  		jsr 	P_LineNo
  		lda 	CHRGOT
- 		jsr 	P_Part 		; parse parts until end of line
 
-P_Stmnt
+P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
+
+
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
  		jsr 	ChrWr
@@ -89,9 +92,9 @@ P_Stmnt
  		;-- line no, so get line length
  		sec
  		lda 	ZWr
- 		sbc 	#LOW(TOKBUF+3)
+ 		sbc 	#LOW(TOKLEN)
  		;-- fill it in
- 		sta 	TOKBUF+3
+ 		sta 	TOKLEN
  		;--
 P_StmntX 	rts 			; done with the whole line
 
@@ -117,7 +120,6 @@ PNotKey 	;-- see if we have a number
  		bra 	P_Part 		; loop for more
 
 PNotDigit 	;- is it a quoted string?
- 		BREAK($18)
  		lda 	CHRGOT
  		BR_ANE('"',PNotStr) 	; A<>" -> PNotStr
  		;-- do parse for [Str] xxxxxx 00
@@ -131,7 +133,6 @@ PNotStr 	; not string, try varname
  		bra 	P_Part 		; more
 
 PNotVar 	; not varname, so copy as-is
- 		BREAK($19)
  		lda 	CHRGOT
  		jsr 	ChrWr
  		jsr 	GetChr
@@ -153,6 +154,7 @@ BasTop: ; Setup to read from start of basic, for now TOKBUF
  		ZSET(ZRd,TOKBUF-1)
  		;-- set to read from memory
  		PR_RD_MEM() 		; read from memory (code space)
+ 		PR_WR_IO() 		; output to io (screen)
  		rts
 ;----------------------------------------------- SkipBlankL
 ; reads next character nad then checks for balnks
@@ -333,6 +335,7 @@ RunL 		jsr 	GetChr 		; (++ZRd)->A
  		beq 	RunX 		; null = End-of-program
  		jsr 	RunLnX
  		bra 	RunL
+
 RunX 		rts 			; done, return
 
 
@@ -340,20 +343,22 @@ RunLn: ; Run line pointed to by ZRd
  		jsr 	GetChr 		; (++ZRd)->A
  		bne 	RunLnX 		; null = End-of-line
  		rts 			; done, return
-RunLnX 		jsr 	RunTok
+
+RunLnX 		jsr 	RunTok 		; (*2)
  		bra 	RunLn
 
 RunTok: ; run token
  		lda 	CHRGOT
- 		CASE(T_Line,X_LineNo)
+ 		CASE(T_Line,X_LineNo) 	; if A==T_Line goto X_LineNo
  		;-- otherwise token?
- 		tax
  		BR_AGE($80,RunJmp)
  		;-- not token, treat as ASCII
  		jsr 	PutChr
  		rts
 
-RunJmp: ; run via jump table
+RunJmp: ; run via jump table, return to (*2)
+ 		and 	#$7F
+ 		tax
  		jmp 	(TblRun,X)
 
 
@@ -371,7 +376,7 @@ ListLn: ; List line pointed to by ZRd
  		beq 	ListLnX 	; null = done
  		jsr 	ListTok 	; Expand		(*1)
  		bra 	ListLn
-ListLnX 	jmp PrNL	; NL and return
+ListLnX 	jmp 	PrNL 		; NL and return
 
 ListTok 	; detokenise A=CHRGOT
  		CASE(T_Line,L_LineNo) 	;->L_LINEno, rts to (*1)
@@ -465,14 +470,14 @@ L_Var2 		BBR6 	VARID,L_Var3 	; '(' ?
  		lda 	#'('
  		jsr 	PutChr
 
-L_Var3 		rts;//jmp 	ChrRd 		; read next and return
+L_Var3 		rts 			;//jmp 	ChrRd 		; read next and return
 
 ;                7654.3210
 ; Variable ID =  0($n.nnnn nnnnn=1-26 for A-Z
 
 ;----------------------------------------------- L_VarName
 L_VarName: ; list long variable
-		jmp ChrCopy
+ 		jmp 	ChrCopy
 
 ;=================================================================== NUMBER ===========
 
@@ -603,6 +608,7 @@ L_LineNo: ; list LineNo
 .export TblKeyword,TblRun
 
 
+.echo "  "
 .echo $-_Tok
 .echo " Bytes in _Tok\n"
 

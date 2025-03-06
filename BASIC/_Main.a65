@@ -24,10 +24,10 @@ _ROM 		=$
 ALIGN(16)
  		;-- Src010 		.DB 	"10 REM hello",0
 Src020
-.DB "20 PRINT 1234,"
-.db QT,"Hi",QT
-.db ",A=12"
-.db ",VAR=123"
+.DB "PRINT 1234,456,9"
+; .db QT,"Hi",QT
+; .db ",A=12"
+; .db ",VAR=123"
 .db 0
 
 
@@ -53,7 +53,6 @@ Warm: ;Warm Start entry point
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
-
  		PR_RD_MEM() 		; read from memory (ZRd)
  		PR_ECHO_OFF() 		; don't echo it
  		;-- write to TOKBUF
@@ -62,8 +61,8 @@ Main: ; MAIN code
 
  		;-- parse the tets source line
  		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
- 		jsr 	ParseIn 	;parse from input (memory)
 
+ 		jsr 	ParseIn 	;parse from input (memory)
  		lda 	#0
  		jsr 	ChrWr 		; end of program
 
@@ -72,14 +71,17 @@ Main: ; MAIN code
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
 
-		PR_ZSUP_ON()
+ 		PR_ZSUP_ON()
 
  		;-- List the line in TOKBUF
- 		BREAK($30)
  		jsr 	List
 
  		lda 	#'_'
  		jsr 	PutChr
+
+	BREAK($30)
+
+ 		jsr 	Run
 
  		HALT()
 
@@ -87,6 +89,7 @@ Main: ; MAIN code
 #include "Tok.a65"
 ROMEND 		= $
 
+.echo "  "
 .echo $-_ROM
 .echo " Total Bytes used\n"
 
@@ -103,6 +106,7 @@ ROMEND 		= $
 .dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
+.echo "  "
 .echo ($FFFA - ROMEND) / 256
 .echo "/16 pages (x256) available in the 4k ROM. F000-FFFF\r"
  		;-- .echo "/32 pages (x256) available in the 4k ROM. E000-FFFF\r"

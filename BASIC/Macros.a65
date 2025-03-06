@@ -50,7 +50,8 @@
 ; 00=BRK x, 02=NOP x
 
 ; BREAK(n) Break interrupt with data byte read in Irq Rtn
-#DEFINE BREAK(n) .db $02,n \ nop
+#DEFINE BREAK(n) .db $00,n \ nop
+; #DEFINE BREAK(n) .db $02,n \ nop
 
 ; HALT() Stop simulator
 #DEFINE HALT()  .db $DB

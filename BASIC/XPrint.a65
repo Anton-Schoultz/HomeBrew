@@ -8,34 +8,46 @@
 ;*
 _Print 		= $
 
+#define NONL() RMB2 ZPrFlg
+#define DONL() SMB2 ZPrFlg
+#define BR_NNL(tgt) BBR2 ZPrFlg,tgt
+
+
 ;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
  		jsr 	GetChr 		; get the char
-X_PrintL	beq 	X_Print3 	; end of print
+X_PrintL 	beq 	X_PrintX 	; end of print
  		;-- "xyz"
  		BR_ANE(T_String,X_Print1)
  		jsr 	ChrCopy
+ 		DONL()
  		bra 	X_Print
-
-X_Print1 	;- Number (this will later go to evaluate, no just literal)
+X_Print1 	;- Number (this will later go to evaluate, for now just literal)
  		BR_ANE(T_Number,X_Print2)
  		jsr 	FetchNum
  		jsr 	PrNum
- 		lda CHRGOT
+ 		DONL()
+ 		lda 	CHRGOT
  		bra 	X_PrintL
 
-X_Print2 	;- ';'
+X_Print2 	;
+ 		;--
+
+X_Print9 	;- ';' ','
+ 		NONL()
  		BR_AEQ($3B,X_Print) 	; ';'$3B
- 		BR_ANE($2C,X_Print3) 	;  ',' $2C
+ 		BR_ANE($2C,X_PrintXNL) 	; ','$2C
  		lda 	#HT 		; tab
  		jsr 	PutChr
- 		bra 	X_Print
+ 		bra 	X_Print 	; loop for next part
+
+X_PrintXNL 	;-- end off with Cr LF if needed
+ 		BR_NNL(X_PrintX) 	; no cr,lf -> exit
+ 		jmp 	PrNL 		; output CR,LF and exit
+X_PrintX 	rts
 
 
-X_Print3 	;-
- 		rts
-
-
+.echo "  "
 .echo $-_Print
 .echo " Bytes in _Print\n"
 .nolist

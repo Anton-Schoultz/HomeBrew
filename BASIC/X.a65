@@ -1,13 +1,32 @@
-;== Tmp
-;*
 #ifdef hide
 .NOLIST
 #endif
+#if BLD == BLD_CODE
+;== Tmp
+;*
 _Tmp = $
 
+;- X_Tmp
+X_Tmp:: Execute Tmp
 
 
+.echo "  "
 .echo $-_Tmp
-.echo " Bytes in _Tmp\n"
-.LIST
- 		;-- End of Tmp
+.echo " Bytes in Tmp\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if BLD = BLD_KEYWORD
+.list
+W_Tmp 	.DB 	"Tmp",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if BLD = BLD_TBL_RUN
+.list
+T_Tmp	= LOW($)
+.DW 	X_Tmp
+.nolist
+.export T_Tmp
+#endif

@@ -1,4 +1,4 @@
-;=================================================================== TABLES =========== 
+;=================================================================== TABLES ===========
 ;*  TblKeyword          Table of keywords text
 ;*  TblRun              Table of addresses to execute keyword
 ;*
@@ -13,13 +13,15 @@ BLD_TBL_RUN= 	2
 _basic 		= $
 BLD 		= BLD_CODE
 #include "All.a65"
+
+.echo "  "
 .echo $-_basic
 .echo " Bytes in Basic code\n"
 
 PAGE() 		; XX00
 _TBL 		= $
 
-;----------------------------------------------- TblKeyword 
+;----------------------------------------------- TblKeyword
 TblKeyword: ; Table of keywords text
 .nolist
 BLD 		= BLD_KEYWORD
@@ -30,7 +32,7 @@ BLD 		= BLD_KEYWORD
 
 ALIGN($80) 	;XX80
 .list
-;----------------------------------------------- TblRun 
+;----------------------------------------------- TblRun
 TblRun: ; Table of addresses to execute keyword
 .nolist
 BLD 		= BLD_TBL_RUN
@@ -40,5 +42,6 @@ BLD 		= BLD_TBL_RUN
  		;-- .echo $-TblRun
  		;-- .echo " Bytes in TblRun\n"
 
+.echo "  "
 .echo $-_TBL
 .echo " Total Bytes in Tables\n"
