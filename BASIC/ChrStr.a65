@@ -45,8 +45,8 @@
 ; Bit4 BCD	'0..9ABCDEF'	'0..9+-e.E '
 ; Bit3 Echo     No		Yes->PutChr
 ; Bit2
-; Bit1
-; Bit0
+; Bit1 ZSpc	' '		Suppressed
+; Bit0 ZSup	'0'		Suppress leading zeros
 
 ;----------------------------------------------- 7:Wr/Out
 ; BR_WR(tgt) Branch to tgt if Write=1
@@ -107,6 +107,27 @@
 #define PR_ECHO_ON()	SMB3 ZPrFlg
 ; PR_ECHO_OFF()	No Echo		F3=0
 #define PR_ECHO_OFF()	RMB3 ZPrFlg
+
+
+;----------------------------------------------- 1:ZeroBlank
+; PR_ZSPC(tgt)	Branch to tgt if ZSPC=1
+#define BR_ZSPC(tgt) 	BBS1 ZPrFlg,tgt
+; PR_NZSPC(tgt)	Branch to tgt if ZSPC=0
+#define BR_NZSPC(tgt) 	BBR1 ZPrFlg,tgt
+; PR_ZSPC_ON()	Blank leading zeroes
+#define PR_ZSPC_ON()	SMB1 ZPrFlg
+; PR_ZSPC_OFF()	Leading zeros stay
+#define PR_ZSPC_OFF()	RMB1 ZPrFlg
+
+;----------------------------------------------- 0:ZeroSuppress
+; PR_ZSUP(tgt)	Branch to tgt if ZSUP=1
+#define BR_ZSUP(tgt) 	BBS0 ZPrFlg,tgt
+; PR_NZSUP(tgt)	Branch to tgt if ZSUP=0
+#define BR_NZSUP(tgt) 	BBR0 ZPrFlg,tgt
+; PR_ZSUP_ON()	Suppress leading zeroes
+#define PR_ZSUP_ON()	SMB0 ZPrFlg
+; PR_ZSUP_OFF()	Leading zeros stay
+#define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
 
 ; PRINT(str) 	Print in-line string

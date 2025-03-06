@@ -4,7 +4,10 @@
 ;*  Hex2Nib             '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump             hex dump memory (ZPtr) to output io/mem
 ;*  NumDT               NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
+;*  NumFmt              Apply formatting to leading zeroes
 ;*  NumMT               NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
+;*  NumSpc              blank leading zeroes
+;*  NumSup              removing leading zeroes
 ;*  NumZero             place zero into NUMBER (24Bit)
 ;*  PrADec2             Print A as decimal digits 00-99
 ;*  PrADec3             Print A as decimal digits 000-255
@@ -23,6 +26,9 @@
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
 
 #define HEXSZ 16
+
+; size including null at the end
+#define NUMSZ 7
 
 _Math 		= $
 
@@ -197,10 +203,51 @@ NumMT: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
  		pla
  		rts
 
+;----------------------------------------------- NumFmt
+NumFmt: ; Apply formatting to leading zeroes
+ 		BR_ZSUP(NumSup) 	; suppress leading zeroes
+ 		BR_ZSPC(NumSpc) 	; blank leading zeroes
+ 		rts
+
+;----------------------------------------------- NumSup
+NumSup: ; removing leading zeroes
+ 		ldx 	#NUMSZ 		; size (to null)
+ 		dex 			; at least one digit
+ 		ldy 	#0
+NumSupL 	lda 	CVTBUF,y
+ 		cmp 	#'0'
+ 		bne 	NumSupC 	; go copy
+ 		iny
+ 		dex
+ 		bne 	NumSupL
+NumSupC 	ldx 	#0
+NumSupCL 	lda 	CVTBUF,y
+ 		sta 	CVTBUF,x
+ 		beq 	NumSupX
+ 		inx
+ 		iny
+ 		bra 	NumSupCL
+NumSupX 	rts
+
+;----------------------------------------------- NumSpc
+NumSpc: ; blank leading zeroes
+ 		ldx 	#NUMSZ 		; size (to null)
+ 		dex 			; at least one digit
+ 		ldy 	#0
+NumSpcL 	lda 	CVTBUF,y
+ 		cmp 	#'0'
+ 		bne 	NumSpcX 	; go copy
+ 		lda 	#' '
+ 		sta 	CVTBUF,y
+ 		iny
+ 		dex
+ 		bne 	NumSpcL
+NumSpcX 	rts
 
 ;----------------------------------------------- PrNum
 PrNum: ; print NUMBER as digits to output (mem/io)
  		jsr 	CvtNum
+ 		jsr 	NumFmt
  		LDAX(CVTBUF)
  		jmp 	PrStrAX
 
@@ -235,7 +282,7 @@ CvtNum: ; Convert NUMBER(24Bit) to digits in CVTBUF
  		lda 	#'+'
  		sta 	CVTBUF
 
- 		ldx 	#7
+ 		ldx 	#NUMSZ
  		lda 	#0
  		sta 	CVTBUF,x
  		dex

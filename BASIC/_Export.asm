@@ -10,7 +10,7 @@ NUMBER           .EQU  $005C
 INBUF            .EQU  $0200
 TOKBUF           .EQU  $0240
 STRBUF           .EQU  $0280
-Src020           .EQU  $F2A0
+Src020           .EQU  $F2E0
 TblKeyword       .EQU  $F400
 TblRun           .EQU  $F480
 T_Rem            .EQU  $0080

@@ -32,12 +32,12 @@ Src020
 
 .export Src020
 
-;=================================================================== MAIN CODE ======== 
+;=================================================================== MAIN CODE ========
 ;*  Main                MAIN code
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
 ;*
-;----------------------------------------------- Reset 
+;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -45,12 +45,12 @@ Reset: ;Reset (Cold start)
  		cld 			; Binary mode
  		cli 			; Enable irqs
 
-;----------------------------------------------- Warm 
+;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit
 
-;----------------------------------------------- Main 
+;----------------------------------------------- Main
 Main: ; MAIN code
 
  		PR_RD_MEM() 		; read from memory (ZRd)
@@ -70,6 +70,8 @@ Main: ; MAIN code
  		PR_WR_IO()
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
+
+		PR_ZSUP_ON()
 
  		;-- List the line in TOKBUF
  		BREAK($30)
@@ -91,7 +93,7 @@ ROMEND 		= $
 #include "IrqNmi.a65"
 
 
-;----------------------------------------------- hardware vectors 
+;----------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
