@@ -27,6 +27,7 @@ Src020
 .DB "20 PRINT 1234,"
 .db QT,"Hi",QT
 .db ",A=12"
+.db ",VAR=123"
 .db 0
 
 

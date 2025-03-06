@@ -472,7 +472,7 @@ L_Var3 		rts;//jmp 	ChrRd 		; read next and return
 
 ;----------------------------------------------- L_VarName
 L_VarName: ; list long variable
-
+		jmp ChrCopy
 
 ;=================================================================== NUMBER ===========
 
