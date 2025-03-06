@@ -97,14 +97,14 @@ HexDump: ; hex dump memory (ZPtr) to output io/mem
  		jsr 	PrAHex
  		lda 	ZPtr
  		jsr 	PrAHex
- 		lda 	#':'
- 		jsr 	PrCh
+ 		lda 	#' '
+ 		jsr 	PutChr
  		ldy 	#0
 HexDumpL 	; dump a line of bytes
  		lda 	(ZPtr),y
  		jsr 	PrAHex
  		lda 	#' '
- 		jsr 	PrCh
+ 		jsr 	PutChr
  		iny
  		cpy 	#HEXSZ
  		bne 	HexDumpL
@@ -113,11 +113,11 @@ HexDumpL1 	; dump a line of bytes
  		lda 	(ZPtr),y
  		BR_ALT(32,HexDump1) 	; a<' '?
  		BR_AGT(127,HexDump1)
- 		jsr 	PrCh 		;printable
+ 		jsr 	PutChr 		;printable
  		bra 	HexDump2
 HexDump1 	; non printable
  		lda 	#'.'
- 		jsr 	PrCh
+ 		jsr 	PutChr
 HexDump2 	iny
  		cpy 	#HEXSZ
  		bne 	HexDumpL1
@@ -160,7 +160,7 @@ PrNib: ; Convert hex nibble and Print it (preserves XY)
 PrNibX 		tax
  		lda 	Nib2HexTbl,X 	; Look Up
  		plx
- 		jmp 	PrCh 		; Write/Send
+ 		jmp 	PutChr 		; Write/Send
 
 ;----------------------------------------------- CvtNumDT
 NumDT: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
@@ -223,7 +223,7 @@ RdNumL 		lda 	CHRGOT 		; term null
  		inc 	NUMBER+1
  		bcc 	RdNumAX
  		inc 	NUMBER+2
-RdNumAX 	jsr 	RdCh 		; next character
+RdNumAX 	jsr 	GetChr 		; next character
  		bra 	RdNumL
 
 RdNumX 		ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !

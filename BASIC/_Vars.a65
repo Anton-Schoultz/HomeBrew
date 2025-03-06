@@ -50,6 +50,7 @@ Short(ZTmp) 	; Temp byte
 Int(LNNUM) 	; Line number
 Int(NXTLN) 	; address of next line
 Short(TOKNO) 	; Token number
+Short(VARID)	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
 .org $48
 Var(DBUGNUM,6)

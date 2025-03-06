@@ -10,7 +10,7 @@ _Print 		= $
 
 ;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
- 		jsr 	RdCh 		; get the char
+ 		jsr 	GetChr 		; get the char
 X_PrintL	beq 	X_Print3 	; end of print
  		;-- "xyz"
  		BR_ANE(T_String,X_Print1)
@@ -28,7 +28,7 @@ X_Print2 	;- ';'
  		BR_AEQ($3B,X_Print) 	; ';'$3B
  		BR_ANE($2C,X_Print3) 	;  ',' $2C
  		lda 	#HT 		; tab
- 		jsr 	PrCh
+ 		jsr 	PutChr
  		bra 	X_Print
 
 

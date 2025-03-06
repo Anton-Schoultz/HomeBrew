@@ -17,10 +17,10 @@ T_Rem            .EQU  $0080
 T_Print          .EQU  $0082
 T_Break          .EQU  $0084
 T_Return         .EQU  $0086
-T_LineNo         .EQU  $00FF
+T_Line           .EQU  $00FF
 T_Number         .EQU  $00FE
 T_String         .EQU  $00FD
-Parse            .EQU  $F49F
-TokFind          .EQU  $F566
-TokFound         .EQU  $F592
-L_LineNo         .EQU  $F6C7
+Parse            .EQU  $F490
+TokFind          .EQU  $F567
+TokFound         .EQU  $F595
+L_LineNo         .EQU  $F711

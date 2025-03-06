@@ -23,7 +23,12 @@ _ROM 		=$
 
 ALIGN(16)
  		;-- Src010 		.DB 	"10 REM hello",0
-Src020 		.DB 	"20 PRINT 1234", 0
+Src020
+.DB "20 PRINT 1234,"
+.db QT,"Hi",QT
+.db ",VAR=12"
+.db 0
+
 
 .export Src020
 
@@ -65,6 +70,8 @@ Main: ; MAIN code
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
 
+ 		HALT()
+
  		HEX_DUMP(LNNUM) 	; dump Int(LNNUM),Int(NXTLN),Short(TOKNO)
 
 ; 		;-- input a line of text until RETURN
@@ -72,14 +79,14 @@ Main: ; MAIN code
 ; 		jsr 	PrNL
 ; 		jsr 	Parse 		; parse line into TOKBUF
 
- 		PR_WR_IO()
- 		PRINTLN("--") 		;
- 		jsr 	PrNL
+; 		PR_WR_IO()
+; 		PRINTLN("--") 		;
+; 		jsr 	PrNL
+; 		;--
+; 		nop
  		;--
- 		nop
-
- 		jsr 	List
- 		jsr 	PrNL
+; 		jsr 	List
+; 		jsr 	PrNL
 
 ; 		;-- check the LineNo size
 ; 		ZSET(ZRd,TOKBUF-1) 	; read memory from TOKBUF
@@ -93,7 +100,7 @@ Main: ; MAIN code
  		GETAX(LNNUM)
  		jsr 	PrAXHex 	; line no as hex
  		lda 	#' '
- 		jsr 	PrCh 		; space
+ 		jsr 	PutChr 		; space
 
  		GETAX(NXTLN)
  		jsr 	PrAXHex 	; address as hex
