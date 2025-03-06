@@ -23,4 +23,4 @@ T_String         .EQU  $00FD
 Parse            .EQU  $F490
 TokFind          .EQU  $F567
 TokFound         .EQU  $F595
-L_LineNo         .EQU  $F711
+L_LineNo         .EQU  $F754
