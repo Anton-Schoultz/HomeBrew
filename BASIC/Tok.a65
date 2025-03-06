@@ -16,8 +16,6 @@
 ;*  P_IsToken           Parse for a token, returns TOKNO or CHRGOT, returns found T/F
 ;*  P_LineNo            Parse line numebr and place int TOKBUF
 ;*  P_Number            parse a number into token & value
-;*  P_Part              parse a part of the line
-;*  P_PartNxt           advance and do part
 ;*  P_String            parse quoted string into token
 ;*  P_Var               Check for variable name
 ;*  P_VarName           long variable name
@@ -78,14 +76,11 @@ ParseIn: ;Parse from memory into TOKBUF
  		;-- digit - so do line number
  		jsr 	P_LineNo
  		lda 	CHRGOT
-
+ 		;-- fall through to do parts
 P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
-
-
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
  		jsr 	ChrWr
-
  		;-- check for T_LnNo
  		lda 	TOKBUF
  		BR_ANE(T_Line,P_StmntX)
@@ -95,43 +90,42 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sbc 	#LOW(TOKLEN)
  		;-- fill it in
  		sta 	TOKLEN
+		;-- save length of the whole line for editor
+ 		sec
+ 		lda 	ZWr
+ 		sbc 	#LOW(TOKBUF)
+ 		sta	LNLEN
  		;--
 P_StmntX 	rts 			; done with the whole line
-
-P_PartNxt: ; advance and do part
+P_PartNxt 	;- advance and do part
  		jsr 	GetChr
-P_Part: ; parse a part of the line
+P_Part 		;- parse a part of the line
  		jsr 	SkipBlank 	; skipover leading blank/tabs
  		BR_T(P_KeyWord) 	; Not-null -> P_KeyWord
  		rts 			; null end
- 		;-- check for keyword
-P_KeyWord:
+P_KeyWord 	;-- check for keyword
  		jsr 	P_IsToken 	; check if a keyword
  		BR_F(PNotKey) 		; no -> PNotKey, A=CHRGOT
  		;-- have a token in A, place it and continue
  		jsr 	ChrWr
  		bra 	P_PartNxt 	; loop for more
-
 PNotKey 	;-- see if we have a number
  		jsr 	IsDigit 	; check if CHRGOT is a digit
  		BR_F(PNotDigit)
  		;-- digit, so collect as number
  		jsr 	P_Number 	; parse number and tokenise it
  		bra 	P_Part 		; loop for more
-
 PNotDigit 	;- is it a quoted string?
  		lda 	CHRGOT
  		BR_ANE('"',PNotStr) 	; A<>" -> PNotStr
  		;-- do parse for [Str] xxxxxx 00
  		jsr 	P_String
  		bra 	P_PartNxt 	; more
-
 PNotStr 	; not string, try varname
  		jsr 	IsAlpha
  		BR_F(PNotVar)
  		jsr 	P_Var
  		bra 	P_Part 		; more
-
 PNotVar 	; not varname, so copy as-is
  		lda 	CHRGOT
  		jsr 	ChrWr

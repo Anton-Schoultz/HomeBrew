@@ -28,7 +28,7 @@
 #define HEXSZ 16
 
 ; size including null at the end
-#define NUMSZ 7
+#define NUMSZ 6
 
 _Math 		= $
 

@@ -71,6 +71,8 @@ Main: ; MAIN code
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
 
+ 		HEX_DUMP(LNNUM)		; LNNUM, NXTLN, LNLEN, TOKNO, VARID
+
  		PR_ZSUP_ON()
 
  		;-- List the line in TOKBUF
@@ -80,7 +82,7 @@ Main: ; MAIN code
  		jsr 	PutChr
 
 	BREAK($30)
-
+ 		PR_ZSUP_OFF()
  		jsr 	Run
 
  		HALT()

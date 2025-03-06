@@ -49,6 +49,7 @@ Short(ZTmp) 	; Temp byte
 .org $0040
 Int(LNNUM) 	; Line number
 Int(NXTLN) 	; address of next line
+Short(LNLEN)	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID)	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
