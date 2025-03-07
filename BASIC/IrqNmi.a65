@@ -1,11 +1,17 @@
-; IRQ.a65
- 		;--
+;=================================================================== IRQ ==============
+;*  Irq                 Interrupt Request service routine
+;*  IrqBrk              Handle BRK interrupt
+;*  IrqRtn              Restore registers and return from IRQ
+;*  Nmi                 Non-Maskable interrupt service handler
+;*
 ; Interrupt handler for BRK, IRQ and NMI
- 		;--
+;
 ; BRK interrupt goes via vector V_IRQBRK,
 ; IRQ is handled via vector V_IRQ
 ; NMI is handled via vector V_NMI
-
+#ifdef hide
+.NOLIST
+#endif
 #ifndef _Irq
 #define _Irq
 
@@ -58,9 +64,9 @@ IrqBrk0 	dec 	Z_IrqPtr 	; decr low
  		jsr 	PrAXHex
  		;-- print error code
  		lda 	#':'
- 		JSR 	ChrOut
+ 		jsr 	ChrOut
  		lda 	HLTFLG
- 		JSR 	PrAHex
+ 		jsr 	PrAHex
  		lda 	#'*'
  		jsr 	ChrOut
  		jsr 	PrNL
@@ -108,4 +114,9 @@ NmiRtn 		;-- Restore registers and return
 
  		;-- .echo $-Irq
  		;-- .echo " bytes for Irq.a65\r"
+
+.echo "  IrqNmi\tuses "
+.echo $-Irq
+.echo " Bytes\n"
+
 #endif

@@ -22,9 +22,9 @@ X_Rem: ; code to execute the Rem
  		sta 	ZRd+1
  		rts
 
-.echo "  "
+.echo "  _Rem\t\tuses "
 .echo $-_Rem
-.echo " Bytes in _Rem\n"
+.echo " Bytes\n"
 .nolist
 #endif
 

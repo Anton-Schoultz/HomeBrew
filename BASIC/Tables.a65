@@ -15,9 +15,9 @@ _basic 		= $
 BLD 		= BLD_CODE
 #include "All.a65"
 
-.echo "  "
+.echo "  _BASIC\tuses "
 .echo $-_basic
-.echo " Bytes in Basic code\n"
+.echo " Bytes\n"
 
 PAGE() 		; XX00
 _TBL 		= $
@@ -43,6 +43,6 @@ BLD 		= BLD_TBL_RUN
  		;-- .echo $-TblRun
  		;-- .echo " Bytes in TblRun\n"
 
-.echo "  "
+.echo "  _Tables\tuse  "
 .echo $-_TBL
-.echo " Total Bytes in Tables\n"
+.echo " Bytes\n"

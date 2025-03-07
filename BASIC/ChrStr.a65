@@ -129,12 +129,6 @@
 ; PR_ZSUP_OFF()	Leading zeros stay
 #define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
-
-; PRINT(str) 	Print in-line string
-#define PRINT(str) 	jsr _Print_ \ .db "str",0
-
-; PRINTLN(str) 	Print in-line string with CR,LF
-#define PRINTLN(str) 	PRINT(str) \ jsr PrNL
  		;--
 ChrRd 		= $0000 		; increment pointer and fetch, save in CHRGOT
 ZRd 		= $07 			; points to character just fetched
@@ -336,9 +330,9 @@ PrNL: ; print CR,LF to CharOut
  		lda 	#LF
  		jmp 	PutChr
 
-.echo "  "
+.echo "  _ChrStr\tuses "
 .echo $-_ChrStr
-.echo " Bytes in _ChrStr\n"
+.echo " Bytes\n"
 
 .LIST 					;-- End of ChrStr
 

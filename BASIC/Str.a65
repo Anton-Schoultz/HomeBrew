@@ -1,0 +1,167 @@
+#ifdef hide
+.NOLIST
+#endif
+
+;=================================================================== STR ============= 
+;*  StrAdd              Append string (ZStr) to STRBUF (Recall)
+;*  StrAddNum           Append the converted numeric (in NUMBUF) to STRBUF [AXY]
+;*  StrClr              Clear STRBUF
+;*  StrCpy              Copy STRBUF to memory at ZStr (Store)
+;*  StrEnd              Save index and exit
+;*  StrHead             Truncate STRBUF at Y
+;*  StrLit              Append literal to STRBUF [AX]
+;*  StrOut              Copy STRBUF to output (Print)
+;*  StrOvr              Overflow
+;*  StrSubMT            Make string empty
+;*  StrTail             Keep from Y onwards
+;*
+;
+; STRSZ			Size for STRBUF
+; STRBUF		Buffer space for building up sting results
+; Int(ZStr) 		ZStr points to string result
+;
+; Short(ZStrLen)	Length of STRBUF used (write index)
+
+
+_Str 		= $
+
+;----------------------------------------------- StrClr 
+StrClr: ; Clear STRBUF
+ 		ldy 	#0
+ 		tay
+StrClrL 	sta 	(ZStr),y
+ 		iny
+ 		cpy 	#STRSZ
+ 		bne 	StrClrL
+ 		rts
+
+;----------------------------------------------- StrLit 
+StrLit: ; Append literal to STRBUF [AX]
+; uses ChrRd to get next byte from source
+; CHRGOT will be T_String
+; exits with CHRGOT=Null (terminator of string)
+ 		ldx 	ZStrLen
+StrLitL 	jsr 	ChrRd
+ 		sta 	STRBUF,X
+ 		beq 	StrLitX 	; ending null
+ 		;-- 
+ 		inx
+ 		cpx 	#STRSZ
+ 		bne 	StrLitL 	; in size
+ 		;-- overflow
+ 		dex 			; back up to last char
+ 		lda 	#0 		; make it null
+ 		sta 	STRBUF
+ 		;-- fall through to save index
+StrLitX 	stx 	ZStrLen
+ 		rts
+
+;----------------------------------------------- StrOut 
+StrOut: ; Copy STRBUF to output (Print)
+ 		ldy 	#0
+StrOutL 	lda 	STRBUF,y
+ 		pha
+ 		JSR 	PutChr 		; A -> mem/io
+ 		pla
+ 		beq 	StrOutX 	; null -> done
+ 		iny
+ 		beq 	StrOutX 	; max of 256 -> done
+ 		cpy 	#STRSZ 		; buf size?
+ 		bne 	StrOutL
+ 		;-- end reached, force null
+ 		lda 	#0
+ 		sta 	(ZStr),y
+StrOutX 	rts
+
+
+;----------------------------------------------- StrCpy 
+StrCpy: ; Copy STRBUF to memory at ZStr (Store)
+ 		ldy 	#0
+StrCpyL 	lda 	STRBUF,y
+ 		sta 	(ZStr),y
+ 		beq 	StrCpyX 	; null -> done
+ 		iny
+ 		beq 	StrCpyX 	; max of 256 -> done
+ 		cpy 	#STRSZ 		; buf size?
+ 		bne 	StrCpyL
+ 		;-- end reached, force null
+ 		lda 	#0
+ 		sta 	(ZStr),y
+StrCpyX 	rts
+
+;----------------------------------------------- StrAddNum 
+StrAddNum: ; Append the converted numeric (in NUMBUF) to STRBUF [AXY]
+ 		ZSET(ZStr,NUMBUF)
+
+;----------------------------------------------- StrAdd 
+StrAdd: ; Append string (ZStr) to STRBUF (Recall)
+ 		ldy 	#0
+ 		ldx 	ZStrLen
+StrAddL 	lda 	(ZStr),y
+ 		sta 	STRBUF,X
+ 		beq 	StrEnd 		; ending null
+ 		;-- 
+ 		iny
+ 		inx
+ 		cpx 	#STRSZ
+ 		bne 	StrAddL 	; in size
+StrOvr: ; Overflow
+ 		dex 			; back up to last char
+ 		lda 	#0 		; make it null
+ 		sta 	STRBUF,x
+ 		;-- fall through to save index
+StrEnd: ; Save index and exit
+ 		stx 	ZStrLen
+ 		rts
+
+;----------------------------------------------- StrTail 
+StrTail: ; Keep from Y onwards
+ 		;-- index is outof range so result is empty
+ 		cpy 	STRSZ
+ 		bpl 	StrSubMT 	; could jmp to StrClr
+ 		;-- index beyond end so result is empty
+ 		cpy 	ZStrLen
+ 		bpl 	StrSubMT 	; could jmp to StrClr
+ 		;-- 
+ 		ldx 	#0
+StrSubL 	lda 	STRBUF,y
+ 		sta 	STRBUF,x
+ 		beq 	StrEnd 		; save len & exit
+ 		iny
+ 		inx
+ 		cpx 	#STRSZ
+ 		bne 	StrSubL
+ 		bra 	StrOvr 		; force stop at max
+
+;----------------------------------------------- StrSubMT 
+StrSubMT: ;Make string empty
+ 		lda 	#0
+ 		sta 	STRBUF
+ 		sta 	ZStrLen
+ 		rts
+
+;----------------------------------------------- StrHead 
+StrHead: ; Truncate STRBUF at Y
+ 		;-- index is out of range - keep all
+ 		cpy 	STRSZ
+ 		bpl 	StrHeadX 	; keep all
+ 		;-- index beyond end - keep all
+ 		cpy 	ZStrLen
+ 		bpl 	StrHeadX 	; keep all
+ 		;-- place the nul
+ 		lda 	#0
+ 		sta 	STRBUF,Y
+ 		;-- save new index
+ 		sty 	ZStrLen
+StrHeadX 	rts
+
+
+
+
+
+
+.echo "  _Str\t\tuses "
+.echo $-_Str
+.echo " Bytes\n"
+.nolist
+

@@ -1,0 +1,51 @@
+#ifdef hide
+.NOLIST
+#endif
+;=================================================================== EVAL =============
+;*  EvalStr             Evaluate a string expression
+;*  EvalStrNum          convert numeric result to formated sting and append to STRBUF
+;*
+_Eval 		= $
+
+;----------------------------------------------- Eval
+EvalStr: ; Evaluate a string expression
+ 		jsr 	StrClr 		; clear the result
+
+EvalStrL 	; check the token
+ 		lda 	CHRGOT
+ 		;-- string literal ?
+ 		BR_ANE(T_String,EvalStr1)
+ 		jsr 	StrLit 		; append litteral
+
+EvalStr1 	; Numeric value?
+ 		BR_ANE(T_Number,EvalStr2)
+ 		jsr 	FetchNum 	; get the number value
+ 		jsr 	EvalStrNum 	; convert, format & append
+ 		bra 	EvalStrNxt
+
+
+EvalStr2
+; RIGHT$	-> StrTail
+; LEFT$		-> StrHead
+
+EvalStrNxt 	;-- next token
+ 		jsr 	ChrRd
+ 		bne 	EvalStrL
+ 		rts
+
+;----------------------------------------------- EvalStrNum
+EvalStrNum: ; convert numeric result to formated string and append to STRBUF
+ 		jsr 	NumCvt 		; convert -> NUMBUF
+ 		jsr 	NumFmt 		; format (Zeroes)
+ 		jmp 	StrAddNum 	; STRBUF += NUMBUF
+
+
+
+
+
+.echo "  _Eval\t\tuses "
+.echo $-_Eval
+.echo " Bytes\n"
+.nolist
+
+

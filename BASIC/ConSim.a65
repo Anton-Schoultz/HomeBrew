@@ -24,7 +24,7 @@ _ConSim 	= $
 
 ;----------------------------------------------- ConOut
 ConOut: ;Write character to output (screen)
- 		cmp 	#CLS 		; Form Feed = Clear Screen
+ 		cmp 	#_FF 		; Form Feed = Clear Screen
  		beq 	ConCls
 
  		cmp 	#HT 		; TAB

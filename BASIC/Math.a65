@@ -1,6 +1,6 @@
 ;=================================================================== MATH =============
 ;*  Bin2BCD             Convert binary value in A (0-99) into BCD in A, (high digit in X)
-;*  CvtNum              Convert NUMBER(24Bit) to digits in CVTBUF
+;*  NumCvt              Convert NUMBER(24Bit) to digits in NUMBUF
 ;*  Hex2Nib             '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump             hex dump memory (ZPtr) to output io/mem
 ;*  NumDT               NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
@@ -25,7 +25,8 @@
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
 
-#define HEXSZ 16
+; bytes per line of Hex Dump
+#define HEXSZ 8
 
 ; size including null at the end
 #define NUMSZ 6
@@ -168,7 +169,7 @@ PrNibX 		tax
  		plx
  		jmp 	PutChr 		; Write/Send
 
-;----------------------------------------------- CvtNumDT
+;----------------------------------------------- NumCvtDT
 NumDT: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUMTMP  by 10, remainder in A [AY]
  		ldy 	#24 		; 24 bits
@@ -214,15 +215,15 @@ NumSup: ; removing leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
  		ldy 	#0
-NumSupL 	lda 	CVTBUF,y
+NumSupL 	lda 	NUMBUF,y
  		cmp 	#'0'
  		bne 	NumSupC 	; go copy
  		iny
  		dex
  		bne 	NumSupL
 NumSupC 	ldx 	#0
-NumSupCL 	lda 	CVTBUF,y
- 		sta 	CVTBUF,x
+NumSupCL 	lda 	NUMBUF,y
+ 		sta 	NUMBUF,x
  		beq 	NumSupX
  		inx
  		iny
@@ -234,21 +235,21 @@ NumSpc: ; blank leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
  		ldy 	#0
-NumSpcL 	lda 	CVTBUF,y
+NumSpcL 	lda 	NUMBUF,y
  		cmp 	#'0'
  		bne 	NumSpcX 	; go copy
  		lda 	#' '
- 		sta 	CVTBUF,y
+ 		sta 	NUMBUF,y
  		iny
  		dex
  		bne 	NumSpcL
 NumSpcX 	rts
 
 ;----------------------------------------------- PrNum
-PrNum: ; print NUMBER as digits to output (mem/io)
- 		jsr 	CvtNum
+PrNum: ; print NUMBER as digits to NUMBUF then send to (mem/io)
+ 		jsr 	NumCvt
  		jsr 	NumFmt
- 		LDAX(CVTBUF)
+ 		LDAX(NUMBUF)
  		jmp 	PrStrAX
 
 ;----------------------------------------------- RdNum
@@ -276,35 +277,35 @@ RdNumAX 	jsr 	GetChr 		; next character
 RdNumX 		ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
  		rts
 
-;----------------------------------------------- CvtNum
-CvtNum: ; Convert NUMBER(24Bit) to digits in CVTBUF
+;----------------------------------------------- NumCvt
+NumCvt: ; Convert NUMBER(24Bit) to digits in NUMBUF
 
  		lda 	#'+'
- 		sta 	CVTBUF
+ 		sta 	NUMBUF
 
  		ldx 	#NUMSZ
  		lda 	#0
- 		sta 	CVTBUF,x
+ 		sta 	NUMBUF,x
  		dex
- 		sta 	CVTBUF,x
+ 		sta 	NUMBUF,x
  		dex
-CvtNumL 	;- num/10 remainder as digit
+NumCvtL 	;- num/10 remainder as digit
  		phx 			; save output index
  		jsr 	NumDT 		; div NUMTMP by 10, remainder in A
  		plx 			; recall index
  		ora 	#'0' 		; convert remainder to a digit
- 		sta 	CVTBUF,x 	; store the digit
+ 		sta 	NUMBUF,x 	; store the digit
  		dex 			; back-up one pos to the left
- 		bpl 	CvtNumL 	; loop until done
+ 		bpl 	NumCvtL 	; loop until done
  		;-- Place sign in NR[0] based on SGN
 ; 		LDA 	#'+'
 ; 		LDY 	NA_SGN
-; 		BPL 	CvtNumM
+; 		BPL 	NumCvtM
 ; 		LDA 	#'-'
-;   CvtNumM 	STA 	CVTBUF 		; place sign at Res[0]
+;   NumCvtM 	STA 	NUMBUF 		; place sign at Res[0]
  		rts
 
-.echo "  "
+.echo "  _Math\t\tuses "
 .echo $-_Math
-.echo " Bytes in _Math\n"
+.echo " Bytes\n"
 

@@ -1,5 +1,6 @@
 ;=================================================================== VARIABLES ========
 ;*
+
 ;----------------------------------------------- ZPg Code	$000x
 ; ZRd		ChrRd  address to read next char from
 ; ZWr		ChrWr  address to send char to
@@ -22,7 +23,15 @@
 #ifdef hide
 .NOLIST
 #endif
+;=================================================================== CONSTANTS ========
 
+; BUFSZ() Size for INBUF,TOKBUF
+#define BUFSZ() 64
+
+; STRSZ Size for STRBUF
+#define STRSZ 128
+
+;=================================================================== CHRRD, VECTORS ===
 .org 0
 ; $0000 16 bytes for z-pg code
 ZPgCode 	.BLOCK 	16
@@ -40,31 +49,39 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 .org $0020
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
+Int(ZStr) 	; ZStr points to string result
 
- 		;--
+
 .org $0030
+;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 
+Short(ZStrLen)	; length of STRBUF used (write index)
+
 .org $0040
+;----------------------------------------------- Code Lines
 Int(LNNUM) 	; Line number
 Int(NXTLN) 	; address of next line
-Short(LNLEN)	; length of tokenised line in TOKBUF (for editor)
+Short(LNLEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
-Short(VARID)	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
+Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
 .org $48
+;----------------------------------------------- DBug
 Var(DBUGNUM,6)
 
 .org $0050
-Var(CVTBUF,8) 	; Conversion work area
+;----------------------------------------------- Numeric
+Var(NUMBUF,8) 	; Conversion work area
 Var(NUMTMP,4) 	; Temp number
 Var(NUMBER,4) 	; Number parsed
 
 .org $60
-Int(Z_IrqPtr)	; used in IRQ code
+;----------------------------------------------- Irq / Nmi
+Int(Z_IrqPtr) 	; used in IRQ code
 
-.export LNNUM,NXTLN,NUMTMP,NUMBER,CVTBUF,DBUGNUM
+.export LNNUM,NXTLN,NUMTMP,NUMBER,NUMBUF,DBUGNUM
 
 
 ;=================================================================== STACK ============
@@ -73,9 +90,11 @@ Int(Z_IrqPtr)	; used in IRQ code
 
 ;=================================================================== SYSVARS ==========
 .org $0200
+;----------------------------------------------- Basic Editing
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
-Var(STRBUF,BUFSZ) ; buffer for strings
+;----------------------------------------------- String
+Var(STRBUF,STRSZ) ; buffer for strings
 
 .export STRBUF,TOKBUF,INBUF
 

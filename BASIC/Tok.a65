@@ -90,11 +90,11 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sbc 	#LOW(TOKLEN)
  		;-- fill it in
  		sta 	TOKLEN
-		;-- save length of the whole line for editor
+ 		;-- save length of the whole line for editor
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
- 		sta	LNLEN
+ 		STA 	LNLEN
  		;--
 P_StmntX 	rts 			; done with the whole line
 P_PartNxt 	;- advance and do part
@@ -133,8 +133,9 @@ PNotVar 	; not varname, so copy as-is
  		bra 	P_Part
 
 ;----------------------------------------------- ParseClr
-ParseClr 	ldy 	#0
- 		lda 	#$EE
+; clear teh tokbuf (not realy required, butmake debuggin easier)
+ParseClr 	lda 	#$EE
+ 		ldy 	#0
 ParseClrL 	sta 	TOKBUF,y
  		iny
  		cpy 	#BUFSZ
@@ -493,8 +494,6 @@ L_Number: ; list number
  		jsr 	FetchNum
  		;-- convert & output number
  		jsr 	PrNum
-; 		lda 	#' '
-; 		jsr 	PutChr
  		;--
  		rts
 ;----------------------------------------------- FetchNum
@@ -598,7 +597,7 @@ L_LineNo: ; list LineNo
 .export TblKeyword,TblRun
 
 
-.echo "  "
+.echo "  _Tok\t\tuses "
 .echo $-_Tok
-.echo " Bytes in _Tok\n"
+.echo " Bytes\n"
 

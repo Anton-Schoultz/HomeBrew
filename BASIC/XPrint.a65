@@ -48,9 +48,9 @@ X_PrintXNL 	;-- end off with Cr LF if needed
 X_PrintX 	rts
 
 
-.echo "  "
+.echo "  _Print\tuses "
 .echo $-_Print
-.echo " Bytes in _Print\n"
+.echo " Bytes\n"
 .nolist
 #endif
 

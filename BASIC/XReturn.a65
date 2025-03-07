@@ -14,9 +14,9 @@ X_Return: ; code to execute the Return
 
 
 
-.echo "  "
+.echo "  _Return\tuses "
 .echo $-_Return
-.echo " Bytes in _Return\n"
+.echo " Bytes\n"
 .nolist
 #endif
 

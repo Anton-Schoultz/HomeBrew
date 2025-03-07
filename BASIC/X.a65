@@ -7,12 +7,12 @@
 _Tmp = $
 
 ;- X_Tmp
-X_Tmp:: Execute Tmp
+X_Tmp:; Execute Tmp
 
 
-.echo "  "
+.echo "  _Tmp\tuses "
 .echo $-_Tmp
-.echo " Bytes in Tmp\n"
+.echo " Bytes\n"
 .nolist
 #endif
 
