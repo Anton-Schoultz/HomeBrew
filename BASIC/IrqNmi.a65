@@ -115,7 +115,7 @@ NmiRtn 		;-- Restore registers and return
  		;-- .echo $-Irq
  		;-- .echo " bytes for Irq.a65\r"
 
-.echo "  IrqNmi\tuses "
+.echo "  _IrqNmi\tuses "
 .echo $-Irq
 .echo " Bytes\n"
 

@@ -57,63 +57,63 @@ Warm: ;Warm Start entry point
 Main: ; MAIN code
  		CLS()
 
- 		jsr 	StrClr 		; wipe it
+; 		jsr 	StrClr 		; wipe it
+;
+; 		ZSET(ZStr,Text) 	; point to text
+; 		jsr 	StrAdd 		; append
+;
+; 		jsr 	StrOut
+; 		lda 	#'|'
+; 		jsr 	ChrOut
+; 		jsr 	PrNL
+;
+; 		jsr 	StrLower
+;
+; 		jsr 	StrOut
+; 		lda 	#'|'
+; 		jsr 	ChrOut
+; 		jsr 	PrNL
+;
+; 		HALT()
 
- 		ZSET(ZStr,Text) 	; point to text
- 		jsr 	StrAdd 		; append
 
- 		jsr 	StrOut
- 		lda 	#'|'
- 		jsr 	ChrOut
- 		jsr 	PrNL
-
- 		jsr 	StrLower
-
- 		jsr 	StrOut
- 		lda 	#'|'
- 		jsr 	ChrOut
- 		jsr 	PrNL
-
- 		HALT()
-
-
-; 		PR_RD_MEM() 		; read from memory (ZRd)
-; 		PR_ECHO_OFF() 		; don't echo it
-; 		;-- write to TOKBUF
-; 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
-; 		PR_WR_MEM() 		; write to memory
+ 		PR_RD_MEM() 		; read from memory (ZRd)
+ 		PR_ECHO_OFF() 		; don't echo it
+ 		;-- write to TOKBUF
+ 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
+ 		PR_WR_MEM() 		; write to memory
  		;--
-; 		CLS()
+ 		CLS()
  		;--
-; 		;-- parse the tets source line
-; 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
+ 		;-- parse the tets source line
+ 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
  		;--
-; 		jsr 	ParseIn 	;parse from input (memory)
-; 		lda 	#0
-; 		jsr 	ChrWr 		; end of program
+ 		jsr 	ParseIn 	;parse from input (memory)
+ 		lda 	#0
+ 		jsr 	ChrWr 		; end of program
  		;--
-; 		;-- dump TOKBUF
-; 		PR_WR_IO()
-; 		HEX_DUMP(TOKBUF) 	; dump 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
+ 		;-- dump TOKBUF
+ 		PR_WR_IO()
+ 		HEX_DUMP(TOKBUF) 	; dump 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
  		;--
-; 		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
+ 		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
  		;--
-; 		PR_ZSUP_ON()
+ 		PR_ZSUP_ON()
  		;--
-; 		;-- List the line in TOKBUF
-; 		jsr 	List
+ 		;-- List the line in TOKBUF
+ 		jsr 	List
  		;--
-; 		lda 	#'_'
-; 		jsr 	PutChr
+ 		lda 	#'_'
+ 		jsr 	PutChr
  		;--
 ; 		BREAK($30)
-; 		PR_ZSUP_OFF()
-; 		jsr 	Run
+ 		PR_ZSUP_OFF()
+ 		jsr 	Run
 
  		HALT()
 

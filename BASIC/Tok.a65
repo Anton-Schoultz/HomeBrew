@@ -94,7 +94,7 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
- 		STA 	LNLEN
+ 		sta 	LNLEN
  		;--
 P_StmntX 	rts 			; done with the whole line
 P_PartNxt 	;- advance and do part
@@ -339,17 +339,17 @@ RunLn: ; Run line pointed to by ZRd
  		bne 	RunLnX 		; null = End-of-line
  		rts 			; done, return
 
-RunLnX 		jsr 	RunTok 		; (*2)
- 		bra 	RunLn
+RunLnX 		jsr 	RunTok
+ 		bra 	RunLn 		; (*2)
 
 RunTok: ; run token
  		lda 	CHRGOT
- 		CASE(T_Line,X_LineNo) 	; if A==T_Line goto X_LineNo
+ 		CASE(T_Line,X_LineNo) 	; if A==T_Line jmp X_LineNo
  		;-- otherwise token?
  		BR_AGE($80,RunJmp)
  		;-- not token, treat as ASCII
  		jsr 	PutChr
- 		rts
+ 		rts 			; -> (*2)
 
 RunJmp: ; run via jump table, return to (*2)
  		and 	#$7F

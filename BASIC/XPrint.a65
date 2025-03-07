@@ -18,34 +18,38 @@ _Print 		= $
 ;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
  		jsr 	GetChr 		; get the char
-X_PrintL 	beq 	X_PrintX 	; end of print
- 		;-- "xyz"
- 		BR_ANE(T_String,X_Print1)
- 		jsr 	ChrCopy
  		DONL()
- 		bra 	X_Print
-X_Print1 	;- Number (this will later go to evaluate, for now just literal)
- 		BR_ANE(T_Number,X_Print2)
- 		jsr 	FetchNum
- 		jsr 	PrNum
- 		DONL()
- 		bra 	X_Print
+X_PrL 		lda 	CHRGOT
+ 		beq 	X_PrEnd 	; null->end of print statement
 
-X_Print2 	;
- 		;--
+ 		;-- TSTR|TNUM  A=CHRGOT
+ 		BR_AEQ(T_String,X_Pr1)
+ 		BR_ANE(T_Number,X_Pr2)
 
-X_Print9 	;- ';' ','
- 		NONL()
- 		BR_AEQ($3B,X_Print) 	; ';'$3B
- 		BR_ANE($2C,X_PrintXNL) 	; ','$2C
+X_Pr1 		;-- handle TStr / TNum and loop back
+ 		DONL() 			; default is NL afterwards
+ 		jsr 	EvalStr
+ 		bra 	X_PrL
+
+X_Pr2 		; non-token so should be ',' or ';'
+ 		BR_AEQ($3B,X_Pr3) 	; ';'$3B
+ 		BR_ANE($2C,X_Pr4) 	; ','$2C
  		lda 	#HT 		; tab
  		jsr 	PutChr
- 		bra 	X_Print 	; loop for next part
 
-X_PrintXNL 	;-- end off with Cr LF if needed
- 		BR_NNL(X_PrintX) 	; no cr,lf -> exit
+X_Pr3		NONL()	; don't do the3 NL
+X_Pr4		jsr 	GetChr		; comsume , ; ??
+ 		bra 	X_PrL 		; loop for next part
+
+
+; end of print statement so output the buffer result
+X_PrEnd 	;-- output the result
+ 		jsr 	StrOut
+ 		;-- end off with Cr LF if needed
+ 		BR_NNL(X_PrX) 		; no cr,lf -> exit
  		jmp 	PrNL 		; output CR,LF and exit
-X_PrintX 	rts
+X_PrX 		rts
+
 
 
 .echo "  _Print\tuses "

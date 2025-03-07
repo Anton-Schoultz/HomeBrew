@@ -1,6 +1,6 @@
-;=================================================================== EVAL =============
-;*  EvalStr             Evaluate a string expression
-;*  EvalStrNum          convert numeric result to formated sting and append to STRBUF
+;=================================================================== EVAL ============= 
+;*  EvalStr             Evaluate a string expression [TSTR|TNUM]
+;*  EvalStrNum          convert numeric result to formated string and append to STRBUF
 ;*
 #ifdef hide
 .NOLIST
@@ -8,8 +8,8 @@
 
 _Eval 		= $
 
-;----------------------------------------------- Eval
-EvalStr: ; Evaluate a string expression
+;----------------------------------------------- Eval 
+EvalStr: ; Evaluate a string expression [TSTR|TNUM]
  		jsr 	StrClr 		; clear the result
 
 EvalStrL 	; check the token
@@ -17,6 +17,7 @@ EvalStrL 	; check the token
  		;-- string literal ?
  		BR_ANE(T_String,EvalStr1)
  		jsr 	StrLit 		; append litteral
+ 		bra 	EvalStrNxt
 
 EvalStr1 	; Numeric value?
  		BR_ANE(T_Number,EvalStr2)
@@ -28,14 +29,14 @@ EvalStr1 	; Numeric value?
 EvalStr2
 ; RIGHT$	-> StrTail
 ; LEFT$		-> StrHead
-
+ 		rts
 
 EvalStrNxt 	;-- next token
  		jsr 	ChrRd
  		bne 	EvalStrL
  		rts
 
-;----------------------------------------------- EvalStrNum
+;----------------------------------------------- EvalStrNum 
 EvalStrNum: ; convert numeric result to formated string and append to STRBUF
  		jsr 	NumCvt 		; convert -> NUMBUF
  		jsr 	NumFmt 		; format (Zeroes)
