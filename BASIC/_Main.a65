@@ -3,7 +3,7 @@
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN ============= 
+;=================================================================== MAIN =============
 ;*  Main                MAIN code
 ;*  Reset               Reset (Cold start)
 ;*  Warm                Warm Start entry point
@@ -16,7 +16,7 @@
 .org $F000
 _ROM 		=$
 .LIST
-;----------------------------------------------- START OF ROM 
+;----------------------------------------------- START OF ROM
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -35,12 +35,12 @@ Src020
 ; .db ",VAR=123"
 .db 0
  		;-- 0123456789a
-Text 		.DB 	"  Hello  ",0
+Text 		.DB 	"  Hello  1234  ",0
 Text1 		.DB 	" - Happy days",0
 
 .export Src020
 
-;----------------------------------------------- Reset 
+;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -48,12 +48,12 @@ Reset: ;Reset (Cold start)
  		cld 			; Binary mode
  		cli 			; Enable irqs
 
-;----------------------------------------------- Warm 
+;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit
 
-;----------------------------------------------- Main 
+;----------------------------------------------- Main
 Main: ; MAIN code
  		CLS()
 
@@ -67,7 +67,7 @@ Main: ; MAIN code
  		jsr 	ChrOut
  		jsr 	PrNL
 
- 		jsr 	StrTrim
+ 		jsr 	StrLower
 
  		jsr 	StrOut
  		lda 	#'|'
@@ -82,16 +82,16 @@ Main: ; MAIN code
 ; 		;-- write to TOKBUF
 ; 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
 ; 		PR_WR_MEM() 		; write to memory
- 		;-- 
+ 		;--
 ; 		CLS()
- 		;-- 
+ 		;--
 ; 		;-- parse the tets source line
 ; 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
- 		;-- 
+ 		;--
 ; 		jsr 	ParseIn 	;parse from input (memory)
 ; 		lda 	#0
 ; 		jsr 	ChrWr 		; end of program
- 		;-- 
+ 		;--
 ; 		;-- dump TOKBUF
 ; 		PR_WR_IO()
 ; 		HEX_DUMP(TOKBUF) 	; dump 8
@@ -100,17 +100,17 @@ Main: ; MAIN code
 ; 		jsr 	HexDump 	; dump next 8
 ; 		jsr 	HexDump 	; dump next 8
 ; 		jsr 	HexDump 	; dump next 8
- 		;-- 
+ 		;--
 ; 		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
- 		;-- 
+ 		;--
 ; 		PR_ZSUP_ON()
- 		;-- 
+ 		;--
 ; 		;-- List the line in TOKBUF
 ; 		jsr 	List
- 		;-- 
+ 		;--
 ; 		lda 	#'_'
 ; 		jsr 	PutChr
- 		;-- 
+ 		;--
 ; 		BREAK($30)
 ; 		PR_ZSUP_OFF()
 ; 		jsr 	Run
@@ -129,7 +129,7 @@ ROMEND 		= $
 
 
 
-;----------------------------------------------- hardware vectors 
+;----------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ

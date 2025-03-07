@@ -7,11 +7,13 @@
 ;*  StrEnd              Save index and exit
 ;*  StrHead             Truncate STRBUF at Y
 ;*  StrLit              Append literal to STRBUF [AX]
+;*  StrLower            convert to UPPER case
 ;*  StrOut              Copy STRBUF to output (Print)
 ;*  StrOvr              Overflow
 ;*  StrSubMT            Make string empty
 ;*  StrTail             Keep from Y onwards
 ;*  StrTrim             trim leading and trailing blanks
+;*  StrUpper            convert to UPPER case
 ;*
 ;
 ; STRSZ			Size for STRBUF
@@ -117,10 +119,6 @@ StrEnd: ; Save index and exit
  		stx 	ZStrLen
  		rts
 
- 		;-- ldy #6
- 		;-- jsr	StrTail		; RIGHT$(6)
-
-
 ;----------------------------------------------- StrTail
 StrTail: ; Keep from Y onwards
  		;-- index is outof range so result is empty
@@ -146,11 +144,6 @@ StrSubMT: ;Make string empty
  		sta 	STRBUF
  		sta 	ZStrLen
  		rts
-
-
- 		;-- ldy #20
- 		;-- jsr	StrHead		; LEFT$(20)
-
 
 ;----------------------------------------------- StrHead
 StrHead: ; Truncate STRBUF at Y
@@ -191,7 +184,36 @@ StrTrim3 	;-- now trim trailing ' '
  		sta 	STRBUF,x
  		dex
  		bne 	StrTrim3
-StrTrimX	rts
+StrTrimX 	rts
+
+;----------------------------------------------- StrUpper
+StrUpper: ; convert to UPPER case
+ 		ldy 	#$FF
+StrUpper1 	iny
+ 		lda 	STRBUF,Y
+ 		beq 	StrUpperX
+ 		BR_ALT('a',StrUpper1)
+ 		BR_AGE('{',StrUpper1)
+ 		and 	#$DF
+ 		sta 	STRBUF,Y
+ 		bra 	StrUpper1
+StrUpperX 	rts
+
+
+;----------------------------------------------- StrLower
+StrLower: ; convert to LOWER case
+ 		ldy 	#$FF
+StrLower1 	iny
+ 		lda 	STRBUF,Y
+ 		beq 	StrUpperX
+ 		BR_ALT('A',StrLower1)
+ 		BR_AGE('[',StrLower1)
+ 		ora 	#$20
+ 		sta 	STRBUF,Y
+ 		bra 	StrLower1
+StrLowerX 	rts
+
+
 
 
 .echo "  _Str\t\tuses "
