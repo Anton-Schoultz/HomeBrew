@@ -1,10 +1,11 @@
-#ifdef hide
-.NOLIST
-#endif
 ;=================================================================== EVAL =============
 ;*  EvalStr             Evaluate a string expression
 ;*  EvalStrNum          convert numeric result to formated sting and append to STRBUF
 ;*
+#ifdef hide
+.NOLIST
+#endif
+
 _Eval 		= $
 
 ;----------------------------------------------- Eval
@@ -28,6 +29,7 @@ EvalStr2
 ; RIGHT$	-> StrTail
 ; LEFT$		-> StrHead
 
+
 EvalStrNxt 	;-- next token
  		jsr 	ChrRd
  		bne 	EvalStrL
@@ -46,6 +48,6 @@ EvalStrNum: ; convert numeric result to formated string and append to STRBUF
 .echo "  _Eval\t\tuses "
 .echo $-_Eval
 .echo " Bytes\n"
-.nolist
+.list
 
 

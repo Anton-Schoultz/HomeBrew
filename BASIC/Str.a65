@@ -1,8 +1,5 @@
-#ifdef hide
-.NOLIST
-#endif
 
-;=================================================================== STR ============= 
+;=================================================================== STR =============
 ;*  StrAdd              Append string (ZStr) to STRBUF (Recall)
 ;*  StrAddNum           Append the converted numeric (in NUMBUF) to STRBUF [AXY]
 ;*  StrClr              Clear STRBUF
@@ -21,21 +18,26 @@
 ; Int(ZStr) 		ZStr points to string result
 ;
 ; Short(ZStrLen)	Length of STRBUF used (write index)
-
-
+#ifdef hide
+.NOLIST
+#endif
 _Str 		= $
 
-;----------------------------------------------- StrClr 
+
+
+
+;----------------------------------------------- StrClr
 StrClr: ; Clear STRBUF
  		ldy 	#0
- 		tay
-StrClrL 	sta 	(ZStr),y
+ 		tya
+ 		sta 	ZStrLen
+StrClrL 	sta 	STRBUF,y
  		iny
  		cpy 	#STRSZ
  		bne 	StrClrL
  		rts
 
-;----------------------------------------------- StrLit 
+;----------------------------------------------- StrLit
 StrLit: ; Append literal to STRBUF [AX]
 ; uses ChrRd to get next byte from source
 ; CHRGOT will be T_String
@@ -44,7 +46,7 @@ StrLit: ; Append literal to STRBUF [AX]
 StrLitL 	jsr 	ChrRd
  		sta 	STRBUF,X
  		beq 	StrLitX 	; ending null
- 		;-- 
+ 		;--
  		inx
  		cpx 	#STRSZ
  		bne 	StrLitL 	; in size
@@ -56,12 +58,12 @@ StrLitL 	jsr 	ChrRd
 StrLitX 	stx 	ZStrLen
  		rts
 
-;----------------------------------------------- StrOut 
+;----------------------------------------------- StrOut
 StrOut: ; Copy STRBUF to output (Print)
  		ldy 	#0
 StrOutL 	lda 	STRBUF,y
  		pha
- 		JSR 	PutChr 		; A -> mem/io
+ 		jsr 	PutChr 		; A -> mem/io
  		pla
  		beq 	StrOutX 	; null -> done
  		iny
@@ -74,7 +76,7 @@ StrOutL 	lda 	STRBUF,y
 StrOutX 	rts
 
 
-;----------------------------------------------- StrCpy 
+;----------------------------------------------- StrCpy
 StrCpy: ; Copy STRBUF to memory at ZStr (Store)
  		ldy 	#0
 StrCpyL 	lda 	STRBUF,y
@@ -89,18 +91,18 @@ StrCpyL 	lda 	STRBUF,y
  		sta 	(ZStr),y
 StrCpyX 	rts
 
-;----------------------------------------------- StrAddNum 
+;----------------------------------------------- StrAddNum
 StrAddNum: ; Append the converted numeric (in NUMBUF) to STRBUF [AXY]
  		ZSET(ZStr,NUMBUF)
 
-;----------------------------------------------- StrAdd 
+;----------------------------------------------- StrAdd
 StrAdd: ; Append string (ZStr) to STRBUF (Recall)
  		ldy 	#0
  		ldx 	ZStrLen
 StrAddL 	lda 	(ZStr),y
  		sta 	STRBUF,X
  		beq 	StrEnd 		; ending null
- 		;-- 
+ 		;--
  		iny
  		inx
  		cpx 	#STRSZ
@@ -114,15 +116,19 @@ StrEnd: ; Save index and exit
  		stx 	ZStrLen
  		rts
 
-;----------------------------------------------- StrTail 
+;		ldy #6
+;		jsr	StrTail		; RIGHT$(6)
+
+
+;----------------------------------------------- StrTail
 StrTail: ; Keep from Y onwards
  		;-- index is outof range so result is empty
- 		cpy 	STRSZ
+ 		cpy 	#STRSZ
  		bpl 	StrSubMT 	; could jmp to StrClr
  		;-- index beyond end so result is empty
  		cpy 	ZStrLen
  		bpl 	StrSubMT 	; could jmp to StrClr
- 		;-- 
+ 		;--
  		ldx 	#0
 StrSubL 	lda 	STRBUF,y
  		sta 	STRBUF,x
@@ -133,17 +139,22 @@ StrSubL 	lda 	STRBUF,y
  		bne 	StrSubL
  		bra 	StrOvr 		; force stop at max
 
-;----------------------------------------------- StrSubMT 
+;----------------------------------------------- StrSubMT
 StrSubMT: ;Make string empty
  		lda 	#0
  		sta 	STRBUF
  		sta 	ZStrLen
  		rts
 
-;----------------------------------------------- StrHead 
+
+;		ldy #20
+;		jsr	StrHead		; LEFT$(20)
+
+
+;----------------------------------------------- StrHead
 StrHead: ; Truncate STRBUF at Y
  		;-- index is out of range - keep all
- 		cpy 	STRSZ
+ 		cpy 	#STRSZ
  		bpl 	StrHeadX 	; keep all
  		;-- index beyond end - keep all
  		cpy 	ZStrLen
@@ -163,5 +174,5 @@ StrHeadX 	rts
 .echo "  _Str\t\tuses "
 .echo $-_Str
 .echo " Bytes\n"
-.nolist
+.list
 

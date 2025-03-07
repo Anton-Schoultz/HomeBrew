@@ -1,16 +1,22 @@
-; _MAIN
-
-; #define hide
-
+#define hide
 
 #include "Macros.a65"
 #include "_Vars.a65"
+
+;=================================================================== MAIN =============
+;*  Main                MAIN code
+;*  Reset               Reset (Cold start)
+;*  Warm                Warm Start entry point
+;*
+#ifdef hide
+; .NOLIST
+#endif
 
 
 .org $F000
 _ROM 		=$
 .LIST
-;======================================================================================
+;----------------------------------------------- START OF ROM
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -22,22 +28,18 @@ _ROM 		=$
 #include "Eval.a65" 			; Evaluator
 
 ALIGN(16)
- 		;-- Src010 		.DB 	"10 REM hello",0
 Src020
 .DB "PRINT 1234,456,9,"
 .db QT,"Hi",QT
 .db " 					;12"
 ; .db ",VAR=123"
 .db 0
-
+ 		;--      0123456789a
+Text 		.DB 	"Hello World",0
+Text1 		.DB 	" - Happy days",0
 
 .export Src020
 
-;=================================================================== MAIN CODE ========
-;*  Main                MAIN code
-;*  Reset               Reset (Cold start)
-;*  Warm                Warm Start entry point
-;*
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
@@ -53,43 +55,70 @@ Warm: ;Warm Start entry point
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
- 		PR_RD_MEM() 		; read from memory (ZRd)
- 		PR_ECHO_OFF() 		; don't echo it
- 		;-- write to TOKBUF
- 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
- 		PR_WR_MEM() 		; write to memory
-
  		CLS()
 
- 		;-- parse the tets source line
- 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
+		jsr	StrClr		; wipe it
 
- 		jsr 	ParseIn 	;parse from input (memory)
- 		lda 	#0
- 		jsr 	ChrWr 		; end of program
+		ZSET(ZStr,Text)		; point to text
+		jsr	StrAdd		; append
 
- 		;-- dump TOKBUF
- 		PR_WR_IO()
- 		HEX_DUMP(TOKBUF) 	; dump 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
+		ZSET(ZStr,Text1)	; point to text
+		jsr	StrAdd		; append
 
- 		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
 
- 		PR_ZSUP_ON()
+		jsr StrOut
+		jsr PrNL
 
- 		;-- List the line in TOKBUF
- 		jsr 	List
+		ldy #20
+		jsr	StrHead		; LEFT$(20)
+		jsr StrOut
+		jsr PrNL
 
- 		lda 	#'_'
- 		jsr 	PutChr
+		ldy #6
+		jsr	StrTail		; RIGHT$(6)
+		jsr StrOut
+		jsr PrNL
 
- 		BREAK($30)
- 		PR_ZSUP_OFF()
- 		jsr 	Run
+		HALT()
+
+
+; 		PR_RD_MEM() 		; read from memory (ZRd)
+; 		PR_ECHO_OFF() 		; don't echo it
+; 		;-- write to TOKBUF
+; 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
+; 		PR_WR_MEM() 		; write to memory
+ 		;--
+; 		CLS()
+ 		;--
+; 		;-- parse the tets source line
+; 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
+ 		;--
+; 		jsr 	ParseIn 	;parse from input (memory)
+; 		lda 	#0
+; 		jsr 	ChrWr 		; end of program
+ 		;--
+; 		;-- dump TOKBUF
+; 		PR_WR_IO()
+; 		HEX_DUMP(TOKBUF) 	; dump 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+ 		;--
+; 		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
+ 		;--
+; 		PR_ZSUP_ON()
+ 		;--
+; 		;-- List the line in TOKBUF
+; 		jsr 	List
+ 		;--
+; 		lda 	#'_'
+; 		jsr 	PutChr
+ 		;--
+; 		BREAK($30)
+; 		PR_ZSUP_OFF()
+; 		jsr 	Run
 
  		HALT()
 

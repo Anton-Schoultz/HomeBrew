@@ -94,6 +94,7 @@ Int(Z_IrqPtr) 	; used in IRQ code
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 ;----------------------------------------------- String
+.org $0280
 Var(STRBUF,STRSZ) ; buffer for strings
 
 .export STRBUF,TOKBUF,INBUF
