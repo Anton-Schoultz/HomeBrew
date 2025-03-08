@@ -18,13 +18,12 @@
 ;*  P_Number            parse a number into token & value
 ;*  P_String            parse quoted string into token
 ;*  P_Var               Check for variable name
-;*  P_VarName           long variable name
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  ParseIn             Parse from memory into TOKBUF
 ;*  Run                 Run from start
 ;*  RunLn               Run [LineNo] Stmnt.... 00
 ;*  SkipBlank           Skip blank/tabs, end char in A, T if not null
-;*  TokErr              dispaly invalid token as [xx]
+;*  TokErr              display invalid token as [xx]
 ;*  TokExpand           Expand the token .X to key word
 ;*  TokExpandA          Expand the token .A to key word
 ;*  TokFind             try to find a matching token
@@ -36,18 +35,18 @@
 
 _Tok 		= $
 
-;----------------------------------------------- ChkList
-;	ChkList: ; List of characters used by IsOneOf
-;	RelOp: ; Relational opperators
-;	.DB 	"<>=", 0
-;	Digit: ; List of digits 0..9
-;	.DB 	"0123456789",0
+; Value tokens, Bit0=Array, Bit1=String, Bit2=Literal
+;                  FF			;ff "x" Lit,Alpha, -
+T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
+;                  FD			;fd 123	Lit,Num  , -
+T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
+T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
+T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
+T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
+T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 
-T_Line 		= $FF 			; header includes line number
-T_Number 	= $FE 			; numeric value
-T_String 	= $FD 			; string of characters
-T_Var 		= $FC 			; simple variable (single char)
-T_VarName 	= $FB 			; long varname
+T_Line 		= $F0 			; header includes line number
+
 
 BAS_EOL 	= $00 			; end of line
 BAS_PRG 	= $00 			; end of program
@@ -362,7 +361,7 @@ RunStmnt 	;---------------------- STATEMENT
 RunLnX 		rts 			; done, return
 
 ;----------------------------------------------- TokErr
-TokErr: ; dispaly invalid token as [xx]
+TokErr: ; display invalid token as [xx]
  		lda 	#'['
  		jsr 	PutChr
  		lda 	TOKNO
@@ -392,22 +391,57 @@ ListLn: ; List line pointed to by ZRd
  		bra 	ListLn
 ListLnX 	jmp 	PrNL 		; NL and return
 
+
 ListTok 	; detokenise A=CHRGOT
  		sta 	TOKNO
  		CASE(T_Line,L_LineNo) 	;->L_LineNo, rts to (*1)
- 		CASE(T_Number,L_Number)
- 		CASE(T_String,L_String)
- 		CASE(T_Var,L_Var)
- 		CASE(T_VarName,L_VarName)
-; 		;-- otherwise token?
+
+ 		;-- values
+ 		and 	#$F8
+ 		cmp 	#$F8
+ 		bne 	ListNotVar
+
+ 		;-- Literal or name ?
+ 		lda TOKNO
+ 		BBR4 TOKNO,ListVarL	; Bit4=0 => Variable name
+
+ 		; literal value
+ 		and #$FE		; force as not Ary
+ 		CASE(T_NumLit,L_Number)
+ 		CASE(T_StrLit,L_String)
+		; should not get here
+		bra ListTokChr
+
+ 		;-- List a VarName
+ListVarL 	jsr 	GetChr
+ 		jsr 	IsAlphaNumeric
+ 		BR_F(ListVarStr)
+ 		lda 	CHRGOT
+ 		and 	#$7F
+ 		jsr 	PutChr
+ 		bra 	ListVarL
+
+ListVarStr 	BBR1 	TOKNO,ListVarAry ; String?
+ 		lda 	#'$' 		; yes, '$'
+ 		jsr 	PutChr
+ListVarAry 	BBR0 	TOKNO,ListNotVar ; array ?
+ 		lda 	#'(' 		; yes '('
+ 		jsr 	PutChr
+ 		rts
+
+ListNotVar 	;-- otherwise token?
+ 		lda 	TOKNO
  		BR_AGT(T_Max,TokErr)
  		BR_ALT($80,ListTokChr)
  		;-- expand the token .A
  		jsr 	TokExpandA
  		rts
+
 ListTokChr 	;-- not token, treat as ASCII
  		jsr 	PutChr
  		rts
+
+
 
 
 .export L_LineNo,T_Max
@@ -425,48 +459,50 @@ NextLine: ; point ZRd to the next line NXTLN
 ;=================================================================== VARIABLE =========
 P_Var: ; Check for variable name
 ; ZRd points at the initial alpha char
-;                7654.3210
-; Variable ID =  0($n.nnnn nnnnn=1-26 for A-Z
- 		;-- store Alpha so long
- 		and 	#$1F 		; mask to index 0-31 @,A-Z,...
- 		sta 	VARID
- 		;-- if next char isAlphaNum then long name
- 		jsr 	ChrRd 		; get next char
+; set VARID as $F8 Bit2=0(Var)
+ 		lda 	#$F8
+ 		sta 	TOKNO
+ 		ldy 	#0 		; 0-> chrgot Name[0]
+; scan forward (with Y) for non-alpha/num
+ 		iny
+ 		lda 	(ZRd),y
  		jsr 	IsAlphaNumeric
- 		BR_T(P_VarName) 	; A_Z,0-9 -> long name
- 		;-- single char var name - build up the id
- 		;-- start by shifting VARID - nnnnn
- 		;-- now check for $
- 		BR_ANE('$', P_Var1)
- 		jsr 	ChrRd 		; consume the '$'
- 		SMB5 	VARID 		; set bit 5='$'
-P_Var1 		;-- check for array '('
- 		BR_ANE('(', P_Var2)
- 		jsr 	ChrRd 		; consume the '('
- 		SMB6 	VARID 		; set bit 6='('
-P_Var2 		;-- now output token
- 		lda 	#T_Var
- 		jsr 	ChrWr
- 		;-- output VARID
- 		lda 	VARID
- 		jmp 	ChrWr 		; write and return
+ 		BR_F(P_Var2) 		; end, output & copy name
 
-;----------------------------------------------- P_VarName
-P_VarName: ; long variable name
-; TODO - for now output token and string of chars with null
- 		lda 	#T_VarName 	; token
- 		jsr 	ChrWr
- 		lda 	VARID
- 		ora 	#$40
- 		jsr 	ChrWr 		; 1st Alpha
+
+; if '$' then set Str bit1 and move on
+ 		cmp 	#'$'
+ 		bne 	P_Var1
+ 		SMB1 	TOKNO 		; set STR bit1
+ 		iny
+ 		lda 	(ZRd),y
+
+P_Var1 		; if '(' then set Ary bit0 and move on
+ 		cmp 	#'('
+ 		bne 	P_Var2
+ 		SMB0 	TOKNO 		; set ARY bit0
+ 		iny
+ 		lda 	(ZRd),y
+
+P_Var2 		; output Token from VARID
+ 		lda 	TOKNO
+ 		jsr 	PutChr 		; output token
  		lda 	CHRGOT
-P_VarNameL 	jsr 	ChrWr 		; 2nd char
- 		jsr 	ChrRd 		; get char
+
+P_Var3 		jsr 	PutChr 		; output first varname char
+
+P_Var4 		jsr 	ChrRd
+ 		beq 	P_VarX
+ 		BR_AEQ('(',P_Var3)
+ 		BR_AEQ('$',P_Var3)
  		jsr 	IsAlphaNumeric
- 		BR_T(P_VarNameL) 	;copy to line
- 		lda 	#0
- 		jsr 	ChrWr
- 		rts
+ 		BR_T(P_Var3) 		; end, output & copy name
+
+P_VarX 		rts
+
+
+
+
 
 ;----------------------------------------------- L_Var
 L_Var: ; list 'simple' variable
@@ -498,7 +534,7 @@ L_VarName: ; list long variable
 P_Number: ; parse a number into token & value
 ; for now were only doing 16bit int numbers
  		;-- Write Number token
- 		lda 	#T_Number
+ 		lda 	#T_NumLit
  		jsr 	ChrWr
  		;-- Parse number value
  		jsr 	RdNum
@@ -535,7 +571,7 @@ FetchNum: ; fetch number from the code -> NUMBER -> AX
 ;----------------------------------------------- P_String
 P_String: ; parse quoted string into token
  		;-- Write Number token
- 		lda 	#T_String
+ 		lda 	#T_StrLit
  		jsr 	ChrWr
  		;-- Copy until the closing quote
 P_StrL 		jsr 	ChrRd
@@ -614,7 +650,7 @@ L_LineNo: ; list LineNo
  		;--
  		rts
 
-.export T_String,T_Line,T_Number
+.export T_StrLit,T_Line,T_NumLit
 
 .export TokFind,TOKNO,TokFound,Parse
 

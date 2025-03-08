@@ -324,7 +324,7 @@ _Print_: ;Print in-line string
 _Print_X 	jmp 	(ZPtr) 		; jump to code after the in-line string
 
 ;----------------------------------------------- PrNL
-PrNL: ; print CR,LF to CharOut
+PrNL: ; print CR,LF to PutChr -> mem/io
  		lda 	#CR
  		jsr 	PutChr
  		lda 	#LF

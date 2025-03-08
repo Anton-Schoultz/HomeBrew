@@ -58,7 +58,7 @@ StrAddChrX 	stx 	ZStrLen
 ;----------------------------------------------- StrLit 
 StrLit: ; Append literal to STRBUF [AX]
 ; uses ChrRd to get next byte from source
-; CHRGOT will be T_String
+; CHRGOT will be T_StrLit
 ; exits with CHRGOT=Null (terminator of string)
  		ldx 	ZStrLen
 StrLitL 	jsr 	ChrRd

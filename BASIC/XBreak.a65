@@ -30,7 +30,7 @@ W_Break 	.DB 	"BREA",'K'+$80
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-T_Break 	= LOW($)
+T_Break 	= LOW($)+$80
 .DW 	X_Break
 .nolist
 .export T_Break

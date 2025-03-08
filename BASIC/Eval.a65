@@ -15,12 +15,12 @@ EvalStr: ; Evaluate a string expression [TSTR|TNUM]
 EvalStrL 	; check the token
  		lda 	CHRGOT
  		;-- string literal ?
- 		BR_ANE(T_String,EvalStr1)
+ 		BR_ANE(T_StrLit,EvalStr1)
  		jsr 	StrLit 		; append litteral
  		bra 	EvalStrNxt
 
 EvalStr1 	; Numeric value?
- 		BR_ANE(T_Number,EvalStr2)
+ 		BR_ANE(T_NumLit,EvalStr2)
  		jsr 	FetchNum 	; get the number value
  		jsr 	EvalStrNum 	; convert, format & append
  		bra 	EvalStrNxt

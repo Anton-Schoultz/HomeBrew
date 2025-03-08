@@ -30,7 +30,7 @@ W_Return 	.DB 	"RETUR",'N'+$80
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-T_Return 	= LOW($)
+T_Return 	= LOW($)+$80
 .DW 	X_Return
 .nolist
 .export T_Return

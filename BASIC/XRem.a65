@@ -38,7 +38,7 @@ W_Rem 		.DB 	"RE",'M'+$80
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-T_Rem 		= LOW($)
+T_Rem 		= LOW($)+$80
 .DW 	X_Rem
 .nolist
 .export T_Rem

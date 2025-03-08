@@ -68,7 +68,7 @@ W_Print 	.DB 	"PRIN",'T'+$80
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-T_Print 	= LOW($)
+T_Print 	= LOW($)+$80
 .DW 	X_Print
 .nolist
 .export T_Print
