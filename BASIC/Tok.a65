@@ -22,11 +22,11 @@
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  ParseIn             Parse from memory into TOKBUF
 ;*  Run                 Run from start
-;*  RunJmp              run via jump table, return to (*2)
-;*  RunLn               Run line pointed to by ZRd
-;*  RunTok              run token
+;*  RunLn               Run [LineNo] Stmnt.... 00
 ;*  SkipBlank           Skip blank/tabs, end char in A, T if not null
-;*  TokExpand           Expand the token to key word (X is index)
+;*  TokErr              dispaly invalid token as [xx]
+;*  TokExpand           Expand the token .X to key word
+;*  TokExpandA          Expand the token .A to key word
 ;*  TokFind             try to find a matching token
 ;*  X_LineNo            Get LNNUM & Set up NXTLN
 ;*
@@ -34,7 +34,6 @@
 .NOLIST
 #endif
 
-PARAGRAPH()
 _Tok 		= $
 
 ;----------------------------------------------- ChkList
@@ -87,7 +86,7 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		;-- line no, so get line length
  		sec
  		lda 	ZWr
- 		sbc 	#LOW(TOKLEN)
+ 		sbc 	#LOW(TOKLEN+1) 	; one byte offset for ChrGet
  		;-- fill it in
  		sta 	TOKLEN
  		;-- save length of the whole line for editor
@@ -97,6 +96,7 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sta 	LNLEN
  		;--
 P_StmntX 	rts 			; done with the whole line
+
 P_PartNxt 	;- advance and do part
  		jsr 	GetChr
 P_Part 		;- parse a part of the line
@@ -149,7 +149,8 @@ BasTop: ; Setup to read from start of basic, for now TOKBUF
  		ZSET(ZRd,TOKBUF-1)
  		;-- set to read from memory
  		PR_RD_MEM() 		; read from memory (code space)
- 		PR_WR_IO() 		; output to io (screen)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
  		rts
 ;----------------------------------------------- SkipBlankL
 ; reads next character nad then checks for balnks
@@ -274,16 +275,17 @@ TokRtn 		lda 	TOKNO
  		RTN_T()
 
 ;----------------------------------------------- TokExpand
-TokExpand: ; Expand the token to key word (X is index)
- 		ldy 	#0
+TokExpand: ; Expand the token .X to key word
  		txa
+TokExpandA: ; Expand the token .A to key word
  		and 	#$7F
  		sta 	TOKNO
  		lsr 	a 		; A = TokNo / 2
  		tax 			; index in table
  		cpx 	#0
  		beq 	TokExpL0 	; token 80 is special ;P
- 		dey
+
+ 		ldy 	#$FF
 
  		;--
 TokExpNxt 	cpx 	#0 		; no more
@@ -291,7 +293,7 @@ TokExpNxt 	cpx 	#0 		; no more
  		;-- move to next word
 TokExpNxtL 	iny
  		lda 	TblKeyword,y
- 		beq 	TokExpXX 	; end of list, not found
+ 		beq 	TokInvalid 	; end of list, not found
  		bpl 	TokExpNxtL
  		;-- got the marker
  		dex
@@ -312,58 +314,75 @@ TokExpLX 	;-- last character of the word (marked one)
  		beq 	TokExpX
  		bra 	TokSpc
 
-TokExpXX 	; not found
+TokInvalid 	; not found
+ 		jsr 	TokErr 		; show error token as [xx]
+TokSpc 		lda 	#' '
+ 		jsr 	PutChr
+TokExpX 	rts
+
+
+;----------------------------------------------- Run
+Run: ; Run from start
+ 		jsr 	BasTop
+; code to seek to starting line for listing
+; loop to call RunLn for each line
+
+RunL 		jsr 	RunLn 		; (*1)
+; NXTLN -> ZRd
+; 		bra 	RunL
+
+; end of program
+ 		rts
+
+;----------------------------------------------- RunLn
+RunLn: ; Run [LineNo] Stmnt.... 00
+ 		jsr 	GetChr 		; (++ZRd)->A
+ 		sta 	TOKNO
+ 		;-- line number ?
+ 		BR_ANE(T_Line,RunStmnt)
+ 		;-- line number so execute that
+ 		jsr 	X_LineNo
+ 		;-- get the byte after the line no
+ 		jsr 	GetChr 		; (++ZRd)->A
+ 		sta 	TOKNO
+ 		;-- fall through
+RunStmnt 	;---------------------- STATEMENT
+ 		;-- end of statement?
+ 		beq 	RunLnX 		; null = End-of-statement
+ 		;-- remark ?
+ 		BR_AEQ(T_Rem,RunLnX) 	; remark skip rest
+ 		;-- token
+ 		BR_AGT(T_Max,TokErr) 	; >max = invalid token
+ 		BR_ALT($80,TokErr) 	; <$80 = invalid token
+ 		;-- jump to X_xxxx, rts to run loop (*1)
+ 		and 	#$7F
+ 		tax
+ 		jmp 	(TblRun,X) 	; rts->(*2)
+
+RunLnX 		rts 			; done, return
+
+;----------------------------------------------- TokErr
+TokErr: ; dispaly invalid token as [xx]
  		lda 	#'['
  		jsr 	PutChr
  		lda 	TOKNO
  		jsr 	PrAHex
  		lda 	#']'
  		jsr 	PutChr
-TokSpc 		lda 	#' '
- 		jsr 	PutChr
-TokExpX 	rts
-
-;----------------------------------------------- Run
-Run: ; Run from start
- 		jsr 	BasTop
-RunL 		jsr 	GetChr 		; (++ZRd)->A
- 		beq 	RunX 		; null = End-of-program
- 		jsr 	RunLnX
- 		bra 	RunL
-
-RunX 		rts 			; done, return
-
-
-RunLn: ; Run line pointed to by ZRd
- 		jsr 	GetChr 		; (++ZRd)->A
- 		bne 	RunLnX 		; null = End-of-line
- 		rts 			; done, return
-
-RunLnX 		jsr 	RunTok
- 		bra 	RunLn 		; (*2)
-
-RunTok: ; run token
- 		lda 	CHRGOT
- 		CASE(T_Line,X_LineNo) 	; if A==T_Line jmp X_LineNo
- 		;-- otherwise token?
- 		BR_AGE($80,RunJmp)
- 		;-- not token, treat as ASCII
- 		jsr 	PutChr
- 		rts 			; -> (*2)
-
-RunJmp: ; run via jump table, return to (*2)
- 		and 	#$7F
- 		tax
- 		jmp 	(TblRun,X)
+ 		rts
 
 
 ;----------------------------------------------- List Scrn
 List: ; List from start of program
  		;-- from start
  		jsr 	BasTop
- 		;-- list to output device IO
-List1 		PR_WR_IO()
- 		;-- fall through to list line(s)
+ 		;--
+; code to seek to starting line for listing
+; loop to call ListLn for each line in turn until last one
+ 		jsr 	ListLn
+; end of list
+ 		rts
+
 
 ;----------------------------------------------- ListLn
 ListLn: ; List line pointed to by ZRd
@@ -374,25 +393,28 @@ ListLn: ; List line pointed to by ZRd
 ListLnX 	jmp 	PrNL 		; NL and return
 
 ListTok 	; detokenise A=CHRGOT
- 		CASE(T_Line,L_LineNo) 	;->L_LINEno, rts to (*1)
+ 		sta 	TOKNO
+ 		CASE(T_Line,L_LineNo) 	;->L_LineNo, rts to (*1)
  		CASE(T_Number,L_Number)
  		CASE(T_String,L_String)
  		CASE(T_Var,L_Var)
  		CASE(T_VarName,L_VarName)
 ; 		;-- otherwise token?
- 		tax
- 		BR_ALT($80,ListTokErr)
- 		;-- expand the token
- 		jsr 	TokExpand
+ 		BR_AGT(T_Max,TokErr)
+ 		BR_ALT($80,ListTokChr)
+ 		;-- expand the token .A
+ 		jsr 	TokExpandA
  		rts
-ListTokErr 	;-- not token, treat as ASCII
+ListTokChr 	;-- not token, treat as ASCII
  		jsr 	PutChr
  		rts
 
-.export L_LineNo
+
+.export L_LineNo,T_Max
 
 ;----------------------------------------------- NextLine
 NextLine: ; point ZRd to the next line NXTLN
+; one byte short  - GetChr does (++ZRd)-> A
  		;-- point ZRd to the start of the lilne
  		lda 	NXTLN
  		sta 	ZRd
@@ -493,9 +515,11 @@ L_Number: ; list number
  		;-- get number from code -> NUMBER
  		jsr 	FetchNum
  		;-- convert & output number
- 		jsr 	PrNum
- 		;--
- 		rts
+PrNum 		jsr 	NumCvt
+ 		jsr 	NumFmt
+ 		LDAX(NUMBUF)
+ 		jmp 	PrStrAX
+
 ;----------------------------------------------- FetchNum
 FetchNum: ; fetch number from the code -> NUMBER -> AX
  		lda 	#0
@@ -583,11 +607,11 @@ L_LineNo: ; list LineNo
  		sta 	NUMBER+1
  		lda 	#0
  		sta 	NUMBER+2 	; U=0
- 		;--
+ 		;-- Print line no and space
  		jsr 	PrNum
  		lda 	#' '
  		jsr 	PutChr
- 		;-- jump to continue listing
+ 		;--
  		rts
 
 .export T_String,T_Line,T_Number
@@ -597,7 +621,7 @@ L_LineNo: ; list LineNo
 .export TblKeyword,TblRun
 
 
-.echo "  _Tok\t\tuses "
+.echo "  _Tok\t\t"
 .echo $-_Tok
-.echo " Bytes\n"
+.echo "\n"
 

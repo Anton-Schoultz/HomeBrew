@@ -245,12 +245,12 @@ NumSpcL 	lda 	NUMBUF,y
  		bne 	NumSpcL
 NumSpcX 	rts
 
-;----------------------------------------------- PrNum
-PrNum: ; print NUMBER as digits to NUMBUF then send to (mem/io)
- 		jsr 	NumCvt
- 		jsr 	NumFmt
- 		LDAX(NUMBUF)
- 		jmp 	PrStrAX
+;	;----------------------------------------------- PrNum
+;	PrNum: ; print NUMBER as digits to NUMBUF then send to (mem/io)
+;	 		jsr 	NumCvt
+;	 		jsr 	NumFmt
+;	 		LDAX(NUMBUF)
+;	 		jmp 	PrStrAX
 
 ;----------------------------------------------- RdNum
 RdNum: ;-- parse a number into NUMBER (24Bit) - destorys NUMTMP
@@ -305,7 +305,7 @@ NumCvtL 	;- num/10 remainder as digit
 ;   NumCvtM 	STA 	NUMBUF 		; place sign at Res[0]
  		rts
 
-.echo "  _Math\t\tuses "
+.echo "  _Math\t\t"
 .echo $-_Math
-.echo " Bytes\n"
+.echo "\n"
 .list

@@ -15,11 +15,10 @@ _basic 		= $
 BLD 		= BLD_CODE
 #include "All.a65"
 
-.echo "  _BASIC\tuses "
+.echo "  _BASIC\t"
 .echo $-_basic
-.echo " Bytes\n"
+.echo "\n"
 
-PAGE() 		; XX00
 _TBL 		= $
 
 ;----------------------------------------------- TblKeyword
@@ -31,18 +30,21 @@ BLD 		= BLD_KEYWORD
  		;-- .echo $-TblKeyword
  		;-- .echo " Bytes in TblKeyword\n"
 
-ALIGN($80) 	;XX80
 .list
-;----------------------------------------------- TblRun
-TblRun: ; Table of addresses to execute keyword
-.nolist
-BLD 		= BLD_TBL_RUN
-#include "All.a65"
-.dw 0
-.list
+;
+;
+;	;----------------------------------------------- TblRun
+;	TblRun: ; Table of addresses to execute keyword
+;	.nolist
+;	PAGE()
+;	BLD 		= BLD_TBL_RUN
+;	#include "All.a65"
+;	T_Max 	= LOW($)
+;	.dw 0
+;	.list
  		;-- .echo $-TblRun
  		;-- .echo " Bytes in TblRun\n"
 
-.echo "  _Tables\tuse  "
+.echo "  _Tables\t"
 .echo $-_TBL
-.echo " Bytes\n"
+.echo "\n"

@@ -14,9 +14,9 @@ _Break 		= $
 X_Break: ; code to execute the Break
 
 
-.echo "  _Break\tuses "
+.echo "  _Break\t"
 .echo $-_Break
-.echo " Bytes\n"
+.echo "\n"
 .nolist
 #endif
 

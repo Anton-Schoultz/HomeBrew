@@ -330,9 +330,9 @@ PrNL: ; print CR,LF to CharOut
  		lda 	#LF
  		jmp 	PutChr
 
-.echo "  _ChrStr\tuses "
+.echo "  _ChrStr\t"
 .echo $-_ChrStr
-.echo " Bytes\n"
+.echo "\n"
 
 .LIST 					;-- End of ChrStr
 

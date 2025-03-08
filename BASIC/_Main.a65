@@ -1,4 +1,4 @@
-#define hide
+; #define hide
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -6,12 +6,16 @@
 ;=================================================================== MAIN =============
 ;*  Main                MAIN code
 ;*  Reset               Reset (Cold start)
+;*  TblRun              Table of addresses to execute keyword
 ;*  Warm                Warm Start entry point
 ;*
 #ifdef hide
 ; .NOLIST
 #endif
 
+.echo "ROM at $F000-$FFFF (4k)\r"
+; .echo "ROM at $E000-$FFFF (8k)\r"
+; .echo "ROM at $C000-$FFFF (16k)\r"
 
 .org $F000
 _ROM 		=$
@@ -58,22 +62,22 @@ Main: ; MAIN code
  		CLS()
 
 ; 		jsr 	StrClr 		; wipe it
-;
+ 		;--
 ; 		ZSET(ZStr,Text) 	; point to text
 ; 		jsr 	StrAdd 		; append
-;
+ 		;--
 ; 		jsr 	StrOut
 ; 		lda 	#'|'
 ; 		jsr 	ChrOut
 ; 		jsr 	PrNL
-;
+ 		;--
 ; 		jsr 	StrLower
-;
+ 		;--
 ; 		jsr 	StrOut
 ; 		lda 	#'|'
 ; 		jsr 	ChrOut
 ; 		jsr 	PrNL
-;
+ 		;--
 ; 		HALT()
 
 
@@ -110,23 +114,47 @@ Main: ; MAIN code
  		;--
  		lda 	#'_'
  		jsr 	PutChr
+ 		jsr 	PrNL
  		;--
-; 		BREAK($30)
  		PR_ZSUP_OFF()
+
+; BREAK(1)
+ nop\ nop\ nop
+
  		jsr 	Run
 
  		HALT()
 
 #include "Tables.a65"
+
 #include "Tok.a65"
 #include "IrqNmi.a65"
 
 ROMEND 		= $
 
-.echo "  TOTAL "
-.echo $-_ROM
-.echo " Bytes used\n"
+.echo "  _EPROM used \t"
+.echo $- _ROM
+.echo "\n"
 
+.echo "  _EPROM Avail\t"
+.echo ($FF00 - ROMEND)
+.echo "\n"
+
+;----------------------------------------------- TblRun
+.org $FF00 				; PAGE()
+
+TblRun: ; Table of addresses to execute keyword
+.nolist
+BLD 		= BLD_TBL_RUN
+#include "All.a65"
+T_Max 		= LOW($)+$80
+
+#if T_Max > $F6
+.echo "Too many tokens\r"
+#endif
+
+.dw 0
+.list
 
 
 ;----------------------------------------------- hardware vectors
@@ -138,9 +166,6 @@ ROMEND 		= $
 .dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
-.echo "  "
-.echo ($FFFA - ROMEND) / 256
-.echo "/16 pages (x256) available in the 4k ROM. F000-FFFF\r"
  		;-- .echo "/32 pages (x256) available in the 4k ROM. E000-FFFF\r"
 
 

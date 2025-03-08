@@ -1,13 +1,14 @@
 
-;=================================================================== STR =============
+;=================================================================== STR ============= 
 ;*  StrAdd              Append string (ZStr) to STRBUF (Recall)
+;*  StrAddChr           Add character .A to the buffer
 ;*  StrAddNum           Append the converted numeric (in NUMBUF) to STRBUF [AXY]
 ;*  StrClr              Clear STRBUF
 ;*  StrCpy              Copy STRBUF to memory at ZStr (Store)
 ;*  StrEnd              Save index and exit
 ;*  StrHead             Truncate STRBUF at Y
 ;*  StrLit              Append literal to STRBUF [AX]
-;*  StrLower            convert to UPPER case
+;*  StrLower            convert to LOWER case
 ;*  StrOut              Copy STRBUF to output (Print)
 ;*  StrOvr              Overflow
 ;*  StrSubMT            Make string empty
@@ -29,7 +30,7 @@ _Str 		= $
 
 
 
-;----------------------------------------------- StrClr
+;----------------------------------------------- StrClr 
 StrClr: ; Clear STRBUF
  		ldy 	#0
  		tya
@@ -38,9 +39,23 @@ StrClrL 	sta 	STRBUF,y
  		iny
  		cpy 	#STRSZ
  		bne 	StrClrL
+StrRtn 		rts
+
+;----------------------------------------------- StrAddChr 
+StrAddChr: ; Add character .A to the buffer
+ 		ldx 	ZStrLen
+ 		sta 	STRBUF,x
+ 		inx
+ 		lda 	#0
+ 		sta 	STRBUF,x
+ 		cpx 	#STRSZ
+ 		bmi 	StrAddChrX
+ 		;-- overflow, so back up and null
+ 		;-- jmp 	StrOvr
+StrAddChrX 	stx 	ZStrLen
  		rts
 
-;----------------------------------------------- StrLit
+;----------------------------------------------- StrLit 
 StrLit: ; Append literal to STRBUF [AX]
 ; uses ChrRd to get next byte from source
 ; CHRGOT will be T_String
@@ -49,19 +64,17 @@ StrLit: ; Append literal to STRBUF [AX]
 StrLitL 	jsr 	ChrRd
  		sta 	STRBUF,X
  		beq 	StrLitX 	; ending null
- 		;--
+ 		;-- 
  		inx
  		cpx 	#STRSZ
  		bne 	StrLitL 	; in size
- 		;-- overflow
- 		dex 			; back up to last char
- 		lda 	#0 		; make it null
- 		sta 	STRBUF
+ 		;-- overflow, so back up and null
+ 		jmp 	StrOvr
  		;-- fall through to save index
 StrLitX 	stx 	ZStrLen
  		rts
 
-;----------------------------------------------- StrOut
+;----------------------------------------------- StrOut 
 StrOut: ; Copy STRBUF to output (Print)
  		ldy 	#0
 StrOutL 	lda 	STRBUF,y
@@ -79,7 +92,7 @@ StrOutL 	lda 	STRBUF,y
 StrOutX 	rts
 
 
-;----------------------------------------------- StrCpy
+;----------------------------------------------- StrCpy 
 StrCpy: ; Copy STRBUF to memory at ZStr (Store)
  		ldy 	#0
 StrCpyL 	lda 	STRBUF,y
@@ -94,22 +107,23 @@ StrCpyL 	lda 	STRBUF,y
  		sta 	(ZStr),y
 StrCpyX 	rts
 
-;----------------------------------------------- StrAddNum
+;----------------------------------------------- StrAddNum 
 StrAddNum: ; Append the converted numeric (in NUMBUF) to STRBUF [AXY]
  		ZSET(ZStr,NUMBUF)
 
-;----------------------------------------------- StrAdd
+;----------------------------------------------- StrAdd 
 StrAdd: ; Append string (ZStr) to STRBUF (Recall)
  		ldy 	#0
  		ldx 	ZStrLen
 StrAddL 	lda 	(ZStr),y
  		sta 	STRBUF,X
  		beq 	StrEnd 		; ending null
- 		;--
+ 		;-- 
  		iny
  		inx
  		cpx 	#STRSZ
  		bne 	StrAddL 	; in size
+;----------------------------------------------- StrOvr 
 StrOvr: ; Overflow
  		dex 			; back up to last char
  		lda 	#0 		; make it null
@@ -119,7 +133,7 @@ StrEnd: ; Save index and exit
  		stx 	ZStrLen
  		rts
 
-;----------------------------------------------- StrTail
+;----------------------------------------------- StrTail 
 StrTail: ; Keep from Y onwards
  		;-- index is outof range so result is empty
  		cpy 	#STRSZ
@@ -127,7 +141,7 @@ StrTail: ; Keep from Y onwards
  		;-- index beyond end so result is empty
  		cpy 	ZStrLen
  		bpl 	StrSubMT 	; could jmp to StrClr
- 		;--
+ 		;-- 
  		ldx 	#0
 StrSubL 	lda 	STRBUF,y
  		sta 	STRBUF,x
@@ -138,14 +152,14 @@ StrSubL 	lda 	STRBUF,y
  		bne 	StrSubL
  		bra 	StrOvr 		; force stop at max
 
-;----------------------------------------------- StrSubMT
+;----------------------------------------------- StrSubMT 
 StrSubMT: ;Make string empty
  		lda 	#0
  		sta 	STRBUF
  		sta 	ZStrLen
  		rts
 
-;----------------------------------------------- StrHead
+;----------------------------------------------- StrHead 
 StrHead: ; Truncate STRBUF at Y
  		;-- index is out of range - keep all
  		cpy 	#STRSZ
@@ -160,7 +174,7 @@ StrHead: ; Truncate STRBUF at Y
  		sty 	ZStrLen
 StrHeadX 	rts
 
-;----------------------------------------------- StrTrim
+;----------------------------------------------- StrTrim 
 StrTrim: ; trim leading and trailing blanks
  		ldy 	#$FF
  		ldx 	#0
@@ -186,7 +200,7 @@ StrTrim3 	;-- now trim trailing ' '
  		bne 	StrTrim3
 StrTrimX 	rts
 
-;----------------------------------------------- StrUpper
+;----------------------------------------------- StrUpper 
 StrUpper: ; convert to UPPER case
  		ldy 	#$FF
 StrUpper1 	iny
@@ -200,7 +214,7 @@ StrUpper1 	iny
 StrUpperX 	rts
 
 
-;----------------------------------------------- StrLower
+;----------------------------------------------- StrLower 
 StrLower: ; convert to LOWER case
  		ldy 	#$FF
 StrLower1 	iny
@@ -216,8 +230,8 @@ StrLowerX 	rts
 
 
 
-.echo "  _Str\t\tuses "
+.echo "  _Str\t\t"
 .echo $-_Str
-.echo " Bytes\n"
+.echo "\n"
 .list
 

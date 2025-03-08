@@ -17,30 +17,29 @@ _Print 		= $
 
 ;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
- 		jsr 	GetChr 		; get the char
- 		DONL()
-X_PrL 		lda 	CHRGOT
- 		beq 	X_PrEnd 	; null->end of print statement
+ 		jsr 	StrClr 		; clear work string
+ 		;--
+X_PrL 		DONL() 			; default is NL afterwards
+X_PrL0 		jsr 	GetChr 		; get the char after PRINT
 
- 		;-- TSTR|TNUM  A=CHRGOT
- 		BR_AEQ(T_String,X_Pr1)
- 		BR_ANE(T_Number,X_Pr2)
+X_PrL1 		beq 	X_PrEnd 	; null=>done
 
-X_Pr1 		;-- handle TStr / TNum and loop back
- 		DONL() 			; default is NL afterwards
- 		jsr 	EvalStr
- 		bra 	X_PrL
+ 		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
+ 		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
 
-X_Pr2 		; non-token so should be ',' or ';'
- 		BR_AEQ($3B,X_Pr3) 	; ';'$3B
- 		BR_ANE($2C,X_Pr4) 	; ','$2C
+ 		jsr 	EvalStrL	; entry skips clearing
+ 		DONL() 			; default is NL
+
+ 		lda 	CHRGOT		; CHRGOT holds what ended eval
+ 		BRA 	X_PrL1
+
+X_PrComma 	;-- comma, do a tab, no CRLF
  		lda 	#HT 		; tab
- 		jsr 	PutChr
-
-X_Pr3		NONL()	; don't do the3 NL
-X_Pr4		jsr 	GetChr		; comsume , ; ??
- 		bra 	X_PrL 		; loop for next part
-
+ 		jsr 	StrAddChr
+ 		;-- fall through to turn off NL, and loop back
+X_PrSemi 	;-- Semicolon, no CR/LF
+ 		NONL()
+ 		bra 	X_PrL0
 
 ; end of print statement so output the buffer result
 X_PrEnd 	;-- output the result
@@ -50,11 +49,11 @@ X_PrEnd 	;-- output the result
  		jmp 	PrNL 		; output CR,LF and exit
 X_PrX 		rts
 
+.export X_Print
 
-
-.echo "  _Print\tuses "
+.echo "  _Print\t"
 .echo $-_Print
-.echo " Bytes\n"
+.echo "\n"
 .nolist
 #endif
 
@@ -65,6 +64,7 @@ X_PrX 		rts
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
+
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list

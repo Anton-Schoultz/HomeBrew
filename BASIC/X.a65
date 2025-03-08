@@ -10,9 +10,9 @@ _Tmp = $
 X_Tmp:; Execute Tmp
 
 
-.echo "  _Tmp\tuses "
+.echo "  _Tmp\t"
 .echo $-_Tmp
-.echo " Bytes\n"
+.echo "\n"
 .nolist
 #endif
 

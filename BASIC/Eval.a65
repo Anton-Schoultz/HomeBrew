@@ -29,6 +29,8 @@ EvalStr1 	; Numeric value?
 EvalStr2
 ; RIGHT$	-> StrTail
 ; LEFT$		-> StrHead
+
+; if not known, just return (it will be in CHRGOT for caller to deal with)
  		rts
 
 EvalStrNxt 	;-- next token
@@ -46,9 +48,9 @@ EvalStrNum: ; convert numeric result to formated string and append to STRBUF
 
 
 
-.echo "  _Eval\t\tuses "
+.echo "  _Eval\t\t"
 .echo $-_Eval
-.echo " Bytes\n"
+.echo "\n"
 .list
 
 
