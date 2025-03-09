@@ -81,7 +81,7 @@ Var(NUMBER,4) 	; Number parsed
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
-.export LNNUM,NXTLN,NUMTMP,NUMBER,NUMBUF,DBUGNUM
+.export LNNUM,NXTLN,NUMTMP,NUMBER,NUMBUF,DBUGNUM,VARID
 
 
 ;=================================================================== STACK ============

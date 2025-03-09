@@ -8,8 +8,6 @@
 ;*  L_LineNo            list LineNo
 ;*  L_Number            list number
 ;*  L_String            list out string text
-;*  L_Var               list 'simple' variable
-;*  L_VarName           list long variable
 ;*  List                List from start of program
 ;*  ListLit             list literal value
 ;*  ListLn              List line pointed to by ZRd
@@ -18,7 +16,7 @@
 ;*  P_LineNo            Parse line numebr and place int TOKBUF
 ;*  P_Number            parse a number into token & value
 ;*  P_String            parse quoted string into token
-;*  P_Var               Check for variable name
+;*  P_Var               Handle variable name
 ;*  Parse               Parse INBUF into TOKBUF
 ;*  ParseIn             Parse from memory into TOKBUF
 ;*  Run                 Run from start
@@ -75,28 +73,27 @@ ParseIn: ;Parse from memory into TOKBUF
  		;-- digit - so do line number
  		jsr 	P_LineNo
  		lda 	CHRGOT
+
  		;-- fall through to do parts
 P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
  		jsr 	ChrWr
- 		;-- check for T_LnNo
+
+ 		;-- check for T_LnNo, fill in length if needed
  		lda 	TOKBUF
  		BR_ANE(T_Line,P_StmntX)
- 		;-- line no, so get line length
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKLEN+1) 	; one byte offset for ChrGet
- 		;-- fill it in
  		sta 	TOKLEN
- 		;-- save length of the whole line for editor
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
  		sta 	LNLEN
- 		;--
 P_StmntX 	rts 			; done with the whole line
 
+;----------------------------------------------- P_Part , P_PartNxt
 P_PartNxt 	;- advance and do part
  		jsr 	GetChr
 P_Part 		;- parse a part of the line
@@ -129,8 +126,7 @@ PNotStr 	; not string, try varname
 PNotVar 	; not varname, so copy as-is
  		lda 	CHRGOT
  		jsr 	ChrWr
- 		jsr 	GetChr
- 		bra 	P_Part
+ 		bra 	P_PartNxt
 
 ;----------------------------------------------- ParseClr
 ; clear teh tokbuf (not realy required, butmake debuggin easier)
@@ -416,10 +412,13 @@ ListTok 	; detokenise A=CHRGOT
 
  		;-- List a VarName
 ListVarL 	jsr 	GetChr 		; read name character
- 		jsr 	IsAlphaNumeric
- 		BR_F(ListVarStr) 	; non SymChar
+ 		bmi 	ListVarStp 	; Ending character
  		jsr 	PutChr 		; output letter
  		bra 	ListVarL 	; loop back
+
+ListVarStp 	; last char has bit 7 set
+ 		and 	#$7F
+ 		jsr 	PutChr 		; maskoff and output
 
 ListVarStr 	BBR1 	TOKNO,ListVarAry ; String?
  		lda 	#'$' 		; yes, '$'
@@ -428,7 +427,7 @@ ListVarAry 	BBR0 	TOKNO,ListVarEnd ; array ?
  		lda 	#'(' 		; yes '('
  		jsr 	PutChr
  		;-- var name ends with null, so skip over that
- 		jsr 	GetChr
+ 		;-- jsr 	GetChr
 ListVarEnd 	rts
 
 ListNotVar 	;-- otherwise token?
@@ -463,18 +462,27 @@ NextLine: ; point ZRd to the next line NXTLN
  		rts
 
 ;=================================================================== VARIABLE =========
-P_Var: ; Check for variable name
+P_Var: ; Handle variable name
 ; ZRd points at the initial alpha char
-; set VARID as $F8 Bit2=0(Var)
  		lda 	#$F8
  		sta 	TOKNO
- 		ldy 	#0 		; 0-> chrgot Name[0]
+ 		ldy 	#$FF
 ; scan forward (with Y) for non-alpha/num
- 		iny
+P_VarL 		iny
  		lda 	(ZRd),y
  		jsr 	IsAlphaNumeric
- 		BR_F(P_Var2) 		; end, output & copy name
+ 		BR_T(P_VarL) 		; end, output & copy name
 
+; finished reading chars
+ 		dey 			; back up to last char
+ 		;-- set it's high bit on
+ 		lda 	(ZRd),y
+ 		ora 	#$80
+ 		sta 	(ZRd),y
+ 		sta 	VARID 		; save the marked char
+ 		;-- back to following char
+ 		iny
+ 		lda 	(ZRd),y
 
 ; if '$' then set Str bit1 and move on
  		cmp 	#'$'
@@ -487,51 +495,31 @@ P_Var1 		; if '(' then set Ary bit0 and move on
  		cmp 	#'('
  		bne 	P_Var2
  		SMB0 	TOKNO 		; set ARY bit0
- 		iny
- 		lda 	(ZRd),y
+; 		iny
+; 		lda 	(ZRd),y
 
 P_Var2 		; output Token from VARID
  		lda 	TOKNO
  		jsr 	ChrWr 		; output token
 
- 		lda 	CHRGOT
+ 		;-- fetch 1st char again (may have had bit 87 set)
+ 		ldy 	#0
+ 		lda 	(ZRd),y
+ 		sta 	CHRGOT
 
 P_Var3 		jsr 	ChrWr 		; output first varname char
+ 		lda 	CHRGOT
+ 		bmi 	P_VarMod 	; if only the one go do $(
 
 P_Var4 		jsr 	ChrRd
- 		beq 	P_VarX
- 		BR_AEQ('(',P_Var3)
- 		BR_AEQ('$',P_Var3)
- 		jsr 	IsAlphaNumeric
- 		BR_T(P_Var3) 		; end, output & copy name
-
-P_VarX 		lda 	#0
- 		jsr 	ChrWr 		; terminate the name
+ 		bne	P_Var3
  		rts
 
-;	;----------------------------------------------- L_Var
-;	L_Var: ; list 'simple' variable
-;	 		jsr 	ChrRd 		; get the var id
-;	 		sta 	VARID
-;	 		and 	#$1f
-;	 		ora 	#$40
-;	 		jsr 	PutChr 		; output the alpha
-;	L_Var1 		;- handle the flags
-;	 		BBR5 	VARID,L_Var2 	; '$' ?
-;	 		lda 	#'$'
-;	 		jsr 	PutChr
-;	L_Var2 		BBR6 	VARID,L_Var3 	; '(' ?
-;	 		lda 	#'('
-;	 		jsr 	PutChr
-;
-;	L_Var3 		rts 			;//jmp 	ChrRd 		; read next and return
-;
-;	;                7654.3210
-;	; Variable ID =  0($n.nnnn nnnnn=1-26 for A-Z
-;
-;	;----------------------------------------------- L_VarName
-;	L_VarName: ; list long variable
-;	 		jmp 	ChrCopy
+P_VarMod 	jsr 	ChrRd
+ 		BR_AEQ('(',P_VarMod) 	; read over (,$
+ 		BR_AEQ('$',P_VarMod)
+
+P_VarXX		rts
 
 ;=================================================================== NUMBER ===========
 

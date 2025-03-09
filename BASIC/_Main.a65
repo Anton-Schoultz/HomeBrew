@@ -4,6 +4,7 @@
 #include "_Vars.a65"
 
 ;=================================================================== MAIN =============
+;*  CopyLine            copy TestSrc into INBUF
 ;*  Main                MAIN code
 ;*  Reset               Reset (Cold start)
 ;*  TblRun              Table of addresses to execute keyword
@@ -32,22 +33,17 @@ _ROM 		=$
 #include "Eval.a65" 			; Evaluator
 
 
-ALIGN(16)
-Src010
+TestSrc
 .DB "A=1234",0
 
-ALIGN(16)
-Src020
-.DB "PRINT 1234,456,9,"
-.db QT,"Hi",QT
-.db " 					;12"
-.db 0
+ 		;-- .DB "PRINT 1234,456,9,"
+ 		;-- .db QT,"Hi",QT
+ 		;-- .db " 					;12"
+ 		;-- .db 0
 
  		;-- 0123456789a
 Text 		.DB 	"  Hello  1234  ",0
 Text1 		.DB 	" - Happy days",0
-
-.export Src020
 
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
@@ -66,25 +62,6 @@ Warm: ;Warm Start entry point
 Main: ; MAIN code
  		CLS()
 
-; 		jsr 	StrClr 		; wipe it
- 		;--
-; 		ZSET(ZStr,Text) 	; point to text
-; 		jsr 	StrAdd 		; append
- 		;--
-; 		jsr 	StrOut
-; 		lda 	#'|'
-; 		jsr 	ChrOut
-; 		jsr 	PrNL
- 		;--
-; 		jsr 	StrLower
- 		;--
-; 		jsr 	StrOut
-; 		lda 	#'|'
-; 		jsr 	ChrOut
-; 		jsr 	PrNL
- 		;--
-; 		HALT()
-
 
  		PR_RD_MEM() 		; read from memory (ZRd)
  		PR_ECHO_OFF() 		; don't echo it
@@ -93,11 +70,15 @@ Main: ; MAIN code
  		PR_WR_MEM() 		; write to memory
  		;--
  		CLS()
+
+ 		jsr 	CopyLine
+
+ 		nop
+ 		nop
+
+
  		;--
- 		;-- parse the tets source line
- 		ZSET(ZRd,Src010-1 ) 	; read memory from Src010
- 		;--
- 		jsr 	ParseIn 	;parse from input (memory)
+ 		jsr 	Parse 		; Parse INBUF into TOKBUF
  		lda 	#0
  		jsr 	ChrWr 		; end of program
  		;--
@@ -111,24 +92,39 @@ Main: ; MAIN code
  		jsr 	HexDump 	; dump next 8
  		;--
  		HEX_DUMP(LNNUM) 	; LNNUM, NXTLN, LNLEN, TOKNO, VARID
+ 		jsr 	HexDump 	; dump next 8
  		;--
  		PR_ZSUP_ON()
- 		;--
+
  		;-- List the line in TOKBUF
- 		jsr 	List
- 		;--
- 		lda 	#'_'
- 		jsr 	PutChr
- 		jsr 	PrNL
- 		;--
- 		PR_ZSUP_OFF()
+		jsr 	List
+
+
+; 		;--
+; 		lda 	#'_'
+; 		jsr 	PutChr
+; 		jsr 	PrNL
+; 		;--
+; 		PR_ZSUP_OFF()
 
 ; BREAK(1)
- nop\ nop\ nop
+ 		NOP\ 	nop\ nop
 
- 		jsr 	Run
+; 		jsr 	Run
 
  		HALT()
+
+;----------------------------------------------- CopyLine
+CopyLine: ; copy TestSrc into INBUF
+ 		;-- Copy test source into INBUF
+ 		ldy 	#$FF
+CopyLineL 	iny
+ 		lda 	TestSrc,y
+ 		sta 	INBUF,y
+ 		cmp 	#0
+ 		bne 	CopyLineL
+ 		rts
+
 
 #include "Tables.a65"
 
