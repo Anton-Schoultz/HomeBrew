@@ -31,13 +31,18 @@ _ROM 		=$
 #include "Str.a65" 			; String code
 #include "Eval.a65" 			; Evaluator
 
+
+ALIGN(16)
+Src010
+.DB "A=1234",0
+
 ALIGN(16)
 Src020
 .DB "PRINT 1234,456,9,"
 .db QT,"Hi",QT
 .db " 					;12"
-; .db ",VAR=123"
 .db 0
+
  		;-- 0123456789a
 Text 		.DB 	"  Hello  1234  ",0
 Text1 		.DB 	" - Happy days",0
@@ -90,7 +95,7 @@ Main: ; MAIN code
  		CLS()
  		;--
  		;-- parse the tets source line
- 		ZSET(ZRd,Src020-1 ) 	; read memory from Src010
+ 		ZSET(ZRd,Src010-1 ) 	; read memory from Src010
  		;--
  		jsr 	ParseIn 	;parse from input (memory)
  		lda 	#0

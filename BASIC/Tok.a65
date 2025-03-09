@@ -11,6 +11,7 @@
 ;*  L_Var               list 'simple' variable
 ;*  L_VarName           list long variable
 ;*  List                List from start of program
+;*  ListLit             list literal value
 ;*  ListLn              List line pointed to by ZRd
 ;*  NextLine            point ZRd to the next line NXTLN
 ;*  P_IsToken           Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -382,6 +383,7 @@ List: ; List from start of program
 ; end of list
  		rts
 
+PAGE()
 
 ;----------------------------------------------- ListLn
 ListLn: ; List line pointed to by ZRd
@@ -396,38 +398,38 @@ ListTok 	; detokenise A=CHRGOT
  		sta 	TOKNO
  		CASE(T_Line,L_LineNo) 	;->L_LineNo, rts to (*1)
 
- 		;-- values
+ 		;-- values ?
+ 		sta 	VARID
  		and 	#$F8
  		cmp 	#$F8
  		bne 	ListNotVar
 
  		;-- Literal or name ?
- 		lda TOKNO
- 		BBR4 TOKNO,ListVarL	; Bit4=0 => Variable name
+ 		BBR2 	VARID,ListVarL 	; Bit4: 0=>Var 1=Lit
 
- 		; literal value
- 		and #$FE		; force as not Ary
- 		CASE(T_NumLit,L_Number)
- 		CASE(T_StrLit,L_String)
-		; should not get here
-		bra ListTokChr
+ 		;-- literal value
+ 		lda 	VARID
+ 		and 	#$FE 		; force as not Ary
+ 		sta 	VARID
+ 		jsr 	ListLit 	; (*2)
+ 		rts
 
  		;-- List a VarName
-ListVarL 	jsr 	GetChr
+ListVarL 	jsr 	GetChr 		; read name character
  		jsr 	IsAlphaNumeric
- 		BR_F(ListVarStr)
- 		lda 	CHRGOT
- 		and 	#$7F
- 		jsr 	PutChr
- 		bra 	ListVarL
+ 		BR_F(ListVarStr) 	; non SymChar
+ 		jsr 	PutChr 		; output letter
+ 		bra 	ListVarL 	; loop back
 
 ListVarStr 	BBR1 	TOKNO,ListVarAry ; String?
  		lda 	#'$' 		; yes, '$'
  		jsr 	PutChr
-ListVarAry 	BBR0 	TOKNO,ListNotVar ; array ?
+ListVarAry 	BBR0 	TOKNO,ListVarEnd ; array ?
  		lda 	#'(' 		; yes '('
  		jsr 	PutChr
- 		rts
+ 		;-- var name ends with null, so skip over that
+ 		jsr 	GetChr
+ListVarEnd 	rts
 
 ListNotVar 	;-- otherwise token?
  		lda 	TOKNO
@@ -439,9 +441,13 @@ ListNotVar 	;-- otherwise token?
 
 ListTokChr 	;-- not token, treat as ASCII
  		jsr 	PutChr
+
  		rts
 
-
+ListLit: ; list literal value
+ 		CASE(T_NumLit,L_Number) ; rtn->(*2)
+ 		CASE(T_StrLit,L_String) ; rtn->(*2)
+ 		rts
 
 
 .export L_LineNo,T_Max
@@ -486,10 +492,11 @@ P_Var1 		; if '(' then set Ary bit0 and move on
 
 P_Var2 		; output Token from VARID
  		lda 	TOKNO
- 		jsr 	PutChr 		; output token
+ 		jsr 	ChrWr 		; output token
+
  		lda 	CHRGOT
 
-P_Var3 		jsr 	PutChr 		; output first varname char
+P_Var3 		jsr 	ChrWr 		; output first varname char
 
 P_Var4 		jsr 	ChrRd
  		beq 	P_VarX
@@ -498,35 +505,33 @@ P_Var4 		jsr 	ChrRd
  		jsr 	IsAlphaNumeric
  		BR_T(P_Var3) 		; end, output & copy name
 
-P_VarX 		rts
+P_VarX 		lda 	#0
+ 		jsr 	ChrWr 		; terminate the name
+ 		rts
 
-
-
-
-
-;----------------------------------------------- L_Var
-L_Var: ; list 'simple' variable
- 		jsr 	ChrRd 		; get the var id
- 		sta 	VARID
- 		and 	#$1f
- 		ora 	#$40
- 		jsr 	PutChr 		; output the alpha
-L_Var1 		;- handle the flags
- 		BBR5 	VARID,L_Var2 	; '$' ?
- 		lda 	#'$'
- 		jsr 	PutChr
-L_Var2 		BBR6 	VARID,L_Var3 	; '(' ?
- 		lda 	#'('
- 		jsr 	PutChr
-
-L_Var3 		rts 			;//jmp 	ChrRd 		; read next and return
-
-;                7654.3210
-; Variable ID =  0($n.nnnn nnnnn=1-26 for A-Z
-
-;----------------------------------------------- L_VarName
-L_VarName: ; list long variable
- 		jmp 	ChrCopy
+;	;----------------------------------------------- L_Var
+;	L_Var: ; list 'simple' variable
+;	 		jsr 	ChrRd 		; get the var id
+;	 		sta 	VARID
+;	 		and 	#$1f
+;	 		ora 	#$40
+;	 		jsr 	PutChr 		; output the alpha
+;	L_Var1 		;- handle the flags
+;	 		BBR5 	VARID,L_Var2 	; '$' ?
+;	 		lda 	#'$'
+;	 		jsr 	PutChr
+;	L_Var2 		BBR6 	VARID,L_Var3 	; '(' ?
+;	 		lda 	#'('
+;	 		jsr 	PutChr
+;
+;	L_Var3 		rts 			;//jmp 	ChrRd 		; read next and return
+;
+;	;                7654.3210
+;	; Variable ID =  0($n.nnnn nnnnn=1-26 for A-Z
+;
+;	;----------------------------------------------- L_VarName
+;	L_VarName: ; list long variable
+;	 		jmp 	ChrCopy
 
 ;=================================================================== NUMBER ===========
 
