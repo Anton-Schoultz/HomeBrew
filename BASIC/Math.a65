@@ -1,23 +1,25 @@
-;=================================================================== MATH =============
-;*  Bin2BCD             Convert binary value in A (0-99) into BCD in A, (high digit in X)
-;*  Cvt2Num             Parse NUMBER from NUMBUF
-;*  Hex2Nib             '0..9A..F' -> to nibble in A (C=1 Valid) [A]
-;*  HexDump             hex dump memory (ZPtr) to output io/mem
-;*  NumAddA             Add digit in A to NUMBER
-;*  NumCvt              Convert NUMBER(24Bit) to digits in NUMBUF
-;*  NumDT               NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
-;*  NumFmt              Apply formatting to leading zeroes
-;*  NumMT               NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
-;*  NumSpc              blank leading zeroes
-;*  NumSup              removing leading zeroes
-;*  NumZero             place zero into NUMBER (24Bit)
-;*  PrADec2             Print A as decimal digits 00-99
-;*  PrADec3             Print A as decimal digits 000-255
-;*  PrAHex              Print A as Hex digits (send/write) [A]
-;*  PrAXHex             Print AX(lo/hi) as 4 hex digits [A]
-;*  PrNib               Convert hex nibble and Print it (preserves XY)
-;*  RdNum               -- parse a number into NUMBER (24Bit) - destorys NUMTMP
-;*m HEX_DUMP(adr)       Print hex dump to IO/Mem [Zptr++]
+;=================================================================== MATH ============= 
+;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;*  Cvt2Num              Parse NUMBER from STRBUF
+;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
+;*  HexDump              hex dump memory (ZPtr) to output io/mem
+;*  NumAddA              NUMBER = NUMBER * 10 + .A
+;*  NumCvt               Convert NUMBER(24Bit) to digits in NUMBUF
+;*  NumDH                NUMBER = NUMBER / 100 (24bit) remainder in A
+;*  NumDT                NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
+;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
+;*  NumMH                NUMBER = NUMBER * 100 (24bit) - preserves AXY, destroys NUMTMP
+;*  NumMT                NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
+;*  NumParse             -- parse a number from source into NUMBER (24Bit) - destorys NUMTMP
+;*  NumSpc               blank leading zeroes
+;*  NumSup               removing leading zeroes
+;*  NumZero              place zero into NUMBER (24Bit)
+;*  PrADec2              Print A as decimal digits 00-99
+;*  PrADec3              Print A as decimal digits 000-255
+;*  PrAHex               Print A as Hex digits (send/write) [A]
+;*  PrAXHex              Print AX(lo/hi) as 4 hex digits [A]
+;*  PrNib                Convert hex nibble and Print it (preserves XY)
+;*m HEX_DUMP(adr)        Print hex dump to IO/Mem [Zptr++]
 ;*
 ; ZTmp
 ; ZPtr
@@ -49,12 +51,30 @@ Nib2HexTbl
 .db "0123456789ABCDEF0123456789+-e.E "
 ;   "0123456789ABCDEF0123456789abcdef"
 
-;----------------------------------------------- PrADec2
+
+;----------------------------------------------- Cvt2Num 
+Cvt2Num: ; Parse NUMBER from STRBUF
+ 		jsr 	NumZero
+ 		ldy 	#255
+Cvt2NumL 	iny
+ 		lda 	NUMBUF,Y 	; term null
+ 		beq 	Cvt2NumX
+ 		jsr 	IsDigit 	; messes with A
+ 		BR_F(Cvt2NumX) 		; no more digits
+ 		;-- ; NUMBER = NUMBER * 10 + .A
+ 		jsr 	NumAddA
+Cvt2NumAX 	bra 	Cvt2NumL 	; next character
+Cvt2NumX 	ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
+ 		rts
+
+
+
+;----------------------------------------------- PrADec2 
 PrADec2: ; Print A as decimal digits 00-99
  		jsr 	Bin2BCD
  		jmp 	PrAHex
 
-;----------------------------------------------- PrADec2
+;----------------------------------------------- PrADec2 
 PrADec3: ; Print A as decimal digits 000-255
  		jsr 	Bin2BCD
  		pha
@@ -63,7 +83,7 @@ PrADec3: ; Print A as decimal digits 000-255
  		pla
  		jmp 	PrAHex 		; Tens,Unit
 
-;----------------------------------------------- Bin2BCD
+;----------------------------------------------- Bin2BCD 
 Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
  		sed 			; all adds in decimal mode
  		sta 	ZTmp 		; save A
@@ -91,7 +111,7 @@ Bin2BCD3 	;-- }
  		cld 			; clear decimal mode
  		rts
 
-;----------------------------------------------- Hex2Nib
+;----------------------------------------------- Hex2Nib 
 Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
  		eor 	#'0' 		; Map digits to 0-9
  		cmp 	#9+1 		; Is it a decimal digit?
@@ -106,7 +126,7 @@ Hex2Nib_X 	and 	#$0F
 
 
 
-;----------------------------------------------- HexDump
+;----------------------------------------------- HexDump 
 HexDump: ; hex dump memory (ZPtr) to output io/mem
  		lda 	ZPtr+1
  		jsr 	PrAHex
@@ -147,14 +167,14 @@ HexDump2 	iny
 HexDumpX 	rts
 
 
-;----------------------------------------------- PrAXHex
+;----------------------------------------------- PrAXHex 
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
  		pha 			; save ZTmp
  		txa 			; get high
  		jsr 	PrAHex 		; print hi as hex digits
  		pla 			; restore ZTmp
  		;-- fall through to print ZTmp as hex digits
-;----------------------------------------------- PrAHex
+;----------------------------------------------- PrAHex 
 PrAHex: ; Print A as Hex digits (send/write) [A]
  		pha 			;Save A for LSD
  		lsr 	a
@@ -164,7 +184,7 @@ PrAHex: ; Print A as Hex digits (send/write) [A]
  		jsr 	PrNib 		; Output hex digit
  		pla 			; Restore A and then
  		;-- fall through to print hex routine
-;----------------------------------------------- PrNib
+;----------------------------------------------- PrNib 
 PrNib: ; Convert hex nibble and Print it (preserves XY)
  		phx 			; save X
  		and 	#$0F 		; Mask LSD for hex print
@@ -177,23 +197,33 @@ PrNibX 		tax
  		plx
  		jmp 	PutChr 		; Write/Send
 
-;----------------------------------------------- NumCvtDT
+
+
+;----------------------------------------------- NumDH 
+NumDH: ; NUMBER = NUMBER / 100 (24bit) remainder in A
+ 		lda 	#100
+ 		sta 	ZDIV
+ 		bra 	NumDiv
+;----------------------------------------------- NumDT 
 NumDT: ; NUMBER = NUMBER / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUMTMP  by 10, remainder in A [AY]
- 		ldy 	#24 		; 24 bits
+ 		lda 	#10
+ 		sta 	ZDIV 		; set divisor to 10
+NumDiv 		ldy 	#24 		; 24 bits
  		lda 	#0
  		clc
 NumDTa 		rol 	A
- 		cmp 	#10
+ 		cmp 	ZDIV
  		bcc 	NumDTb
- 		sbc 	#10
+ 		sbc 	ZDIV
 NumDTb 		rol 	NUMBER+0 	; L
  		rol 	NUMBER+1 	; H
  		rol 	NUMBER+2 	; U
  		dey
  		bpl 	NumDTa
  		rts
-;----------------------------------------------- NumZero
+
+;----------------------------------------------- NumZero 
 NumZero: ; place zero into NUMBER (24Bit)
  		lda 	#0 		; zero number
  		sta 	NUMBER
@@ -201,24 +231,40 @@ NumZero: ; place zero into NUMBER (24Bit)
  		sta 	NUMBER+2
  		rts
 
-;----------------------------------------------- NumMT
+;----------------------------------------------- NumMT 
 NumMT: ; NUMBER = NUMBER * 10 (24Bit) - preserves AXY, destroys NUMTMP
  		pha
- 		ZCPY3(NUMTMP,NUMBER) 	; TMP = NUMBER
+ 		ZCPY3(NUMTMP,NUMBER) 	; NUMTMP = NUMBER
  		ZSL3(NUMBER) 		; NUMBER * 2
  		ZSL3(NUMBER) 		; NUMBER * 4
- 		ZADD3(NUMBER,NUMTMP) 	; TMP = NUMBER *5
+ 		ZADD3(NUMBER,NUMTMP) 	; NUMBER += NUMTMP  (*5)
  		ZSL3(NUMBER) 		; NUMBER = NUMBER * 10
  		pla
  		rts
 
-;----------------------------------------------- NumFmt
+;----------------------------------------------- NumMH 
+NumMH: ; NUMBER = NUMBER * 100 (24bit) - preserves AXY, destroys NUMTMP
+ 		pha
+ 		ZCPY3(NUMTMP,NUMBER) 	; NUMTMP = NUMBER  TMP=X
+ 		ZSL3(NUMBER) 		; NUMBER 2X
+ 		ZSL3(NUMBER) 		; NUMBER 4X
+ 		ZSL3(NUMBER) 		; NUMBER 8X
+ 		ZADD3(NUMTMP,NUMBER) 	; TMP = 9X
+ 		ZSL3(NUMBER) 		; NUMBER * 16X
+ 		ZADD3(NUMBER,NUMTMP) 	; NUMBER = 16X+9X = 25X
+ 		ZSL3(NUMBER) 		; 50x
+ 		ZSL3(NUMBER) 		; 100x
+ 		pla
+ 		rts
+
+;----------------------------------------------- NumFmt 
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
- 		BR_ZSUP(NumSup) 	; suppress leading zeroes
+ 		BR_ZSUP(NumSup) 	; TMP = NUMBER
+ 		;-- suppress leading zeroes
  		BR_ZSPC(NumSpc) 	; blank leading zeroes
  		rts
 
-;----------------------------------------------- NumSup
+;----------------------------------------------- NumSup 
 NumSup: ; removing leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
@@ -238,7 +284,7 @@ NumSupCL 	lda 	NUMBUF,y
  		bra 	NumSupCL
 NumSupX 	rts
 
-;----------------------------------------------- NumSpc
+;----------------------------------------------- NumSpc 
 NumSpc: ; blank leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
@@ -253,43 +299,21 @@ NumSpcL 	lda 	NUMBUF,y
  		bne 	NumSpcL
 NumSpcX 	rts
 
- 		;-- ;----------------------------------------------- PrNum
- 		;-- PrNum: ; print NUMBER as digits to NUMBUF then send to (mem/io)
- 		;-- jsr 	NumCvt
- 		;-- jsr 	NumFmt
- 		;-- LDAX(NUMBUF)
- 		;-- jmp 	PrStrAX
-
-;----------------------------------------------- Cvt2Num
-Cvt2Num: ; Parse NUMBER from STRBUF
+;----------------------------------------------- NumParse 
+NumParse: ;-- parse a number from source into NUMBER (24Bit) - destorys NUMTMP
  		jsr 	NumZero
- 		ldy 	#255
-Cvt2NumL 	iny
- 		lda 	NUMBUF,Y 	; term null
- 		beq 	Cvt2NumX
+NumParseL 	lda 	CHRGOT 		; term null
+ 		beq 	NumParseX
  		jsr 	IsDigit 	; messes with A
- 		BR_F(Cvt2NumX) 		; no more digits
- 		;-- ; NUMBER = NUMBER * 10 + .A
+ 		BR_F(NumParseX) 	; no more digits
+ 		;-- NUMBER = NUMBER * 10 + .A
  		jsr 	NumAddA
-Cvt2NumAX 	bra 	Cvt2NumL 	; next character
-Cvt2NumX 	ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
+NumParseAX 	jsr 	GetChr 		; next character
+ 		bra 	NumParseL
+NumParseX 	ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
  		rts
 
-;----------------------------------------------- RdNum
-RdNum: ;-- parse a number from source into NUMBER (24Bit) - destorys NUMTMP
- 		jsr 	NumZero
-RdNumL 		lda 	CHRGOT 		; term null
- 		beq 	RdNumX
- 		jsr 	IsDigit 	; messes with A
- 		BR_F(RdNumX) 		; no more digits
- 		; NUMBER = NUMBER * 10 + .A
- 		jsr 	NumAddA
-RdNumAX 	jsr 	GetChr 		; next character
- 		bra 	RdNumL
-RdNumX 		ZCPY4(DBUGNUM,NUMBER) 	; just for me to see it !
- 		rts
-
-;----------------------------------------------- NumAddA
+;----------------------------------------------- NumAddA 
 NumAddA: ; NUMBER = NUMBER * 10 + .A
  		jsr 	NumMT 		; destroys NUMTMP
  		and 	#$0F
@@ -302,7 +326,7 @@ NumAddA: ; NUMBER = NUMBER * 10 + .A
  		inc 	NUMBER+2
 NumAddAX 	rts
 
-;----------------------------------------------- NumCvt
+;----------------------------------------------- NumCvt 
 NumCvt: ; Convert NUMBER(24Bit) to digits in NUMBUF
  		lda 	#'+'
  		sta 	NUMBUF

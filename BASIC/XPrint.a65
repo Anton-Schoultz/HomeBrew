@@ -1,7 +1,7 @@
 
 #if BLD == BLD_CODE
 ;=================================================================== PRINT =========== 
-;*  X_Print             code to execute the Print
+;*  X_Print              code to execute the Print
 ;*
 .list
 #ifdef hide

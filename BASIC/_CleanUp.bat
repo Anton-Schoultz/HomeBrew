@@ -1,3 +1,4 @@
-.echo off
+echo off
 del *.bak
 del *.lst
+

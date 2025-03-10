@@ -1,8 +1,8 @@
-;=================================================================== EVALUATE =========
-;*  EvNum2Str           convert numeric result NUMBER ->  formated string and append to STRBUF
-;*  EvStr               Evuate a string expression [T_StrLit|T_NumLit]
-;*  EvStr2Num           Parse number from STRBUF
-;*  Match               match character CHRGOT vs .A and move on, error if no match
+;=================================================================== EVALUATE ========= 
+;*  EvNum2Str            convert numeric result NUMBER ->  formated string and append to STRBUF
+;*  EvStr                Evuate a string expression [T_StrLit|T_NumLit]
+;*  EvStr2Num            Parse number from STRBUF
+;*  Match                match character CHRGOT vs .A and move on, error if no match
 ;*
 #ifdef hide
 .NOLIST
@@ -14,7 +14,7 @@
 
 _Ev 		= $
 
-;----------------------------------------------- Match
+;----------------------------------------------- Match 
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
  		bne 	MatchFail
@@ -44,13 +44,13 @@ EvStrL 		; check the token
 
 
 EvStr1 		; Numeric value?
- 		JSR 	Factor 		; return false if not
+ 		jsr 	Factor 		; return false if not
  		BR_F(EvStr2)
- 		BRA 	EvStrNxt
+ 		bra 	EvStrNxt
 
 ; 		BR_ANE(T_NumLit,EvStr2)
 ; 		jsr 	FetchNum 	; get the number value
- 		;--
+ 		;-- 
 ; 		jsr 	EvNum2Str 	; convert, format & append
 ; 		bra 	EvStrNxt
 
@@ -67,7 +67,7 @@ EvStrNxt 	;-- next token
  		bne 	EvStrL
  		rts
 
-;----------------------------------------------- EvNum2Str
+;----------------------------------------------- EvNum2Str 
 EvNum2Str: ; convert numeric result NUMBER ->  formated string and append to STRBUF
  		jsr 	NumCvt 		; convert NUMBER -> NUMBUF
  		jsr 	NumFmt 		; format (Zeroes)
@@ -78,7 +78,7 @@ EvNum2Str: ; convert numeric result NUMBER ->  formated string and append to STR
 
 
 
-;----------------------------------------------- EvStr2Num
+;----------------------------------------------- EvStr2Num 
 EvStr2Num: ; Parse number from STRBUF
 
 #include "EvFactor.a65"

@@ -1,38 +1,42 @@
-;=================================================================== CHRSTR ===========
-;*  ChrCopy             Output characters from input (mem/device) to output(Mem/device)
-;*  ChrIn               Read character from input device (KBD,COM..) -> CHRGOT
-;*  ChrInit             Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
-;*  ChrOut              Send character to output device (SCR,COM..)
-;*  ChrRd_              Read character from memory (ZPg routine)
-;*  ChrWr               Write Character to memory  A -> (ZWr++) , 00->(ZWr)
-;*  GetChr              Input character from Mem/IO -> A, CHRGOT
-;*  Input               Read from Mem/IO and place in INBUF, until CR
-;*  InputIO             Input INBUF from IO
-;*  InputIOEcho         Input INBUF from IO, echo chars to IO
-;*  PrNL                print CR,LF to CharOut
-;*  PrStr               Print string pointed to by ZPtr [A]
-;*  PrStrAX             Print string at AX [A] -> PutChr
-;*  PrStrBuf            Print STRBUF [A]  -> PutChr
-;*  PutChr              Print character to Mem/IO
-;*  PutNull             write terminating null
-;*  _Print_             Print in-line string
-;*m BR_NBCD(tgt)        Branch to tgt if BCD=0
-;*m BR_ND7(tgt)         Branch to tgt if MRK=0 (end with bit 7)
-;*m BR_NRD(tgt)         Branch to tgt if Read=0
-;*m BR_NWR(tgt)         Branch to tgt if Write=0
-;*m PRINT(str)          Print in-line string
-;*m PRINTLN(str)        Print in-line string with CR,LF
-;*m PR_ALL()            Term Null F5=0 Term null only
-;*m PR_ASCII()          Term Non-ASCII F5=1 Non-ASCII term
-;*m PR_BCD_OFF()        HEX out  F4=0 HEX 0-9ABCDEF
-;*m PR_BCD_ON()         BCD out  F4=1 BCD 0-9+-e.E
-;*m PR_ECHO_OFF()       No Echo  F3=0
-;*m PR_ECHO_ON()        ECHO the input F3=1 -> Chr
-;*m PR_NECHO(tgt)       Branch to tgt if ECHO=0
-;*m PR_RD_IO()          Read IO  F6=0 ChrIn
-;*m PR_RD_MEM()         Read memory F6=1 ChrRd
-;*m PR_WR_IO()          Write IO F7=0 ChrOut
-;*m PR_WR_MEM()         Write memory F7=1 ChrWr
+;=================================================================== CHRSTR =========== 
+;*  ChrCopy              Output characters from input (mem/device) to output(Mem/device)
+;*  ChrIn                Read character from input device (KBD,COM..) -> CHRGOT
+;*  ChrInit              Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
+;*  ChrOut               Send character to output device (SCR,COM..)
+;*  ChrRd_               Read character from memory (ZPg routine)
+;*  ChrWr                Write Character to memory  A -> (ZWr++) , 00->(ZWr)
+;*  GetChr               Input character from Mem/IO -> A, CHRGOT
+;*  Input                Read from Mem/IO and place in INBUF, until CR
+;*  InputIO              Input INBUF from IO
+;*  InputIOEcho          Input INBUF from IO, echo chars to IO
+;*  PrNL                 print CR,LF to PutChr -> mem/io
+;*  PrStr                Print string pointed to by ZPtr [A]
+;*  PrStrAX              Print string at AX [A] -> PutChr
+;*  PrStrBuf             Print STRBUF [A]  -> PutChr
+;*  PutChr               Print character to Mem/IO
+;*  PutNull              write terminating null to Mem/IO
+;*  _Print_              Print in-line string
+;*m BR_NBCD(tgt)         Branch to tgt if BCD=0
+;*m BR_ND7(tgt)          Branch to tgt if MRK=0 (end with bit 7)
+;*m BR_NRD(tgt)          Branch to tgt if Read=0
+;*m BR_NWR(tgt)          Branch to tgt if Write=0
+;*m PR_ALL()             Term Null F5=0 Term null only
+;*m PR_ASCII()           Term Non-ASCII F5=1 Non-ASCII term
+;*m PR_BCD_OFF()         HEX out  F4=0 HEX 0-9ABCDEF
+;*m PR_BCD_ON()          BCD out  F4=1 BCD 0-9+-e.E
+;*m PR_ECHO_OFF()        No Echo  F3=0
+;*m PR_ECHO_ON()         ECHO the input F3=1 -> Chr
+;*m PR_NECHO(tgt)        Branch to tgt if ECHO=0
+;*m PR_NZSPC(tgt)        Branch to tgt if ZSPC=0
+;*m PR_NZSUP(tgt)        Branch to tgt if ZSUP=0
+;*m PR_RD_IO()           Read IO  F6=0 ChrIn
+;*m PR_RD_MEM()          Read memory F6=1 ChrRd
+;*m PR_WR_IO()           Write IO F7=0 ChrOut
+;*m PR_WR_MEM()          Write memory F7=1 ChrWr
+;*m PR_ZSPC_OFF()        Leading zeros stay
+;*m PR_ZSPC_ON()         Blank leading zeroes
+;*m PR_ZSUP_OFF()        Leading zeros stay
+;*m PR_ZSUP_ON()         Suppress leading zeroes
 ;*
 #ifdef hide
 .NOLIST
@@ -48,7 +52,7 @@
 ; Bit1 ZSpc	' '		Suppressed
 ; Bit0 ZSup	'0'		Suppress leading zeros
 
-;----------------------------------------------- 7:Wr/Out
+;----------------------------------------------- 7:Wr/Out 
 ; BR_WR(tgt) Branch to tgt if Write=1
 #define BR_WR(tgt) 	BBS7 ZPrFlg,tgt
 
@@ -61,7 +65,7 @@
 ; PR_WR_IO()	Write IO	F7=0 ChrOut
 #define PR_WR_IO()	RMB7 ZPrFlg
 
-;----------------------------------------------- 6:Rd/In
+;----------------------------------------------- 6:Rd/In 
 ; BR_RD(tgt) Branch to tgt if Read=1
 #define BR_RD(tgt) 	BBS6 ZPrFlg,tgt
 
@@ -74,7 +78,7 @@
 ; PR_RD_IO()	Read IO		F6=0 ChrIn
 #define PR_RD_IO()	RMB6 ZPrFlg
 
-;----------------------------------------------- 5:NonASCII
+;----------------------------------------------- 5:NonASCII 
 ; BR_D7(tgt)	Branch to tgt if MRK=1 (end with bit 7)
 #define BR_D7(tgt) 	BBS5 ZPrFlg,tgt
 ; BR_ND7(tgt)	Branch to tgt if MRK=0 (end with bit 7)
@@ -86,7 +90,7 @@
 ; PR_ALL()	Term Null	F5=0 Term null only
 #define PR_ALL()	RMB5 ZPrFlg
 
-;----------------------------------------------- 4:BCD HEX
+;----------------------------------------------- 4:BCD HEX 
 ; BR_BCD(tgt)	Branch to tgt if BCD=1
 #define BR_BCD(tgt) 	BBS4 ZPrFlg,tgt
 ; BR_NBCD(tgt)	Branch to tgt if BCD=0
@@ -98,7 +102,7 @@
 ; PR_BCD_OFF()	HEX out		F4=0 HEX 0-9ABCDEF
 #define PR_BCD_OFF()	RMB4 ZPrFlg
 
-;----------------------------------------------- 3:Echo
+;----------------------------------------------- 3:Echo 
 ; PR_ECHO(tgt)	Branch to tgt if ECHO=1
 #define BR_ECHO(tgt) 	BBS3 ZPrFlg,tgt
 ; PR_NECHO(tgt)	Branch to tgt if ECHO=0
@@ -109,7 +113,7 @@
 #define PR_ECHO_OFF()	RMB3 ZPrFlg
 
 
-;----------------------------------------------- 1:ZeroBlank
+;----------------------------------------------- 1:ZeroBlank 
 ; PR_ZSPC(tgt)	Branch to tgt if ZSPC=1
 #define BR_ZSPC(tgt) 	BBS1 ZPrFlg,tgt
 ; PR_NZSPC(tgt)	Branch to tgt if ZSPC=0
@@ -119,7 +123,7 @@
 ; PR_ZSPC_OFF()	Leading zeros stay
 #define PR_ZSPC_OFF()	RMB1 ZPrFlg
 
-;----------------------------------------------- 0:ZeroSuppress
+;----------------------------------------------- 0:ZeroSuppress 
 ; PR_ZSUP(tgt)	Branch to tgt if ZSUP=1
 #define BR_ZSUP(tgt) 	BBS0 ZPrFlg,tgt
 ; PR_NZSUP(tgt)	Branch to tgt if ZSUP=0
@@ -129,7 +133,7 @@
 ; PR_ZSUP_OFF()	Leading zeros stay
 #define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
- 		;--
+ 		;-- 
 ChrRd 		= $0000 		; increment pointer and fetch, save in CHRGOT
 ZRd 		= $07 			; points to character just fetched
 CHRGOT 		= $0C 			; most recently fetched character
@@ -137,7 +141,7 @@ HLTFLG 		= $0D 			; halt flag 00=run (error code)
 ZWr 		= $0E 			; address for ChrWr to write to
 
 _ChrStr 	= $
-;----------------------------------------------- ChrNext
+;----------------------------------------------- ChrNext 
 ; increment the ZRd pointer (inside the lda) and then fetch the character
 ChrRd_: ; Read character from memory (ZPg routine)
  		ZINC(ZRd) 		; 0001 0203 0405
@@ -150,18 +154,18 @@ ChrRd_: ; Read character from memory (ZPg routine)
 .db 0,0 				; 0E0F = ZWr
 
 ; Initial values for 8 vectors in here, copied along with the above to zero page
- 		;--
+ 		;-- 
 .dw ConIn 				; VCHRIN
 .dw ConOut 				; VCHROUT
 .dw $ABCD
 .dw $ABCD
- 		;--
+ 		;-- 
 .dw $ABCD
 .dw $ABCD
 .dw $ABCD
 .dw $ABCD
 
-;----------------------------------------------- CharInit
+;----------------------------------------------- CharInit 
 ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
  		ldx 	#0
 ChrInitL 	lda 	ChrRd_,X
@@ -176,10 +180,10 @@ ChrInitL 	lda 	ChrRd_,X
  		rts
 
 
-;----------------------------------------------- PutNull
+;----------------------------------------------- PutNull 
 PutNull: ; write terminating null to Mem/IO
  		lda 	#0
-;----------------------------------------------- PutChr
+;----------------------------------------------- PutChr 
 PutChr: ; Print character to Mem/IO
  		;-- don't send null
  		cmp 	#0
@@ -187,10 +191,10 @@ PutChr: ; Print character to Mem/IO
  		;-- outp[ut or memory
  		BR_WR(ChrWr) 		;wr=1?
  		;-- 0=fall through to send via ChrOut
-;----------------------------------------------- ChrOut
+;----------------------------------------------- ChrOut 
 ChrOut: ; Send character to output device (SCR,COM..)
  		jmp 	(VCHROUT)
-;----------------------------------------------- ChrWr
+;----------------------------------------------- ChrWr 
 ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
  		;-- bump to next address
@@ -200,7 +204,7 @@ ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
 ChrWrX 		rts
 
-;----------------------------------------------- GetChr
+;----------------------------------------------- GetChr 
 GetChr: ; Input character from Mem/IO -> A, CHRGOT
  		BR_NECHO(GetChr1) 	; if echo is off, just go get the char
  		jsr 	GetChr1 	; fetch char
@@ -213,16 +217,16 @@ GetChrX 	rts 			; return
 GetChr1 	BR_NRD(ChrIn) 		;Rd=1? ChrRd
  		jmp 	ChrRd 		;ChrRd is code in Z Page, saves in CHRGOT
 
-;----------------------------------------------- ChrIn
+;----------------------------------------------- ChrIn 
 ChrIn: ; Read character from input device (KBD,COM..) -> CHRGOT
  		jsr 	ChrVecIn 	; call through vecotr
  		sta 	CHRGOT 		; save in CHRGOT
  		rts
 ChrVecIn 	jmp 	(VCHRIN)
-;----------------------------------------------- ChrRd
+;----------------------------------------------- ChrRd 
 ;ChrRd is code in Z Page
 
-;----------------------------------------------- ChrCopy
+;----------------------------------------------- ChrCopy 
 ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
  		jsr 	GetChr 		; get from Mem / IO
  		beq 	ChrCopyX 	; Null -> exit
@@ -233,14 +237,14 @@ ChrCopy2 	jsr 	PutChr 		; put Mem / IO
  		bra 	ChrCopy 	; loop
 ChrCopyX 	rts
 
-;----------------------------------------------- InputIOEcho
+;----------------------------------------------- InputIOEcho 
 InputIOEcho: ; Input INBUF from IO, echo chars to IO
  		PR_WR_IO()
  		PR_ECHO_ON()
-;----------------------------------------------- InputIO
+;----------------------------------------------- InputIO 
 InputIO: ; Input INBUF from IO
  		PR_RD_IO() 		; Read from IO
-;----------------------------------------------- Input
+;----------------------------------------------- Input 
 Input: ; Read from Mem/IO and place in INBUF, until CR
  		ldx 	#0
  		txa
@@ -278,13 +282,13 @@ InputX 		lda 	#0 		; terminate with a null
  		rts
 
 
-;----------------------------------------------- PrStrBuf
+;----------------------------------------------- PrStrBuf 
 PrStrBuf: ; Print STRBUF [A]  -> PutChr
  		LDAX(STRBUF)
-;----------------------------------------------- PrStrAX
+;----------------------------------------------- PrStrAX 
 PrStrAX: ; Print string at AX [A] -> PutChr
  		SETAX(ZPtr)
-;----------------------------------------------- PrStr
+;----------------------------------------------- PrStr 
 PrStr: ; Print string pointed to by ZPtr [A]
 ; last index saved into ZTmp
  		phy
@@ -295,7 +299,7 @@ PrStr1 		lda 	(ZPtr),y
  		BR_ND7(PrStr2) 		; BREAK=Off, skip bit test
  		bmi 	PrStrX 		; bit 7 set -> exit
  		and 	#$7F 		; force ascii
- 		;--
+ 		;-- 
 PrStr2 		jsr 	PutChr 		; print character
  		iny 			; move to next char
  		bne 	PrStr1 		; loop back (no more than 255 chars)
@@ -303,7 +307,7 @@ PrStrX 		sty 	ZTmp
  		ply 			; restore Y
  		rts 			; exit
 
-;----------------------------------------------- _Print_
+;----------------------------------------------- _Print_ 
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
  		;-- pop the return address from the jsr call
@@ -323,7 +327,7 @@ _Print_: ;Print in-line string
  		inc 	ZPtr+1 		; yes, incr hi
 _Print_X 	jmp 	(ZPtr) 		; jump to code after the in-line string
 
-;----------------------------------------------- PrNL
+;----------------------------------------------- PrNL 
 PrNL: ; print CR,LF to PutChr -> mem/io
  		lda 	#CR
  		jsr 	PutChr

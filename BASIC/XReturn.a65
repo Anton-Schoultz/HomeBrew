@@ -4,12 +4,12 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== RETURN ===========
-;*  X_Return            code to execute the Return
+;=================================================================== RETURN =========== 
+;*  X_Return             code to execute the Return
 ;*
 _Return 	= $
 
-;----------------------------------------------- X_Return
+;----------------------------------------------- X_Return 
 X_Return: ; code to execute the Return
 
 
@@ -21,13 +21,13 @@ X_Return: ; code to execute the Return
 #endif
 
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if BLD = BLD_KEYWORD
 .list
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if BLD = BLD_TBL_RUN
 .list
 T_Return 	= LOW($)+$80

@@ -1,6 +1,5 @@
-;=================================================================== TABLES ===========
-;*  TblKeyword          Table of keywords text
-;*  TblRun              Table of addresses to execute keyword
+;=================================================================== TABLES =========== 
+;*  TblKeyword           Table of keywords text
 ;*
 #ifdef hide
 .NOLIST
@@ -10,7 +9,7 @@ BLD_CODE= 	0
 BLD_KEYWORD= 	1
 BLD_TBL_RUN= 	2
 
-;----------------------------------------------- Code
+;----------------------------------------------- Code 
 _basic 		= $
 BLD 		= BLD_CODE
 #include "All.a65"
@@ -21,7 +20,7 @@ BLD 		= BLD_CODE
 
 _TBL 		= $
 
-;----------------------------------------------- TblKeyword
+;----------------------------------------------- TblKeyword 
 TblKeyword: ; Table of keywords text
 .nolist
 BLD 		= BLD_KEYWORD
@@ -31,17 +30,17 @@ BLD 		= BLD_KEYWORD
  		;-- .echo " Bytes in TblKeyword\n"
 
 .list
-;
-;
-;	;----------------------------------------------- TblRun
-;	TblRun: ; Table of addresses to execute keyword
-;	.nolist
-;	PAGE()
-;	BLD 		= BLD_TBL_RUN
-;	#include "All.a65"
-;	T_Max 	= LOW($)
-;	.dw 0
-;	.list
+ 		;-- 
+ 		;-- 
+ 		;-- ;----------------------------------------------- TblRun
+ 		;-- TblRun: ; Table of addresses to execute keyword
+ 		;-- .nolist
+ 		;-- PAGE()
+ 		;-- BLD 		= BLD_TBL_RUN
+ 		;-- #include "All.a65"
+ 		;-- T_Max 	= LOW($)
+ 		;-- .dw 0
+ 		;-- .list
  		;-- .echo $-TblRun
  		;-- .echo " Bytes in TblRun\n"
 

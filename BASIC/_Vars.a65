@@ -1,29 +1,29 @@
-;=================================================================== VARIABLES ========
+;=================================================================== VARIABLES ======== 
 ;*
 
-;----------------------------------------------- ZPg Code	$000x
+;----------------------------------------------- ZPg Code	$000x 
 ; ZRd		ChrRd  address to read next char from
 ; ZWr		ChrWr  address to send char to
-;----------------------------------------------- Vectors	$001x
+;----------------------------------------------- Vectors	$001x 
 ; VCHRIN	ChrIn  Read character from input device
 ; VCHROUT 	ChrOut Send character to output device
 ;
-;----------------------------------------------- ZPage		$002x
+;----------------------------------------------- ZPage		$002x 
 ; ZBuf 		pointer to a buffer
 ; ZPtr 		general pointer
 ; ZPrFlg	Print/convert mode  - See ChrStr for details
 ; ZTmp		Temp byte
 
-;----------------------------------------------- STACK		$01xx
+;----------------------------------------------- STACK		$01xx 
 ; Calculator stack at the bottom, CPU stack at the top
-;----------------------------------------------- SysVars	$02xx
+;----------------------------------------------- SysVars	$02xx 
 ; STRBUF	String buffer
 ; TOKBUF	Token buffer
-;----------------------------------------------- IO Dev		$03xx
+;----------------------------------------------- IO Dev		$03xx 
 #ifdef hide
 .NOLIST
 #endif
-;=================================================================== CONSTANTS ========
+;=================================================================== CONSTANTS ======== 
 
 ; BUFSZ() Size for INBUF,TOKBUF
 #define BUFSZ() 64
@@ -31,7 +31,7 @@
 ; STRSZ Size for STRBUF
 #define STRSZ 128
 
-;=================================================================== CHRRD, VECTORS ===
+;=================================================================== CHRRD, VECTORS === 
 .org 0
 ; $0000 16 bytes for z-pg code
 ZPgCode 	.BLOCK 	16
@@ -44,7 +44,7 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 .export VCHROUT,VCHRIN,
 
 
-;=================================================================== ZVARS ============
+;=================================================================== ZVARS ============ 
 ; Zero page variables, calculator work area etc
 .org $0020
 Int(ZBuf) 	; ZBuf pointer to a buffer
@@ -54,14 +54,14 @@ Int(ZStr) 	; ZStr points to string result
 
 
 .org $0030
-;----------------------------------------------- Printing (send to mem/io)
+;----------------------------------------------- Printing (send to mem/io) 
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 
-Short(ZStrLen)	; length of STRBUF used (write index)
+Short(ZStrLen) 	; length of STRBUF used (write index)
 
 .org $0040
-;----------------------------------------------- Code Lines
+;----------------------------------------------- Code Lines 
 Int(LNNUM) 	; Line number
 Int(NXTLN) 	; address of next line
 Short(LNLEN) 	; length of tokenised line in TOKBUF (for editor)
@@ -69,32 +69,35 @@ Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
 .org $48
-;----------------------------------------------- DBug
+;----------------------------------------------- DBug 
 Var(DBUGNUM,6)
 
 .org $0050
-;----------------------------------------------- Numeric
+;----------------------------------------------- Numeric 
 Var(NUMBUF,8) 	; Conversion work area
 Var(NUMTMP,4) 	; Temp number
 Var(NUMBER,4) 	; Number parsed
 
+
+Short(ZDIV) 	; divisor for short division 10/100
+
 .org $60
-;----------------------------------------------- Irq / Nmi
+;----------------------------------------------- Irq / Nmi 
 Int(Z_IrqPtr) 	; used in IRQ code
 
 .export LNNUM,NXTLN,NUMTMP,NUMBER,NUMBUF,DBUGNUM,VARID
 
 
-;=================================================================== STACK ============
+;=================================================================== STACK ============ 
 .org $0100
 ; calc stack at bottom, cpu stack at the top
 
-;=================================================================== SYSVARS ==========
+;=================================================================== SYSVARS ========== 
 .org $0200
-;----------------------------------------------- Basic Editing
+;----------------------------------------------- Basic Editing 
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
-;----------------------------------------------- String
+;----------------------------------------------- String 
 .org $0280
 Var(STRBUF,STRSZ) ; buffer for strings
 
@@ -105,7 +108,7 @@ Var(STRBUF,STRSZ) ; buffer for strings
 .org $0300
 
 
-;== SIMPLE VARIABLES
+;=================================================================== SIMPLE VARIABLES =
 .org $0400
 Var(VAR0,32)
 Var(VAR1,32)

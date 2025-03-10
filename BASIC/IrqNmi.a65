@@ -1,8 +1,8 @@
-;=================================================================== IRQ ==============
-;*  Irq                 Interrupt Request service routine
-;*  IrqBrk              Handle BRK interrupt
-;*  IrqRtn              Restore registers and return from IRQ
-;*  Nmi                 Non-Maskable interrupt service handler
+;=================================================================== IRQ ============== 
+;*  Irq                  Interrupt Request service routine
+;*  IrqBrk               Handle BRK interrupt
+;*  IrqRtn               Restore registers and return from IRQ
+;*  Nmi                  Non-Maskable interrupt service handler
 ;*
 ; Interrupt handler for BRK, IRQ and NMI
 ;
@@ -15,11 +15,11 @@
 #ifndef _Irq
 #define _Irq
 
-;----------------------------------------------- IRQ
+;----------------------------------------------- IRQ 
 Irq: ; Interrupt Request service routine
 ; Interrupt low level, reset the source as early as posible
 ; PC & Status are pushed, then cpu comes here
- 		;--
+ 		;-- 
  		;-- Save registers
  		PUSHAXY() 		; Y,X,Z,S,PC
 
@@ -31,12 +31,12 @@ Irq: ; Interrupt Request service routine
 
  		;-- jsr 	IrqDo
 
-;----------------------------------------------- IrqRtn
+;----------------------------------------------- IrqRtn 
 IrqRtn: ; Restore registers and return from IRQ
  		PULLAXY()
  		rti 			; pop status & PC, return, re-enabling IRQ
 
-;----------------------------------------------- IrqBrk
+;----------------------------------------------- IrqBrk 
 ; fetch the post byte and store it in ERRNO, then return from interrupt
 IrqBrk: ; Handle BRK interrupt
  		lda 	$105,X 		;
@@ -94,7 +94,7 @@ IrqWait2 	lda 	HLTFLG 		; check flag value
  		;-- IrqBrkDo 	JMP 	(V_BRK) 	; the rts in the body goes back to caller
  		;-- IrqDo: 	JMP 	(V_IRQ) 	; the rts in the body goes back to caller
 
-;----------------------------------------------- NMI
+;----------------------------------------------- NMI 
 Nmi: ; Non-Maskable interrupt service handler
 ; Negative-edge triggered interrupt
 ; use this for timer interrupts straight from binary divider ?
