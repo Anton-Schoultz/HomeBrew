@@ -1,46 +1,75 @@
-;=================================================================== EVAL ============= 
-;*  EvalStr             Evaluate a string expression [TSTR|TNUM]
-;*  EvalStrNum          convert numeric result to formated string and append to STRBUF
+;=================================================================== EVALUATE =========
+;*  EvNum2Str           convert numeric result NUMBER ->  formated string and append to STRBUF
+;*  EvStr               Evuate a string expression [T_StrLit|T_NumLit]
+;*  EvStr2Num           Parse number from STRBUF
+;*  Match               match character CHRGOT vs .A and move on, error if no match
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
-_Eval 		= $
+; Match a Specific Input String and move on to next token
+#define MATCH(ch) lda #ch\ jsr Match
 
-;----------------------------------------------- Eval 
-EvalStr: ; Evaluate a string expression [TSTR|TNUM]
+
+_Ev 		= $
+
+;----------------------------------------------- Match
+Match: ; match character CHRGOT vs .A and move on, error if no match
+ 		cmp 	CHRGOT
+ 		bne 	MatchFail
+ 		jmp 	ChrRd 		; next tokena nd return
+MatchFail 	;
+ 		PRINT("Excpected char not found")
+ 		BREAK(1)
+
+
+
+;-----------------------------------------------
+EvStr: ; Evuate a string expression [T_StrLit|T_NumLit]
  		jsr 	StrClr 		; clear the result
 
-EvalStrL 	; check the token
+EvStrL 		; check the token
  		lda 	CHRGOT
- 		;-- string literal ?
- 		BR_ANE(T_StrLit,EvalStr1)
- 		jsr 	StrLit 		; append litteral
- 		bra 	EvalStrNxt
-
-EvalStr1 	; Numeric value?
- 		BR_ANE(T_NumLit,EvalStr2)
- 		jsr 	FetchNum 	; get the number value
- 		jsr 	EvalStrNum 	; convert, format & append
- 		bra 	EvalStrNxt
+ 		;-- string Value ?
+ 		jsr 	IsStrValue
+ 		BR_F(EvStr1)
 
 
-EvalStr2
+; 		BR_ANE(T_StrLit,EvStr1)
+; 		jsr 	StrLit 		; append litteral
+; 		bra 	EvStrNxt
+
+
+
+
+EvStr1 		; Numeric value?
+ 		JSR 	Factor 		; return false if not
+ 		BR_F(EvStr2)
+ 		BRA 	EvStrNxt
+
+; 		BR_ANE(T_NumLit,EvStr2)
+; 		jsr 	FetchNum 	; get the number value
+ 		;--
+; 		jsr 	EvNum2Str 	; convert, format & append
+; 		bra 	EvStrNxt
+
+
+EvStr2
 ; RIGHT$	-> StrTail
 ; LEFT$		-> StrHead
 
 ; if not known, just return (it will be in CHRGOT for caller to deal with)
  		rts
 
-EvalStrNxt 	;-- next token
+EvStrNxt 	;-- next token
  		jsr 	ChrRd
- 		bne 	EvalStrL
+ 		bne 	EvStrL
  		rts
 
-;----------------------------------------------- EvalStrNum 
-EvalStrNum: ; convert numeric result to formated string and append to STRBUF
- 		jsr 	NumCvt 		; convert -> NUMBUF
+;----------------------------------------------- EvNum2Str
+EvNum2Str: ; convert numeric result NUMBER ->  formated string and append to STRBUF
+ 		jsr 	NumCvt 		; convert NUMBER -> NUMBUF
  		jsr 	NumFmt 		; format (Zeroes)
  		jmp 	StrAddNum 	; STRBUF += NUMBUF
 
@@ -48,8 +77,15 @@ EvalStrNum: ; convert numeric result to formated string and append to STRBUF
 
 
 
-.echo "  _Eval\t\t"
-.echo $-_Eval
+
+;----------------------------------------------- EvStr2Num
+EvStr2Num: ; Parse number from STRBUF
+
+#include "EvFactor.a65"
+
+
+.echo "  _Ev\t\t"
+.echo $-_Ev
 .echo "\n"
 .list
 

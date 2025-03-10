@@ -1,5 +1,10 @@
 ; All
+
+; Key words
 #include "XRem.a65"
 #include "XPrint.a65"
 #include "XBreak.a65"
 #include "XReturn.a65"
+
+; functions / operators
+#include "XRelOp.a65"

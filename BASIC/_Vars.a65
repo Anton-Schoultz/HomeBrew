@@ -52,6 +52,7 @@ Int(ZPtr) 	; ZPtr general pointer
 Int(ZStr) 	; ZStr points to string result
 
 
+
 .org $0030
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
@@ -102,6 +103,14 @@ Var(STRBUF,STRSZ) ; buffer for strings
 ;======================================================================================
 ; reserved space for memory mapped IO devices
 .org $0300
+
+
+;== SIMPLE VARIABLES
+.org $0400
+Var(VAR0,32)
+Var(VAR1,32)
+Var(VAR2,32)
+Var(VAR3,32)
 
 .LIST 					;-- End of Vars
 

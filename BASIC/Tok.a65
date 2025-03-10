@@ -4,7 +4,9 @@
 ;*  IsAlpha             returns T/F if .A is a Alpha A-Z
 ;*  IsAlphaNumeric      returns true if .A is 0-9,A-Z
 ;*  IsDigit             returns T/F if .A is a digit 0..9
+;*  IsNumValue          return T if token is a numeric value
 ;*  IsRelOp             returns T/F if CHRGOT is a relational opperator <>=
+;*  IsStrValue          return T if token is a string value
 ;*  L_LineNo            list LineNo
 ;*  L_Number            list number
 ;*  L_String            list out string text
@@ -43,6 +45,8 @@ T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
 T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
 T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
 T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
+
+
 
 T_Line 		= $F0 			; header includes line number
 
@@ -123,10 +127,20 @@ PNotStr 	; not string, try varname
  		BR_F(PNotVar)
  		jsr 	P_Var
  		bra 	P_Part 		; more
-PNotVar 	; not varname, so copy as-is
- 		lda 	CHRGOT
+
+PNotVar 	; not varname, rel op?
+ 		BR_AEQ('<',PLT)
+ 		BR_AEQ('>',PGT)
+ 		;-- otherwise as-is
+PAsIs 		lda 	CHRGOT
  		jsr 	ChrWr
  		bra 	P_PartNxt
+
+PLT 		; check for <= <>
+
+
+
+PGT
 
 ;----------------------------------------------- ParseClr
 ; clear teh tokbuf (not realy required, butmake debuggin easier)
@@ -165,6 +179,19 @@ SkipBlank: ; Skip blank/tabs, end char in A, T if not null
 RtnTrue 	RTN_T()
 RtnFalse 	RTN_F()
 
+;----------------------------------------------- IsNumValue
+IsNumValue: ; return T if token is a numeric value
+ 		BR_AEQ(T_NumLit,RtnTrue)
+ 		BR_AEQ(T_NumVar,RtnTrue)
+ 		BR_AEQ(T_NumAry,RtnTrue)
+ 		RTN_F()
+
+;----------------------------------------------- IsStrValue
+IsStrValue: ; return T if token is a string value
+ 		BR_AEQ(T_StrLit,RtnTrue)
+ 		BR_AEQ(T_StrVar,RtnTrue)
+ 		BR_AEQ(T_StrAry,RtnTrue)
+ 		RTN_F()
 
 ;----------------------------------------------- IsAlpha
 IsAlpha: ; returns T/F if .A is a Alpha A-Z
@@ -182,7 +209,6 @@ IsDigit: ; returns T/F if .A is a digit 0..9
  		BR_AGE('9'+1,RtnFalse)
  		RTN_T()
 
-
 ;----------------------------------------------- IsRelOp
 IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=
  		lda 	CHRGOT
@@ -190,6 +216,8 @@ IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=
  		BR_AEQ('=',RtnTrue) 	; 3d
  		BR_AEQ('>',RtnTrue) 	; 3e
  		RTN_F()
+
+
 
 
 ;----------------------------------------------- OneOf
@@ -306,9 +334,9 @@ TokExpL0 	;-- output the word
 TokExpLX 	;-- last character of the word (marked one)
  		and 	#$7F 		; mask off bit7
  		jsr 	PutChr 		; output it and return
- 		cmp 	#'('
- 		beq 	TokExpX
- 		bra 	TokSpc
+ 		jsr 	IsAlpha
+ 		BR_T(TokSpc) 		; ends in alpha, pad a blank
+ 		rts 			; otherwise done
 
 TokInvalid 	; not found
  		jsr 	TokErr 		; show error token as [xx]
@@ -512,14 +540,14 @@ P_Var3 		jsr 	ChrWr 		; output first varname char
  		bmi 	P_VarMod 	; if only the one go do $(
 
 P_Var4 		jsr 	ChrRd
- 		bne	P_Var3
+ 		bne 	P_Var3
  		rts
 
 P_VarMod 	jsr 	ChrRd
  		BR_AEQ('(',P_VarMod) 	; read over (,$
  		BR_AEQ('$',P_VarMod)
 
-P_VarXX		rts
+P_VarXX 	rts
 
 ;=================================================================== NUMBER ===========
 
