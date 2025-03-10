@@ -1,5 +1,5 @@
 ;=================================================================== EVALUATE ========= 
-;*  EvNum2Str            convert numeric result NUMBER ->  formated string and append to STRBUF
+;*  EvNum2Str            convert numeric result NUM_A ->  formated string and append to STRBUF
 ;*  EvStr                Evuate a string expression [T_StrLit|T_NumLit]
 ;*  EvStr2Num            Parse number from STRBUF
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
@@ -49,7 +49,7 @@ EvStr1 		; Numeric value?
  		bra 	EvStrNxt
 
 ; 		BR_ANE(T_NumLit,EvStr2)
-; 		jsr 	FetchNum 	; get the number value
+; 		jsr 	ENumLit 	; get the number value
  		;-- 
 ; 		jsr 	EvNum2Str 	; convert, format & append
 ; 		bra 	EvStrNxt
@@ -68,10 +68,10 @@ EvStrNxt 	;-- next token
  		rts
 
 ;----------------------------------------------- EvNum2Str 
-EvNum2Str: ; convert numeric result NUMBER ->  formated string and append to STRBUF
- 		jsr 	NumCvt 		; convert NUMBER -> NUMBUF
+EvNum2Str: ; convert numeric result NUM_A ->  formated string and append to STRBUF
+ 		jsr 	NumCvt 		; convert NUM_A -> NUM_BUF
  		jsr 	NumFmt 		; format (Zeroes)
- 		jmp 	StrAddNum 	; STRBUF += NUMBUF
+ 		jmp 	StrAddNum 	; STRBUF += NUM_BUF
 
 
 

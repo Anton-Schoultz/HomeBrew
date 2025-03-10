@@ -3,7 +3,7 @@
 ;
 ;*  StrAdd               Append string (ZStr) to STRBUF (Recall)
 ;*  StrAddChr            Add character .A to STRBUF
-;*  StrAddNum            Append the converted numeric (in NUMBUF) to STRBUF [AXY]
+;*  StrAddNum            Append the converted numeric (in NUM_BUF) to STRBUF [AXY]
 ;*  StrClr               Clear STRBUF
 ;*  StrCpy               Copy STRBUF to memory at ZStr (Store)
 ;*  StrEnd               Save index and exit
@@ -109,8 +109,8 @@ StrCpyL 	lda 	STRBUF,y
 StrCpyX 	rts
 
 ;----------------------------------------------- StrAddNum 
-StrAddNum: ; Append the converted numeric (in NUMBUF) to STRBUF [AXY]
- 		ZSET(ZStr,NUMBUF)
+StrAddNum: ; Append the converted numeric (in NUM_BUF) to STRBUF [AXY]
+ 		ZSET(ZStr,NUM_BUF)
 
 ;----------------------------------------------- StrAdd 
 StrAdd: ; Append string (ZStr) to STRBUF (Recall)
