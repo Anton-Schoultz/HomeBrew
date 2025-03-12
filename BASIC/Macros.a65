@@ -152,6 +152,12 @@
 #DEFINE SPC	32
 #DEFINE QT	34
 
+;----------------------------------------------- Number format bytes 
+; Low, High, Upper, Exponent
+#define _L	0
+#define _H	1
+#define _U	2
+#define _X	3
 
 ; 	LDA #2	; N Z C
 ; 	CMP #1	;     t

@@ -30,12 +30,15 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 
 ;----------------------------------------------- ENumLit
 ENumLit: ; fetch number from the code -> NUM_A -> AX
- 		lda 	#0
- 		sta 	NUM_A+2
  		jsr 	ChrRd
- 		sta 	NUM_A
+ 		sta 	NUM_A+0
  		jsr 	ChrRd
  		sta 	NUM_A+1
+ 		jsr 	ChrRd
+ 		sta 	NUM_A+2
+ 		jsr 	ChrRd
+ 		sta 	NUM_A+3
+ 		jsr 	ChrRd
  		RTN_T()
 
 
@@ -141,7 +144,6 @@ EvNum2Str: ; convert numeric result NUM_A ->  formated string and append to STRB
 ;----------------------------------------------- EvStr2Num
 EvStr2Num: ; Parse number from STRBUF
 
-#include "EvFactor.a65"
 
 
 .echo "  _Ev\t\t"

@@ -7,14 +7,14 @@
 ;*  NumInit              Initialise calculator
 ;*  NumMH                NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ;*  NumMT                NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
-;*  NumParse             -- parse a number from source into NUM_A (24Bit) - destorys NUM_TMP
+;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
 ;*  NumPopB              Pop Num_B from the calculator stack
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumSpc               blank leading zeroes
 ;*  NumSup               removing leading zeroes
 ;*  NumVal               VAL() Get numeric value (NUM_A) from String (STRBUF)
-;*  NumZeroA             place zero into NUM_A (24Bit)
-;*  NumZeroA             place zero into NUM_A (24Bit)
+;*  NumZeroA             place zero into NUM_A
+;*  NumZeroB             place zero into NUM_B
 ;*  NumZeroX             zero the number at .X
 ;*m HEX_DUMP(adr)        Print hex dump to IO/Mem [Zptr++]
 ;*
@@ -45,13 +45,13 @@ NumInit: ; Initialise calculator
 ;----------------------------------------------- NumPushA
 NumPushA: ; Push Num_A onto calculator stack
  		ldx 	NUM_SP
- 		lda 	NUM_A
+ 		lda 	NUM_A+_L
  		sta 	CSTK0,X
- 		lda 	NUM_A+1
+ 		lda 	NUM_A+_H
  		sta 	CSTK1,X
- 		lda 	NUM_A+2
+ 		lda 	NUM_A+_U
  		sta 	CSTK2,X
- 		lda 	NUM_A+3
+ 		lda 	NUM_A+_X
  		sta 	CSTK3,X
  		inx
  		txa
@@ -66,13 +66,13 @@ NumPopB: ; Pop Num_B from the calculator stack
  		sta 	NUM_SP
  		tax
  		lda 	CSTK0,X
- 		sta 	NUM_B
+ 		sta 	NUM_B+_L
  		lda 	CSTK1,X
- 		sta 	NUM_B+1
+ 		sta 	NUM_B+_H
  		lda 	CSTK2,X
- 		sta 	NUM_B+2
+ 		sta 	NUM_B+_U
  		lda 	CSTK3,X
- 		sta 	NUM_B+3
+ 		sta 	NUM_B+_X
  		rts
 
 
@@ -92,7 +92,7 @@ NumValAX 	bra 	NumValL 	; next character
 NumValX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
 ;----------------------------------------------- NumParse
-NumParse: ;-- parse a number from source into NUM_A (24Bit) - destorys NUM_TMP
+NumParse: ;-- parse a number from source into NUM_A - destorys NUM_TMP
  		jsr 	NumZeroA
 NumParseL 	lda 	CHRGOT 		; term null
  		beq 	NumParseX
@@ -107,19 +107,20 @@ NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
 
 
 ;----------------------------------------------- NumZeroB
-NumZeroB: ; place zero into NUM_A (24Bit)
+NumZeroB: ; place zero into NUM_B
  		ldx 	#NUM_B
  		bra 	NumZeroX
 
 ;----------------------------------------------- NumZeroA
-NumZeroA: ; place zero into NUM_A (24Bit)
+NumZeroA: ; place zero into NUM_A
  		ldx 	#NUM_A
  		;-- fall through
 NumZeroX: ; zero the number at .X
  		lda 	#0 		; zero number
- 		sta 	0,X
- 		sta 	1,X
- 		sta 	2,X
+ 		sta 	_L,X
+ 		sta 	_H,X
+ 		sta 	_U,X
+ 		sta 	_X,X
  		rts
 
 
@@ -129,12 +130,12 @@ NumAddA: ; NUM_A = NUM_A * 10 + .A
  		jsr 	NumMT 		; A*=10
  		and 	#$0F
  		clc
- 		adc 	NUM_A
- 		sta 	NUM_A
+ 		adc 	NUM_A+_L
+ 		sta 	NUM_A+_L
  		bcc 	NumAddAX
- 		inc 	NUM_A+1
+ 		inc 	NUM_A+_H
  		bcc 	NumAddAX
- 		inc 	NUM_A+2
+ 		inc 	NUM_A+_U
 NumAddAX 	rts
 
 ;----------------------------------------------- NumDH
@@ -154,9 +155,9 @@ NumDTa 		rol 	A
  		cmp 	ZDIV
  		bcc 	NumDTb
  		sbc 	ZDIV
-NumDTb 		rol 	NUM_A+0 	; L
- 		rol 	NUM_A+1 	; H
- 		rol 	NUM_A+2 	; U
+NumDTb 		rol 	NUM_A+_L 	; L
+ 		rol 	NUM_A+_H 	; H
+ 		rol 	NUM_A+_U 	; U
  		dey
  		bpl 	NumDTa
  		rts
