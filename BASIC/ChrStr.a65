@@ -287,10 +287,10 @@ InputX 		lda 	#0 		; terminate with a null
 
 
 ;----------------------------------------------- PrStrBuf
-PrStrBuf: ; Print STRBUF [A]  -> PutChr
+PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
  		LDAX(STRBUF)
 ;----------------------------------------------- PrStrAX
-PrStrAX: ; Print string at AX [A] -> PutChr
+PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)
 ;----------------------------------------------- PrStr
 PrStr: ; Print string pointed to by ZPtr [A]

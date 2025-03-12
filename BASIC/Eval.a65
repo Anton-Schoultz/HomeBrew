@@ -4,6 +4,7 @@
 ;*  EvFBr                Bracketed expression
 ;*  EvFVar               retrieve variable value -> NumA
 ;*  EvNum2Str            convert numeric result NUM_A ->  formated string and append to STRBUF
+;*  EvNumeric            Evaluate numeric expressioni, return T if valid
 ;*  EvStr                Evuate a string expression [T_StrLit|T_NumLit]
 ;*  EvStr2Num            Parse number from STRBUF
 ;*  EvVarLong            Get value of long name variable
@@ -19,6 +20,14 @@
 
 
 _Ev 		= $
+
+;----------------------------------------------- EvNumeric
+EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
+ 		;-- for now, just one factor
+ 		jmp 	Factor
+
+
+
 
 ;----------------------------------------------- Factor
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
@@ -46,14 +55,18 @@ ENumLit: ; fetch number from the code -> NUM_A -> AX
 EvFVar: ; retrieve variable value -> NumA
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
- 		and 	#$3F 		; mask
+ 		and 	#$1F 		; mask for index
+ 		asl 	a
+ 		asl 	a 		; index * 4
  		tax
- 		lda 	VAR0,X
- 		sta 	NUM_A
- 		lda 	VAR1,X
- 		sta 	NUM_A+1
- 		lda 	VAR2,X
- 		sta 	NUM_A+2
+ 		lda 	VARTAB,X
+ 		sta 	NUM_A+_L
+ 		lda 	VARTAB+1,X
+ 		sta 	NUM_A+_H
+ 		lda 	VARTAB+2,X
+ 		sta 	NUM_A+_U
+ 		lda 	VARTAB+3,X
+ 		sta 	NUM_A+_X
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
@@ -88,61 +101,7 @@ MatchFail 	;
 
 
 
-;-----------------------------------------------
-EvStr: ; Evuate a string expression [T_StrLit|T_NumLit]
- 		jsr 	StrClr 		; clear the result
 
-EvStrL 		; check the token
- 		lda 	CHRGOT
- 		;-- string Value ?
- 		jsr 	IsStrValue
- 		BR_F(EvStr1)
-
-
-; 		BR_ANE(T_StrLit,EvStr1)
-; 		jsr 	StrLit 		; append litteral
-; 		bra 	EvStrNxt
-
-
-
-
-EvStr1 		; Numeric value?
- 		jsr 	Factor 		; return false if not
- 		BR_F(EvStr2)
- 		bra 	EvStrNxt
-
-; 		BR_ANE(T_NumLit,EvStr2)
-; 		jsr 	ENumLit 	; get the number value
- 		;--
-; 		jsr 	EvNum2Str 	; convert, format & append
-; 		bra 	EvStrNxt
-
-
-EvStr2
-; RIGHT$	-> StrTail
-; LEFT$		-> StrHead
-
-; if not known, just return (it will be in CHRGOT for caller to deal with)
- 		rts
-
-EvStrNxt 	;-- next token
- 		jsr 	ChrRd
- 		bne 	EvStrL
- 		rts
-
-;----------------------------------------------- EvNum2Str
-EvNum2Str: ; convert numeric result NUM_A ->  formated string and append to STRBUF
- 		jsr 	NumCvt 		; convert NUM_A -> NUM_BUF
- 		jsr 	NumFmt 		; format (Zeroes)
- 		jmp 	StrAddNum 	; STRBUF += NUM_BUF
-
-
-
-
-
-
-;----------------------------------------------- EvStr2Num
-EvStr2Num: ; Parse number from STRBUF
 
 
 

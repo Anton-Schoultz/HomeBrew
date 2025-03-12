@@ -40,15 +40,13 @@ ConCls: ; Clear Screen (CLS / FormFeed)
 
 ;----------------------------------------------- ConTab 
 ConTab: ; tab the output
- 		lda 	SIM_X
- 		and 	#7
- 		beq 	ConTabX
  		lda 	#' '
  		sta 	SIM_OUT
- 		bra 	ConTab
-
-
-ConTabX 	rts
+ 		;-- check tab pos
+ 		lda 	SIM_X
+ 		and 	#7
+ 		bne 	ConTab
+ 		rts
 
 ;----------------------------------------------- KeyGet 
 ConIn: ; Read character from input (keyboard), null if none

@@ -37,7 +37,10 @@ _ROM 		=$
 
 
 TestSrc
-.DB "10 A<=1234,B>=1234,c<>1234",0
+.DB "10  PRINT 1234,5678;"
+.db QT,"xyz",QT
+.db ",123"
+.db 0
 
  		;-- .DB "PRINT 1234,456,9,"
  		;-- .db QT,"Hi",QT
@@ -106,16 +109,15 @@ Main: ; MAIN code
 
 
 ; 		;--
-; 		lda 	#'_'
-; 		jsr 	PutChr
-; 		jsr 	PrNL
+ 		lda 	#'_'
+ 		jsr 	PutChr
+ 		jsr 	PrNL
 ; 		;--
-; 		PR_ZSUP_OFF()
+ 		PR_ZSUP_OFF()
 
 ; BREAK(1)
- 		NOP\ 	nop\ nop
 
-; 		jsr 	Run
+ 		jsr 	Run
 
  		HALT()
 
