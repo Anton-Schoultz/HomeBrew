@@ -1,16 +1,20 @@
 ;=================================================================== MATH =============
-;*  NumAddA              NUM_A = NUM_A * 10 + .A
+;*  NumAdd               NumA = NumB + NumA
 ;*  NumCvt               Convert NUM_A(24Bit) to digits in NUM_BUF
 ;*  NumDH                NUM_A = NUM_A / 100 (24bit) remainder in A
 ;*  NumDT                NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
+;*  NumDigit             NUM_A = NUM_A * 10 + .A
+;*  NumDiv               NumA = NumB / NumA
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
 ;*  NumInit              Initialise calculator
 ;*  NumMH                NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ;*  NumMT                NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
+;*  NumMul               NumA = NumB * NumA
 ;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
 ;*  NumPopB              Pop Num_B from the calculator stack
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumSpc               blank leading zeroes
+;*  NumSub               NumA = NumB - NumA
 ;*  NumSup               removing leading zeroes
 ;*  NumVal               VAL() Get numeric value (NUM_A) from String (STRBUF)
 ;*  NumZeroA             place zero into NUM_A
@@ -75,8 +79,6 @@ NumPopB: ; Pop Num_B from the calculator stack
  		sta 	NUM_B+_X
  		rts
 
-
-
 ;----------------------------------------------- NumVal
 NumVal: ; VAL() Get numeric value (NUM_A) from String (STRBUF)
  		jsr 	NumZeroA
@@ -87,7 +89,7 @@ NumValL 	iny
  		jsr 	IsDigit 	; messes with A
  		BR_F(NumValX) 		; no more digits
  		;-- ; NUM_A = NUM_A * 10 + .A
- 		jsr 	NumAddA
+ 		jsr 	NumDigit
 NumValAX 	bra 	NumValL 	; next character
 NumValX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
@@ -99,7 +101,7 @@ NumParseL 	lda 	CHRGOT 		; term null
  		jsr 	IsDigit 	; messes with A
  		BR_F(NumParseX) 	; no more digits
  		;-- NUM_A = NUM_A * 10 + .A
- 		jsr 	NumAddA
+ 		jsr 	NumDigit
 NumParseAX 	jsr 	GetChr 		; next character
  		bra 	NumParseL
 NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
@@ -123,32 +125,30 @@ NumZeroX: ; zero the number at .X
  		sta 	_X,X
  		rts
 
-
-
-;----------------------------------------------- NumAddA
-NumAddA: ; NUM_A = NUM_A * 10 + .A
+;----------------------------------------------- NumDigit
+NumDigit: ; NUM_A = NUM_A * 10 + .A
  		jsr 	NumMT 		; A*=10
  		and 	#$0F
  		clc
  		adc 	NUM_A+_L
  		sta 	NUM_A+_L
- 		bcc 	NumAddAX
+ 		bcc 	NumDigitX
  		inc 	NUM_A+_H
- 		bcc 	NumAddAX
+ 		bcc 	NumDigitX
  		inc 	NUM_A+_U
-NumAddAX 	rts
+NumDigitX 	rts
 
 ;----------------------------------------------- NumDH
 NumDH: ; NUM_A = NUM_A / 100 (24bit) remainder in A
  		lda 	#100
  		sta 	ZDIV
- 		bra 	NumDiv
+ 		bra 	NumDN
 ;----------------------------------------------- NumDT
 NumDT: ; NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUM_TMP  by 10, remainder in A [AY]
  		lda 	#10
  		sta 	ZDIV 		; set divisor to 10
-NumDiv 		ldy 	#24 		; 24 bits
+NumDN 		ldy 	#24 		; 24 bits
  		lda 	#0
  		clc
 NumDTa 		rol 	A
@@ -255,6 +255,48 @@ NumSpcL 	lda 	NUM_BUF,y
  		dex
  		bne 	NumSpcL
 NumSpcX 	rts
+
+
+;----------------------------------------------- NumAdd
+NumAdd: ; NumA = NumB + NumA
+ 		clc
+ 		lda 	NUM_A+_L
+ 		adc 	NUM_B+_L
+ 		sta 	NUM_A+_L
+ 		;--
+ 		lda 	NUM_A+_H
+ 		adc 	NUM_B+_H
+ 		sta 	NUM_A+_H
+ 		;--
+ 		lda 	NUM_A+_U
+ 		adc 	NUM_B+_U
+ 		sta 	NUM_A+_U
+ 		;--
+ 		rts
+
+;----------------------------------------------- NumSub
+NumSub: ; NumA = NumB - NumA
+ 		sec
+ 		lda 	NUM_A+_L
+ 		sbc 	NUM_B+_L
+ 		sta 	NUM_A+_L
+ 		;--
+ 		lda 	NUM_A+_H
+ 		sbc 	NUM_B+_H
+ 		sta 	NUM_A+_H
+ 		;--
+ 		lda 	NUM_A+_U
+ 		sbc 	NUM_B+_U
+ 		sta 	NUM_A+_U
+ 		;--
+ 		rts
+
+;----------------------------------------------- NumMul
+NumMul: ; NumA = NumB * NumA
+
+
+;----------------------------------------------- NumDiv
+NumDiv: ; NumA = NumB / NumA
 
 
 .echo "  _Math\t\t"

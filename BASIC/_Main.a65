@@ -37,7 +37,7 @@ _ROM 		=$
 
 
 TestSrc
-.DB "10  PRINT 1234,5678;"
+.DB "10  PRINT 1234+5678;"
 .db QT,"xyz",QT
 .db ",123"
 .db 0

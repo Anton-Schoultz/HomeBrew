@@ -82,20 +82,25 @@ Var(DBUGNUM,6)
 ;----------------------------------------------- Numeric
 Var(NUM_B,4) 	; Secondary accumulator
 Var(NUM_A,4) 	; Number parsed / Primary accumulator
-Var(NUM_PAD,4) 	; Scratch
+Var(NUM_E,4) 	; Scratch
+Var(NUM_Z,4) 	; Scratch
+
+Var(NUM_T,4) 	; Scratch
 Var(NUM_TMP,4) 	; Temp number
+
 Short(NUM_EXP)	; exponent
 Short(NUM_SGN) 	; sign
 Short(NUM_DEC)	; decimals counter
 Short(NUM_SP)	; calculator stack pointer
 
+Short(ZDIV) 	; divisor for short division 10/100
+
 
 Var(NUM_BUF,8) 	; Conversion work area
 
 
-Short(ZDIV) 	; divisor for short division 10/100
 
-.org $60
+.org $80
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
