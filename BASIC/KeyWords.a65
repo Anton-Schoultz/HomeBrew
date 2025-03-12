@@ -1,0 +1,52 @@
+#ifdef hide
+.NOLIST
+#endif
+#if BLD == BLD_CODE
+;=================================================================== KEYWORDS ========= 
+;*  X_Nop                NO Op
+;*
+_KeyWords 	= $
+
+;----------------------------------------------- X_KeyWords 
+X_Nop: ; NO Op
+ 		rts
+
+.echo "  _KeyWords\t"
+.echo $-_KeyWords
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword 
+#if BLD = BLD_KEYWORD
+.list
+W_LE 		.DB 	"<",'='+$80
+W_NE 		.DB 	"<",'>'+$80
+W_GE 		.DB 	">",'='+$80
+
+W_AND 		.DB 	"AN",'D'+$80
+W_OR 		.DB 	"O",'R'+$80
+
+
+.nolist
+#endif
+;----------------------------------------------- run 
+#if BLD = BLD_TBL_RUN
+.list
+
+T_LE 		= LOW($)+$80
+.DW 	X_Nop
+T_NE 		= LOW($)+$80
+.DW 	X_Nop
+T_GE 		= LOW($)+$80
+.DW 	X_Nop
+
+T_AND 		= LOW($)+$80
+.DW 	X_Nop
+T_OR 		= LOW($)+$80
+.DW 	X_Nop
+
+
+.nolist
+.export T_LE,T_GE,T_NE
+#endif
