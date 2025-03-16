@@ -13,12 +13,16 @@ if .%5==. goto notgt
 set tgt=%5
 :notgt
 rem echo tgt=%tgt%
+SET DT=$%DATE:~2,2%,$%DATE:~5,2%,$%DATE:~8,2%
+SET TM=$%TIME:~0,2%,$%TIME:~3,2%,$%TIME:~6,2%
 D:
 cd %1
 rem uz80as [OPTION]...  ASM_FILE [OBJ_FILE [LST_FILE [EXP_FILE]]]
-set optn= --target=%tgt% %4 %1_Binary.bin %1_Listing.lst %1_Export.asm
+set optn= --target=%tgt% -d"DATE %DT%" -d"TIME %TM%" %4 %1_Binary.bin %1_Listing.lst %1_Export.asm
 echo D:\GitHub\HomeBrew\Tools\Assembler\uz80as.exe %optn%
 D:\GitHub\HomeBrew\Tools\Assembler\uz80as.exe %optn%
+sort < _Export.asm > _Export.txt
+
 set srecdir="C:\Program Files\srecord\bin\"
 %srecdir%srec_cat %1_Binary.bin -Binary -offset 0x1000 -output %1_IntHex.hex -Intel -line-length=64 -Data_Only -Address-Length=2
 %srecdir%srec_cat %1_Binary.bin -Binary -o %1_HexDump.txt -HEX_Dump

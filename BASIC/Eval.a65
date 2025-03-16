@@ -1,25 +1,32 @@
-;=================================================================== EVALUATE =========
+;=================================================================== EVALUATE ========= 
+;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              fetch number from the code -> NUM_A -> AX
+;*  EvAdd                add
+;*  EvDiv                Do Divide
 ;*  EvFAry               retrieve array variable value -> NumA
 ;*  EvFBr                Bracketed expression
 ;*  EvFVar               retrieve variable value -> NumA
+;*  EvMul                Do Multiply
 ;*  EvNumeric            Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
+;*  EvSub                subtract
 ;*  EvVarLong            Get value of long name variable
 ;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
+;*  Term                 Factor [ '*'|'/' Factor]*
+;*m MATCH(ch)            Match a Specific Input String and move on to next token
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
-; Match a Specific Input String and move on to next token
+; MATCH(ch)  Match a Specific Input String and move on to next token
 #define MATCH(ch) lda #ch\ jsr Match
 
 
 _Ev 		= $
 
-;----------------------------------------------- EvNumeric
+;----------------------------------------------- EvNumeric 
 EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
  		;-- for now, just one factor
 
@@ -29,68 +36,103 @@ EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next
 
 
 
-
+;----------------------------------------------- Expression 
 Expression: ;  [ Term ]   ( [+/-] Term)*
- 		lda 	CHRGOT
  		jsr 	IsAddOp
  		bne 	Exp1
- 		jsr 	NumZeroA 	; handle unary as implied zero
+ 		;-- handle unary as implied zero
+ 		jsr 	NumZeroA
  		bra 	ExpL
 Exp1 		jsr 	Term
- 		BR_T(ExpL) 		; if term is not numeric then exit
- 		rts
-ExpL 		lda 	CHRGOT
-		jsr 	IsAddOp
+ 		RTN_IFF() 		; if term is not numeric then exit
+ 		;-- while isAddOp {
+ExpL 		jsr 	IsAddOp
  		bne 	ExpXT
- 		jsr 	NumPushA
  		jsr 	DoAddOp
- 		BR_T(ExpL) 		; failed ?
-ExpXF 		RTN_F()
+ 		BR_T(ExpL)
+ 		;-- }
 ExpXT 		RTN_T()
 
-DoAddOp 	;- save the op +/-
- 		LDA 	CHRGOT 		; save op
- 		pha
- 		;-- consume it & get next term
- 		jsr 	ChrRd
- 		jsr 	Term
- 		BR_F(DoAddOpX) 		; return if false (non-numeric)
- 		;-- pop B ready foir +/-
- 		jsr 	NumPopB
- 		;-- recall the op +/-
- 		pla
- 		;-- based on that go do the operation RTN_T()->caller
- 		CASE('+',NumAdd)
- 		CASE('-',NumSub)
- 		;-- not +/- so fail
+DoAddOp: ; Do Add/Sub - rts back to inside while
+ 		CASE('+',EvAdd)
+ 		CASE('-',EvSub)
  		RTN_F()
+EvAdd: ; add
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd 		; comsume the '+'
+ 		jsr 	Term
+ 		jsr 	NumPopB
+ 		jsr 	NumAdd
+ 		RTN_T()
 
-DoAddOpX 	pla 			; drop the op from satck
- 		RTN_F() 		; return as failed
+EvSub: ; subtract
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd 		; consume the '-'
+ 		jsr 	Term
+ 		jsr 	NumPopB
+ 		jsr 	NumSub
+ 		RTN_T()
 
-
-; check iof add op, returns EQ if tru
-IsAddOp 	cmp 	#'+'
+; check if CHRGOT is an add op, returns EQ if true
+IsAddOp 	lda 	CHRGOT
+ 		cmp 	#'+'
  		beq 	IsAddOpX
  		cmp 	#'-'
 IsAddOpX 	rts
 
 
 
-; for now, a Term is a Factor - MUST PRESERVE Y
-Term
- 		jmp 	Factor
 
-;----------------------------------------------- Factor
+;----------------------------------------------- Term 
+Term: ; Factor [ '*'|'/' Factor]*
+ 		jsr 	Factor
+
+TermL 		jsr 	IsMulOp 	; while IsMulOP
+ 		bne 	TermX 		; {
+ 		jsr 	DoMulOp 	;   DoMulOp
+ 		BR_T(TermL) 		; }
+TermX 		RTN_T()
+
+DoMulOp 	CASE('*',EvMul)
+ 		CASE('/',EvDiv)
+ 		RTN_F()
+
+EvMul: ; Do Multiply
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd
+ 		jsr 	Factor
+ 		jsr 	NumPopB
+ 		jsr 	NumMul
+ 		RTN_T()
+
+EvDiv: ; Do Divide
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd
+ 		jsr 	Factor
+ 		jsr 	NumPopB
+ 		jsr 	NumDiv
+ 		RTN_T()
+
+; Chekc if CHRGOT is '*' or '/', returnes EQ if true
+IsMulOp 	lda 	CHRGOT
+ 		cmp 	#'*'
+ 		beq 	IsMulOpX
+ 		cmp 	#'/'
+IsMulOpX 	rts
+
+;----------------------------------------------- Factor 
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
+; exits with next token in CHRGOT
+ 		;-- lda CHRGOT
  		CASE('(',EvFBr) 	; ( BoolTerm )
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
  		CASE(T_NumLit,ENumLit) 	; Literal value
  		RTN_F()
 
-;----------------------------------------------- ENumLit
+;----------------------------------------------- ENumLit 
 ENumLit: ; fetch number from the code -> NUM_A -> AX
+; CHRGOT is first char AFTER the stored value
  		jsr 	ChrRd
  		sta 	NUM_A+0
  		jsr 	ChrRd
@@ -103,8 +145,9 @@ ENumLit: ; fetch number from the code -> NUM_A -> AX
  		RTN_T()
 
 
-;----------------------------------------------- EvFVar
+;----------------------------------------------- EvFVar 
 EvFVar: ; retrieve variable value -> NumA
+; CHRGOT is first char AFTER the variable spec
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
  		and 	#$1F 		; mask for index
@@ -122,33 +165,50 @@ EvFVar: ; retrieve variable value -> NumA
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
-;----------------------------------------------- EvVarLong
+;----------------------------------------------- EvVarLong 
 EvVarLong: ; Get value of long name variable
 ; TODO
+ 		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
 
-;----------------------------------------------- EvFAry
+;----------------------------------------------- EvFAry 
 EvFAry: ; retrieve array variable value -> NumA
 ; TODO
+ 		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
-;----------------------------------------------- FaBr
+;----------------------------------------------- FaBr 
 EvFBr: ; Bracketed expression
  		jsr 	ChrRd 		; consume the '('
+
+ 		jsr 	Expression
 ; 		jsr 	BoolTerm
+
  		MATCH($29) 		; check for ')'
+
  		RTN_T() 		; got a value
 
 
 
-;----------------------------------------------- Match
+;----------------------------------------------- Match 
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
  		bne 	MatchFail
- 		jmp 	ChrRd 		; next tokena nd return
+ 		jmp 	ChrRd 		; next token and return
 MatchFail 	;
- 		PRINT("Excpected char not found")
+ 		pha 			; save expected
+ 		PRINT("Excpected ")
+ 		pla
+ 		pha
+ 		jsr 	ConOut
+ 		pla
+ 		jsr 	PrAHex
+ 		PRINT(" but got ") 	;
+ 		lda 	CHRGOT
+ 		jsr 	PrAHex
+
+
  		BREAK(1)
 
 

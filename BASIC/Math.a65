@@ -1,6 +1,5 @@
-;=================================================================== MATH =============
+;=================================================================== MATH ============= 
 ;*  NumAdd               NumA = NumB + NumA
-;*  NumNegX              2's compliment the number at X
 ;*  NumCvt               Convert NUM_A(24Bit) to digits in NUM_BUF
 ;*  NumDH                NUM_A = NUM_A / 100 (24bit) remainder in A
 ;*  NumDT                NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
@@ -11,6 +10,7 @@
 ;*  NumMH                NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ;*  NumMT                NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
 ;*  NumMul               NumA = NumB * NumA
+;*  NumNegX              2's compliment the number at X
 ;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
 ;*  NumPopB              Pop Num_B from the calculator stack
 ;*  NumPrep              prepare for Mul/Div by unsigning both
@@ -33,12 +33,19 @@
 ; NUM_TMP
 ; NUM_BUF
 
+; SGN/EXP,  Low, High, Upper , ...
+; #define _X	0
+; #define _L	1
+; #define _H	2
+; #define _U	3
+
+
 #ifdef hide
 .NOLIST
 #endif
 
 ; Sxxx.xxxx llll.lllll hhhh.hhhh uuuu.uuuu
- 		;--
+ 		;-- 
 
 
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
@@ -46,13 +53,13 @@
 
 
 _Math 		= $
-;----------------------------------------------- NumInit
+;----------------------------------------------- NumInit 
 NumInit: ; Initialise calculator
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
-;----------------------------------------------- NumPushA
+;----------------------------------------------- NumPushA 
 NumPushA: ; Push Num_A onto calculator stack
  		ldx 	NUM_SP
  		lda 	NUM_A+_L
@@ -68,7 +75,7 @@ NumPushA: ; Push Num_A onto calculator stack
  		and 	#$0F
  		sta 	NUM_SP
  		rts
-;----------------------------------------------- NumPopB
+;----------------------------------------------- NumPopB 
 NumPopB: ; Pop Num_B from the calculator stack
  		dec 	NUM_SP
  		lda 	NUM_SP
@@ -85,7 +92,7 @@ NumPopB: ; Pop Num_B from the calculator stack
  		sta 	NUM_B+_X
  		rts
 
-;----------------------------------------------- NumVal
+;----------------------------------------------- NumVal 
 NumVal: ; VAL() Get numeric value (NUM_A) from String (STRBUF)
  		jsr 	NumZeroA
  		ldy 	#255
@@ -99,7 +106,7 @@ NumValL 	iny
 NumValAX 	bra 	NumValL 	; next character
 NumValX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
-;----------------------------------------------- NumParse
+;----------------------------------------------- NumParse 
 NumParse: ;-- parse a number from source into NUM_A - destorys NUM_TMP
  		jsr 	NumZeroA
 NumParseL 	lda 	CHRGOT 		; term null
@@ -113,12 +120,12 @@ NumParseAX 	jsr 	GetChr 		; next character
 NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
 
-;----------------------------------------------- NumZeroB
+;----------------------------------------------- NumZeroB 
 NumZeroB: ; place zero into NUM_B
  		ldx 	#NUM_B
  		bra 	NumZeroX
 
-;----------------------------------------------- NumZeroA
+;----------------------------------------------- NumZeroA 
 NumZeroA: ; place zero into NUM_A
  		ldx 	#NUM_A
  		;-- fall through
@@ -130,7 +137,7 @@ NumZeroX: ; zero the number at .X
  		sta 	_X,X
  		rts
 
-;----------------------------------------------- NumDigit
+;----------------------------------------------- NumDigit 
 NumDigit: ; NUM_A = NUM_A * 10 + .A
  		jsr 	NumMT 		; A*=10
  		and 	#$0F
@@ -143,12 +150,12 @@ NumDigit: ; NUM_A = NUM_A * 10 + .A
  		inc 	NUM_A+_U
 NumDigitX 	rts
 
-;----------------------------------------------- NumDH
+;----------------------------------------------- NumDH 
 NumDH: ; NUM_A = NUM_A / 100 (24bit) remainder in A
 ; 		lda 	#100
 ; 		sta 	ZDIV
 ; 		bra 	NumDN
-;----------------------------------------------- NumDT
+;----------------------------------------------- NumDT 
 NumDT: ; NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUM_TMP  by 10, remainder in A [AY]
  		lda 	#10
@@ -160,14 +167,14 @@ NumDTa 		rol 	A
  		cmp 	ZDIV
  		bcc 	NumDTb
  		sbc 	ZDIV
-NumDTb 		rol 	NUM_A+_L 	; L
- 		rol 	NUM_A+_H 	; H
- 		rol 	NUM_A+_U 	; U
+NumDTb 		rol 	NUM_A+_L 	; L 1
+ 		rol 	NUM_A+_H 	; H 2
+ 		rol 	NUM_A+_U 	; U 3
  		dey
  		bpl 	NumDTa
  		rts
 
-;----------------------------------------------- NumMT
+;----------------------------------------------- NumMT 
 NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
  		pha
  		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A
@@ -178,7 +185,7 @@ NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
  		pla
  		rts
 
-;----------------------------------------------- NumMH
+;----------------------------------------------- NumMH 
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ; 		pha
 ; 		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A  TMP=X
@@ -193,22 +200,24 @@ NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ; 		pla
 ; 		rts
 
-;----------------------------------------------- NumSign
+;----------------------------------------------- NumSign 
 NumSign: ; Sign Mantissa X based on Sign/EXP byte
  		lda 	_X,X 		; sign in EXP byte
  		bpl 	NumNegXX 	; positive so nothing to change
  		and 	#$7F 		; clear sign bit
  		sta 	_X,X 		; put back in EXP
  		bra 	NumNegX 	; complement mantissa
-;----------------------------------------------- NumUnSign
+;----------------------------------------------- NumUnSign 
 NumUnSign: ; Unsign the mantissa at X into the Sign/exp byte
+ 		lda 	_X,X 		; sign in EXP byte
+ 		bmi 	NumNegXX 	; already -ve so leave it alone
  		lda 	_U,X
- 		bpl 	NumNegX		;no change needed
+ 		bpl 	NumNegXX 	;positive -> leave it
  		lda 	_X,X
  		ora 	#$80
  		sta 	_X,X 		; set sign bit in EXP
  		;-- fall through to complement mantissa
-;----------------------------------------------- NumNegX
+;----------------------------------------------- NumNegX 
 NumNegX: ; 2's compliment the number at X
  		lda 	#$FF
  		eor 	_L,X
@@ -226,12 +235,12 @@ NumNegX: ; 2's compliment the number at X
  		inc 	_U,X
 NumNegXX 	rts
 
-;----------------------------------------------- NumCvt
+;----------------------------------------------- NumCvt 
 NumCvt: ; Convert NUM_A(24Bit) to digits in NUM_BUF
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; move sign to sign/exp byte
  		;-- fill buffer with zeroes
- 		ldx 	#NUMSZ
+ 		ldx 	#NUMSZ-1
  		lda 	#0
  		sta 	NUM_BUF,x
  		dex
@@ -242,25 +251,27 @@ NumCvtL 	;- num/10 remainder as digit
  		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
  		plx 			; recall index
  		ora 	#'0' 		; convert remainder to a digit
- 		sta 	NUM_BUF,x 	; store the digit
+ 		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
  		bpl 	NumCvtL 	; loop until done
  		;-- Place sign in NR[0] based on SGN
  		lda 	#'0' 		; leading zero
- 		ldy 	NUM_A+_X
- 		bpl 	NumCvtM
+ 		sta 	NUM_BUF
+ 		;-- check if negative
+ 		lda 	NUM_A+_X
+ 		bpl 	NumCvtX
  		lda 	#'-' 		; replace by '-' for negative
-NumCvtM 	sta 	NUM_BUF 	; place sign at Res[0]
- 		rts
+ 		sta 	NUM_BUF 	; place sign at Res[0]
+NumCvtX 	rts
 
-;----------------------------------------------- NumFmt
+;----------------------------------------------- NumFmt 
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
  		BR_ZSUP(NumSup) 	; TMP = NUM_A
  		;-- suppress leading zeroes
  		BR_ZSPC(NumSpc) 	; blank leading zeroes
  		rts
 
-;----------------------------------------------- NumSup
+;----------------------------------------------- NumSup 
 NumSup: ; removing leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
@@ -280,7 +291,7 @@ NumSupCL 	lda 	NUM_BUF,y
  		bra 	NumSupCL
 NumSupX 	rts
 
-;----------------------------------------------- NumSpc
+;----------------------------------------------- NumSpc 
 NumSpc: ; blank leading zeroes
  		ldx 	#NUMSZ 		; size (to null)
  		dex 			; at least one digit
@@ -295,45 +306,45 @@ NumSpcL 	lda 	NUM_BUF,y
  		bne 	NumSpcL
 NumSpcX 	rts
 
-;----------------------------------------------- NumAdd
+;----------------------------------------------- NumAdd 
 NumAdd: ; NumA = NumB + NumA
  		clc
  		lda 	NUM_B+_L
  		adc 	NUM_A+_L
  		sta 	NUM_A+_L
- 		;--
+ 		;-- 
  		lda 	NUM_B+_H
  		adc 	NUM_A+_H
  		sta 	NUM_A+_H
- 		;--
+ 		;-- 
  		lda 	NUM_B+_U
  		adc 	NUM_A+_U
  		sta 	NUM_A+_U
- 		;--
+ 		;-- 
  		ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
- 		;--
+ 		;-- 
  		RTN_T()
 
-;----------------------------------------------- NumSub
+;----------------------------------------------- NumSub 
 NumSub: ; NumA = NumB - NumA
  		sec
  		lda 	NUM_B+_L
  		sbc 	NUM_A+_L
  		sta 	NUM_A+_L
- 		;--
+ 		;-- 
  		lda 	NUM_B+_H
  		sbc 	NUM_A+_H
  		sta 	NUM_A+_H
- 		;--
+ 		;-- 
  		lda 	NUM_B+_U
  		sbc 	NUM_A+_U
  		sta 	NUM_A+_U
- 		;--
+ 		;-- 
  		ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
- 		;--
+ 		;-- 
  		RTN_T()
 
-;----------------------------------------------- NumPrep
+;----------------------------------------------- NumPrep 
 NumPrep: ; prepare for Mul/Div by unsigning both
  		ldx 	#NUM_A
  		jsr 	NumUnSign
@@ -355,19 +366,72 @@ NumPrep: ; prepare for Mul/Div by unsigning both
  		sec
  		sbc 	#$40
  		sta 	NUM_B+_X
- 		;--
+ 		;-- 
  		rts
 
-;----------------------------------------------- NumMul
+;----------------------------------------------- NumMul 
 NumMul: ; NumA = NumB * NumA
-		jsr	NumPrep		; pull signs out (make both pos)
+ 		jsr 	NumPrep 	; pull signs out (make both pos)
+ 		;-- zero extended result
+ 		lda 	#0
+ 		sta 	NUM_A+4
+ 		sta 	NUM_A+5
+ 		sta 	NUM_A+6
+ 		ldx 	#24 		;There are 24 bits in NA
+ 		;-- Shift NA to the right, lowest bit into CY
+ 		lsr 	NUM_A+_U
+ 		ror 	NUM_A+_H
+ 		ror 	NUM_A+_L
+ 		;-- 
+NumMul1 	bcc 	NumMul2 	;0 or 1?
+ 		;-- bit is 1 so add
+ 		clc
+ 		lda 	NUM_B+_L
+ 		adc 	NUM_A+4
+ 		sta 	NUM_A+4
+ 		;-- 
+ 		lda 	NUM_B+_H
+ 		adc 	NUM_A+5
+ 		sta 	NUM_A+5
+ 		;-- 
+ 		lda 	NUM_B+_U
+ 		adc 	NUM_A+6
+ 		sta 	NUM_A+6
+ 		;-- 
+NumMul2 	;shift result right (equivalent to shift B left )
+ 		clc
+ 		ror 	NUM_A+6
+ 		ror 	NUM_A+5
+ 		ror 	NUM_A+4
+ 		ror 	NUM_A+3
+ 		ror 	NUM_A+2
+ 		ror 	NUM_A+1
+ 		;-- loop for each bit
+ 		dex 			; does not affect CY
+ 		bne 	NumMul1
+ 		;-- product is now in NUM_A[0..5]
+; 		;-- TODO - exponent value Xb + Xa -> Xa
+; 		clc
+; 		lda 	NUM_B+_X
+; 		ADC 	NUM_A+_X
+; 		ADC	#$40
+ 		sta 	NUM_A+_X
+ 		;-- resulting sign into EXP byte
+ 		lda 	NUM_SGN
+ 		and 	#$80
+ 		ora 	NUM_A+_X
+ 		sta 	NUM_A+_X
+ 		;-- 
+ 		ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
+
+ 		RTN_T()
 
 
 
 
 
 
-;----------------------------------------------- NumDiv
+;----------------------------------------------- NumDiv 
 NumDiv: ; NumA = NumB / NumA
 
 
