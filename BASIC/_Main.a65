@@ -37,9 +37,9 @@ _ROM 		=$
 
 
 TestSrc
-.DB "10  PRINT 1234+5678;"
-.db QT,"xyz",QT
-.db ",123"
+.DB "10  PRINT -4321"		;11233  002BE1
+;.db QT,"xyz",QT
+;.db ",123"
 .db 0
 
  		;-- .DB "PRINT 1234,456,9,"
@@ -113,7 +113,7 @@ Main: ; MAIN code
  		jsr 	PutChr
  		jsr 	PrNL
 ; 		;--
- 		PR_ZSUP_OFF()
+ 		PR_ZSUP_ON()
 
 ; BREAK(1)
 

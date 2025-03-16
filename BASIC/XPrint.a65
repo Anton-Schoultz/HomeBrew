@@ -37,6 +37,8 @@ X_PrPart 	;-- first check for comma / semi-colon
  		;-- try as numeric expression
  		jsr 	EvNumeric
  		BR_F(X_PrStr) 		; not numeric, try string
+
+
  		jsr 	NumCvt 		; to string
  		jsr 	NumFmt 		; handle leading zeroes
  		;-- print the string

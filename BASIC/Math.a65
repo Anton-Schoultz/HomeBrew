@@ -1,5 +1,6 @@
 ;=================================================================== MATH =============
 ;*  NumAdd               NumA = NumB + NumA
+;*  NumNegX              2's compliment the number at X
 ;*  NumCvt               Convert NUM_A(24Bit) to digits in NUM_BUF
 ;*  NumDH                NUM_A = NUM_A / 100 (24bit) remainder in A
 ;*  NumDT                NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
@@ -12,10 +13,13 @@
 ;*  NumMul               NumA = NumB * NumA
 ;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
 ;*  NumPopB              Pop Num_B from the calculator stack
+;*  NumPrep              prepare for Mul/Div by unsigning both
 ;*  NumPushA             Push Num_A onto calculator stack
+;*  NumSign              Sign Mantissa X based on Sign/EXP byte
 ;*  NumSpc               blank leading zeroes
 ;*  NumSub               NumA = NumB - NumA
 ;*  NumSup               removing leading zeroes
+;*  NumUnSign            Unsign the mantissa at X into the Sign/exp byte
 ;*  NumVal               VAL() Get numeric value (NUM_A) from String (STRBUF)
 ;*  NumZeroA             place zero into NUM_A
 ;*  NumZeroB             place zero into NUM_B
@@ -33,6 +37,10 @@
 .NOLIST
 #endif
 
+; Sxxx.xxxx llll.lllll hhhh.hhhh uuuu.uuuu
+ 		;--
+
+
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
 
@@ -43,8 +51,6 @@ NumInit: ; Initialise calculator
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
-
-
 
 ;----------------------------------------------- NumPushA
 NumPushA: ; Push Num_A onto calculator stack
@@ -107,7 +113,6 @@ NumParseAX 	jsr 	GetChr 		; next character
 NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
 
-
 ;----------------------------------------------- NumZeroB
 NumZeroB: ; place zero into NUM_B
  		ldx 	#NUM_B
@@ -140,9 +145,9 @@ NumDigitX 	rts
 
 ;----------------------------------------------- NumDH
 NumDH: ; NUM_A = NUM_A / 100 (24bit) remainder in A
- 		lda 	#100
- 		sta 	ZDIV
- 		bra 	NumDN
+; 		lda 	#100
+; 		sta 	ZDIV
+; 		bra 	NumDN
 ;----------------------------------------------- NumDT
 NumDT: ; NUM_A = NUM_A / 10 (24Bit), remainder in A [AXY]
 ; Divide value at NUM_TMP  by 10, remainder in A [AY]
@@ -175,23 +180,57 @@ NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
 
 ;----------------------------------------------- NumMH
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
- 		pha
- 		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A  TMP=X
- 		ZSL3(NUM_A) 		; NUM_A 2X
- 		ZSL3(NUM_A) 		; NUM_A 4X
- 		ZSL3(NUM_A) 		; NUM_A 8X
- 		ZADD3(NUM_TMP,NUM_A) 	; TMP = 9X
- 		ZSL3(NUM_A) 		; NUM_A * 16X
- 		ZADD3(NUM_A,NUM_TMP) 	; NUM_A = 16X+9X = 25X
- 		ZSL3(NUM_A) 		; 50x
- 		ZSL3(NUM_A) 		; 100x
- 		pla
- 		rts
+; 		pha
+; 		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A  TMP=X
+; 		ZSL3(NUM_A) 		; NUM_A 2X
+; 		ZSL3(NUM_A) 		; NUM_A 4X
+; 		ZSL3(NUM_A) 		; NUM_A 8X
+; 		ZADD3(NUM_TMP,NUM_A) 	; TMP = 9X
+; 		ZSL3(NUM_A) 		; NUM_A * 16X
+; 		ZADD3(NUM_A,NUM_TMP) 	; NUM_A = 16X+9X = 25X
+; 		ZSL3(NUM_A) 		; 50x
+; 		ZSL3(NUM_A) 		; 100x
+; 		pla
+; 		rts
+
+;----------------------------------------------- NumSign
+NumSign: ; Sign Mantissa X based on Sign/EXP byte
+ 		lda 	_X,X 		; sign in EXP byte
+ 		bpl 	NumNegXX 	; positive so nothing to change
+ 		and 	#$7F 		; clear sign bit
+ 		sta 	_X,X 		; put back in EXP
+ 		bra 	NumNegX 	; complement mantissa
+;----------------------------------------------- NumUnSign
+NumUnSign: ; Unsign the mantissa at X into the Sign/exp byte
+ 		lda 	_U,X
+ 		bpl 	NumNegX		;no change needed
+ 		lda 	_X,X
+ 		ora 	#$80
+ 		sta 	_X,X 		; set sign bit in EXP
+ 		;-- fall through to complement mantissa
+;----------------------------------------------- NumNegX
+NumNegX: ; 2's compliment the number at X
+ 		lda 	#$FF
+ 		eor 	_L,X
+ 		sta 	_L,X
+ 		lda 	#$FF
+ 		eor 	_H,X
+ 		sta 	_H,X
+ 		lda 	#$FF
+ 		eor 	_U,X
+ 		sta 	_U,X
+ 		inc 	_L,X
+ 		bne 	NumNegXX
+ 		inc 	_H,X
+ 		bne 	NumNegXX
+ 		inc 	_U,X
+NumNegXX 	rts
 
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A(24Bit) to digits in NUM_BUF
- 		lda 	#'+'
- 		sta 	NUM_BUF
+ 		ldx 	#NUM_A
+ 		jsr 	NumUnSign 	; move sign to sign/exp byte
+ 		;-- fill buffer with zeroes
  		ldx 	#NUMSZ
  		lda 	#0
  		sta 	NUM_BUF,x
@@ -207,11 +246,11 @@ NumCvtL 	;- num/10 remainder as digit
  		dex 			; back-up one pos to the left
  		bpl 	NumCvtL 	; loop until done
  		;-- Place sign in NR[0] based on SGN
-; 		LDA 	#'+'
-; 		LDY 	NA_SGN
-; 		BPL 	NumCvtM
-; 		LDA 	#'-'
-;   NumCvtM 	STA 	NUM_BUF 		; place sign at Res[0]
+ 		lda 	#'0' 		; leading zero
+ 		ldy 	NUM_A+_X
+ 		bpl 	NumCvtM
+ 		lda 	#'-' 		; replace by '-' for negative
+NumCvtM 	sta 	NUM_BUF 	; place sign at Res[0]
  		rts
 
 ;----------------------------------------------- NumFmt
@@ -256,43 +295,76 @@ NumSpcL 	lda 	NUM_BUF,y
  		bne 	NumSpcL
 NumSpcX 	rts
 
-
 ;----------------------------------------------- NumAdd
 NumAdd: ; NumA = NumB + NumA
  		clc
- 		lda 	NUM_A+_L
- 		adc 	NUM_B+_L
+ 		lda 	NUM_B+_L
+ 		adc 	NUM_A+_L
  		sta 	NUM_A+_L
  		;--
- 		lda 	NUM_A+_H
- 		adc 	NUM_B+_H
+ 		lda 	NUM_B+_H
+ 		adc 	NUM_A+_H
  		sta 	NUM_A+_H
  		;--
- 		lda 	NUM_A+_U
- 		adc 	NUM_B+_U
+ 		lda 	NUM_B+_U
+ 		adc 	NUM_A+_U
  		sta 	NUM_A+_U
  		;--
- 		rts
+ 		ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
+ 		;--
+ 		RTN_T()
 
 ;----------------------------------------------- NumSub
 NumSub: ; NumA = NumB - NumA
  		sec
- 		lda 	NUM_A+_L
- 		sbc 	NUM_B+_L
+ 		lda 	NUM_B+_L
+ 		sbc 	NUM_A+_L
  		sta 	NUM_A+_L
  		;--
- 		lda 	NUM_A+_H
- 		sbc 	NUM_B+_H
+ 		lda 	NUM_B+_H
+ 		sbc 	NUM_A+_H
  		sta 	NUM_A+_H
  		;--
- 		lda 	NUM_A+_U
- 		sbc 	NUM_B+_U
+ 		lda 	NUM_B+_U
+ 		sbc 	NUM_A+_U
  		sta 	NUM_A+_U
+ 		;--
+ 		ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
+ 		;--
+ 		RTN_T()
+
+;----------------------------------------------- NumPrep
+NumPrep: ; prepare for Mul/Div by unsigning both
+ 		ldx 	#NUM_A
+ 		jsr 	NumUnSign
+ 		ldx 	#NUM_B
+ 		jsr 	NumUnSign
+ 		lda 	NUM_A+_X
+ 		eor 	NUM_B+_X
+ 		and 	#$80 		; just the sign bit
+ 		sta 	NUM_SGN 	; resultant sign
+ 		;-- NUM_A's exponent as 2's comp
+ 		lda 	NUM_A+_X
+ 		and 	#$7F
+ 		sec
+ 		sbc 	#$40
+ 		sta 	NUM_A+_X
+ 		;-- NUM_B's exponent as 2's comp
+ 		lda 	NUM_B+_X
+ 		and 	#$7F
+ 		sec
+ 		sbc 	#$40
+ 		sta 	NUM_B+_X
  		;--
  		rts
 
 ;----------------------------------------------- NumMul
 NumMul: ; NumA = NumB * NumA
+		jsr	NumPrep		; pull signs out (make both pos)
+
+
+
+
 
 
 ;----------------------------------------------- NumDiv

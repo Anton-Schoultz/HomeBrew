@@ -5,7 +5,7 @@
 ;*  EvFVar               retrieve variable value -> NumA
 ;*  EvNumeric            Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
 ;*  EvVarLong            Get value of long name variable
-;*  Expression           [ Term ]   ( [ +/-] Term)*
+;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
 ;*
@@ -23,7 +23,7 @@ _Ev 		= $
 EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
  		;-- for now, just one factor
 
- ;	BREAK(1)
+; 		BREAK(1)
 
  		jmp 	Expression
 
@@ -37,26 +37,36 @@ Expression: ;  [ Term ]   ( [+/-] Term)*
  		jsr 	NumZeroA 	; handle unary as implied zero
  		bra 	ExpL
 Exp1 		jsr 	Term
-		BR_T(ExpL)		; if term is not numeric then exit
-		rts
-ExpL 		jsr 	IsAddOp
- 		bne 	ExpX
+ 		BR_T(ExpL) 		; if term is not numeric then exit
+ 		rts
+ExpL 		lda 	CHRGOT
+		jsr 	IsAddOp
+ 		bne 	ExpXT
  		jsr 	NumPushA
  		jsr 	DoAddOp
- 		BR_T(ExpL)		; only if ok
- 		RTN_F()
-ExpX 		RTN_T()
+ 		BR_T(ExpL) 		; failed ?
+ExpXF 		RTN_F()
+ExpXT 		RTN_T()
 
-DoAddOp
+DoAddOp 	;- save the op +/-
+ 		LDA 	CHRGOT 		; save op
+ 		pha
+ 		;-- consume it & get next term
  		jsr 	ChrRd
  		jsr 	Term
- 		RTN_IFF()		; return if false (non-numeric)
+ 		BR_F(DoAddOpX) 		; return if false (non-numeric)
+ 		;-- pop B ready foir +/-
  		jsr 	NumPopB
- 		;--
- 		lda 	CHRGOT
+ 		;-- recall the op +/-
+ 		pla
+ 		;-- based on that go do the operation RTN_T()->caller
  		CASE('+',NumAdd)
  		CASE('-',NumSub)
+ 		;-- not +/- so fail
  		RTN_F()
+
+DoAddOpX 	pla 			; drop the op from satck
+ 		RTN_F() 		; return as failed
 
 
 ; check iof add op, returns EQ if tru
@@ -67,7 +77,7 @@ IsAddOpX 	rts
 
 
 
-; for now, a Term is a Factor
+; for now, a Term is a Factor - MUST PRESERVE Y
 Term
  		jmp 	Factor
 

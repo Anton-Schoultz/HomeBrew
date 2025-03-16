@@ -78,25 +78,29 @@ Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 ;----------------------------------------------- DBug
 Var(DBUGNUM,6)
 
+
 .org $0050
 ;----------------------------------------------- Numeric
 Var(NUM_B,4) 	; Secondary accumulator
+
+Var(NUM_BUF,8) 	; Conversion work area
+
+.org $60
 Var(NUM_A,4) 	; Number parsed / Primary accumulator
 Var(NUM_E,4) 	; Scratch
 Var(NUM_Z,4) 	; Scratch
 
+.org $70
 Var(NUM_T,4) 	; Scratch
 Var(NUM_TMP,4) 	; Temp number
 
 Short(NUM_EXP)	; exponent
 Short(NUM_SGN) 	; sign
 Short(NUM_DEC)	; decimals counter
-Short(NUM_SP)	; calculator stack pointer
 
 Short(ZDIV) 	; divisor for short division 10/100
 
 
-Var(NUM_BUF,8) 	; Conversion work area
 
 
 
@@ -108,14 +112,16 @@ Int(Z_IrqPtr) 	; used in IRQ code
 .export NUM_TMP,NUM_A,NUM_B,NUM_SGN,NUM_DEC,NUM_SP,NUM_EXP
 .export NUM_BUF,DBUGNUM,VARID
 
+.org $B0
+Short(NUM_SP)	; calculator stack pointer
 
 ;=================================================================== STACK ============
-.org $0100
+.org $C0
 ; calc stack at bottom, cpu stack at the top
-Var(CSTK0,CSTKSZ)
-Var(CSTK1,CSTKSZ)
-Var(CSTK2,CSTKSZ)
-Var(CSTK3,CSTKSZ)
+Var(CSTK0,CSTKSZ)	; C0...CF
+Var(CSTK1,CSTKSZ)	; D0...DF
+Var(CSTK2,CSTKSZ)	; E0...EF
+Var(CSTK3,CSTKSZ)	; F0...FF
 
 ;=================================================================== SYSVARS ==========
 .org $0200
