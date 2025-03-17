@@ -71,6 +71,10 @@ Warm: ;Warm Start entry point
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
+;	cycles	free
+;	47199 	467
+;       46886	371
+;	46783
  		CLS()
  		jsr 	NumInit
 

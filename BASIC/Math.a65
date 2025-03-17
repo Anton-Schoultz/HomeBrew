@@ -16,6 +16,7 @@
 ;*  NumNegX              2's compliment the mantissa at X
 ;*  NumNorm              adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
 ;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
+;*  NumPlus              NumB = NumB + NumA
 ;*  NumPopB              Pop Num_B from the calculator stack
 ;*  NumPrep              prepare for Mul/Div by unsigning both
 ;*  NumPushA             Push Num_A onto calculator stack
@@ -241,18 +242,18 @@ NumSLA: ; NUM_A shift left by 1 (*2)
 
 ;----------------------------------------------- NumMH
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
-; 		pha
-; 		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A  TMP=X
-; 		ZSL3(NUM_A) 		; NUM_A 2X
-; 		ZSL3(NUM_A) 		; NUM_A 4X
-; 		ZSL3(NUM_A) 		; NUM_A 8X
-; 		ZADD3(NUM_TMP,NUM_A) 	; TMP = 9X
-; 		ZSL3(NUM_A) 		; NUM_A * 16X
-; 		ZADD3(NUM_A,NUM_TMP) 	; NUM_A = 16X+9X = 25X
-; 		ZSL3(NUM_A) 		; 50x
-; 		ZSL3(NUM_A) 		; 100x
-; 		pla
-; 		rts
+ 		pha
+ 		JSR 	NumCpyA2B 	; B=n
+ 		jsr 	NumSLA 		; A=2n
+ 		jsr 	NumSLA 		; A=4n
+ 		jsr 	NumSLA 		; A=8n
+ 		JSR 	NumPlus 	; B=9n
+ 		jsr 	NumSLA 		; A=16n
+ 		JSR 	NumAdd 		; A+=B = 16n+9n = 25n
+ 		jsr 	NumSLA 		; A=50n
+ 		jsr 	NumSLA 		; A=100n
+ 		pla
+ 		rts
 
 ;----------------------------------------------- NumSign
 NumSign: ; Move sign from EXP -> Mantissa
@@ -323,7 +324,7 @@ NumCvtL 	;- num/10 remainder as digit
  		ldx 	#$FF
 NumCvt1 	inx
  		cpx 	#NUMSZ-4 	; incase its all zeroes
- 		BEQ 	NumCvt2
+ 		beq 	NumCvt2
  		lda 	NUM_BUF+1,X
  		cmp 	#'0'
  		beq 	NumCvt1
@@ -436,28 +437,51 @@ NumAdd: ; NumA = NumB + NumA
  		lda 	NUM_B+FPA
  		adc 	NUM_AA
  		sta 	NUM_AA
- 		;--
  		lda 	NUM_B+FPB
  		adc 	NUM_AB
  		sta 	NUM_AB
- 		;--
  		lda 	NUM_B+FPC
  		adc 	NUM_AC
  		sta 	NUM_AC
- 		;--
  		lda 	NUM_B+FPD
  		adc 	NUM_AD
  		sta 	NUM_AD
- 		;--
  		lda 	NUM_B+FPE
  		adc 	NUM_AE
  		sta 	NUM_AE
- 		;--
  		lda 	NUM_B+FPF
  		adc 	NUM_AF
  		sta 	NUM_AF
  		;--
  		RTN_T()
+;----------------------------------------------- NumPlus
+NumPlus: ; NumB = NumB + NumA
+ 		clc
+ 		lda 	NUM_B+FPA
+ 		adc 	NUM_AA
+ 		sta 	NUM_B+FPA
+
+ 		lda 	NUM_B+FPB
+ 		adc 	NUM_AB
+ 		sta 	NUM_B+FPB
+
+ 		lda 	NUM_B+FPC
+ 		adc 	NUM_AC
+ 		sta 	NUM_B+FPC
+
+ 		lda 	NUM_B+FPD
+ 		adc 	NUM_AD
+ 		sta 	NUM_B+FPD
+
+ 		lda 	NUM_B+FPE
+ 		adc 	NUM_AE
+ 		sta 	NUM_B+FPE
+
+ 		lda 	NUM_B+FPF
+ 		adc 	NUM_AF
+ 		sta 	NUM_B+FPF
+ 		;--
+ 		rts
 
 ;----------------------------------------------- NumSub
 NumSub: ; NumA = NumB - NumA
@@ -465,23 +489,18 @@ NumSub: ; NumA = NumB - NumA
  		lda 	NUM_B+FPA
  		sbc 	NUM_AA
  		sta 	NUM_AA
- 		;--
  		lda 	NUM_B+FPB
  		sbc 	NUM_AB
  		sta 	NUM_AB
- 		;--
  		lda 	NUM_B+FPC
  		sbc 	NUM_AC
  		sta 	NUM_AC
- 		;--
  		lda 	NUM_B+FPD
  		sbc 	NUM_AD
  		sta 	NUM_AD
- 		;--
  		lda 	NUM_B+FPE
  		sbc 	NUM_AE
  		sta 	NUM_AE
- 		;--
  		lda 	NUM_B+FPF
  		sbc 	NUM_AF
  		sta 	NUM_AF
@@ -642,11 +661,9 @@ NumDivL 	;-- shift a bit from dividend into temp
  		lda 	NUM_TMP+FPA
  		sbc 	NUM_DIV+FPA
  		sta 	NUM_TMP+FPA
- 		;--
  		lda 	NUM_TMP+FPB
  		sbc 	NUM_DIV+FPB
  		sta 	NUM_TMP+FPB
- 		;--
  		lda 	NUM_TMP+FPC
  		sbc 	NUM_DIV+FPC
  		sta 	NUM_TMP+FPC
@@ -656,11 +673,9 @@ NumDivL 	;-- shift a bit from dividend into temp
  		lda 	NUM_TMP+FPA
  		adc 	NUM_DIV+FPA
  		sta 	NUM_TMP+FPA
- 		;--
  		lda 	NUM_TMP+FPB
  		adc 	NUM_DIV+FPB
  		sta 	NUM_TMP+FPB
- 		;--
  		lda 	NUM_TMP+FPC
  		adc 	NUM_DIV+FPC
  		sta 	NUM_TMP+FPC 	; carry should be zero here
@@ -676,34 +691,29 @@ NumDiv2 	; save result bit
  		;-- next bit
  		dex
  		bne 	NumDivL
+ 		;-- now normalise and Pack the result
+ 		ldx #6
  		;--
- 		;-- X  A  B  C  D  E  F
- 		;-- xx 95 A8 5D 64 00 00  e0
- 		;-- xx D2 95 A8 EB 03 00  e-1
- 		;-- xx 34 DA 95 34 27 00  e-2
- 		;-- xx 08 86 DA 0D 88 01  e-3
- 		;-- xx 50 3C 89 8A 50 0F  e-4  <<<
+NumDiv3		lda 	NUM_AF
+ 		BNE 	NumDiv7
+ 		;-- high is zero so mult by 100 and double decr
+ 		JSR 	NumMH
+ 		dec 	NUM_EXP
+ 		dec 	NUM_EXP
+ 		dex
+ 		bpl NumDiv3
 
- 		;-- xx 20 5B 5C 69 25 99 - TOO BIG (-ve)
-
- 		;-- 3C 8b 50 0F 00 00 00 <<< 3C:E-4
- 		;-- 1003659 E-4 => 100.3659
- 		;-- 12345/123=100.3658537
-
- 		;-- now normalise it
-
- 		ldx 	#6
-
-NumDiv3 	lda 	NUM_AF
+NumDiv7
+ 		lda 	NUM_AF
  		and 	#$F8
- 		bne 	NumDiv4
+ 		bne 	NumDiv8
  		jsr 	NumMT
  		dec 	NUM_EXP
  		dex
- 		bne 	NumDiv3
+ 		bpl NumDiv7
 
-NumDiv4
- 		lda 	NUM_EXP
+
+NumDiv8 	lda 	NUM_EXP
  		clc
  		adc 	#$40 		; add offset
  		and 	#$7F
@@ -711,16 +721,13 @@ NumDiv4
  		sta 	NUM_AX
  		;-- round
  		lda 	NUM_AC
- 		bpl 	NumDiv5
+ 		bpl 	NumDiv9
  		inc 	NUM_AD
- 		bne 	NumDiv5
+ 		bne 	NumDiv9
  		inc 	NUM_AE
- 		bne 	NumDiv5
+ 		bne 	NumDiv9
  		inc 	NUM_AF
-
-NumDiv5
-
- 		lda 	NUM_AD
+NumDiv9 	lda 	NUM_AD
  		sta 	NUM_AA
  		lda 	NUM_AE
  		sta 	NUM_AB
