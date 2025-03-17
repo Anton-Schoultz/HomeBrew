@@ -34,7 +34,7 @@
 ; bytes per line of Hex Dump
 #define HEXSZ 8
 ; digits to convert including null at the end -> NUM_BUF
-#define NUMSZ 8
+#define NUMSZ 12
 
 
 ;=================================================================== CHRRD, VECTORS ===
@@ -82,20 +82,18 @@ Var(DBUGNUM,6)
 .org $0050
 ;----------------------------------------------- Numeric
 Var(NUM_B,4) 	; Secondary accumulator
-Var(NUM_BUF,8) 	; Conversion work area
-
-Var(NUM_A,8) 	; Number parsed / Primary accumulator
-Var(NUM_T,4) 	; Scratch
-
 Var(NUM_TMP,4) 	; Temp number
-
-
+; 58
+Var(NUM_A,8) 	; Number parsed / Primary accumulator
+; 60
+Var(NUM_DIV,4) 	; Scratch divisor
 Short(NUM_EXP)	; exponent
 Short(NUM_SGN) 	; sign
 Short(NUM_DEC)	; decimals counter
-
 Short(ZDIV) 	; divisor for short division 10/100
-
+; 68
+.org $70
+Var(NUM_BUF,NUMSZ) ; Conversion work area
 
 
 
