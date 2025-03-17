@@ -70,7 +70,7 @@ Short(ZStrLen) 	; length of STRBUF used (write index)
 ;----------------------------------------------- Code Lines
 Int(LN_NUM) 	; Line number
 Int(LN_NXT) 	; address of next line
-Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
+Short(LNFPAEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 

@@ -6,14 +6,14 @@
 ;*  IsNumValue           return T if token is a numeric value
 ;*  IsRelOp              returns T/F if CHRGOT is a relational opperator <>=
 ;*  IsStrValue           return T if token is a string value
-;*  L_LineNo             list LineNo
+;*  LFPAineNo             list LineNo
 ;*  L_Number             list number
 ;*  L_String             list out string text
 ;*  List                 List from start of program
 ;*  ListLn               List line pointed to by ZRd
 ;*  NextLine             point ZRd to the next line LN_NXT
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
-;*  P_LineNo             Parse line numebr and place int TOKBUF
+;*  PFPAineNo             Parse line numebr and place int TOKBUF
 ;*  P_Number             parse a number into token & value
 ;*  P_String             parse quoted string into token
 ;*  Parse                Parse INBUF into TOKBUF
@@ -25,7 +25,7 @@
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokExpandA           Expand the token .A to key word
 ;*  TokFind              try to find a matching token
-;*  X_LineNo             Get LN_NUM & Set up LN_NXT
+;*  XFPAineNo             Get LN_NUM & Set up LN_NXT
 ;*
 #ifdef hide
 .NOLIST
@@ -36,7 +36,7 @@ _Tok 		= $
 
 
 
-T_Line 		= $F0 			; header includes line number
+TFPAine 		= $F0 			; header includes line number
 
 
 BAS_EOL 	= $00 			; end of line
@@ -64,7 +64,7 @@ ParseIn: ;Parse from memory into TOKBUF
  		jsr 	IsDigit
  		BR_F(P_Stmnt) 		; not a digit -> Statement?
  		;-- digit - so do line number
- 		jsr 	P_LineNo
+ 		jsr 	PFPAineNo
  		lda 	CHRGOT
 
  		;-- fall through to do parts
@@ -73,9 +73,9 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		lda 	#BAS_EOL 	; end-of-line marker
  		jsr 	ChrWr
 
- 		;-- check for T_LnNo, fill in length if needed
+ 		;-- check for TFPAnNo, fill in length if needed
  		lda 	TOKBUF
- 		BR_ANE(T_Line,P_StmntX)
+ 		BR_ANE(TFPAine,P_StmntX)
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKLEN+1) 	; one byte offset for ChrGet
@@ -83,7 +83,7 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sec
  		lda 	ZWr+1
  		sbc 	#HIGH(TOKBUF)
- 		sta 	LN_LEN
+ 		sta 	LNFPAEN
 P_StmntX 	rts 			; done with the whole line
 
 ;----------------------------------------------- P_Part , P_PartNxt
@@ -354,9 +354,9 @@ RunLn: ; Run [LineNo] Stmnt.... 00
  		jsr 	GetChr 		; (++ZRd)->A
  		sta 	TOKNO
  		;-- line number ?
- 		BR_ANE(T_Line,RunStmnt)
+ 		BR_ANE(TFPAine,RunStmnt)
  		;-- line number so execute that
- 		jsr 	X_LineNo
+ 		jsr 	XFPAineNo
  		sta 	TOKNO
  		;-- fall through
 RunStmnt 	;---------------------- STATEMENT
@@ -407,8 +407,8 @@ ListLnX 	jmp 	PrNL 		; NL and return
 
 
 ListTok 	sta 	TOKNO
- 		;-- T_Line ?
- 		CASE(T_Line,L_LineNo) 	;->L_LineNo, rts to (*1)
+ 		;-- TFPAine ?
+ 		CASE(TFPAine,LFPAineNo) 	;->LFPAineNo, rts to (*1)
  		;-- Value ?
  		CASE(T_StrLit,L_String)
  		CASE(T_NumLit,L_Number)
@@ -428,7 +428,7 @@ ListTok 	sta 	TOKNO
 ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
-.export L_LineNo,T_Max
+.export LFPAineNo,T_Max
 
 ;----------------------------------------------- NextLine
 NextLine: ; point ZRd to the next line LN_NXT
@@ -503,26 +503,26 @@ L_String: ; list out string text
 
 ;=================================================================== LINE_NO ==========
 
-;----------------------------------------------- P_LineNo
-P_LineNo: ; Parse line numebr and place int TOKBUF
+;----------------------------------------------- PFPAineNo
+PFPAineNo: ; Parse line numebr and place int TOKBUF
  		;-- Parse number value into NUM_A
  		jsr 	NumParse
  		;-- Write LineNo token
- 		lda 	#T_Line
+ 		lda 	#TFPAine
  		jsr 	ChrWr
  		;-- write line number (16 bit)
- 		lda 	NUM_A+_L
+ 		lda 	NUM_A+FPA
  		jsr 	ChrWr
- 		lda 	NUM_A+_H
+ 		lda 	NUM_A+FPB
  		jsr 	ChrWr
  		;-- place holder for the length
  		lda 	#$AA
  		jsr 	ChrWr
  		rts
 
-;----------------------------------------------- X_LineNo
-X_LineNo: ; Get LN_NUM & Set up LN_NXT
-; enters with A=CHRGOT= T_Line, exit with CHRGOT after the line data
+;----------------------------------------------- XFPAineNo
+XFPAineNo: ; Get LN_NUM & Set up LN_NXT
+; enters with A=CHRGOT= TFPAine, exit with CHRGOT after the line data
  		;-- save line no
  		jsr 	ChrRd 		; get lo no
  		sta 	LN_NUM
@@ -538,18 +538,18 @@ X_LineNo: ; Get LN_NUM & Set up LN_NXT
  		adc 	ZRd+1
  		sta 	LN_NXT+1
  		;--
-X_LineNoX 	jmp 	ChrRd 		; read next byte->CHRGOT
+XFPAineNoX 	jmp 	ChrRd 		; read next byte->CHRGOT
 
-;----------------------------------------------- L_LineNo
-L_LineNo: ; list LineNo
- 		jsr 	X_LineNo 	; Get LN_NUM & Set up LN_NXT
+;----------------------------------------------- LFPAineNo
+LFPAineNo: ; list LineNo
+ 		jsr 	XFPAineNo 	; Get LN_NUM & Set up LN_NXT
  		;-- output line no
  		lda 	LN_NUM
- 		sta 	NUM_A+_L
+ 		sta 	NUM_A+FPA
  		lda 	LN_NUM+1
- 		sta 	NUM_A+_H
+ 		sta 	NUM_A+FPB
  		lda 	#0
- 		sta 	NUM_A+_U 	; U=0
+ 		sta 	NUM_A+FPC 	; U=0
  		;-- Print line no and space
  		jsr 	PrNum
  		lda 	#' '
@@ -558,7 +558,7 @@ L_LineNo: ; list LineNo
  		;-- jsr 	ChrRd 		; get next byte into CHRGOT
  		rts
 
-.export T_StrLit,T_Line,T_NumLit
+.export T_StrLit,TFPAine,T_NumLit
 
 .export TokFind,TOKNO,TokFound,Parse
 

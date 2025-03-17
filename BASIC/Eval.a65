@@ -154,13 +154,13 @@ EvFVar: ; retrieve variable value -> NumA
  		asl 	a 		; index * 4
  		tax
  		lda 	VARTAB,X
- 		sta 	NUM_A+_L
+ 		sta 	NUM_A+FPA
  		lda 	VARTAB+1,X
- 		sta 	NUM_A+_H
+ 		sta 	NUM_A+FPB
  		lda 	VARTAB+2,X
- 		sta 	NUM_A+_U
+ 		sta 	NUM_A+FPC
  		lda 	VARTAB+3,X
- 		sta 	NUM_A+_X
+ 		sta 	NUM_A+FPX
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 

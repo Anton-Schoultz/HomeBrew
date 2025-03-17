@@ -10,8 +10,8 @@
 ;*m BR_F(tgt)            branch to tgt if ERROR (Carry=0)
 ;*m BR_GE(tgt)           bcs tgt
 ;*m BR_GT(tgt)           beq $+4\ bcs tgt
-;*m BR_LE(tgt)           bmi tgt\ beq tgt
-;*m BR_LT(tgt)           bmi tgt
+;*m BRFPAE(tgt)           bmi tgt\ beq tgt
+;*m BRFPAT(tgt)           bmi tgt
 ;*m BR_NE(tgt)           bne tgt
 ;*m BR_T(tgt)            branch to tgt if OK (Carry=1)
 ;*m CASE(v,tgt)          if .A==v then jump to tgt
@@ -154,13 +154,13 @@
 
 ;----------------------------------------------- Number format bytes
 ; SGN/EXP,  Low, High, Upper , ...
-#define _X	0
-#define _L	1
-#define _H	2
-#define _U	3
-#define _E0	4
-#define _E1	5
-#define _E2	6
+#define FPX	0
+#define FPA	1
+#define FPB	2
+#define FPC	3
+#define FPD	4
+#define FPE	5
+#define FPF	6
 
 
 
@@ -173,12 +173,12 @@
 #define BR_EQ(tgt) beq tgt
 ; BR_NE(tgt) bne tgt
 #define BR_NE(tgt) bne tgt
-; BR_LT(tgt) bmi tgt
-#define BR_LT(tgt) bmi tgt
+; BRFPAT(tgt) bmi tgt
+#define BRFPAT(tgt) bmi tgt
 ; BR_GE(tgt) bcs tgt
 #define BR_GE(tgt) bcs tgt
-; BR_LE(tgt) bmi tgt\ beq tgt
-#define BR_LE(tgt) bmi tgt\ beq tgt
+; BRFPAE(tgt) bmi tgt\ beq tgt
+#define BRFPAE(tgt) bmi tgt\ beq tgt
 ; BR_GT(tgt) beq $+4\ bcs tgt
 #define BR_GT(tgt) beq $+4\ bcs tgt
 

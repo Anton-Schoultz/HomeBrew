@@ -362,9 +362,9 @@ Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
  		bcc 	Hex2Nib9 	; Yes!
  		adc 	#$08 		; Map letter "A"-"F" to $FA-FF
  		cmp 	#$7A 		; Hex letter?
- 		bcc 	Hex2Nib_X 	; No! Character not hex
+ 		bcc 	Hex2NibFPX 	; No! Character not hex
 Hex2Nib9 	sec 			; set carry flag to indicate valid
-Hex2Nib_X 	and 	#$0F
+Hex2NibFPX 	and 	#$0F
  		rts 			; carry clear if invalid char
 
 
@@ -502,9 +502,9 @@ _Print_: ;Print in-line string
  		lda 	ZPtr 		; lo
  		adc 	ZTmp 		; + Len
  		sta 	ZPtr 		; -> lo
- 		bcc 	_Print_X 	; carry?
+ 		bcc 	_PrintFPX 	; carry?
  		inc 	ZPtr+1 		; yes, incr hi
-_Print_X 	jmp 	(ZPtr) 		; jump to code after the in-line string
+_PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io

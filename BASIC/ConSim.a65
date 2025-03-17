@@ -17,7 +17,7 @@ IO_AREA 	= $0300 		; Must match Simulator's Options screen.
 SIM_CLS 	= IO_AREA + 0
 SIM_OUT 	= IO_AREA + 1
 SIM_IN 		= IO_AREA + 4
-SIM_X 		= IO_AREA + 5
+SIMFPX 		= IO_AREA + 5
 SIM_Y 		= IO_AREA + 6
 
 _ConSim 	= $
@@ -43,7 +43,7 @@ ConTab: ; tab the output
  		lda 	#' '
  		sta 	SIM_OUT
  		;-- check tab pos
- 		lda 	SIM_X
+ 		lda 	SIMFPX
  		and 	#7
  		bne 	ConTab
  		rts
@@ -62,9 +62,9 @@ ConIn: ; Read character from input (keyboard), null if none
 ; IO_AREA+0: SIM_CLS (w)
 ; IO_AREA+1: SIM_OUT (w)
 ; IO_AREA+2: SIM_OUT_CHR (w)
-; IO_AREA+3: SIM_OUT_HEX (w)
+; IO_AREA+3: SIM_OUTFPBEX (w)
 ; IO_AREA+4: SIM_IN (r)
-; IO_AREA+5: SIM_X_POS (r/w)
+; IO_AREA+5: SIMFPX_POS (r/w)
 ; IO_AREA+6: SIM_Y_POS (r/w)
  		;-- 
 ; (w) means write only port, (r) read only, (r/w) read/write.
@@ -79,13 +79,13 @@ ConIn: ; Read character from input (keyboard), null if none
  		;-- 
 ; SIM_OUT_CHR - outputs single character; pass control chars as it
  		;-- 
-; SIM_OUT_HEX - outputs single byte as a two-digit hexadecimal number.
+; SIM_OUTFPBEX - outputs single byte as a two-digit hexadecimal number.
  		;-- 
 ; SIM_IN - input single byte, returns 0 if there's no characters available in terminal's buffer
 ;     	When I/O terminal window is active, it can accept keyboard input;
  		;-- press [Ins] key to paste clipboard's contents into terminal.
  		;-- 
-; SIM_X_POS - cursor X position (column).
+; SIMFPX_POS - cursor X position (column).
  		;-- 
 ; SIM_Y_POS - cursor Y position (row).
 
