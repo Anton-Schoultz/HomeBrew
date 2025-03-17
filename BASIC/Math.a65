@@ -581,7 +581,7 @@ NumNorm: ; adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byt
  		ora 	NUM_AE
  		beq 	NumNorm5 	; no, div10
 
-NumNorm1	;-- div 100
+NumNorm1 	;-- div 100
  		jsr 	NumDH 		; divide by 100
  		inc 	NUM_EXP 	; and bump EXP up
  		inc 	NUM_EXP 	; and bump EXP up
@@ -591,9 +591,11 @@ NumNorm1	;-- div 100
  		jsr 	NumIncA 	; round up
  		bra 	NumNorm
 
-NumNorm5	lda NUM_AD
-		beq NumNormX
+NumNorm5 	lda 	NUM_AD
+ 		beq 	NumNormX
 
+ 		cmp #$F0
+ 		bpl NumNorm1
 
 NumNorm9 	;- check div 10
  		jsr 	NumDT 		; divide by 10
@@ -606,8 +608,15 @@ NumNorm9 	;- check div 10
 
 NumNormX 	;- check that high byte bit7 is zero
  		lda 	NUM_AC
- 		bmi 	NumNorm9 	; set, so /10 again
- 		;-- make sign only one bit
+ 		bpl 	NumNormX1 	; ok
+ 		; need one more division
+ 		jsr 	NumDT 		; divide by 10
+ 		inc 	NUM_EXP 	; and bump EXP up
+ 		cmp 	#5
+ 		bmi 	NumNormX1 	; < 0.5
+ 		jsr 	NumIncA 	; round up
+
+NumNormX1	;-- make sign only one bit
  		lda 	NUM_SGN
  		and 	#$80
  		sta 	NUM_SGN
@@ -622,6 +631,7 @@ NumNormX 	;- check that high byte bit7 is zero
 
 ; 385	44723	1.523990e08
 ; 361	44714	1.523990e08
+; 345	44490	1.523990e08
 ;----------------------------------------------- NumIncA
 NumIncA: ; Increment NUM_A
  		inc 	NUM_AA
