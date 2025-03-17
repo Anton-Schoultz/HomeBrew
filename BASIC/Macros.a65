@@ -102,6 +102,8 @@
 #DEFINE ZCPY3(zTo,zFr) lda zFr\ sta zTo\ lda zFr+1\ sta zTo+1\ lda zFr+2\ sta zTo+2
 ; ZCPY4(zTo,zFr) Coppies 4 bytes from zFr to zTo
 #DEFINE ZCPY4(zTo,zFr) lda zFr\ sta zTo\ lda zFr+1\ sta zTo+1\ lda zFr+2\ sta zTo+2\ lda zFr+3\ sta zTo+3
+; ZCPY7(zTo,zFr) Coppies 7 bytes from zFr to zTo
+#DEFINE ZCPY7(zTo,zFr) lda zFr\ sta zTo\ lda zFr+1\ sta zTo+1\ lda zFr+2\ sta zTo+2\ lda zFr+3\ sta zTo+3\ lda zFr+4\ sta zTo+4\ lda zFr+5\ sta zTo+5\ lda zFr+6\ sta zTo+6
 
 
 
@@ -161,6 +163,15 @@
 #define FPD	4
 #define FPE	5
 #define FPF	6
+
+#define NUM_AA NUM_A+FPA
+#define NUM_AB NUM_A+FPB
+#define NUM_AC NUM_A+FPC
+#define NUM_AD NUM_A+FPD
+#define NUM_AE NUM_A+FPE
+#define NUM_AF NUM_A+FPF
+#define NUM_AX NUM_A+FPX
+
 
 
 
