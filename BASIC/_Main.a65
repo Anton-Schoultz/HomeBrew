@@ -74,7 +74,7 @@ Main: ; MAIN code
 ;	cycles	free
 ;	47199 	467
 ;       46886	371
-;	46783
+;	46783	385
  		CLS()
  		jsr 	NumInit
 
@@ -93,7 +93,7 @@ Main: ; MAIN code
  		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
  		jsr 	PrNL
 
- 		jsr 	NumDiv
+ 		jsr 	NumMul
 
  		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
  		jsr 	HexDump 	; NUM_A(8)

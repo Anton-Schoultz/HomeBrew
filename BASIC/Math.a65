@@ -173,9 +173,9 @@ NumDigitX 	rts
 
 ;----------------------------------------------- NumDH
 NumDH: ; NUM_A = NUM_A / 100 (24bit) remainder in A
-; 		lda 	#100
-; 		sta 	ZDIV
-; 		bra 	NumDN
+ 		lda 	#100
+ 		sta 	ZDIV
+ 		bra 	NumDN
 ;----------------------------------------------- NumDT
 NumDT: ; NUM_A = NUM_A / 10 (48Bit), remainder in A [AXY]
 ; Divide value at NUM_TMP  by 10, remainder in A [AY]
@@ -201,15 +201,6 @@ NumDTb 		rol 	NUM_AA 		; L 1
 
 ;----------------------------------------------- NumMT
 ;NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
-; 		pha
-; 		ZCPY3(NUM_TMP,NUM_A) 	; NUM_TMP = NUM_A
-; 		ZSL3(NUM_A) 		; NUM_A * 2
-; 		ZSL3(NUM_A) 		; NUM_A * 4
-; 		ZADD3(NUM_A,NUM_TMP) 	; NUM_A += NUM_TMP  (*5)
-; 		ZSL3(NUM_A) 		; NUM_A = NUM_A * 10
-; 		pla
-; 		rts
-
 NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		pha
  		jsr 	NumCpyA2B 	; NUM_B <= NUM_A
@@ -219,7 +210,7 @@ NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		jsr 	NumSLA
  		pla
  		rts
-
+;----------------------------------------------- NumCpyA2B
 NumCpyA2B: ; Copy NUM_A to NUM_B  - preserves X,Y
  		phx
  		ldx 	#6
@@ -229,7 +220,7 @@ NumCpyA2BL 	lda 	NUM_A,x
  		bpl 	NumCpyA2BL
  		plx
  		rts
-
+;----------------------------------------------- NumSLA
 NumSLA: ; NUM_A shift left by 1 (*2)
  		asl 	NUM_AA
  		rol 	NUM_AB
@@ -239,17 +230,16 @@ NumSLA: ; NUM_A shift left by 1 (*2)
  		rol 	NUM_AF
  		rts
 
-
 ;----------------------------------------------- NumMH
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
  		pha
- 		JSR 	NumCpyA2B 	; B=n
+ 		jsr 	NumCpyA2B 	; B=n
  		jsr 	NumSLA 		; A=2n
  		jsr 	NumSLA 		; A=4n
  		jsr 	NumSLA 		; A=8n
- 		JSR 	NumPlus 	; B=9n
+ 		jsr 	NumPlus 	; B=9n
  		jsr 	NumSLA 		; A=16n
- 		JSR 	NumAdd 		; A+=B = 16n+9n = 25n
+ 		jsr 	NumAdd 		; A+=B = 16n+9n = 25n
  		jsr 	NumSLA 		; A=50n
  		jsr 	NumSLA 		; A=100n
  		pla
@@ -583,25 +573,37 @@ NumMul2 	;shift result right (equivalent to shift B left )
  		;-- U H L
  		;-- 6 5 4 3 2 1  0 	NUM_A
  		;-- 00032A5F38D7 XP    Binary fraction
- 		;--
  		;-- adjust to fit
 NumNorm: ; adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
  		lda 	NUM_AF
  		ora 	NUM_AE
  		ora 	NUM_AD
- 		beq 	NumNorm2 	; already fits
- 		;--
-NumNorm1 	jsr 	NumDT 		; divide by 10
+ 		beq 	NumNormX 	; already fits
+ 		;-- check for 100s
+ 		lda 	NUM_AF
+ 		ora 	NUM_AE
+ 		beq 	NumNorm2 	; no, div10
+ 		;-- div 100
+ 		jsr 	NumDH 		; divide by 100
+ 		inc 	NUM_EXP 	; and bump EXP up
+ 		inc 	NUM_EXP 	; and bump EXP up
+ 		;-- round 100
+ 		cmp 	#50
+ 		bmi 	NumNorm 	; < 0.5
+ 		jsr 	NumIncA 	; round up
+ 		bra 	NumNorm
+
+NumNorm2 	;- check div 10
+ 		jsr 	NumDT 		; divide by 10
  		inc 	NUM_EXP 	; and bump EXP up
  		;-- half round
  		cmp 	#5
  		bmi 	NumNorm 	; < 0.5
  		jsr 	NumIncA 	; round up
  		bra 	NumNorm
-
-NumNorm2 	;- check that high byte bit7 is zero
+NumNormX 	;- check that high byte bit7 is zero
  		lda 	NUM_AC
- 		bmi 	NumNorm1 	; set, so /10 again
+ 		bmi 	NumNorm2 	; set, so /10 again
  		;-- make sign only one bit
  		lda 	NUM_SGN
  		and 	#$80
@@ -615,6 +617,8 @@ NumNorm2 	;- check that high byte bit7 is zero
  		;--
  		RTN_T()
 
+; 385	44723	1.523990e08
+; 355	42488	1.523990e08
 ;----------------------------------------------- NumIncA
 NumIncA: ; Increment NUM_A
  		inc 	NUM_AA
@@ -692,17 +696,16 @@ NumDiv2 	; save result bit
  		dex
  		bne 	NumDivL
  		;-- now normalise and Pack the result
- 		ldx #6
+ 		ldx 	#6
  		;--
-NumDiv3		lda 	NUM_AF
- 		BNE 	NumDiv7
+NumDiv3 	lda 	NUM_AF
+ 		bne 	NumDiv7
  		;-- high is zero so mult by 100 and double decr
- 		JSR 	NumMH
+ 		jsr 	NumMH
  		dec 	NUM_EXP
  		dec 	NUM_EXP
  		dex
- 		bpl NumDiv3
-
+ 		bpl 	NumDiv3
 NumDiv7
  		lda 	NUM_AF
  		and 	#$F8
@@ -710,8 +713,7 @@ NumDiv7
  		jsr 	NumMT
  		dec 	NUM_EXP
  		dex
- 		bpl NumDiv7
-
+ 		bpl 	NumDiv7
 
 NumDiv8 	lda 	NUM_EXP
  		clc
