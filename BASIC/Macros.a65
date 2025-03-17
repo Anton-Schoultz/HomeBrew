@@ -158,6 +158,11 @@
 #define _L	1
 #define _H	2
 #define _U	3
+#define _E0	4
+#define _E1	5
+#define _E2	6
+
+
 
 ; 	LDA #2	; N Z C
 ; 	CMP #1	;     t

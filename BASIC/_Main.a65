@@ -79,6 +79,8 @@ Main: ; MAIN code
  		LOAD(123)
  		jsr 	NumPopB
 
+; 12345 / 123 => 000064.5DA895
+
  		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
  		jsr 	HexDump 	; NUM_A(8)
  		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
@@ -93,7 +95,7 @@ Main: ; MAIN code
 
 
  		;-- PR_ZSUP_ON()
-; 		jsr 	X_PrNum
+ 		jsr 	X_PrNum
 
 
  		HALT()

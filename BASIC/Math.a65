@@ -51,7 +51,7 @@
 ; Sxxx.xxxx llll.lllll hhhh.hhhh uuuu.uuuu
  		;--
 
-#define LOAD(val) lda #$40\ sta NUM_A+_X\ lda #LOW(val)\ sta NUM_A+_L\ lda #HIGH(val)\ sta NUM_A+_H\ lda #UPPER(val)\ sta NUM_A+_U\ lda #0\ sta NUM_A+4\ sta NUM_A+5\ sta NUM_A+6
+#define LOAD(val) lda #$40\ sta NUM_A+_X\ lda #LOW(val)\ sta NUM_A+_L\ lda #HIGH(val)\ sta NUM_A+_H\ lda #UPPER(val)\ sta NUM_A+_U\ lda #0\ sta NUM_A+_E0\ sta NUM_A+_E1\ sta NUM_A+_E2
 
 
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
@@ -126,29 +126,33 @@ NumParseAX 	jsr 	GetChr 		; next character
 NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
 
+;----------------------------------------------- NumZeroTmp
+NumZeroTmp: ; place zero into NUM_TMP
+		phx
+ 		ldx 	#NUM_TMP
+ 		bra 	NumZeroX
+
 ;----------------------------------------------- NumZeroB
 NumZeroB: ; place zero into NUM_B
+		phx
  		ldx 	#NUM_B
  		bra 	NumZeroX
 
 ;----------------------------------------------- NumZeroA
 NumZeroA: ; place zero into NUM_A
- 		jsr 	NumPadA 	; zero extended bytes
+		phx
  		ldx 	#NUM_A
  		;-- fall through
-NumZeroX: ; zero the number at .X
+NumZeroX: ; zero the number at .X (extend version EXP,1,2,3,4,5,6)
  		lda 	#0 		; zero number
+ 		sta 	_X,X
  		sta 	_L,X
  		sta 	_H,X
  		sta 	_U,X
- 		sta 	_X,X
- 		rts
-;----------------------------------------------- NumPadA
-NumPadA: ; pad extended bytes of Num_A with zeroes
- 		lda 	#0
- 		sta 	NUM_A+4
- 		sta 	NUM_A+5
- 		sta 	NUM_A+6
+ 		sta 	_E0,x
+ 		sta 	_E1,x
+ 		sta 	_E2,x
+ 		plx
  		rts
 
 ;----------------------------------------------- NumDigit
@@ -185,9 +189,9 @@ NumDTa 		rol 	A
 NumDTb 		rol 	NUM_A+_L 	; L 1
  		rol 	NUM_A+_H 	; H 2
  		rol 	NUM_A+_U 	; U 3
- 		rol 	NUM_A+4 	; 4
- 		rol 	NUM_A+5 	; 5
- 		rol 	NUM_A+6 	; 6
+ 		rol 	NUM_A+_E0 	; 4
+ 		rol 	NUM_A+_E1 	; 5
+ 		rol 	NUM_A+_E2 	; 6
  		dey
  		bpl 	NumDTa
  		rts
@@ -202,6 +206,16 @@ NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
  		ZSL3(NUM_A) 		; NUM_A = NUM_A * 10
  		pla
  		rts
+
+NumSL:; NUM_A shift left by 1 (*2)
+		asl NUM_A+_L
+		rol NUM_A+_H
+		rol NUM_A+_U
+		rol NUM_A+_E0
+		rol NUM_A+_E1
+		rol NUM_A+_E2
+	 	rts
+
 
 ;----------------------------------------------- NumMH
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
@@ -440,9 +454,9 @@ NumMul: ; NumA = NumB * NumA
  		sta 	NUM_EXP 	; save on it's own for now
  		;-- zero extended result
  		lda 	#0
- 		sta 	NUM_A+4
- 		sta 	NUM_A+5
- 		sta 	NUM_A+6
+ 		sta 	NUM_A+_E0
+ 		sta 	NUM_A+_E1
+ 		sta 	NUM_A+_E2
  		ldx 	#24 		;There are 24 bits in NA
  		;-- Shift NA to the right, lowest bit into CY
  		lsr 	NUM_A+_U
@@ -453,25 +467,25 @@ NumMul1 	bcc 	NumMul2 	;0 or 1?
  		;-- bit is 1 so add
  		clc
  		lda 	NUM_B+_L
- 		adc 	NUM_A+4
- 		sta 	NUM_A+4
+ 		adc 	NUM_A+_E0
+ 		sta 	NUM_A+_E0
  		;--
  		lda 	NUM_B+_H
- 		adc 	NUM_A+5
- 		sta 	NUM_A+5
+ 		adc 	NUM_A+_E1
+ 		sta 	NUM_A+_E1
  		;--
  		lda 	NUM_B+_U
- 		adc 	NUM_A+6
- 		sta 	NUM_A+6
+ 		adc 	NUM_A+_E2
+ 		sta 	NUM_A+_E2
  		;--
 NumMul2 	;shift result right (equivalent to shift B left )
  		clc
- 		ror 	NUM_A+6
- 		ror 	NUM_A+5
- 		ror 	NUM_A+4
- 		ror 	NUM_A+3
- 		ror 	NUM_A+2
- 		ror 	NUM_A+1
+ 		ror 	NUM_A+_E2
+ 		ror 	NUM_A+_E1
+ 		ror 	NUM_A+_E0
+ 		ror 	NUM_A+_U
+ 		ror 	NUM_A+_H
+ 		ror 	NUM_A+_L
  		;-- loop for each bit
  		dex 			; does not affect CY
  		bne 	NumMul1
@@ -485,9 +499,9 @@ NumMul2 	;shift result right (equivalent to shift B left )
 
 ;----------------------------------------------- NumNorm
 NumNorm: ; adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
- 		lda 	NUM_A+6
- 		ora 	NUM_A+5
- 		ora 	NUM_A+4
+ 		lda 	NUM_A+_E2
+ 		ora 	NUM_A+_E1
+ 		ora 	NUM_A+_E0
  		beq 	NumNorm2 	; already fits
  		;--
 NumNorm1 	jsr 	NumDT 		; divide by 10
@@ -522,11 +536,11 @@ NumIncA: ; Increment NUM_A
  		bne 	NumIncAX
  		inc 	NUM_A+_U
  		bne 	NumIncAX
- 		inc 	NUM_A+4
+ 		inc 	NUM_A+_E0
  		bne 	NumIncAX
- 		inc 	NUM_A+5
+ 		inc 	NUM_A+_E1
  		bne 	NumIncAX
- 		inc 	NUM_A+6
+ 		inc 	NUM_A+_E2
 NumIncAX 	rts
 
 ;----------------------------------------------- NumDiv
@@ -588,9 +602,9 @@ NumDivL2 	; save result bit
  		rol 	NUM_A+_L
  		rol 	NUM_A+_H
  		rol 	NUM_A+_U
- 		rol 	NUM_A+4
- 		rol 	NUM_A+5
- 		rol 	NUM_A+6
+ 		rol 	NUM_A+_E0
+ 		rol 	NUM_A+_E1
+ 		rol 	NUM_A+_E2
  		;-- next bit
  		dex
  		bne 	NumDivL
@@ -599,7 +613,9 @@ NumDivL2 	; save result bit
  		;-- 6 5 4 .3 2 1  0 	NUM_A
  		;-- 00032A.5F38D7 XP    Binary fraction
  		;-- now normalise it
- 		;-- jmp 	NumNorm
+
+
+
  		RTN_T()
 
 
