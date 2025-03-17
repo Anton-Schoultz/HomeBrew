@@ -627,11 +627,6 @@ NumNormX1 	;-- make sign only one bit
  		sta 	NUM_AX
  		;--
  		RTN_T()
-
-; 385	44723	1.523990e08
-; 361	44714	1.523990e08
-; 345	44490	1.523990e08
-; 345	42490	1.523990e08
 ;----------------------------------------------- NumIncA
 NumIncA: ; Increment NUM_A
  		inc 	NUM_AA
