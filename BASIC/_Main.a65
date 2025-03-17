@@ -76,7 +76,7 @@ Main: ; MAIN code
 
  		LOAD(12345)
  		jsr 	NumPushA
- 		LOAD(123)
+ 		LOAD(12345)
  		jsr 	NumPopB
 
 ; 12345 / 123 => 000064.5DA895	0058 00 95 A8 5D 64 00 00 xx

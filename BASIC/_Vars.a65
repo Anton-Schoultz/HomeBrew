@@ -34,7 +34,7 @@
 ; bytes per line of Hex Dump
 #define HEXSZ 8
 ; digits to convert including null at the end -> NUM_BUF
-#define NUMSZ 12
+#define NUMSZ 14
 
 
 ;=================================================================== CHRRD, VECTORS ===
@@ -88,19 +88,19 @@ Var(NUM_A,8) 	; Number parsed / Primary accumulator
 Var(NUM_TMP,8) 	; Temp number
 ; 68
 Var(NUM_DIV,4) 	; Scratch divisor
-
+;70
 Short(NUM_EXP)	; exponent
 Short(NUM_SGN) 	; sign
 Short(NUM_DEC)	; decimals counter
 Short(ZDIV) 	; divisor for short division 10/100
 
-; 74
+.org $80
 Var(NUM_BUF,NUMSZ) ; Conversion work area
 
 
 
 
-.org $80
+.org $90
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 

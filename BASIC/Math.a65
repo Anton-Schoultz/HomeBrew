@@ -314,20 +314,41 @@ NumCvtL 	;- num/10 remainder as digit
  		dex 			; back-up one pos to the left
  		bpl 	NumCvtL 	; loop until done
 
- 		;-- place EXP
+ 		;-- EXP
  		lda 	NUM_AX
  		and 	#$7F
  		sec
- 		sbc 	#$40
+ 		sbc 	#$40		; 3C-40= FC (-4)
  		sta 	NUM_EXP
  		beq 	NumCvtS 	; exp is zero so don't place Exx
  		;--
  		;-- TODO  place the point & adjust EXP
  		;--
+		ldx #$FF
+NumCvt1		inx
+		cpx #NUMSZ-4		; incase its all zeroes
+		beq	NumCvt2
+		lda NUM_BUF+1,X
+		cmp #'0'
+		beq NumCvt1
+		;
+NumCvt2		sta NUM_BUF,X		; insert the decimal point
+		lda #'.'
+		sta NUM_BUF+1,X		; X=4  Last digit is BUF[11]
+
+		txa
+		eor #$ff
+		inc A
+		clc
+		adc NUM_EXP
+		clc
+		adc #8
+		sta NUM_EXP
+
+		tay
 
  		;-- append the E-##
  		ldx 	#NUMSZ-4
- 		tay 			; save exp
  		;-- 'E'
  		lda 	#'E'
  		sta 	NUM_BUF,X
@@ -338,6 +359,10 @@ NumCvtL 	;- num/10 remainder as digit
  		lda 	#'-'
  		sta 	NUM_BUF,X
  		inx
+ 		tya
+ 		eor #$ff
+ 		inc a
+ 		tay
 NumCvtE 	; ##
  		tya 			; recal exp
  		phx
@@ -646,11 +671,12 @@ NumDiv2 	; save result bit
  		bne 	NumDivL
  		;--
  		;-- X  A  B  C  D  E  F
- 		;-- xx 95 A8 5D 64 00 00
- 		;-- xx D2 95 A8 EB 03 00
- 		;-- xx 34 DA 95 34 27 00
- 		;-- xx 08 86 DA 0D 88 01
- 		;-- xx 50 3C 89 8A 50 0F <<<
+ 		;-- xx 95 A8 5D 64 00 00  e0
+ 		;-- xx D2 95 A8 EB 03 00  e-1
+ 		;-- xx 34 DA 95 34 27 00  e-2
+ 		;-- xx 08 86 DA 0D 88 01  e-3
+ 		;-- xx 50 3C 89 8A 50 0F  e-4  <<<
+
  		;-- xx 20 5B 5C 69 25 99 - TOO BIG (-ve)
 
  		;-- 3C 8b 50 0F 00 00 00 <<< 3C:E-4
