@@ -82,6 +82,8 @@ Main: ; MAIN code
 ; 12345 / 123 => 000064.5DA895	0058 00 95 A8 5D 64 00 00 xx
 ; 12345 * 123 => 000000 172B63  0058 40 63 2B 17 00 00 00 xx
 
+; 12345 * 12345 = 152,399,025   0058 42 16 41 17 00 00 00  => 1.523990E8 => 152,399,000
+
  		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
  		jsr 	HexDump 	; NUM_A(8)
  		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
@@ -95,7 +97,7 @@ Main: ; MAIN code
  		jsr 	PrNL
 
 
- 		;-- PR_ZSUP_ON()
+ 		PR_ZSUP_ON()
  		jsr 	X_PrNum
 
 

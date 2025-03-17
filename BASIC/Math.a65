@@ -211,11 +211,11 @@ NumDTb 		rol 	NUM_AA 		; L 1
 
 NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		pha
- 		JSR 	NumCpyA2B 	; NUM_B <= NUM_A
- 		JSR 	NumSLA 		; NUM_A << 1       *2
- 		JSR 	NumSLA 		;  *4
+ 		jsr 	NumCpyA2B 	; NUM_B <= NUM_A
+ 		jsr 	NumSLA 		; NUM_A << 1       *2
+ 		jsr 	NumSLA 		;  *4
  		jsr 	NumAdd 		; NUM_A += NUM_B   *5
- 		JSR 	NumSLA
+ 		jsr 	NumSLA
  		pla
  		rts
 
@@ -296,15 +296,14 @@ NumCvt: ; Convert NUM_A(24Bit) to digits in NUM_BUF
  		;-- fill buffer with zeroes
  		ldx 	#NUMSZ-1
  		lda 	#0
- 		sta 	NUM_BUF,x	;u
+ 		sta 	NUM_BUF,x 	;u
  		dex
- 		sta 	NUM_BUF,x	;t
+ 		sta 	NUM_BUF,x 	;t
  		dex
- 		sta 	NUM_BUF,x	;-
+ 		sta 	NUM_BUF,x 	;-
  		dex
- 		sta 	NUM_BUF,x	;E
+ 		sta 	NUM_BUF,x 	;E
  		dex
-
 NumCvtL 	;- num/10 remainder as digit
  		phx 			; save output index
  		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
@@ -313,57 +312,53 @@ NumCvtL 	;- num/10 remainder as digit
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
  		bpl 	NumCvtL 	; loop until done
-
  		;-- EXP
  		lda 	NUM_AX
  		and 	#$7F
  		sec
- 		sbc 	#$40		; 3C-40= FC (-4)
+ 		sbc 	#$40 		; 3C-40= FC (-4)
  		sta 	NUM_EXP
  		beq 	NumCvtS 	; exp is zero so don't place Exx
- 		;--
- 		;-- TODO  place the point & adjust EXP
- 		;--
-		ldx #$FF
-NumCvt1		inx
-		cpx #NUMSZ-4		; incase its all zeroes
-		beq	NumCvt2
-		lda NUM_BUF+1,X
-		cmp #'0'
-		beq NumCvt1
-		;
-NumCvt2		sta NUM_BUF,X		; insert the decimal point
-		lda #'.'
-		sta NUM_BUF+1,X		; X=4  Last digit is BUF[11]
-
-		txa
-		eor #$ff
-		inc A
-		clc
-		adc NUM_EXP
-		clc
-		adc #8
-		sta NUM_EXP
-
-		tay
-
- 		;-- append the E-##
+ 		;-- find first non-zero
+ 		ldx 	#$FF
+NumCvt1 	inx
+ 		cpx 	#NUMSZ-4 	; incase its all zeroes
+ 		BEQ 	NumCvt2
+ 		lda 	NUM_BUF+1,X
+ 		cmp 	#'0'
+ 		beq 	NumCvt1
+ 		;-- insert the point
+NumCvt2 	sta 	NUM_BUF,X
+ 		lda 	#'.'
+ 		sta 	NUM_BUF+1,X
+ 		;-- work out resulting Exp
+ 		txa
+ 		eor 	#$ff
+ 		inc 	A
+ 		clc
+ 		adc 	NUM_EXP
+ 		clc
+ 		adc 	#8
+ 		sta 	NUM_EXP
+ 		tay
+ 		;-- append the E
  		ldx 	#NUMSZ-4
  		;-- 'E'
- 		lda 	#'E'
+ 		lda 	#'e'
  		sta 	NUM_BUF,X
  		inx
- 		;-- ['-']
+ 		;-- negative exp?
  		tya
  		bpl 	NumCvtE
  		lda 	#'-'
  		sta 	NUM_BUF,X
  		inx
+ 		;-- complement exp
  		tya
- 		eor #$ff
- 		inc a
+ 		eor 	#$ff
+ 		inc 	a
  		tay
-NumCvtE 	; ##
+NumCvtE 	;-- exponent as digits
  		tya 			; recal exp
  		phx
  		jsr 	Bin2BCD 	; to bcd in .X .A
@@ -478,6 +473,18 @@ NumSub: ; NumA = NumB - NumA
  		lda 	NUM_B+FPC
  		sbc 	NUM_AC
  		sta 	NUM_AC
+ 		;--
+ 		lda 	NUM_B+FPD
+ 		sbc 	NUM_AD
+ 		sta 	NUM_AD
+ 		;--
+ 		lda 	NUM_B+FPE
+ 		sbc 	NUM_AE
+ 		sta 	NUM_AE
+ 		;--
+ 		lda 	NUM_B+FPF
+ 		sbc 	NUM_AF
+ 		sta 	NUM_AF
  		;--
  		RTN_T()
 
