@@ -1,5 +1,8 @@
 ; #define hide
 
+; E000-FFFF = 8k
+#define _ROM $E000
+
 #include "Macros.a65"
 #include "_Vars.a65"
 
@@ -14,12 +17,12 @@
 ; .NOLIST
 #endif
 
-.echo "ROM at $F000-$FFFF (4k)\r"
-; .echo "ROM at $E000-$FFFF (8k)\r"
+
+;.echo "ROM at $F000-$FFFF (4k)\r"
+.echo "ROM at $E000-$FFFF (8k)\r"
 ; .echo "ROM at $C000-$FFFF (16k)\r"
 
-.org $F000
-_ROM 		=$
+.org _ROM
 .LIST
 ;----------------------------------------------- START OF ROM
 ; 		START OF ROM
@@ -93,7 +96,7 @@ Main: ; MAIN code
  		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
  		jsr 	PrNL
 
- 		jsr 	NumMul
+ 		jsr 	NumDiv
 
  		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
  		jsr 	HexDump 	; NUM_A(8)

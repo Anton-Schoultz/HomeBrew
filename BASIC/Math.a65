@@ -692,7 +692,6 @@ NumDivL 	;-- shift a bit from dividend into temp
  		adc 	NUM_DIV+FPC
  		sta 	NUM_TMP+FPC 	; carry should be zero here
  		clc
- 		;--
 NumDiv2 	; save result bit
  		rol 	NUM_AA
  		rol 	NUM_AB
@@ -703,8 +702,9 @@ NumDiv2 	; save result bit
  		;-- next bit
  		dex
  		bne 	NumDivL
+; 345 46786
  		;-- now normalise and Pack the result
- 		ldx 	#6
+ 		ldx 	#5
  		;--
 NumDiv3 	lda 	NUM_AF
  		bne 	NumDiv7
@@ -714,15 +714,13 @@ NumDiv3 	lda 	NUM_AF
  		dec 	NUM_EXP
  		dex
  		bpl 	NumDiv3
-NumDiv7
- 		lda 	NUM_AF
- 		and 	#$F8
- 		bne 	NumDiv8
+NumDiv7		lda 	NUM_AF
+ 		cmp 	#$F8		; f8
+ 		bpl 	NumDiv8		; bpl <<<<<<
  		jsr 	NumMT
  		dec 	NUM_EXP
  		dex
  		bpl 	NumDiv7
-
 NumDiv8 	lda 	NUM_EXP
  		clc
  		adc 	#$40 		; add offset
