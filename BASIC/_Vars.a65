@@ -29,8 +29,10 @@
 #define BUFSZ() 64
 ; STRSZ Size for STRBUF
 #define STRSZ 128
-; calculator stack depth
-#define CSTKSZ 16
+; calculator stack depth & mask
+#define CSTKSZ 8
+#define CSTKMSK 7
+
 ; bytes per line of Hex Dump
 #define HEXSZ 8
 ; digits to convert including null at the end -> NUM_BUF
@@ -56,17 +58,10 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
 Int(ZStr) 	; ZStr points to string result
-
-
-
-.org $0030
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
-
 Short(ZStrLen) 	; length of STRBUF used (write index)
-
-.org $0040
 ;----------------------------------------------- Code Lines
 Int(LN_NUM) 	; Line number
 Int(LN_NXT) 	; address of next line
@@ -74,50 +69,47 @@ Short(LNFPAEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
-.org $48
-;----------------------------------------------- DBug
-Var(DBUGNUM,8)
-
-
-.org $0050
 ;----------------------------------------------- Numeric
-Var(NUM_B,8) 	; Secondary accumulator
-; 58
-Var(NUM_A,8) 	; Number parsed / Primary accumulator
-; 60
-Var(NUM_TMP,8) 	; Temp number
-; 68
-Var(NUM_DIV,4) 	; Scratch divisor
-;70
+Var(NUM_A,8) 	; 30 Number parsed / Primary accumulator
+Var(NUM_TMP,8) 	; 38 Temp number
+Var(NUM_B,8) 	; 40 Secondary accumulator
+
 Short(NUM_EXP)	; exponent
 Short(NUM_SGN) 	; sign
 Short(NUM_DEC)	; decimals counter
 Short(ZDIV) 	; divisor for short division 10/100
+Var(NUM_DIV,4) 	; Scratch divisor
 
-.org $80
-Var(NUM_BUF,NUMSZ) ; Conversion work area
+;----------------------------------------------- DBug
+Var(DBUGNUM,8)	; 50 debug value
 
+PARAGRAPH()
+Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
 
-
-
-.org $90
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
+
+PARAGRAPH()
+Short(NUM_SP)	; calculator stack pointer
 
 .export LN_NUM,LN_NXT
 .export NUM_TMP,NUM_A,NUM_B,NUM_SGN,NUM_DEC,NUM_SP,NUM_EXP
 .export NUM_BUF,DBUGNUM,VARID
 
-.org $B0
-Short(NUM_SP)	; calculator stack pointer
-
+PARAGRAPH()	; 90
+Var(CSTK0,CSTKSZ)	; C0
+Var(CSTK1,CSTKSZ)	; C8
+Var(CSTK2,CSTKSZ)	; D0
+Var(CSTK3,CSTKSZ)	; D8
+Var(CSTK4,CSTKSZ)	; E0
+Var(CSTK5,CSTKSZ)	; E8
+Var(CSTK6,CSTKSZ)	; F0
+Var(CSTK7,CSTKSZ)	; F8-FF
+;
+.export CSTK0
 ;=================================================================== STACK ============
-.org $C0
-; calc stack at bottom, cpu stack at the top
-Var(CSTK0,CSTKSZ)	; C0...CF
-Var(CSTK1,CSTKSZ)	; D0...DF
-Var(CSTK2,CSTKSZ)	; E0...EF
-Var(CSTK3,CSTKSZ)	; F0...FF
+; cpu stack grows down from 01FF..0100
+
 
 ;=================================================================== SYSVARS ==========
 .org $0200

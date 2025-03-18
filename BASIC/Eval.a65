@@ -131,22 +131,25 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar
  		RTN_F()
 
 ;----------------------------------------------- ENumLit
-ENumLit: ; fetch number from the code -> NUM_A -> AX
+ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ; CHRGOT is first char AFTER the stored value
  		jsr 	ChrRd
- 		sta 	NUM_A+0
+ 		sta 	NUM_AX		; EXP
  		jsr 	ChrRd
- 		sta 	NUM_A+1
+ 		sta 	NUM_AA		; L
  		jsr 	ChrRd
- 		sta 	NUM_A+2
+ 		sta 	NUM_AB		; H
  		jsr 	ChrRd
- 		sta 	NUM_A+3
+ 		sta 	NUM_AC		; U
  		jsr 	ChrRd
+ 		;--
+ 		JSR 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T()
 
 ;----------------------------------------------- EvFVar
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
+; VARTAB has XX AABBCC format (packed)
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
  		and 	#$1F 		; mask for index
@@ -154,20 +157,24 @@ EvFVar: ; retrieve variable value -> NumA
  		asl 	a 		; index * 4
  		tax
  		lda 	VARTAB,X
- 		sta 	NUM_A+FPA
+ 		sta 	NUM_AX
  		lda 	VARTAB+1,X
- 		sta 	NUM_A+FPB
+ 		sta 	NUM_AA
  		lda 	VARTAB+2,X
- 		sta 	NUM_A+FPC
+ 		sta 	NUM_AB
  		lda 	VARTAB+3,X
- 		sta 	NUM_A+FPX
+ 		sta 	NUM_AC
  		jsr 	ChrRd 		; get next token into CHRGOT
+ 		;--
+ 		JSR 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- EvVarLong
 EvVarLong: ; Get value of long name variable
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
+ 		;--
+ 		JSR 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 
@@ -175,6 +182,8 @@ EvVarLong: ; Get value of long name variable
 EvFAry: ; retrieve array variable value -> NumA
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
+ 		;--
+ 		JSR 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- FaBr

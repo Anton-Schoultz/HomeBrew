@@ -40,7 +40,10 @@
 
 
 TestSrc
-.DB "10  PRINT 12/(3+2)"
+.DB "10  PRINT 12/(3+2)"		; 166687 EPROM USED=3520
+
+;.DB "10  PRINT (3+2)"
+
  		;-- .db QT,"xyz",QT
  		;-- .db ",123"
 .db 0
