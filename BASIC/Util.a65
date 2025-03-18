@@ -1,0 +1,18 @@
+;=================================================================== UTIL ============= 
+;*  UPtrX                Set ZPtr from ZPg[.X]
+;*
+#ifdef hide
+.NOLIST
+#endif
+
+;----------------------------------------------- UPtrX 
+UPtrX: ; Set ZPtr from ZPg[.X]
+ 		;-- get base pointer into ZPtr	(extract to subrtn)
+ 		lda 	0,X
+ 		sta 	ZPtr
+ 		lda 	1,X
+ 		sta 	ZPtr+1
+ 		rts
+
+
+.LIST
