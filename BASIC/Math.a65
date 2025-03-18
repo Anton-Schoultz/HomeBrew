@@ -12,6 +12,9 @@
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
 ;*  NumIncA              Increment NUM_A
 ;*  NumInit              Initialise calculator
+;*  NumLoadFP            Load a FP number from ZPg[X] at offset Y
+;*  NumLoadFP_AX         Load & unpack Fp number from address AX
+;*  NumLoadInt           Load Integer from ZPg[X],Y
 ;*  NumMH                NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
 ;*  NumMT                NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
 ;*  NumMul               NumA = NumB * NumA (in unpacked form)
@@ -23,6 +26,9 @@
 ;*  NumPrep              prepare for Mul/Div by unsigning both
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumSLA               NUM_A shift left by 1 (*2)
+;*  NumSaveFP            Pack and Save a FP number at Zpg[X],Y
+;*  NumSaveFP_AX         Pack & save at address AX
+;*  NumSaveInt           Convert to int (or error) and save at ZPg[X],Y
 ;*  NumSet               Set NUM_A to integer value in AX (lo,Hi)
 ;*  NumSign              Move sign from mantissa to SGN byte (for mul/div)
 ;*  NumSpc               blank leading zeroes
@@ -343,6 +349,102 @@ NumNegX: ; 2's compliment the mantissa at X
  		inc 	FPC,X
 NumNegXX 	rts
 
+
+;----------------------------------------------- NumSaveFP_AX 
+NumSaveFP_AX: ; Pack & save at address AX
+ 		sta 	ZPtr
+ 		stx 	ZPtr+1
+ 		phy
+ 		ldy 	#0
+ 		bra 	NumSaveFP1
+;----------------------------------------------- NumSaveFP 
+NumSaveFP: ; Pack and Save a FP number at Zpg[X],Y
+ 		;-- 
+ 		jsr 	UPtrX 		; ZPtr = ZPg[X]
+ 		;-- 
+ 		phy
+NumSaveFP1 	jsr 	NumPack 	; pack into 4 byte format
+ 		;-- 
+ 		lda 	NUM_AX
+ 		sta 	(ZPtr),y
+ 		iny
+ 		lda 	NUM_AA
+ 		sta 	(ZPtr),y
+ 		iny
+ 		lda 	NUM_AB
+ 		sta 	(ZPtr),y
+ 		iny
+ 		lda 	NUM_AC
+ 		sta 	(ZPtr),y
+ 		;-- 
+ 		ply
+ 		RTN_T()
+
+;----------------------------------------------- NumLoadFP_AX 
+NumLoadFP_AX: ; Load & unpack Fp number from address AX
+ 		sta 	ZPtr
+ 		stx 	ZPtr+1
+ 		phy
+ 		ldy 	#0
+ 		bra 	NumLoadFP1
+;----------------------------------------------- NumLoaFP 
+NumLoadFP: ; Load a FP number from ZPg[X] at offset Y
+ 		jsr 	UPtrX 		; ZPtr = ZPg[X]
+ 		phy
+NumLoadFP1 	lda 	(ZPtr),y
+ 		sta 	NUM_AX
+ 		iny
+ 		lda 	(ZPtr),y
+ 		sta 	NUM_AA
+ 		iny
+ 		lda 	(ZPtr),y
+ 		sta 	NUM_AB
+ 		iny
+ 		lda 	(ZPtr),y
+ 		sta 	NUM_AC
+ 		jsr 	NumUnpack 	; unpack for internal use
+ 		ply
+ 		RTN_T()
+
+;----------------------------------------------- NumSaveInt 
+NumSaveInt: ; Convert to int (or error) and save at ZPg[X],Y
+ 		jsr 	UPtrX
+ 		;-- 
+ 		phy 			; store Y
+ 		;-- 
+ 		jsr 	NumAdj 		; try to get E=0
+ 		lda 	NUM_AX
+ 		bne 	NumSaveIntErr 	; can't get E=0
+ 		lda 	NUM_AC
+ 		bne 	NumSaveIntErr 	; overflow error
+ 		lda 	NUM_AB
+ 		bmi 	NumSaveIntErr 	; overflow error
+ 		jsr 	NumSign 	; get binary as 2's complement
+ 		;-- 
+ 		ply 			; restore Y
+ 		;-- 
+ 		lda 	NUM_AA
+ 		sta 	(ZPtr),y
+ 		iny
+ 		lda 	NUM_AB
+ 		sta 	(ZPtr),y
+ 		dey
+ 		rts
+
+; TODO  break 'Convert to integer overflow error'
+NumSaveIntErr 	BREAK(1)
+
+
+;----------------------------------------------- NumLoadInt 
+NumLoadInt: ; Load Integer from ZPg[X],Y
+ 		jsr 	UPtrX 		; ZPtr = ZPg[X]
+ 		phy
+ 		iny
+ 		lda 	(ZPtr),y 	; get hi
+ 		tax
+ 		dey
+ 		lda 	(ZPtr),y 	; get lo
+ 		;-- fall through to NumSet
 ;----------------------------------------------- NumSet 
 NumSet: ; Set NUM_A to integer value in AX (lo,Hi)
  		sta 	NUM_AA
@@ -406,6 +508,7 @@ NumAdjX 	jsr 	NumCpyB2A 	; get best result
 NumCvt: ; Convert NUM_A(unpacked) to digits in NUM_BUF
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; make mantissa positive
+
  		;-- fill buffer with zeroes
  		ldx 	#NUMSZ-1
  		lda 	#0
@@ -491,7 +594,7 @@ NumCvtS 	;-- Place sign in NR[0] based on SGN
  		lda 	#'0' 		; leading zero
  		sta 	NUM_BUF
  		;-- check if negative
- 		lda 	NUM_AX
+ 		lda 	NUM_AS
  		bpl 	NumCvtX
  		lda 	#'-' 		; replace by '-' for negative
  		sta 	NUM_BUF 	; place sign at Res[0]
