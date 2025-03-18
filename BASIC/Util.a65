@@ -1,12 +1,24 @@
 ;=================================================================== UTIL ============= 
+;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
+;*  HexDump              hex dump memory (ZPtr) to output io/mem
+;*  PrADec2              Print A as decimal digits 00-99
+;*  PrADec3              Print A as decimal digits 000-255
+;*  PrAHex               Print A as Hex digits (send/write) [A]
+;*  PrAXHex              Print AX(lo/hi) as 4 hex digits [A]
+;*  PrNL                 print CR,LF to PutChr -> mem/io
+;*  PrNib                Convert hex nibble and Print it (preserves XY)
 ;*  UPtrAX               set ZPtr to valkue in AX (lo,hi)
 ;*  UPtrAXY              set ZPtr to AX (lo,hi) and set Y to zero
 ;*  UPtrX                Set ZPtr from ZPg[.X]
+;*  _Print_              Print in-line string
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
+_Util 		= $
+;=================================================================== UTIL_PTR ========= 
 ;----------------------------------------------- UPtrX 
 UPtrX: ; Set ZPtr from ZPg[.X]
  		;-- get base pointer into ZPtr	(extract to subrtn)
@@ -25,5 +37,175 @@ UPtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		stx 	ZPtr+1
  		rts
 
+;=================================================================== UTIL_PRINT ======= 
+;----------------------------------------------- _Print_ 
+; PSEUDO-CODE
+_Print_: ;Print in-line string
+ 		;-- pop the return address from the jsr call
+ 		pla
+ 		plx
+ 		;-- set up to print from there (ZPtr)
+ 		SETAX(ZPtr)
+; skip over fisrt byte (end of jsr)
+ 		ZINC(ZPtr)
+ 		jsr 	PrStr 		; output up to null/term
+ 		;-- Calculate the return address
+ 		sec 			; adjust one more
+ 		lda 	ZPtr 		; lo
+ 		adc 	ZTmp 		; + Len
+ 		sta 	ZPtr 		; -> lo
+ 		bcc 	_PrintFPX 	; carry?
+ 		inc 	ZPtr+1 		; yes, incr hi
+_PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
+
+;----------------------------------------------- PrNL 
+PrNL: ; print CR,LF to PutChr -> mem/io
+ 		lda 	#CR
+ 		jsr 	PutChr
+ 		lda 	#LF
+ 		jmp 	PutChr
+
+;=================================================================== UTIL_HEX ========= 
+Nib2HexTbl
+;    ____ BCD:0______===== BCD:1 ====
+.db "0123456789ABCDEF0123456789+-e.E "
+;   "0123456789ABCDEF0123456789abcdef"
+
+;----------------------------------------------- PrAXHex 
+PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
+ 		pha 			; save ZTmp
+ 		txa 			; get high
+ 		jsr 	PrAHex 		; print hi as hex digits
+ 		pla 			; restore ZTmp
+ 		;-- fall through to print ZTmp as hex digits
+;----------------------------------------------- PrAHex 
+PrAHex: ; Print A as Hex digits (send/write) [A]
+ 		pha 			;Save A for LSD
+ 		lsr 	a
+ 		lsr 	a
+ 		lsr 	a 		; MSD to LSD position
+ 		lsr 	a
+ 		jsr 	PrNib 		; Output hex digit
+ 		pla 			; Restore A and then
+ 		;-- fall through to print hex routine
+;----------------------------------------------- PrNib 
+PrNib: ; Convert hex nibble and Print it (preserves XY)
+ 		phx 			; save X
+ 		and 	#$0F 		; Mask LSD for hex print
+ 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
+ 		;-- BCD so add 16 for second part of table
+ 		clc
+ 		adc 	#$10 		; add 16 for BCD part of table
+PrNibX 		tax
+ 		lda 	Nib2HexTbl,X 	; Look Up
+ 		plx
+ 		jmp 	PutChr 		; Write/Send
+
+;----------------------------------------------- Hex2Nib 
+Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
+ 		eor 	#'0' 		; Map digits to 0-9
+ 		cmp 	#9+1 		; Is it a decimal digit?
+ 		bcc 	Hex2Nib9 	; Yes!
+ 		adc 	#$08 		; Map letter "A"-"F" to $FA-FF
+ 		cmp 	#$7A 		; Hex letter?
+ 		bcc 	Hex2NibFPX 	; No! Character not hex
+Hex2Nib9 	sec 			; set carry flag to indicate valid
+Hex2NibFPX 	and 	#$0F
+ 		rts 			; carry clear if invalid char
+
+;----------------------------------------------- HexDump 
+HexDump: ; hex dump memory (ZPtr) to output io/mem
+ 		lda 	ZPtr+1
+ 		jsr 	PrAHex
+ 		lda 	ZPtr
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jsr 	PutChr
+ 		ldy 	#0
+HexDumpL 	; dump a line of bytes
+ 		lda 	(ZPtr),y
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jsr 	PutChr
+ 		iny
+ 		cpy 	#HEXSZ
+ 		bne 	HexDumpL
+ 		ldy 	#0
+HexDumpL1 	; dump a line of bytes
+ 		lda 	(ZPtr),y
+ 		BR_ALT(32,HexDump1) 	; a<' '?
+ 		BR_AGT(127,HexDump1)
+ 		jsr 	PutChr 		;printable
+ 		bra 	HexDump2
+HexDump1 	; non printable
+ 		lda 	#'.'
+ 		jsr 	PutChr
+HexDump2 	iny
+ 		cpy 	#HEXSZ
+ 		bne 	HexDumpL1
+ 		jsr 	PrNL
+ 		;-- move ZPtr to next line
+ 		clc
+ 		lda 	#HEXSZ
+ 		adc 	ZPtr
+ 		sta 	ZPtr
+ 		bcc 	HexDumpX
+ 		inc 	ZPtr+1
+HexDumpX 	rts
+
+
+;=================================================================== UTIL_BCD ========= 
+Bin2BCDTbl
+.byte	$63,$31,$15,$07,$03,$01,$00
+
+;----------------------------------------------- PrADec2 
+PrADec2: ; Print A as decimal digits 00-99
+ 		jsr 	Bin2BCD
+ 		jmp 	PrAHex
+
+;----------------------------------------------- PrADec2 
+PrADec3: ; Print A as decimal digits 000-255
+ 		jsr 	Bin2BCD
+ 		pha
+ 		txa
+ 		jsr 	PrNib 		; hundreds
+ 		pla
+ 		jmp 	PrAHex 		; Tens,Unit
+
+;----------------------------------------------- Bin2BCD 
+Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
+ 		sed 			; all adds in decimal mode
+ 		sta 	ZTmp 		; save A
+ 		lda 	#$00 		; clear A
+ 		ldx 	#$07 		; set bit count
+Bin2BCDL 	lsr 	ZTmp 		; bit to carry
+ 		bcc 	Bin2BCD1 	; branch if no add
+ 		adc 	Bin2BCDTbl-1,X 	; else add BCD value
+Bin2BCD1 	dex 			; decrement bit count
+ 		bne 	Bin2BCDL 	; loop if more to do
+
+; 3digit {  (high digit in X)
+ 		bcc 	Bin2BCD2 	; branch if no 100's carry
+ 		;-- if Cb set here (and can only be set by the
+ 		;-- last loop add) then there was a carry into
+ 		inx 			; the 100's so add 100's carry to the high byte
+Bin2BCD2 	;-- now check the 2^7 (128) bit
+ 		lsr 	ZTmp 		; bit 7 to carry
+ 		bcc 	Bin2BCD3 	; branch if no add
+ 		inx 			; else effectively add 100 part of 128
+ 		adc 	#$27 		; and then add 128 (-1) part of 128
+ 		bcc 	Bin2BCD3 	; branch if no further carry
+ 		inx 			; else add 200's carry
+Bin2BCD3
+; }
+
+ 		sta 	ZTmp 		; save result ZTmp byte
+ 		cld 			; clear decimal mode
+ 		rts
+
+
+.echo "  _Util\t\t"
+.echo $-_Util
+.echo "\n"
 
 .LIST

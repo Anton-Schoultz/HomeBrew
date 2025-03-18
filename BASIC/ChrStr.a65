@@ -1,5 +1,4 @@
-;=================================================================== CHRSTR ===========
-;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;=================================================================== CHRSTR =========== 
 ;*  ChrCopy              Output characters from input (mem/device) to output(Mem/device)
 ;*  ChrIn                Read character from input device (KBD,COM..) -> CHRGOT
 ;*  ChrInit              Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
@@ -7,19 +6,14 @@
 ;*  ChrRd_               Read character from memory (ZPg routine)
 ;*  ChrWr                Write Character to memory  A -> (ZWr++) , 00->(ZWr)
 ;*  GetChr               Input character from Mem/IO -> A, CHRGOT
-;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  Input                Read from Mem/IO and place in INBUF, until CR
 ;*  InputIO              Input INBUF from IO
 ;*  InputIOEcho          Input INBUF from IO, echo chars to IO
-;*  PrADec2              Print A as decimal digits 00-99
-;*  PrADec3              Print A as decimal digits 000-255
-;*  PrNL                 print CR,LF to PutChr -> mem/io
 ;*  PrStr                Print string pointed to by ZPtr [A]
-;*  PrStrAX              Print string at AX [A] -> PutChr
-;*  PrStrBuf             Print STRBUF [A]  -> PutChr
+;*  PrStrAX              Print string at AX [A] -> PutChr -> Mem/IO
+;*  PrStrBuf             Print STRBUF -> PutChr -> Mem/IO
 ;*  PutChr               Print character to Mem/IO
 ;*  PutNull              write terminating null to Mem/IO
-;*  _Print_              Print in-line string
 ;*m BR_NBCD(tgt)         Branch to tgt if BCD=0
 ;*m BR_ND7(tgt)          Branch to tgt if MRK=0 (end with bit 7)
 ;*m BR_NRD(tgt)          Branch to tgt if Read=0
@@ -56,7 +50,7 @@
 ; Bit1 ZSpc	' '		Suppressed
 ; Bit0 ZSup	'0'		Suppress leading zeros
 
-;----------------------------------------------- 7:Wr/Out
+;----------------------------------------------- 7:Wr/Out 
 ; BR_WR(tgt) Branch to tgt if Write=1
 #define BR_WR(tgt) 	BBS7 ZPrFlg,tgt
 
@@ -69,7 +63,7 @@
 ; PR_WR_IO()	Write IO	F7=0 ChrOut
 #define PR_WR_IO()	RMB7 ZPrFlg
 
-;----------------------------------------------- 6:Rd/In
+;----------------------------------------------- 6:Rd/In 
 ; BR_RD(tgt) Branch to tgt if Read=1
 #define BR_RD(tgt) 	BBS6 ZPrFlg,tgt
 
@@ -82,7 +76,7 @@
 ; PR_RD_IO()	Read IO		F6=0 ChrIn
 #define PR_RD_IO()	RMB6 ZPrFlg
 
-;----------------------------------------------- 5:NonASCII
+;----------------------------------------------- 5:NonASCII 
 ; BR_D7(tgt)	Branch to tgt if MRK=1 (end with bit 7)
 #define BR_D7(tgt) 	BBS5 ZPrFlg,tgt
 ; BR_ND7(tgt)	Branch to tgt if MRK=0 (end with bit 7)
@@ -94,7 +88,7 @@
 ; PR_ALL()	Term Null	F5=0 Term null only
 #define PR_ALL()	RMB5 ZPrFlg
 
-;----------------------------------------------- 4:BCD HEX
+;----------------------------------------------- 4:BCD HEX 
 ; BR_BCD(tgt)	Branch to tgt if BCD=1
 #define BR_BCD(tgt) 	BBS4 ZPrFlg,tgt
 ; BR_NBCD(tgt)	Branch to tgt if BCD=0
@@ -106,7 +100,7 @@
 ; PR_BCD_OFF()	HEX out		F4=0 HEX 0-9ABCDEF
 #define PR_BCD_OFF()	RMB4 ZPrFlg
 
-;----------------------------------------------- 3:Echo
+;----------------------------------------------- 3:Echo 
 ; PR_ECHO(tgt)	Branch to tgt if ECHO=1
 #define BR_ECHO(tgt) 	BBS3 ZPrFlg,tgt
 ; PR_NECHO(tgt)	Branch to tgt if ECHO=0
@@ -117,7 +111,7 @@
 #define PR_ECHO_OFF()	RMB3 ZPrFlg
 
 
-;----------------------------------------------- 1:ZeroBlank
+;----------------------------------------------- 1:ZeroBlank 
 ; PR_ZSPC(tgt)	Branch to tgt if ZSPC=1
 #define BR_ZSPC(tgt) 	BBS1 ZPrFlg,tgt
 ; PR_NZSPC(tgt)	Branch to tgt if ZSPC=0
@@ -127,7 +121,7 @@
 ; PR_ZSPC_OFF()	Leading zeros stay
 #define PR_ZSPC_OFF()	RMB1 ZPrFlg
 
-;----------------------------------------------- 0:ZeroSuppress
+;----------------------------------------------- 0:ZeroSuppress 
 ; PR_ZSUP(tgt)	Branch to tgt if ZSUP=1
 #define BR_ZSUP(tgt) 	BBS0 ZPrFlg,tgt
 ; PR_NZSUP(tgt)	Branch to tgt if ZSUP=0
@@ -137,7 +131,7 @@
 ; PR_ZSUP_OFF()	Leading zeros stay
 #define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
- 		;--
+ 		;-- 
 ChrRd 		= $0000 		; increment pointer and fetch, save in CHRGOT
 ZRd 		= $07 			; points to character just fetched
 CHRGOT 		= $0C 			; most recently fetched character
@@ -145,7 +139,7 @@ HLTFLG 		= $0D 			; halt flag 00=run (error code)
 ZWr 		= $0E 			; address for ChrWr to write to
 
 _ChrStr 	= $
-;----------------------------------------------- ChrNext
+;----------------------------------------------- ChrNext 
 ; increment the ZRd pointer (inside the lda) and then fetch the character
 ChrRd_: ; Read character from memory (ZPg routine)
  		ZINC(ZRd) 		; 0001 0203 0405
@@ -158,18 +152,18 @@ ChrRd_: ; Read character from memory (ZPg routine)
 .db 0,0 				; 0E0F = ZWr
 
 ; Initial values for 8 vectors in here, copied along with the above to zero page
- 		;--
+ 		;-- 
 .dw ConIn 				; VCHRIN
 .dw ConOut 				; VCHROUT
 .dw $ABCD
 .dw $ABCD
- 		;--
+ 		;-- 
 .dw $ABCD
 .dw $ABCD
 .dw $ABCD
 .dw $ABCD
 
-;----------------------------------------------- CharInit
+;----------------------------------------------- CharInit 
 ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
  		ldx 	#0
 ChrInitL 	lda 	ChrRd_,X
@@ -184,10 +178,10 @@ ChrInitL 	lda 	ChrRd_,X
  		rts
 
 
-;----------------------------------------------- PutNull
+;----------------------------------------------- PutNull 
 PutNull: ; write terminating null to Mem/IO
  		lda 	#0
-;----------------------------------------------- PutChr
+;----------------------------------------------- PutChr 
 PutChr: ; Print character to Mem/IO
  		;-- don't send null
  		cmp 	#0
@@ -195,10 +189,10 @@ PutChr: ; Print character to Mem/IO
  		;-- outp[ut or memory
  		BR_WR(ChrWr) 		;wr=1?
  		;-- 0=fall through to send via ChrOut
-;----------------------------------------------- ChrOut
+;----------------------------------------------- ChrOut 
 ChrOut: ; Send character to output device (SCR,COM..)
  		jmp 	(VCHROUT)
-;----------------------------------------------- ChrWr
+;----------------------------------------------- ChrWr 
 ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
  		;-- bump to next address
@@ -208,7 +202,7 @@ ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
 ChrWrX 		rts
 
-;----------------------------------------------- GetChr
+;----------------------------------------------- GetChr 
 GetChr: ; Input character from Mem/IO -> A, CHRGOT
  		BR_NECHO(GetChr1) 	; if echo is off, just go get the char
  		jsr 	GetChr1 	; fetch char
@@ -221,16 +215,16 @@ GetChrX 	rts 			; return
 GetChr1 	BR_NRD(ChrIn) 		;Rd=1? ChrRd
  		jmp 	ChrRd 		;ChrRd is code in Z Page, saves in CHRGOT
 
-;----------------------------------------------- ChrIn
+;----------------------------------------------- ChrIn 
 ChrIn: ; Read character from input device (KBD,COM..) -> CHRGOT
  		jsr 	ChrVecIn 	; call through vecotr
  		sta 	CHRGOT 		; save in CHRGOT
  		rts
 ChrVecIn 	jmp 	(VCHRIN)
-;----------------------------------------------- ChrRd
+;----------------------------------------------- ChrRd 
 ;ChrRd is code in Z Page
 
-;----------------------------------------------- ChrCopy
+;----------------------------------------------- ChrCopy 
 ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
  		jsr 	GetChr 		; get from Mem / IO
  		beq 	ChrCopyX 	; Null -> exit
@@ -241,14 +235,14 @@ ChrCopy2 	jsr 	PutChr 		; put Mem / IO
  		bra 	ChrCopy 	; loop
 ChrCopyX 	rts
 
-;----------------------------------------------- InputIOEcho
+;----------------------------------------------- InputIOEcho 
 InputIOEcho: ; Input INBUF from IO, echo chars to IO
  		PR_WR_IO()
  		PR_ECHO_ON()
-;----------------------------------------------- InputIO
+;----------------------------------------------- InputIO 
 InputIO: ; Input INBUF from IO
  		PR_RD_IO() 		; Read from IO
-;----------------------------------------------- Input
+;----------------------------------------------- Input 
 Input: ; Read from Mem/IO and place in INBUF, until CR
  		ldx 	#0
  		txa
@@ -286,13 +280,13 @@ InputX 		lda 	#0 		; terminate with a null
  		rts
 
 
-;----------------------------------------------- PrStrBuf
+;----------------------------------------------- PrStrBuf 
 PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
  		LDAX(STRBUF)
-;----------------------------------------------- PrStrAX
+;----------------------------------------------- PrStrAX 
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)
-;----------------------------------------------- PrStr
+;----------------------------------------------- PrStr 
 PrStr: ; Print string pointed to by ZPtr [A]
 ; last index saved into ZTmp
  		phy
@@ -303,7 +297,7 @@ PrStr1 		lda 	(ZPtr),y
  		BR_ND7(PrStr2) 		; BREAK=Off, skip bit test
  		bmi 	PrStrX 		; bit 7 set -> exit
  		and 	#$7F 		; force ascii
- 		;--
+ 		;-- 
 PrStr2 		jsr 	PutChr 		; print character
  		iny 			; move to next char
  		bne 	PrStr1 		; loop back (no more than 255 chars)
@@ -311,207 +305,7 @@ PrStrX 		sty 	ZTmp
  		ply 			; restore Y
  		rts 			; exit
 
-;== HexDump
-;----------------------------------------------- HexDump
-HexDump: ; hex dump memory (ZPtr) to output io/mem
- 		lda 	ZPtr+1
- 		jsr 	PrAHex
- 		lda 	ZPtr
- 		jsr 	PrAHex
- 		lda 	#' '
- 		jsr 	PutChr
- 		ldy 	#0
-HexDumpL 	; dump a line of bytes
- 		lda 	(ZPtr),y
- 		jsr 	PrAHex
- 		lda 	#' '
- 		jsr 	PutChr
- 		iny
- 		cpy 	#HEXSZ
- 		bne 	HexDumpL
- 		ldy 	#0
-HexDumpL1 	; dump a line of bytes
- 		lda 	(ZPtr),y
- 		BR_ALT(32,HexDump1) 	; a<' '?
- 		BR_AGT(127,HexDump1)
- 		jsr 	PutChr 		;printable
- 		bra 	HexDump2
-HexDump1 	; non printable
- 		lda 	#'.'
- 		jsr 	PutChr
-HexDump2 	iny
- 		cpy 	#HEXSZ
- 		bne 	HexDumpL1
- 		jsr 	PrNL
- 		;-- move ZPtr to next line
- 		clc
- 		lda 	#HEXSZ
- 		adc 	ZPtr
- 		sta 	ZPtr
- 		bcc 	HexDumpX
- 		inc 	ZPtr+1
-HexDumpX 	rts
 
-
-;=================================================================== HEX2NIB ==========
-
-;----------------------------------------------- Hex2Nib
-Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
- 		eor 	#'0' 		; Map digits to 0-9
- 		cmp 	#9+1 		; Is it a decimal digit?
- 		bcc 	Hex2Nib9 	; Yes!
- 		adc 	#$08 		; Map letter "A"-"F" to $FA-FF
- 		cmp 	#$7A 		; Hex letter?
- 		bcc 	Hex2NibFPX 	; No! Character not hex
-Hex2Nib9 	sec 			; set carry flag to indicate valid
-Hex2NibFPX 	and 	#$0F
- 		rts 			; carry clear if invalid char
-
-
-;======================================================================================
-Nib2HexTbl
-;    ____ BCD:0______===== BCD:1 ====
-.db "0123456789ABCDEF0123456789+-e.E "
-;   "0123456789ABCDEF0123456789abcdef"
-
-;----------------------------------------------- PrAXHex
-PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
- 		pha 			; save ZTmp
- 		txa 			; get high
- 		jsr 	PrAHex 		; print hi as hex digits
- 		pla 			; restore ZTmp
- 		;-- fall through to print ZTmp as hex digits
-;----------------------------------------------- PrAHex
-PrAHex: ; Print A as Hex digits (send/write) [A]
- 		pha 			;Save A for LSD
- 		lsr 	a
- 		lsr 	a
- 		lsr 	a 		; MSD to LSD position
- 		lsr 	a
- 		jsr 	PrNib 		; Output hex digit
- 		pla 			; Restore A and then
- 		;-- fall through to print hex routine
-;----------------------------------------------- PrNib
-PrNib: ; Convert hex nibble and Print it (preserves XY)
- 		phx 			; save X
- 		and 	#$0F 		; Mask LSD for hex print
- 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
- 		;-- BCD so add 16 for second part of table
- 		clc
- 		adc 	#$10 		; add 16 for BCD part of table
-PrNibX 		tax
- 		lda 	Nib2HexTbl,X 	; Look Up
- 		plx
- 		jmp 	PutChr 		; Write/Send
-
-;======================================================================================
-
-
-;=================================================================== DEC/BCD ==========
-Bin2BCDTbl
-.byte	$63,$31,$15,$07,$03,$01,$00
-
-;----------------------------------------------- PrADec2
-PrADec2: ; Print A as decimal digits 00-99
- 		jsr 	Bin2BCD
- 		jmp 	PrAHex
-
-;----------------------------------------------- PrADec2
-PrADec3: ; Print A as decimal digits 000-255
- 		jsr 	Bin2BCD
- 		pha
- 		txa
- 		jsr 	PrNib 		; hundreds
- 		pla
- 		jmp 	PrAHex 		; Tens,Unit
-
-;----------------------------------------------- Bin2BCD
-Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
- 		sed 			; all adds in decimal mode
- 		sta 	ZTmp 		; save A
- 		lda 	#$00 		; clear A
- 		ldx 	#$07 		; set bit count
-Bin2BCDL 	lsr 	ZTmp 		; bit to carry
- 		bcc 	Bin2BCD1 	; branch if no add
- 		adc 	Bin2BCDTbl-1,X 	; else add BCD value
-Bin2BCD1 	dex 			; decrement bit count
- 		bne 	Bin2BCDL 	; loop if more to do
- 		;-- 3digit {
- 		bcc 	Bin2BCD2 	; branch if no 100's carry
- 		;-- if Cb set here (and can only be set by the
- 		;-- last loop add) then there was a carry into
- 		inx 			; the 100's so add 100's carry to the high byte
-Bin2BCD2 	;-- now check the 2^7 (128) bit
- 		lsr 	ZTmp 		; bit 7 to carry
- 		bcc 	Bin2BCD3 	; branch if no add
- 		inx 			; else effectively add 100 part of 128
- 		adc 	#$27 		; and then add 128 (-1) part of 128
- 		bcc 	Bin2BCD3 	; branch if no further carry
- 		inx 			; else add 200's carry
-Bin2BCD3 	;-- }
- 		sta 	ZTmp 		; save result ZTmp byte
- 		cld 			; clear decimal mode
- 		rts
-
-
- 		;-- ;----------------------------------------------- PrAXHex
- 		;-- PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
-; 		pha 			; save ZTmp
-; 		txa 			; get high
-; 		jsr 	PrAHex 		; print hi as hex digits
-; 		pla 			; restore ZTmp
-; 		;-- fall through to print ZTmp as hex digits
- 		;-- ;----------------------------------------------- PrAHex
- 		;-- PrAHex: ; Print A as Hex digits (send/write) [A]
-; 		pha 			;Save A for LSD
-; 		lsr 	a
-; 		lsr 	a
-; 		lsr 	a 		; MSD to LSD position
-; 		lsr 	a
-; 		jsr 	PrNib 		; Output hex digit
-; 		pla 			; Restore A and then
-; 		;-- fall through to print hex routine
- 		;-- ;----------------------------------------------- PrNib
- 		;-- PrNib: ; Convert hex nibble and Print it (preserves XY)
-; 		phx 			; save X
-; 		and 	#$0F 		; Mask LSD for hex print
-; 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
-; 		;-- BCD so add 16 for second part of table
-; 		clc
-; 		adc 	#$10 		; add 16 for BCD part of table
- 		;-- PrNibX 		tax
-; 		lda 	Nib2HexTbl,X 	; Look Up
-; 		plx
-; 		jmp 	PutChr 		; Write/Send
-
-
-
-;----------------------------------------------- _Print_
-; PSEUDO-CODE
-_Print_: ;Print in-line string
- 		;-- pop the return address from the jsr call
- 		pla
- 		plx
- 		;-- set up to print from there (ZPtr)
- 		SETAX(ZPtr)
-; skip over fisrt byte (end of jsr)
- 		ZINC(ZPtr)
- 		jsr 	PrStr 		; output up to null/term
- 		;-- Calculate the return address
- 		sec 			; adjust one more
- 		lda 	ZPtr 		; lo
- 		adc 	ZTmp 		; + Len
- 		sta 	ZPtr 		; -> lo
- 		bcc 	_PrintFPX 	; carry?
- 		inc 	ZPtr+1 		; yes, incr hi
-_PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
-
-;----------------------------------------------- PrNL
-PrNL: ; print CR,LF to PutChr -> mem/io
- 		lda 	#CR
- 		jsr 	PutChr
- 		lda 	#LF
- 		jmp 	PutChr
 
 .echo "  _ChrStr\t"
 .echo $-_ChrStr

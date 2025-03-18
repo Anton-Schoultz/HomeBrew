@@ -42,9 +42,9 @@
 
 
 TestSrc
-.DB "10  PRINT 12/(3+2)"		; 166687
-					; 136266
-;.DB "10  PRINT (3+2)"
+;.DB "10  PRINT 12/(3+2)"		; 166687
+					; 164434
+.DB "10  PRINT 3*2"
 ;.DB "10 PRINT 12/5"
 
  		;-- .db QT,"xyz",QT
@@ -77,11 +77,11 @@ Reset: ;Reset (Cold start)
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit
+ 		jsr 	NumInit
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
  		CLS()
- 		jsr 	NumInit
 
 ; 		LOAD(12345)
 ; 		jsr 	NumPushA
