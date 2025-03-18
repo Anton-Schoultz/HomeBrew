@@ -42,9 +42,8 @@
 
 
 TestSrc
- 		;-- .DB "10  PRINT 12/(3+2)"		; 166687
- 		;-- 164434
-.DB "10  PRINT -3*2"
+.DB "10  PRINT 12/(3+3)"		; fraction:164546, w
+; .DB "10  PRINT -3*2"
  		;-- .DB "10 PRINT 12/5"
 
  		;-- .db QT,"xyz",QT
