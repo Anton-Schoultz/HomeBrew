@@ -76,7 +76,7 @@ Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
 .org $48
 ;----------------------------------------------- DBug
-Var(DBUGNUM,6)
+Var(DBUGNUM,8)
 
 
 .org $0050

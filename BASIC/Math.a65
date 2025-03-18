@@ -1,6 +1,8 @@
 ;=================================================================== MATH =============
 ;*  NumAdd               NumA = NumB + NumA
-;*  NumCpyA2B            Copy NUM_A to NUM_B  - preserves X,Y
+;*  NumAdj               try to convert (PACKED) NUM_A to integer form with E=0 EXP=$C0/$40
+;*  NumCpyA2B            Copy NUM_A to NUM_B (8bytes) - preserves X,Y
+;*  NumCpyB2A            Copy NUM_B to NUM_A (8bytes)  - preserves X,Y
 ;*  NumCvt               Convert NUM_A(24Bit) to digits in NUM_BUF
 ;*  NumDH                NUM_A = NUM_A / 100 (24bit) remainder in A
 ;*  NumDN                NUM_A = NUM_A / ZDIV (48bit), remainder in A [AXY]
@@ -14,18 +16,19 @@
 ;*  NumMT                NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
 ;*  NumMul               NumA = NumB * NumA
 ;*  NumNegX              2's compliment the mantissa at X
-;*  NumNorm              adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
+;*  NumPack              Pack SGN, EXP back into the number in NUM_A
 ;*  NumParse             -- parse a number from source into NUM_A - destorys NUM_TMP
 ;*  NumPlus              NumB = NumB + NumA
 ;*  NumPopB              Pop Num_B from the calculator stack
 ;*  NumPrep              prepare for Mul/Div by unsigning both
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumSLA               NUM_A shift left by 1 (*2)
-;*  NumSign              Move sign from EXP -> Mantissa
+;*  NumSign              Move sign from Num.EXP -> Num.Mantissa
 ;*  NumSpc               blank leading zeroes
 ;*  NumSub               NumA = NumB - NumA
 ;*  NumSup               removing leading zeroes
-;*  NumUnSign            Move sign from Mantissa -> Exp
+;*  NumUnSign            Move sign from Num.Mantissa -> Num.EXP
+;*  NumUnpack            extract SGN $80/$00 and EXP(2s comp) from NUM_A
 ;*  NumVal               VAL() Get numeric value (NUM_A) from String (STRBUF)
 ;*  NumZeroA             place zero into NUM_A
 ;*  NumZeroB             place zero into NUM_B
@@ -40,19 +43,18 @@
 ; NUM_TMP
 ; NUM_BUF
 
-; SGN/EXP,  Low, High, Upper , ...
-; #define FPX	0
-; #define FPA	1
-; #define FPB	2
-; #define FPC	3
 
 
 #ifdef hide
 .NOLIST
 #endif
 
-; Sxxx.xxxx llll.lllll hhhh.hhhh uuuu.uuuu
- 		;--
+; 'Packed' number format
+; Sxxx.xxxx AA BB CC			xxx = $40 offset exponent
+;
+; 'UnPacked'
+; xxxx.xxxx AA BB CC DD EE FF SGN	xxx = 2's compl exponent
+;
 
 #define LOAD(val) lda #$40\ sta NUM_AX\ lda #LOW(val)\ sta NUM_AA\ lda #HIGH(val)\ sta NUM_AB\ lda #UPPER(val)\ sta NUM_AC\ lda #0\ sta NUM_AD\ sta NUM_AE\ sta NUM_AF
 
@@ -126,7 +128,8 @@ NumParseL 	lda 	CHRGOT 		; term null
  		jsr 	NumDigit
 NumParseAX 	jsr 	GetChr 		; next character
  		bra 	NumParseL
-NumParseX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
+NumParseX 	lda 	#$40
+ 		sta 	NUM_AX
  		rts
 
 ;----------------------------------------------- NumZeroTmp
@@ -211,15 +214,27 @@ NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		pla
  		rts
 ;----------------------------------------------- NumCpyA2B
-NumCpyA2B: ; Copy NUM_A to NUM_B  - preserves X,Y
+NumCpyA2B: ; Copy NUM_A to NUM_B (8bytes) - preserves X,Y
  		phx
- 		ldx 	#6
+ 		ldx 	#7
 NumCpyA2BL 	lda 	NUM_A,x
  		sta 	NUM_B,x
  		dex
  		bpl 	NumCpyA2BL
  		plx
  		rts
+
+;----------------------------------------------- NumCpyB2A
+NumCpyB2A: ; Copy NUM_B to NUM_A (8bytes)  - preserves X,Y
+ 		phx
+ 		ldx 	#7
+NumCpyB2AL 	lda 	NUM_B,x
+ 		sta 	NUM_A,x
+ 		dex
+ 		bpl 	NumCpyB2AL
+ 		plx
+ 		rts
+
 ;----------------------------------------------- NumSLA
 NumSLA: ; NUM_A shift left by 1 (*2)
  		asl 	NUM_AA
@@ -246,14 +261,14 @@ NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
  		rts
 
 ;----------------------------------------------- NumSign
-NumSign: ; Move sign from EXP -> Mantissa
+NumSign: ; Move sign from Num.EXP -> Num.Mantissa
  		lda 	FPX,X 		; sign in EXP byte
  		bpl 	NumNegXX 	; positive so nothing to change
  		and 	#$7F 		; clear sign bit
  		sta 	FPX,X 		; put back in EXP
  		bra 	NumNegX 	; complement mantissa
 ;----------------------------------------------- NumUnSign
-NumUnSign: ; Move sign from Mantissa -> Exp
+NumUnSign: ; Move sign from Num.Mantissa -> Num.EXP
  		lda 	FPX,X 		; sign in EXP byte
  		bmi 	NumNegXX 	; already -ve so leave it alone
  		lda 	FPC,X
@@ -279,6 +294,55 @@ NumNegX: ; 2's compliment the mantissa at X
  		bne 	NumNegXX
  		inc 	FPC,X
 NumNegXX 	rts
+
+;----------------------------------------------- NumUnpack
+NumUnpack: ; extract SGN $80/$00 and EXP(2s comp) from NUM_A
+ 		jsr 	NumUnSign 	; Move sign from Mantissa -> Exp
+ 		lda 	NUM_AX
+ 		and 	#$80
+ 		sta 	NUM_SGN
+ 		lda 	NUM_AX
+ 		and 	#$7F
+ 		sec
+ 		sbc 	#$40
+ 		sta 	NUM_EXP
+ 		rts
+
+;----------------------------------------------- NumPack
+NumPack: ; Pack SGN, EXP back into the number in NUM_A
+ 		lda 	NUM_EXP 	; get exponent
+ 		clc
+ 		adc 	#$40 		; add offset
+ 		and 	#$7F 		; mask it
+ 		ora 	NUM_SGN 	; add sign bit
+ 		sta 	NUM_AX 		; set NUM_AX
+ 		rts
+
+;----------------------------------------------- NumAdj
+NumAdjL 	jsr 	NumPack
+
+NumAdj: ; try to convert (PACKED) NUM_A to integer form with E=0 EXP=$C0/$40
+ 		jsr 	NumCpyA2B 	; save it in B
+ 		jsr 	NumUnpack 	; break it up
+
+ 		lda 	NUM_EXP
+ 		beq 	NumAdjX
+ 		bpl 	NumAdjDwn
+
+NumAdjUp 	; /10 incr E
+ 		jsr 	NumDT 		; try divide by 10
+ 		inc 	NUM_EXP
+ 		cmp 	#0 		; remainder = 0?
+ 		beq 	NumAdjL
+ 		bne 	NumAdjX 	; no more
+
+NumAdjDwn 	; *10 decr E
+ 		jsr 	NumMT 		; *10
+ 		dec 	NUM_EXP 	; X--
+ 		bra 	NumAdjL
+
+NumAdjX 	jsr 	NumCpyB2A 	; get best result
+ 		rts
 
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A(24Bit) to digits in NUM_BUF
@@ -307,7 +371,7 @@ NumCvtL 	;- num/10 remainder as digit
  		lda 	NUM_AX
  		and 	#$7F
  		sec
- 		sbc 	#$40 		; 3C-40= FC (-4)
+ 		sbc 	#$40
  		sta 	NUM_EXP
  		beq 	NumCvtS 	; exp is zero so don't place Exx
  		;-- find first non-zero
@@ -331,6 +395,8 @@ NumCvt2 	sta 	NUM_BUF,X
  		clc
  		adc 	#8
  		sta 	NUM_EXP
+ 		;-- if E00 then suppress it
+ 		beq 	NumCvtS
  		tay
  		;-- append the E
  		ldx 	#NUMSZ-4
@@ -575,47 +641,47 @@ NumMul2 	;shift result right (equivalent to shift B left )
  		;-- 00032A5F38D7 XP    Binary fraction
  		;-- adjust to fit
 
-NumNorm: ; adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
+NumMul3 	; adjust NUM_A so extended bytes are zeroed (/10, incr EXP) set EXP byte
  		;-- check for 100s
  		lda 	NUM_AF
  		ora 	NUM_AE
- 		beq 	NumNorm5 	; no, div10
+ 		beq 	NumMul5 	; no, div10
 
-NumNorm1 	;-- div 100
+NumMul4 	;-- div 100
  		jsr 	NumDH 		; divide by 100
  		inc 	NUM_EXP 	; and bump EXP up
  		inc 	NUM_EXP 	; and bump EXP up
  		;-- round 100
  		cmp 	#50
- 		bmi 	NumNorm 	; < 0.5
+ 		bmi 	NumMul3 	; < 0.5
  		jsr 	NumIncA 	; round up
- 		bra 	NumNorm
+ 		bra 	NumMul3
 
-NumNorm5 	lda 	NUM_AD
- 		beq 	NumNormX
- 		cmp 	#$64		; div by 100 if we can
- 		bmi 	NumNorm1
+NumMul5 	lda 	NUM_AD
+ 		beq 	NumMul7
+ 		cmp 	#$64 		; div by 100 if we can
+ 		bmi 	NumMul4
 
-NumNorm9 	;- check div 10
+NumMul6 	;- check div 10
  		jsr 	NumDT 		; divide by 10
  		inc 	NUM_EXP 	; and bump EXP up
  		;-- half round
  		cmp 	#5
- 		bmi 	NumNorm5 	; < 0.5
+ 		bmi 	NumMul5 	; < 0.5
  		jsr 	NumIncA 	; round up
- 		bra 	NumNorm5
+ 		bra 	NumMul5
 
-NumNormX 	;- check that high byte bit7 is zero
+NumMul7 	;- check that high byte bit7 is zero
  		lda 	NUM_AC
- 		bpl 	NumNormX1 	; ok
+ 		bpl 	NumMulX 	; ok
  		;-- need one more division
  		jsr 	NumDT 		; divide by 10
  		inc 	NUM_EXP 	; and bump EXP up
  		cmp 	#5
- 		bmi 	NumNormX1 	; < 0.5
+ 		bmi 	NumMulX 	; < 0.5
  		jsr 	NumIncA 	; round up
 
-NumNormX1 	;-- make sign only one bit
+NumMulX 	;-- make sign only one bit
  		lda 	NUM_SGN
  		and 	#$80
  		sta 	NUM_SGN
@@ -625,6 +691,8 @@ NumNormX1 	;-- make sign only one bit
  		adc 	#$40 		; exp offset
  		ora 	NUM_SGN 	; get sign bit
  		sta 	NUM_AX
+ 		;--
+ 		jsr 	NumAdj
  		;--
  		RTN_T()
 ;----------------------------------------------- NumIncA
@@ -714,9 +782,9 @@ NumDiv3 	lda 	NUM_AF
  		dec 	NUM_EXP
  		dex
  		bpl 	NumDiv3
-NumDiv7		lda 	NUM_AF
- 		cmp 	#$F8		; f8
- 		bpl 	NumDiv8		; bpl <<<<<<
+NumDiv7 	lda 	NUM_AF
+ 		cmp 	#$F8 		; f8
+ 		bpl 	NumDiv8 	; bpl <<<<<<
  		jsr 	NumMT
  		dec 	NUM_EXP
  		dex
@@ -746,9 +814,9 @@ NumDiv9 	lda 	NUM_AD
  		sta 	NUM_AE
  		sta 	NUM_AF
  		;--
+ 		jsr 	NumAdj
+ 		;--
  		RTN_T()
-
-
 
 
 

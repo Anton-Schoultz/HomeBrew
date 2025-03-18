@@ -13,7 +13,7 @@
 ;*  ListLn               List line pointed to by ZRd
 ;*  NextLine             point ZRd to the next line LN_NXT
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
-;*  PFPAineNo             Parse line numebr and place int TOKBUF
+;*  P_LineNo             Parse line numebr and place int TOKBUF
 ;*  P_Number             parse a number into token & value
 ;*  P_String             parse quoted string into token
 ;*  Parse                Parse INBUF into TOKBUF
@@ -64,7 +64,7 @@ ParseIn: ;Parse from memory into TOKBUF
  		jsr 	IsDigit
  		BR_F(P_Stmnt) 		; not a digit -> Statement?
  		;-- digit - so do line number
- 		jsr 	PFPAineNo
+ 		jsr 	P_LineNo
  		lda 	CHRGOT
 
  		;-- fall through to do parts
@@ -503,8 +503,8 @@ L_String: ; list out string text
 
 ;=================================================================== LINE_NO ==========
 
-;----------------------------------------------- PFPAineNo
-PFPAineNo: ; Parse line numebr and place int TOKBUF
+;----------------------------------------------- P_LineNo
+P_LineNo: ; Parse line number and place int TOKBUF
  		;-- Parse number value into NUM_A
  		jsr 	NumParse
  		;-- Write LineNo token

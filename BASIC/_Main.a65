@@ -40,7 +40,7 @@
 
 
 TestSrc
-.DB "10  PRINT 12/4"
+.DB "10  PRINT 12/(3+2)"
  		;-- .db QT,"xyz",QT
  		;-- .db ",123"
 .db 0
@@ -74,41 +74,37 @@ Warm: ;Warm Start entry point
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
-;	cycles	free
-;	47199 	467
-;       46886	371
-;	46783	385
  		CLS()
  		jsr 	NumInit
 
- 		LOAD(12345)
- 		jsr 	NumPushA
- 		LOAD(12345)
- 		jsr 	NumPopB
-
-; 12345 / 123 => 000064.5DA895	0058 00 95 A8 5D 64 00 00 xx
-; 12345 * 123 => 000000 172B63  0058 40 63 2B 17 00 00 00 xx
-
-; 12345 * 12345 = 152,399,025   0058 42 16 41 17 00 00 00  => 1.523990E8 => 152,399,000
-
- 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
- 		jsr 	HexDump 	; NUM_A(8)
- 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
- 		jsr 	PrNL
-
- 		jsr 	NumDiv
-
- 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
- 		jsr 	HexDump 	; NUM_A(8)
- 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
- 		jsr 	PrNL
-
-
- 		PR_ZSUP_ON()
- 		jsr 	X_PrNum
-
-
- 		HALT()
+; 		LOAD(12345)
+; 		jsr 	NumPushA
+; 		LOAD(12345)
+; 		jsr 	NumPopB
+;
+;; 12345 / 123 => 000064.5DA895	0058 00 95 A8 5D 64 00 00 xx
+;; 12345 * 123 => 000000 172B63  0058 40 63 2B 17 00 00 00 xx
+;
+;; 12345 * 12345 = 152,399,025   0058 42 16 41 17 00 00 00  => 1.523990E8 => 152,399,000
+;
+; 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
+; 		jsr 	HexDump 	; NUM_A(8)
+; 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
+; 		jsr 	PrNL
+;
+; 		jsr 	NumDiv
+;
+; 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
+; 		jsr 	HexDump 	; NUM_A(8)
+; 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
+; 		jsr 	PrNL
+;
+;
+; 		PR_ZSUP_ON()
+; 		jsr 	X_PrNum
+;
+;
+; 		HALT()
 
 
  		LDAX(TestSrc)
@@ -154,7 +150,7 @@ Main: ; MAIN code
  		jsr 	PutChr
  		jsr 	PrNL
 ; 		;--
- 		PR_ZSUP_OFF()
+ 		PR_ZSUP_ON()
 
 ; BREAK(1)
 
