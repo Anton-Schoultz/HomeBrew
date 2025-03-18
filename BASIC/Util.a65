@@ -1,4 +1,6 @@
 ;=================================================================== UTIL ============= 
+;*  UPtrAX               set ZPtr to valkue in AX (lo,hi)
+;*  UPtrAXY              set ZPtr to AX (lo,hi) and set Y to zero
 ;*  UPtrX                Set ZPtr from ZPg[.X]
 ;*
 #ifdef hide
@@ -12,6 +14,15 @@ UPtrX: ; Set ZPtr from ZPg[.X]
  		sta 	ZPtr
  		lda 	1,X
  		sta 	ZPtr+1
+ 		rts
+
+;----------------------------------------------- UPtrAXY 
+UPtrAXY: ; set ZPtr to AX (lo,hi) and set Y to zero
+ 		ldy 	#0
+;----------------------------------------------- UPtrAX 
+UPtrAX: ; set ZPtr to valkue in AX (lo,hi)
+ 		sta 	ZPtr
+ 		stx 	ZPtr+1
  		rts
 
 
