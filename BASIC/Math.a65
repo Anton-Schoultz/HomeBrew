@@ -1,4 +1,4 @@
-;=================================================================== MATH =============
+;=================================================================== MATH ============= 
 ;*  NumAddMan            NumA = NumB + NumA (Mantissa Only)
 ;*  NumAdj               try to convert (UNPACKED) NUM_A to integer form with E=0
 ;*  NumCpyA2B            Copy NUM_A to NUM_B (8bytes) - preserves X,Y
@@ -59,10 +59,10 @@
 
 ; 'Packed' number format
 ; Sxxx.xxxx AA BB CC			xxx = $40 offset exponent
- 		;--
+ 		;-- 
 ; 'UnPacked'
 ; xxxx.xxxx AA BB CC DD EE FF SGN	xxx = 2's compl exponent
- 		;--
+ 		;-- 
 
 #define LOAD(val) lda #$40\ sta NUM_AX\ lda #LOW(val)\ sta NUM_AA\ lda #HIGH(val)\ sta NUM_AB\ lda #UPPER(val)\ sta NUM_AC\ lda #0\ sta NUM_AD\ sta NUM_AE\ sta NUM_AF
 
@@ -72,23 +72,23 @@
 
 
 _Math 		= $
-;----------------------------------------------- NumInit
+;----------------------------------------------- NumInit 
 NumInit: ; Initialise calculator
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
-;----------------------------------------------- NumZeroTmp
+;----------------------------------------------- NumZeroTmp 
 NumZeroTmp: ; place zero into NUM_TMP
  		phx
  		ldx 	#NUM_TMP
  		bra 	NumZeroX
-;----------------------------------------------- NumZeroB
+;----------------------------------------------- NumZeroB 
 NumZeroB: ; place zero into NUM_B
  		phx
  		ldx 	#NUM_B
  		bra 	NumZeroX
-;----------------------------------------------- NumZeroA
+;----------------------------------------------- NumZeroA 
 NumZeroA: ; place zero into NUM_A
  		phx
  		ldx 	#NUM_A
@@ -106,7 +106,7 @@ NumZeroX: ; zero the number at .X (extend version EXP,1,2,3,4,5,6)
  		plx
  		rts
 
-;----------------------------------------------- NumCpyA2B
+;----------------------------------------------- NumCpyA2B 
 NumCpyA2B: ; Copy NUM_A to NUM_B (8bytes) - preserves X,Y
  		phx
  		ldx 	#7
@@ -117,7 +117,7 @@ NumCpyA2BL 	lda 	NUM_A,x
  		plx
  		rts
 
-;----------------------------------------------- NumCpyB2A
+;----------------------------------------------- NumCpyB2A 
 NumCpyB2A: ; Copy NUM_B to NUM_A (8bytes)  - preserves X,Y
  		phx
  		ldx 	#7
@@ -128,10 +128,10 @@ NumCpyB2AL 	lda 	NUM_B,x
  		plx
  		rts
 
-;----------------------------------------------- NumPushA
+;----------------------------------------------- NumPushA 
 NumPushA: ; Push Num_A onto calculator stack
  		ldx 	NUM_SP
- 		;--
+ 		;-- 
  		lda 	NUM_AX
  		sta 	CSTK0,X
  		lda 	NUM_AA
@@ -148,20 +148,20 @@ NumPushA: ; Push Num_A onto calculator stack
  		sta 	CSTK6,X
  		lda 	NUM_AS
  		sta 	CSTK7,X
- 		;--
+ 		;-- 
  		inx
  		txa
  		and 	#CSTKMSK
  		sta 	NUM_SP
  		rts
-;----------------------------------------------- NumPopB
+;----------------------------------------------- NumPopB 
 NumPopB: ; Pop Num_B from the calculator stack
  		dec 	NUM_SP
  		lda 	NUM_SP
  		and 	#CSTKMSK
  		sta 	NUM_SP
  		tax
- 		;--
+ 		;-- 
  		lda 	CSTK0,X
  		sta 	NUM_BX
  		lda 	CSTK1,X
@@ -178,10 +178,10 @@ NumPopB: ; Pop Num_B from the calculator stack
  		sta 	NUM_BF
  		lda 	CSTK7,X
  		sta 	NUM_BS
- 		;--
+ 		;-- 
  		rts
 
-;----------------------------------------------- NumVal
+;----------------------------------------------- NumVal 
 NumVal: ; VAL() Get numeric value (NUM_A) from String (STRBUF)
  		jsr 	NumZeroA
  		ldy 	#255
@@ -196,7 +196,7 @@ NumValAX 	bra 	NumValL 	; next character
 NumValX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
  		rts
 
-;----------------------------------------------- NumParse
+;----------------------------------------------- NumParse 
 NumParse: ;-- parse a number from source into NUM_A - destorys NUM_TMP
  		jsr 	NumZeroA
 NumParseL 	lda 	CHRGOT 		; term null
@@ -211,7 +211,7 @@ NumParseX 	lda 	#$40
  		sta 	NUM_AX
  		rts
 
-;----------------------------------------------- NumDigit
+;----------------------------------------------- NumDigit 
 NumDigit: ; NUM_A = NUM_A * 10 + .A
  		jsr 	NumMT 		; A*=10
  		and 	#$0F
@@ -224,12 +224,12 @@ NumDigit: ; NUM_A = NUM_A * 10 + .A
  		inc 	NUM_AC
 NumDigitX 	rts
 
-;----------------------------------------------- NumDH
+;----------------------------------------------- NumDH 
 NumDH: ; NUM_A = NUM_A / 100 (24bit) remainder in A
  		lda 	#100
  		sta 	ZDIV
  		bra 	NumDN
-;----------------------------------------------- NumDT
+;----------------------------------------------- NumDT 
 NumDT: ; NUM_A = NUM_A / 10 (48Bit), remainder in A
  		phx
  		phy
@@ -255,7 +255,7 @@ NumDTb 		rol 	NUM_AA 		; L 1
  		plx
  		rts
 
-;----------------------------------------------- NumMT
+;----------------------------------------------- NumMT 
 ;NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
 NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		pha
@@ -267,7 +267,7 @@ NumMT: ; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
  		pla
  		rts
 
-;----------------------------------------------- NumSLA
+;----------------------------------------------- NumSLA 
 NumSLA: ; NUM_A shift left by 1 (*2)
  		asl 	NUM_AA
  		rol 	NUM_AB
@@ -277,7 +277,7 @@ NumSLA: ; NUM_A shift left by 1 (*2)
  		rol 	NUM_AF
  		rts
 
-;----------------------------------------------- NumPlus
+;----------------------------------------------- NumPlus 
 NumPlus: ; NumB = NumB + NumA (Used in NumMH)
  		clc
  		lda 	NUM_BA
@@ -300,7 +300,7 @@ NumPlus: ; NumB = NumB + NumA (Used in NumMH)
  		sta 	NUM_BF
  		rts
 
-;----------------------------------------------- NumMH
+;----------------------------------------------- NumMH 
 NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
  		pha
  		jsr 	NumCpyA2B 	; B=n
@@ -315,7 +315,7 @@ NumMH: ; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
  		pla
  		rts
 
-;----------------------------------------------- NumSign
+;----------------------------------------------- NumSign 
 NumSign: ; Move sign from mantissa to SGN byte (for mul/div)
  		lda 	FPS,X 		; sign in EXP byte
  		bpl 	NumNegXX 	; positive so nothing to change
@@ -323,7 +323,7 @@ NumSign: ; Move sign from mantissa to SGN byte (for mul/div)
  		sta 	FPX,X 		; clear sign byte
  		bra 	NumNegX 	; complement mantissa
 
-;----------------------------------------------- NumUnSign
+;----------------------------------------------- NumUnSign 
 NumUnSign: ; Move sign from SGN to mantissa (for add/sub)
  		lda 	FPS,X 		; get sign
  		bmi 	NumNegXX 	; already -ve so leave it alone
@@ -332,7 +332,7 @@ NumUnSign: ; Move sign from SGN to mantissa (for add/sub)
  		lda 	#$80
  		sta 	FPS,X 		; set sign bit in SGN
  		;-- fall through to complement mantissa
-;----------------------------------------------- NumNegX
+;----------------------------------------------- NumNegX 
 NumNegX: ; 2's compliment the mantissa at X (All 6 bytes)
  		lda 	#$FF
  		eor 	FPA,X
@@ -343,7 +343,7 @@ NumNegX: ; 2's compliment the mantissa at X (All 6 bytes)
  		lda 	#$FF
  		eor 	FPC,X
  		sta 	FPC,X
- 		;--
+ 		;-- 
  		lda 	#$FF
  		eor 	FPD,X
  		sta 	FPD,X
@@ -353,38 +353,38 @@ NumNegX: ; 2's compliment the mantissa at X (All 6 bytes)
  		lda 	#$FF
  		eor 	FPF,X
  		sta 	FPF,X
- 		;--
+ 		;-- 
  		inc 	FPA,X
  		bne 	NumNegXX
  		inc 	FPB,X
  		bne 	NumNegXX
  		inc 	FPC,X
- 		;--
+ 		;-- 
  		bne 	NumNegXX
  		inc 	FPD,X
  		bne 	NumNegXX
  		inc 	FPE,X
  		bne 	NumNegXX
  		inc 	FPF,X
- 		;--
+ 		;-- 
 NumNegXX 	rts
 
 
-;----------------------------------------------- NumSaveFP_AX
+;----------------------------------------------- NumSaveFP_AX 
 NumSaveFP_AX: ; Pack & save at address AX
  		sta 	ZPtr
  		stx 	ZPtr+1
  		phy
  		ldy 	#0
  		bra 	NumSaveFP1
-;----------------------------------------------- NumSaveFP
+;----------------------------------------------- NumSaveFP 
 NumSaveFP: ; Pack and Save a FP number at Zpg[X],Y
- 		;--
+ 		;-- 
  		jsr 	UPtrX 		; ZPtr = ZPg[X]
- 		;--
+ 		;-- 
  		phy
 NumSaveFP1 	jsr 	NumPack 	; pack into 4 byte format
- 		;--
+ 		;-- 
  		lda 	NUM_AX
  		sta 	(ZPtr),y
  		iny
@@ -396,16 +396,16 @@ NumSaveFP1 	jsr 	NumPack 	; pack into 4 byte format
  		iny
  		lda 	NUM_AC
  		sta 	(ZPtr),y
- 		;--
+ 		;-- 
  		ply
  		RTN_T()
 
-;----------------------------------------------- NumLoadFP_AX
+;----------------------------------------------- NumLoadFP_AX 
 NumLoadFP_AX: ; Load & unpack Fp number from address AX
  		phy
  		jsr 	UPtrAXY
  		bra 	NumLoadFP1
-;----------------------------------------------- NumLoaFP
+;----------------------------------------------- NumLoaFP 
 NumLoadFP: ; Load a FP number from ZPg[X] at offset Y
  		jsr 	UPtrX 		; ZPtr = ZPg[X]
  		phy
@@ -424,17 +424,17 @@ NumLoadFP1 	lda 	(ZPtr),y
  		ply
  		RTN_T()
 
-;----------------------------------------------- NumSaveInt_AX
+;----------------------------------------------- NumSaveInt_AX 
 NumSaveInt_AX: ; Convert to int and save at AX
  		phy
  		jsr 	UPtrAXY
  		bra 	NumSaveInt1
-;----------------------------------------------- NumSaveInt
+;----------------------------------------------- NumSaveInt 
 NumSaveInt: ; Convert to int (or error) and save at ZPg[X],Y
  		jsr 	UPtrX
- 		;--
+ 		;-- 
  		phy 			; store Y
- 		;--
+ 		;-- 
 NumSaveInt1 	jsr 	NumAdj 		; try to get E=0
  		lda 	NUM_AX
  		bne 	NumSaveIntErr 	; can't get E=0
@@ -444,9 +444,9 @@ NumSaveInt1 	jsr 	NumAdj 		; try to get E=0
  		bmi 	NumSaveInt2 	; treat as if it was U16
  		;-- otherwise as S16
  		jsr 	NumSign 	; get binary as 2's complement
- 		;--
+ 		;-- 
 NumSaveInt2 	ply 			; restore Y
- 		;--
+ 		;-- 
  		lda 	NUM_AA
  		sta 	(ZPtr),y
  		iny
@@ -459,7 +459,7 @@ NumSaveInt2 	ply 			; restore Y
 NumSaveIntErr 	BREAK(1)
 
 
-;----------------------------------------------- NumLoadInt
+;----------------------------------------------- NumLoadInt 
 NumLoadInt: ; Load Integer from ZPg[X],Y
  		jsr 	UPtrX 		; ZPtr = ZPg[X]
  		phy
@@ -469,7 +469,7 @@ NumLoadInt: ; Load Integer from ZPg[X],Y
  		dey
  		lda 	(ZPtr),y 	; get lo
  		;-- fall through to NumSet
-;----------------------------------------------- NumSet
+;----------------------------------------------- NumSet 
 NumSet: ; Set NUM_A to integer value in AX (lo,Hi)
  		sta 	NUM_AA
  		stx 	NUM_AB
@@ -478,14 +478,14 @@ NumSet: ; Set NUM_A to integer value in AX (lo,Hi)
  		lda 	#$40 		; + E0
  		sta 	NUM_AX
  		;-- fall through to Unpack it
-;----------------------------------------------- NumUnpack
+;----------------------------------------------- NumUnpack 
 NumUnpack: ; SX AA BB CC  =>  XX AA BB CC DD EE FF SS
  		lda 	#0
  		sta 	NUM_AD
  		sta 	NUM_AE
  		sta 	NUM_AF
  		sta 	NUM_AS
- 		;--
+ 		;-- 
  		lda 	NUM_AX
  		bpl 	NumUnpack1
  		and 	#$7F 		; mask the neg flag
@@ -495,7 +495,7 @@ NumUnpack1 	sec 			; remove offset
  		sta 	NUM_AX 		; 2s exponent
  		rts
 
-;----------------------------------------------- NumPack
+;----------------------------------------------- NumPack 
 NumPack: ; SX AA BB CC  <=  XX AA BB CC DD EE FF SS
  		lda 	NUM_AX
  		clc
@@ -506,7 +506,7 @@ NumPack: ; SX AA BB CC  <=  XX AA BB CC DD EE FF SS
  		sta 	NUM_AX
  		rts
 
-;----------------------------------------------- NumAdj
+;----------------------------------------------- NumAdj 
 NumAdj: ; try to convert (UNPACKED) NUM_A to integer form with E=0
  		jsr 	NumCpyA2B 	;- save best value so far
  		lda 	NUM_AX
@@ -528,7 +528,7 @@ NumAdjDwn 	; *10 decr E
 NumAdjX 	jsr 	NumCpyB2A 	; get best result
  		rts
 
-;----------------------------------------------- NumCvt
+;----------------------------------------------- NumCvt 
 NumCvt: ; Convert NUM_A(unpacked) to digits in NUM_BUF
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; make mantissa positive
@@ -624,28 +624,28 @@ NumCvtS 	;-- Place sign in NR[0] based on SGN
  		sta 	NUM_BUF 	; place sign at Res[0]
 NumCvtX 	rts
 
-;----------------------------------------------- NumFmt
+;----------------------------------------------- NumFmt 
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
  		BR_ZSUP(NumSup) 	; TMP = NUM_A
  		;-- suppress leading zeroes
  		BR_ZSPC(NumSpc) 	; blank leading zeroes
  		rts
 
-;----------------------------------------------- NumSup
+;----------------------------------------------- NumSup 
 NumSup: ; removing leading zeroes
-		ldx 	#0
-  		ldy 	#0
-  		lda NUM_BUF
-  		cmp #'-'
-  		bne	NumSupL
-  		inx
-  		iny
+ 		ldx 	#0
+ 		ldy 	#0
+ 		lda 	NUM_BUF
+ 		cmp 	#'-'
+ 		bne 	NumSupL
+ 		inx
+ 		iny
 
 NumSupL 	lda 	NUM_BUF,y
  		cmp 	#'0'
  		bne 	NumSupC 	; go copy
  		iny
- 		cpy 	#NUMSZ
+ 		cpy 	#NUMSZ-1
  		bmi 	NumSupL
 
 
@@ -658,22 +658,24 @@ NumSupC 	lda 	NUM_BUF,y
 
 NumSupX 	rts
 
-;----------------------------------------------- NumSpc
+;----------------------------------------------- NumSpc 
 NumSpc: ; blank leading zeroes
- 		ldx 	#NUMSZ 		; size (to null)
- 		dex 			; at least one digit
  		ldy 	#0
+ 		lda 	NUM_BUF
+ 		cmp 	#'-'
+ 		bne 	NumSpcL
+ 		iny
 NumSpcL 	lda 	NUM_BUF,y
  		cmp 	#'0'
  		bne 	NumSpcX 	; go copy
  		lda 	#' '
  		sta 	NUM_BUF,y
  		iny
- 		dex
+ 		cpy 	#NUMSZ-1
  		bne 	NumSpcL
 NumSpcX 	rts
 
-;----------------------------------------------- NumAddMan
+;----------------------------------------------- NumAddMan 
 NumAddMan: ; NumA = NumB + NumA (Mantissa Only)
  		clc
  		lda 	NUM_BA
@@ -696,7 +698,7 @@ NumAddMan: ; NumA = NumB + NumA (Mantissa Only)
  		sta 	NUM_AF
  		RTN_T()
 
-;----------------------------------------------- NumSubMan
+;----------------------------------------------- NumSubMan 
 NumSubMan: ; NumA = NumB - NumA (Mantissa Only)
  		sec
  		lda 	NUM_BA
@@ -719,7 +721,7 @@ NumSubMan: ; NumA = NumB - NumA (Mantissa Only)
  		sta 	NUM_AF
  		RTN_T()
 
-;----------------------------------------------- NumPreMD
+;----------------------------------------------- NumPreMD 
 NumPreMD: ; prepare for Mul/Div by unsigning both
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; Sign Man->Exp
@@ -729,10 +731,10 @@ NumPreMD: ; prepare for Mul/Div by unsigning both
  		lda 	NUM_AS
  		eor 	NUM_BS
  		sta 	NUM_SGN 	; resultant sign
- 		;--
+ 		;-- 
  		rts
 
-;----------------------------------------------- NumMul
+;----------------------------------------------- NumMul 
 NumMul: ; NumA = NumB * NumA (in unpacked form)
  		jsr 	NumPreMD 	; pull signs out (make both pos)
  		;-- result Exp = ExpB+ExpA
@@ -750,22 +752,22 @@ NumMul: ; NumA = NumB * NumA (in unpacked form)
  		lsr 	NUM_AC
  		ror 	NUM_AB
  		ror 	NUM_AA
- 		;--
+ 		;-- 
 NumMul1 	bcc 	NumMul2 	;0 or 1?
  		;-- bit is 1 so add
  		clc
  		lda 	NUM_BA
  		adc 	NUM_AD
  		sta 	NUM_AD
- 		;--
+ 		;-- 
  		lda 	NUM_BB
  		adc 	NUM_AE
  		sta 	NUM_AE
- 		;--
+ 		;-- 
  		lda 	NUM_BC
  		adc 	NUM_AF
  		sta 	NUM_AF
- 		;--
+ 		;-- 
 NumMul2 	;shift result right (equivalent to shift B left )
  		clc
  		ror 	NUM_AF
@@ -828,9 +830,9 @@ NumMulX 	;-- place 2s exp into A
  		lda 	NUM_SGN
  		sta 	NUM_AS
  		jsr 	NumAdj
- 		;--
+ 		;-- 
  		RTN_T()
-;----------------------------------------------- NumIncA
+;----------------------------------------------- NumIncA 
 NumIncA: ; Increment NUM_A
  		inc 	NUM_AA
  		bne 	NumIncAX
@@ -845,7 +847,7 @@ NumIncA: ; Increment NUM_A
  		inc 	NUM_AF
 NumIncAX 	rts
 
-;----------------------------------------------- NumDiv
+;----------------------------------------------- NumDiv 
 NumDiv: ; NumA = NumB / NumA
  		jsr 	NumPreMD 	; pull signs out (make both pos)
  		;-- result Exp = ExpB - ExpA
@@ -861,7 +863,7 @@ NumDiv: ; NumA = NumB / NumA
  		sta 	NUM_TMP+FPA
  		sta 	NUM_TMP+FPB
  		sta 	NUM_TMP+FPC
- 		;--
+ 		;-- 
  		ldx 	#48 		; 48 bit division
 NumDivL 	;-- shift a bit from dividend into temp
  		asl 	NUM_BA
@@ -908,7 +910,7 @@ NumDiv2 	; save result bit
 ; 345 46786
  		;-- now normalise and Pack the result
  		ldx 	#5
- 		;--
+ 		;-- 
 NumDiv3 	lda 	NUM_AF
  		bne 	NumDiv7
  		;-- high is zero so mult by 100 and double decr
@@ -942,7 +944,7 @@ NumDiv9 	lda 	NUM_AD
  		sta 	NUM_AD
  		sta 	NUM_AE
  		sta 	NUM_AF
- 		;--
+ 		;-- 
  		jsr 	NumAdj
  		RTN_T()
 
