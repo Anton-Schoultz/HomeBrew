@@ -1,0 +1,36 @@
+#ifdef hide
+.NOLIST
+#endif
+#if BLD == BLD_CODE
+;=================================================================== CLS ==============
+;*  X_Cls                Execute Cls
+;*
+_Cls 		= $
+
+;----------------------------------------------- X_Cls
+X_Cls: ; Execute Cls
+ 		lda 	#_FF
+ 		jsr 	ConOut
+ 		rts
+
+
+.echo "  _Cls\t\t"
+.echo $-_Cls
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if BLD = BLD_KEYWORD
+.list
+W_Cls 		.DB 	"CL",'S'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if BLD = BLD_TBL_RUN
+.list
+T_Cls 		= LOW($)
+.DW 	X_Cls
+.nolist
+;.export T_Cls
+#endif

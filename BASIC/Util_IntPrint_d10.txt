@@ -1,0 +1,41 @@
+;=================================================================== UTIL_INT ========= 
+; IntParse:; parse an integer
+IntPrint: ; Print integer AX to mem/io via PutChr
+; 65535:2276c, 10000:2246, 1000:1781
+ 		sta 	ZTMP
+ 		stx 	ZTMP+1
+ 		ldy 	#$FF
+ 		phy 			; marker on the stack
+IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
+ 		ora 	#'0'
+ 		pha 			; push the digit
+ 		lda 	ZTMP 		; done?
+ 		ora 	ZTMP+1
+ 		bne 	IntPrint1 	; no- loop
+ 		;-- 
+IntPrint2 	;- now pop & print the digits
+ 		pla
+ 		bmi 	IntPrintX 	; found the marker so exit
+ 		jsr 	PutChr
+ 		bra 	IntPrint2
+IntPrintX 	rts
+
+;----------------------------------------------- IntDT_AX 
+IntDT_AX: ; Divide AX by 10, result in ZTMP, remainder in A
+ 		sta 	ZTMP
+ 		stx 	ZTMP+1
+ 		;-- fall through
+IntDT: ; Divide ZTMP by 10, remainder in A
+ 		ldx 	#16
+ 		lda 	#0
+IntDT_AX1 	asl 	ZTMP
+ 		rol 	ZTMP+1
+ 		rol 	a
+ 		cmp 	#10
+ 		bcc 	IntDT_AX2
+ 		sbc 	#10
+ 		inc 	ZTMP
+IntDT_AX2 	dex
+ 		bne 	IntDT_AX1
+ 		rts
+

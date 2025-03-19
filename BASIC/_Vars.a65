@@ -1,29 +1,30 @@
-;=================================================================== VARIABLES ======== 
+;=================================================================== VARIABLES ========
 ;*
 
-;----------------------------------------------- ZPg Code	$000x 
+;----------------------------------------------- ZPg Code	$000x
 ; ZRd		ChrRd  address to read next char from
 ; ZWr		ChrWr  address to send char to
-;----------------------------------------------- Vectors	$001x 
+;----------------------------------------------- Vectors	$001x
 ; VCHRIN	ChrIn  Read character from input device
 ; VCHROUT 	ChrOut Send character to output device
 ;
-;----------------------------------------------- ZPage		$002x 
+;----------------------------------------------- ZPage		$002x
 ; ZBuf 		pointer to a buffer
 ; ZPtr 		general pointer
 ; ZPrFlg	Print/convert mode  - See ChrStr for details
 ; ZTmp		Temp byte
 
-;----------------------------------------------- STACK		$01xx 
+;----------------------------------------------- STACK		$01xx
 ; Calculator stack at the bottom, CPU stack at the top
-;----------------------------------------------- SysVars	$02xx 
+;----------------------------------------------- SysVars	$02xx
 ; STRBUF	String buffer
 ; TOKBUF	Token buffer
-;----------------------------------------------- IO Dev		$03xx 
+;----------------------------------------------- IO Dev		$03xx
 #ifdef hide
-.NOLIST
+;.NOLIST
 #endif
-;=================================================================== CONSTANTS ======== 
+.list
+;=================================================================== CONSTANTS ========
 
 ; BUFSZ() Size for INBUF,TOKBUF
 #define BUFSZ() 64
@@ -39,8 +40,9 @@
 #define NUMSZ 14
 
 
-;=================================================================== CHRRD, VECTORS === 
+;=================================================================== CHRRD, VECTORS ===
 .org 0
+
 ; $0000 16 bytes for z-pg code
 ZPgCode 	.BLOCK 	16
 
@@ -49,87 +51,72 @@ ZPgCode 	.BLOCK 	16
 ; 8 vectors here
 Int(VCHRIN) 	; Read character from input device (Keyboard, serial..)
 Int(VCHROUT) 	; Send character to output device (Screen, serial..)
-.export VCHROUT,VCHRIN,
 
-
-;=================================================================== ZVARS ============ 
-; Zero page variables, calculator work area etc
+;=================================================================== ZVARS ============
+; Zero page variables
 .org $0020
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
 Int(ZStr) 	; ZStr points to string result
-;----------------------------------------------- Printing (send to mem/io) 
+;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 Short(ZStrLen) 	; length of STRBUF used (write index)
-;----------------------------------------------- Code Lines 
+;----------------------------------------------- Code Lines
 Int(LN_NUM) 	; Line number
 Int(LN_NXT) 	; address of next line
 Short(LNFPAEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
-;----------------------------------------------- Numeric 
-Var(NUM_A,8) 	; 30 Number parsed / Primary accumulator
-Var(NUM_TMP,8) 	; 38 Temp number
-Var(NUM_B,8) 	; 40 Secondary accumulator
 
-Short(NUM_EXP) 	; exponent
-Short(NUM_SGN) 	; sign
-Short(NUM_DEC) 	; decimals counter
-Short(ZDIV) 	; divisor for short division 10/100
-Var(NUM_DIV,4) 	; Scratch divisor
-
-;----------------------------------------------- DBug 
-Var(DBUGNUM,8) 	; 50 debug value
-
-PARAGRAPH()
-Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
-
-;----------------------------------------------- Irq / Nmi 
+;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
+
+;- Numeric common vars
 PARAGRAPH()
-Short(NUM_SP) 	; calculator stack pointer
+Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
+Int(TMP)
 
-.export LN_NUM,LN_NXT
-.export NUM_TMP,NUM_A,NUM_B,NUM_SGN,NUM_DEC,NUM_SP,NUM_EXP
-.export NUM_BUF,DBUGNUM,VARID
 
-PARAGRAPH() 	; 90
-Var(CSTK0,CSTKSZ) ; C0
-Var(CSTK1,CSTKSZ) ; C8
-Var(CSTK2,CSTKSZ) ; D0
-Var(CSTK3,CSTKSZ) ; D8
-Var(CSTK4,CSTKSZ) ; E0
-Var(CSTK5,CSTKSZ) ; E8
-Var(CSTK6,CSTKSZ) ; F0
-Var(CSTK7,CSTKSZ) ; F8-FF
- 		;-- 
-.export CSTK0
-;=================================================================== STACK ============ 
+
+#include "Math.a65"
+
+
+;=================================================================== STACK ============
 ; cpu stack grows down from 01FF..0100
+.org $0100
+
+#include "Math.a65"
 
 
-;=================================================================== SYSVARS ========== 
+;=================================================================== SYSVARS ==========
 .org $0200
-;----------------------------------------------- Basic Editing 
+;----------------------------------------------- Basic Editing
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
-;----------------------------------------------- String 
+;----------------------------------------------- String
 .org $0280
 Var(STRBUF,STRSZ) ; buffer for strings
 
-.export STRBUF,TOKBUF,INBUF
+
+
+
 
 ;======================================================================================
 ; reserved space for memory mapped IO devices
 .org $0300
 
 
-;=================================================================== SIMPLE VARIABLES = 
+;=================================================================== SIMPLE VARIABLES =
 .org $0400
+
 Var(VARTAB,128) ; 32 x 4 bytes vars
+
+.export STRBUF,TOKBUF,INBUF
+;.export VCHROUT,VCHRIN,
+;.export TMP
 
 .LIST 					;-- End of Vars
 

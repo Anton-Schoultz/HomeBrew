@@ -4,15 +4,15 @@
 #endif
 
 #if BLD == BLD_CODE
-;=================================================================== BREAK ============ 
+;=================================================================== BREAK ============
 ;*  X_Break              code to execute the Break
 ;*
 
 _Break 		= $
 
-;----------------------------------------------- X_Break 
+;----------------------------------------------- X_Break
 X_Break: ; code to execute the Break
-
+ 		HALT()
 
 .echo "  _Break\t"
 .echo $-_Break
@@ -20,18 +20,18 @@ X_Break: ; code to execute the Break
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
 W_Break 	.DB 	"BREA",'K'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
 T_Break 	= LOW($)+$80
 .DW 	X_Break
 .nolist
-.export T_Break
+;.export T_Break
 #endif

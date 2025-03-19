@@ -1,6 +1,6 @@
 
 #if BLD == BLD_CODE
-;=================================================================== PRINT =========== 
+;=================================================================== PRINT ===========
 ;*  X_PrNum              convert and print number in NUM_A
 ;*  X_Print              code to execute the Print
 ;*
@@ -16,7 +16,7 @@ _Print 		= $
 #define BR_NNL(tgt) BBR2 ZPrFlg,tgt
 
 
-;----------------------------------------------- X_Print 
+;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
  		jsr 	ChrRd 		; read next char
 X_PrintL 	lda 	CHRGOT
@@ -41,9 +41,6 @@ X_PrPart 	;-- first check for comma / semi-colon
 
 
 X_PrNum: ; convert and print number in NUM_A
- 		;-- 
- 		ZCPY4(DBUGNUM,NUM_A) 	; debug value
- 		;-- 
  		jsr 	NumCvt 		; to string
  		jsr 	NumFmt 		; handle leading zeroes
  		;-- print the string
@@ -68,9 +65,6 @@ X_PrSemi 	;-- Semicolon, no CR/LF
  		jsr 	ChrRd 		; comsume ,/;
  		bra 	X_PrPart
 
-
-.export X_Print
-
 .echo "  _Print\t"
 .echo $-_Print
 .echo "\n"
@@ -78,19 +72,19 @@ X_PrSemi 	;-- Semicolon, no CR/LF
 #endif
 
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
 T_Print 	= LOW($)+$80
 .DW 	X_Print
 .nolist
-.export T_Print
+;.export T_Print
 #endif
 

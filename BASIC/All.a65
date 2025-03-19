@@ -5,6 +5,7 @@
 #include "XPrint.a65"
 #include "XBreak.a65"
 #include "XReturn.a65"
+#include "XCls.a65"
 
 ; functions / operators
 #include "KeyWords.a65"

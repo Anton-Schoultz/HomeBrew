@@ -62,7 +62,7 @@ EvAdd: ; add
  		jsr 	ChrRd 		; comsume the '+'
  		jsr 	Term
  		jsr 	NumPopB
- 		jsr 	NumAddMan
+ 		jsr 	NumAdd
  		RTN_T()
 
 EvSub: ; subtract
@@ -70,7 +70,7 @@ EvSub: ; subtract
  		jsr 	ChrRd 		; consume the '-'
  		jsr 	Term
  		jsr 	NumPopB
- 		jsr 	NumSubMan
+ 		jsr 	NumSub
  		RTN_T()
 
 ; check if CHRGOT is an add op, returns EQ if true
@@ -133,17 +133,9 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 ;----------------------------------------------- ENumLit 
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ; CHRGOT is first char AFTER the stored value
- 		jsr 	ChrRd
- 		sta 	NUM_AX 		; EXP
- 		jsr 	ChrRd
- 		sta 	NUM_AA 		; L
- 		jsr 	ChrRd
- 		sta 	NUM_AB 		; H
- 		jsr 	ChrRd
- 		sta 	NUM_AC 		; U
- 		jsr 	ChrRd
- 		;-- 
- 		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
+ 		;-- fetch number from memory
+ 		jsr 	NumRd
+ 		jsr 	ChrRd 		; move on
  		RTN_T()
 
 ;----------------------------------------------- EvFVar 
@@ -156,17 +148,8 @@ EvFVar: ; retrieve variable value -> NumA
  		asl 	a
  		asl 	a 		; index * 4
  		tax
- 		lda 	VARTAB,X
- 		sta 	NUM_AX
- 		lda 	VARTAB+1,X
- 		sta 	NUM_AA
- 		lda 	VARTAB+2,X
- 		sta 	NUM_AB
- 		lda 	VARTAB+3,X
- 		sta 	NUM_AC
+ 		JSR 	NumGetX 	; retrieve simple variable [X]
  		jsr 	ChrRd 		; get next token into CHRGOT
- 		;-- 
- 		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- EvVarLong 
@@ -174,7 +157,6 @@ EvVarLong: ; Get value of long name variable
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
  		;-- 
- 		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 
@@ -183,7 +165,6 @@ EvFAry: ; retrieve array variable value -> NumA
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
  		;-- 
- 		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- FaBr 

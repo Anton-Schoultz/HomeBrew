@@ -13,8 +13,8 @@ if .%5==. goto notgt
 set tgt=%5
 :notgt
 rem echo tgt=%tgt%
-SET DT=$%DATE:~2,2%,$%DATE:~5,2%,$%DATE:~8,2%
-SET TM=$%TIME:~0,2%,$%TIME:~3,2%,$%TIME:~6,2%
+SET DT=%DATE:~2,2%,%DATE:~5,2%,%DATE:~8,2%
+SET TM=%TIME:~0,2%,%TIME:~3,2%,%TIME:~6,2%
 D:
 cd %1
 rem uz80as [OPTION]...  ASM_FILE [OBJ_FILE [LST_FILE [EXP_FILE]]]

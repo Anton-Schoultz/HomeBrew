@@ -42,8 +42,17 @@
 
 
 TestSrc
-.DB "10  PRINT 12/(3+3)"		; fraction:164546, w
-; .DB "10  PRINT -3*2"
+; .DB "10  PRINT 12/(3+2)"	;  2.4 ok
+; .DB "10  PRINT 12/10+120"	;  1.212e02 =  121.2 ok
+; .DB "10  PRINT 120+12/10"	;  1.212e02 =  121.2 ok
+; .DB "10  PRINT 12/10-120"	; -1.188e02 = -118.8 ok
+; .DB "10  PRINT 120-12/10"     ;  1.188e02 =  118.8 ok
+
+; .db "10 PRINT 1234/1000"	;  1.234 ok
+.db "10 PRINT 12345+1"
+
+; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
+
  		;-- .DB "10 PRINT 12/5"
 
  		;-- .db QT,"xyz",QT
@@ -76,11 +85,14 @@ Reset: ;Reset (Cold start)
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit
- 		jsr 	NumInit
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
  		CLS()
+
+; 		LDAX(1000)
+; 		jsr	IntPrint
+; 		HALT()
 
 ; 		LOAD(12345)
 ; 		jsr 	NumPushA
@@ -112,56 +124,51 @@ Main: ; MAIN code
 ; 		HALT()
 
 
- 		LDAX(TestSrc)
+
+
+MainLoop 	;-- Prompt and input
+
+; 		PR_WR_IO()
+; 		jsr 	PrNL
+; 		lda 	#'>'
+; 		jsr 	ConOut
+; 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+
+		jsr 	CopyLine
+
+ 		;-- clear screen
+ 		CLS()
+
+ 		;-- display input text
+ 		LDAX(INBUF)
  		jsr 	PrStrAX 	; display source line
  		jsr 	PrNL
- 		jsr 	CopyLine
 
-
- 		PR_RD_MEM() 		; read from memory (ZRd)
- 		PR_ECHO_OFF() 		; don't echo it
- 		;-- write to TOKBUF
- 		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
- 		PR_WR_MEM() 		; write to memory
- 		;--
-
- 		nop
- 		nop
- 		;--
+ 		;-- parse input
  		jsr 	Parse 		; Parse INBUF into TOKBUF
  		lda 	#0
  		jsr 	ChrWr 		; end of program
- 		;--
+
  		;-- dump TOKBUF
  		PR_WR_IO()
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
  		jsr 	HexDump 	; dump next 8
  		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		;--
-; 		HEX_DUMP(LN_NUM) 	; LN_NUM, LN_NXT, LNFPAEN, TOKNO, VARID
-; 		jsr 	HexDump 	; dump next 8
- 		;--
- 		PR_ZSUP_ON()
-
- 		;-- List the line in TOKBUF
- 		jsr 	List
-
-
-
 ; 		;--
- 		lda 	#'_'
- 		jsr 	PutChr
- 		jsr 	PrNL
-; 		;--
- 		PR_ZSUP_ON()
- 		PR_ZSPC_OFF()
+; 		PR_ZSUP_ON()
+; 		;-- List the line in TOKBUF
+; 		jsr 	List
+;
+; 		;-- Run
+; 		lda 	#':'
+; 		jsr 	PutChr
+; 		PR_ZSUP_ON()
+;; 		PR_ZSPC_OFF()
+; 		jsr 	Run
 
-; BREAK(1)
-
- 		jsr 	Run
+		;- loop back and do it again
+; 		bra 	MainLoop
 
  		HALT()
 

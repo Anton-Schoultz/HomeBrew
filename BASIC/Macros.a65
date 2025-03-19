@@ -71,15 +71,19 @@
 
 ;----------------------------------------------- Instructions 
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
+
 ; ZZERO(z)	Zero a z-pg z
 #define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
 ;----------------------------------------------- LOW,HIGH,UPPER 
+
 ; LOW(m)	Low byte	0
 #DEFINE LOW(m)  (m & $FF)
+
 ; HIGH(m)	High byte	1
 #DEFINE HIGH(m)  m>>8
+
 ; UPPER(m)	Upper byte	2
 #DEFINE UPPER(m) m>>16
 ;----------------------------------------------- VarDef 
