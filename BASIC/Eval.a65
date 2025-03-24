@@ -1,4 +1,4 @@
-;=================================================================== EVALUATE ========= 
+;=================================================================== EVALUATE =========
 ;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              Fetch number from the code -> NUM_A (unpacked)
 ;*  EvAdd                add
@@ -26,7 +26,7 @@
 
 _Ev 		= $
 
-;----------------------------------------------- EvNumeric 
+;----------------------------------------------- EvNumeric
 EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
  		;-- for now, just one factor
 
@@ -36,7 +36,7 @@ EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next
 
 
 
-;----------------------------------------------- Expression 
+;----------------------------------------------- Expression
 Expression: ;  [ Term ]   ( [+/-] Term)*
  		jsr 	IsAddOp
  		bne 	Exp1
@@ -83,8 +83,8 @@ IsAddOpX 	rts
 
 
 
-;----------------------------------------------- Term 
-Term: ; Factor [ '*'|'/' Factor]*
+;----------------------------------------------- Term
+Term: ; Factor [ '*'|'/'|'%' Factor]*
  		jsr 	Factor
 
 TermL 		jsr 	IsMulOp 	; while IsMulOP
@@ -95,6 +95,7 @@ TermX 		RTN_T()
 
 DoMulOp 	CASE('*',EvMul)
  		CASE('/',EvDiv)
+ 		CASE('%',EvMod)
  		RTN_F()
 
 EvMul: ; Do Multiply
@@ -113,14 +114,24 @@ EvDiv: ; Do Divide
  		jsr 	NumDiv
  		RTN_T()
 
+EvMod:; Do Modulus
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd
+ 		jsr 	Factor
+ 		jsr 	NumPopB
+ 		jsr 	NumMod
+ 		RTN_T()
+
 ; Chekc if CHRGOT is '*' or '/', returns EQ if true
 IsMulOp 	lda 	CHRGOT
  		cmp 	#'*'
  		beq 	IsMulOpX
  		cmp 	#'/'
+ 		beq 	IsMulOpX
+ 		cmp 	#'%'
 IsMulOpX 	rts
 
-;----------------------------------------------- Factor 
+;----------------------------------------------- Factor
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 ; exits with next token in CHRGOT
  		;-- lda CHRGOT
@@ -130,7 +141,7 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar
  		CASE(T_NumLit,ENumLit) 	; Literal value
  		RTN_F()
 
-;----------------------------------------------- ENumLit 
+;----------------------------------------------- ENumLit
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ; CHRGOT is first char AFTER the stored value
  		;-- fetch number from memory
@@ -138,7 +149,7 @@ ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
  		jsr 	ChrRd 		; move on
  		RTN_T()
 
-;----------------------------------------------- EvFVar 
+;----------------------------------------------- EvFVar
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
 ; VARTAB has XX AABBCC format (packed)
@@ -152,22 +163,22 @@ EvFVar: ; retrieve variable value -> NumA
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
-;----------------------------------------------- EvVarLong 
+;----------------------------------------------- EvVarLong
 EvVarLong: ; Get value of long name variable
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
- 		;-- 
+ 		;--
  		RTN_T() 		; got a value
 
 
-;----------------------------------------------- EvFAry 
+;----------------------------------------------- EvFAry
 EvFAry: ; retrieve array variable value -> NumA
 ; TODO
  		jsr 	ChrRd 		; get next token into CHRGOT
- 		;-- 
+ 		;--
  		RTN_T() 		; got a value
 
-;----------------------------------------------- FaBr 
+;----------------------------------------------- FaBr
 EvFBr: ; Bracketed expression
  		jsr 	ChrRd 		; consume the '('
  		jsr 	Expression
@@ -175,7 +186,7 @@ EvFBr: ; Bracketed expression
  		MATCH($29) 		; check for ')'
  		RTN_T() 		; got a value
 
-;----------------------------------------------- Match 
+;----------------------------------------------- Match
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
  		bne 	MatchFail

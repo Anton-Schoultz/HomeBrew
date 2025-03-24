@@ -127,7 +127,7 @@ MainLoop 	;-- Prompt and input
  		;-- ; 		PR_ZSPC_OFF()
 
  		lda 	TOKBUF
-		cmp	#$F0
+		cmp	#T_LineNo
  		beq 	MainLoop
 
 		;LineNo=zero will execute
