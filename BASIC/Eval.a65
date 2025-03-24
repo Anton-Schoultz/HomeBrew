@@ -6,6 +6,7 @@
 ;*  EvFAry               retrieve array variable value -> NumA
 ;*  EvFBr                Bracketed expression
 ;*  EvFVar               retrieve variable value -> NumA
+;*  EvMod                Do Modulus
 ;*  EvMul                Do Multiply
 ;*  EvNumeric            Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
 ;*  EvSub                subtract
@@ -13,7 +14,8 @@
 ;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
-;*  Term                 Factor [ '*'|'/' Factor]*
+;*  Relation             Handle relation test < = > <= <> >=
+;*  Term                 Factor [ '*'|'/'|'%' Factor]*
 ;*m MATCH(ch)            Match a Specific Input String and move on to next token
 ;*
 #ifdef hide
@@ -32,9 +34,87 @@ EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next
 
 ; 		BREAK(1)
 
- 		jmp 	Expression
+ 		jmp 	Relation
 
 
+
+
+
+;----------------------------------------------- Relation
+Relation: ; Handle relation test < = > <= <> >=
+ 		jsr 	Expression
+ 		jsr 	IsRelOp
+ 		bne 	RelationX
+ 		;--
+ 		pha 			; save the relop on stack
+ 		;--
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd 		; consume op
+ 		;--
+ 		jsr 	Expression 	; get second expression
+ 		jsr 	NumPopB 	;
+ 		jsr 	NumSub 		; subtract
+ 		jsr 	NumFlag 	; set flags bassed on result
+ 		;-- test condition
+ 		pla 			; recal the rel-op
+
+ 		;-- LT
+ 		ldx 	#NUM_FLG_LT
+ 		cmp 	#T_LT
+ 		beq 	RelTest
+ 		;-- LE
+ 		ldx 	#NUM_FLG_LE
+ 		cmp 	#T_LE
+ 		beq 	RelTest
+ 		;-- NE
+ 		ldx 	#NUM_FLG_NE
+ 		cmp 	#T_NE
+ 		beq 	RelTest
+ 		;-- EQ
+ 		ldx 	#NUM_FLG_EQ
+ 		cmp 	#T_EQ
+ 		beq 	RelTest
+ 		;-- GE
+ 		ldx 	#NUM_FLG_GE
+ 		cmp 	#T_GE
+ 		beq 	RelTest
+ 		;-- GT
+ 		ldx 	#NUM_FLG_GT
+ 		cmp 	#T_GT
+ 		beq 	RelTest
+		;
+		RTN_F()
+
+RelTest 	; test the condition in X
+ 		txa
+ 		and 	NUM_FLG
+ 		beq 	RelFalse
+ 		;-- set NUMA to one
+ 		jsr 	NumOneA
+ 		RTN_T()
+RelFalse 	; set NUMA to zero
+ 		jsr 	NumZeroA
+RelationX 	RTN_T()
+
+
+
+
+; return eq if op is one of  <,=,>,<=,<>,>=
+IsRelOp 	lda 	CHRGOT
+ 		cmp 	#'='
+ 		beq 	IsRelOpX
+ 		cmp 	#'<'
+ 		beq 	IsRelOpX
+ 		cmp 	#'>'
+ 		beq 	IsRelOpX
+ 		;--
+ 		cmp 	#T_LE
+ 		beq 	IsRelOpX
+ 		cmp 	#T_NE
+ 		beq 	IsRelOpX
+ 		cmp 	#T_GE
+ 		;--
+IsRelOpX 	rts
 
 ;----------------------------------------------- Expression
 Expression: ;  [ Term ]   ( [+/-] Term)*
@@ -81,8 +161,6 @@ IsAddOp 	lda 	CHRGOT
 IsAddOpX 	rts
 
 
-
-
 ;----------------------------------------------- Term
 Term: ; Factor [ '*'|'/'|'%' Factor]*
  		jsr 	Factor
@@ -114,7 +192,7 @@ EvDiv: ; Do Divide
  		jsr 	NumDiv
  		RTN_T()
 
-EvMod:; Do Modulus
+EvMod: ; Do Modulus
  		jsr 	NumPushA
  		jsr 	ChrRd
  		jsr 	Factor
@@ -159,7 +237,7 @@ EvFVar: ; retrieve variable value -> NumA
  		asl 	a
  		asl 	a 		; index * 4
  		tax
- 		JSR 	NumGetX 	; retrieve simple variable [X]
+ 		jsr 	NumGetX 	; retrieve simple variable [X]
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 

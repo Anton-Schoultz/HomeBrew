@@ -199,16 +199,13 @@ IsDigit: ; returns T/F if .A is a digit 0..9
  		BR_AGE('9'+1,RtnFalse)
  		RTN_T()
 
-;----------------------------------------------- IsRelOp
-IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=
- 		lda 	CHRGOT
- 		BR_AEQ('<',RtnTrue) 	; 3c
- 		BR_AEQ('=',RtnTrue) 	; 3d
- 		BR_AEQ('>',RtnTrue) 	; 3e
- 		RTN_F()
-
-
-
+;;----------------------------------------------- IsRelOp
+;IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=
+; 		lda 	CHRGOT
+; 		BR_AEQ('<',RtnTrue) 	; 3c
+; 		BR_AEQ('=',RtnTrue) 	; 3d
+; 		BR_AEQ('>',RtnTrue) 	; 3e
+; 		RTN_F()
 
 ;----------------------------------------------- OneOf
 ; OneOf: ; see if CHRGOT is one of char in ChkList starting at X
