@@ -74,7 +74,7 @@ IntPrintZX: ; copy ZPg[x] to TMP and print it
  		bra 	IntPrintTMP
 
 ;----------------------------------------------- IntPrint
-IntPrint: ; Print integer AX to mem/io via PutChr
+IntPrint: ; Print integer (U16) AX to mem/io via PutChr
 ; 65535:2276c, 10000:2246, 1000:1781 - div 10 method
  		sta 	TMP
  		stx 	TMP+1
@@ -116,18 +116,14 @@ IntDH_AX2 	dex
 
 
 ;----------------------------------------------- IntParse
-IntParse: ; Parse Integer from source (GetChr) to TMP  (returns value in AX)
+IntParse: ; Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
+; DO NOT PARSE '-'
  		lda 	#0
  		sta 	TMP
  		sta 	TMP+1
  		sta 	NUM_SGN 	; +ve
 IntParseL 	lda 	CHRGOT 		; term null
  		beq 	IntParseX
- 		cmp 	#'-'
- 		bne 	IntParse1
- 		dec 	NUM_SGN 	; make sign negative
- 		jsr	GetChr		; consume the '-'
-
 IntParse1 	jsr 	IsDigit 	; messes with A
  		BR_F(IntParseX) 	; no more digits
  		and 	#$0F 		; convert digit to value
@@ -139,9 +135,7 @@ IntParse1 	jsr 	IsDigit 	; messes with A
  		inc 	TMP+1
 IntParseAX 	jsr 	GetChr 		; next character
  		bra 	IntParseL
-
-IntParseX
-	 	lda 	TMP
+IntParseX 	lda 	TMP
  		ldx 	TMP+1
  		rts
 

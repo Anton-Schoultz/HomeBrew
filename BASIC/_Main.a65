@@ -83,127 +83,63 @@ Reset: ;Reset (Cold start)
 ;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
- 		jsr 	ChrInit
+ 		jsr 	ChrInit 	; set up mem rd
+ 		jsr 	NumInit 	; init calc stack pointer
 
 ;----------------------------------------------- Main
 Main: ; MAIN code
  		CLS()
 
-
- 		PR_RD_MEM() 		; divert GetChr to ChrRd
- 		ZSET(ZRd,Str1234-1)
- 		jsr 	GetChr 		; get first char into CHRGOT
- 		jsr 	NumParse
- 		HEX_DUMP(NUM_A)		; 1234
-		jsr	NumPushA
-
-
- 		ZSET(ZRd,StrNeg123-1)
- 		jsr 	GetChr 		; get first char into CHRGOT
- 		jsr 	NumParse
- 		HEX_DUMP(NUM_A)		; -123
-
-		jsr	NumPopB
-
-		jsr PrNL
- 		HEX_DUMP(NUM_A)		; -123	FF7B00
- 		HEX_DUMP(NUM_B)		; 1234  00D204
-		jsr PrNL
-
-
-;		jsr	NumAdd		; 1234 + (-123) = 1111
-;		jsr	NumSub		; 1234 - (-123) = 1357
-
-;		jsr	NumMul		; 1234 * (-12) = -14 808
-;		jsr	NumDiv		; 1234 / (-12) = -102  r 10
-		jsr	NumMod		; 1234 / (-12) = -102  r 10
-
-
- 		HEX_DUMP(NUM_A)
- 		HEX_DUMP(NUM_TMP)
-
-		PR_ZSUP_ON()
- 		jsr 	NumPrint
-
-
-; 		jsr	IntPrint
-; 		HALT()
-
-; 		LOAD(12345)
-; 		jsr 	NumPushA
-; 		LOAD(12345)
-; 		jsr 	NumPopB
- 		;--
- 		;-- ; 12345 / 123 => 000064.5DA895	0058 00 95 A8 5D 64 00 00 xx
- 		;-- ; 12345 * 123 => 000000 172B63  0058 40 63 2B 17 00 00 00 xx
- 		;--
- 		;-- ; 12345 * 12345 = 152,399,025   0058 42 16 41 17 00 00 00  => 1.523990E8 => 152,399,000
- 		;--
-; 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
-; 		jsr 	HexDump 	; NUM_A(8)
-; 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
-; 		jsr 	PrNL
- 		;--
-; 		jsr 	NumDiv
- 		;--
-; 		HEX_DUMP(NUM_B) 	; NUMB(4) NUM_TMP(4)
-; 		jsr 	HexDump 	; NUM_A(8)
-; 		jsr 	HexDump 	; NUM_DIV(4),EXP,SGN,DEC,ZDIV
-; 		jsr 	PrNL
- 		;--
- 		;--
-; 		PR_ZSUP_ON()
-; 		jsr 	X_PrNum
- 		;--
- 		;--
-; 		HALT()
-
-
-
-
 MainLoop 	;-- Prompt and input
 
-; 		PR_WR_IO()
-; 		jsr 	PrNL
-; 		lda 	#'>'
-; 		jsr 	ConOut
-; 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+ 		PR_WR_IO()
+ 		jsr 	PrNL
+ 		lda 	#'>'
+ 		jsr 	ConOut
+ 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		;--
 ; 		jsr 	CopyLine
  		;--
-; 		;-- clear screen
-; 		CLS()
+ 		;-- clear screen
+ 		CLS()
  		;--
-; 		;-- display input text
-; 		LDAX(INBUF)
-; 		jsr 	PrStrAX 	; display source line
-; 		jsr 	PrNL
+ 		;-- display input text
+ 		LDAX(INBUF)
+ 		jsr 	PrStrAX 	; display source line
+ 		jsr 	PrNL
  		;--
-; 		;-- parse input
-; 		jsr 	Parse 		; Parse INBUF into TOKBUF
-; 		lda 	#0
-; 		jsr 	ChrWr 		; end of program
+ 		;-- parse input
+ 		jsr 	Parse 		; Parse INBUF into TOKBUF
+ 		lda 	#0
+ 		jsr 	ChrWr 		; end of program
  		;--
-; 		;-- dump TOKBUF
-; 		PR_WR_IO()
-; 		HEX_DUMP(TOKBUF) 	; dump 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		;--
-; 		PR_ZSUP_ON()
-; 		;-- List the line in TOKBUF
-; 		jsr 	List
+ 		;-- dump TOKBUF
+ 		PR_WR_IO()
+ 		HEX_DUMP(TOKBUF) 	; dump 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
  		;--
-; 		;-- Run
-; 		lda 	#':'
-; 		jsr 	PutChr
-; 		PR_ZSUP_ON()
+ 		PR_ZSUP_ON()
+ 		;-- List the line in TOKBUF
+ 		jsr 	List
+ 		;--
  		;-- ; 		PR_ZSPC_OFF()
-; 		jsr 	Run
+
+ 		lda 	TOKBUF
+		cmp	#$F0
+ 		beq 	MainLoop
+
+		;LineNo=zero will execute
+
+ 		;-- Run
+ 		lda 	#':'
+ 		jsr 	PutChr
+ 		PR_ZSPC_ON()
+ 		jsr 	Run
 
  		;-- loop back and do it again
-; 		bra 	MainLoop
+ 		bra 	MainLoop
 
  		HALT()
 
