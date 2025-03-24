@@ -34,7 +34,7 @@
 
 
 #if 1
-#include "Math_DI.a65"
+#include "Math_S16.a65"
 #else
 
 ;----------------------------------------------- Dummy{
@@ -52,7 +52,7 @@ NumInit 	; Tok.RunLn - when running a line of code
 NumParse 	; Tok.P_Number : parse literal number -> NUM_A (follow by NumWr)
 
 NumCvt 		; X_PrNum to display value
-NumPrint 	; L_Number to list number (fromP_Number)
+NumPrint 	; L_Number to list number (from P_Number)
 
 NumAdd 		; Eval Add
 NumSub 		; Eval Subtract

@@ -1,14 +1,16 @@
 ;=================================================================== UTIL =============
 ;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;*  DivA10               Divide .A by 10
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump              hex dump memory (ZPtr) to output io/mem
 ;*  IntAXx10             AX * 10 -> AX (uses TMP)
 ;*  IntDH                Divide ZTMP by 10, remainder in A (trash X)
 ;*  IntDH_AX             Divide AX by 10, result in ZTMP, remainder in A
 ;*  IntDT                Divide TMP by 10, remainder in A
-;*  IntDT_AX             Divide AX by 10, result in ZTMP, remainder in A
-;*  IntParse             Parse Integer from source to TMP and write to io/mem
+;*  IntDT_AX             Divide AX by 10, result in TMP, remainder in A
+;*  IntParse             Parse Integer from source to TMP (returns value in AX)
 ;*  IntPrint             Print integer AX to mem/io via PutChr
+;*  IntPrintZX           copy ZPg[x] to TMP and print it
 ;*  IntTmpMT             TMP = TMP * 10 (preserves AXY)
 ;*  PrADec2              Print A as decimal digits 00-99
 ;*  PrADec3              Print A as decimal digits 000-255
@@ -28,6 +30,13 @@
 
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
+
+; SGN,  A:Low, B:High, C:Upper
+#define FPS	0
+#define FPA	1
+#define FPB	2
+#define FPC	3
+#define FPD	4
 
 
 _Util 		= $
@@ -56,12 +65,20 @@ _Util 		= $
 ;   		bra 	IntPrint2
 ;  IntPrintX 	rts
 
+;----------------------------------------------- IntPrintX
+IntPrintZX: ; copy ZPg[x] to TMP and print it
+ 		lda 	0,X
+ 		sta 	TMP
+ 		lda 	0,X
+ 		sta 	TMP+1
+ 		bra 	IntPrintTMP
+
 ;----------------------------------------------- IntPrint
 IntPrint: ; Print integer AX to mem/io via PutChr
 ; 65535:2276c, 10000:2246, 1000:1781 - div 10 method
  		sta 	TMP
  		stx 	TMP+1
- 		ldy 	#$FF
+IntPrintTMP 	ldy 	#$FF
  		phy 			; marker on the stack
 IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
  		ora 	#'0'
@@ -99,13 +116,19 @@ IntDH_AX2 	dex
 
 
 ;----------------------------------------------- IntParse
-IntParse: ; Parse Integer from source to TMP and write to io/mem
+IntParse: ; Parse Integer from source (GetChr) to TMP  (returns value in AX)
  		lda 	#0
  		sta 	TMP
  		sta 	TMP+1
+ 		sta 	NUM_SGN 	; +ve
 IntParseL 	lda 	CHRGOT 		; term null
  		beq 	IntParseX
- 		jsr 	IsDigit 	; messes with A
+ 		cmp 	#'-'
+ 		bne 	IntParse1
+ 		dec 	NUM_SGN 	; make sign negative
+ 		jsr	GetChr		; consume the '-'
+
+IntParse1 	jsr 	IsDigit 	; messes with A
  		BR_F(IntParseX) 	; no more digits
  		and 	#$0F 		; convert digit to value
  		jsr 	IntTmpMT 	; TMP *= 10
@@ -116,7 +139,11 @@ IntParseL 	lda 	CHRGOT 		; term null
  		inc 	TMP+1
 IntParseAX 	jsr 	GetChr 		; next character
  		bra 	IntParseL
-IntParseX 	rts
+
+IntParseX
+	 	lda 	TMP
+ 		ldx 	TMP+1
+ 		rts
 
 
 ;----------------------------------------------- IntAXx10
@@ -158,7 +185,7 @@ IntTmpMT: ; TMP = TMP * 10 (preserves AXY)
 
 
 ;----------------------------------------------- IntDT_AX
-IntDT_AX: ; Divide AX by 10, result in ZTMP, remainder in A
+IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
  		sta 	TMP
  		stx 	TMP+1
  		;-- fall through
@@ -378,6 +405,25 @@ Bin2BCD3
  		sta 	ZTmp 		; save result ZTmp byte
  		cld 			; clear decimal mode
  		rts
+
+;----------------------------------------------- DivA10
+DivA10: ;Divide .A by 10
+ 		;-- 17 bytes, 30 cycles
+ 		lsr 	a
+ 		sta 	ZTmp
+ 		lsr 	a
+ 		adc 	ZTmp
+ 		ror 	a
+ 		lsr 	a
+ 		lsr 	a
+ 		adc 	ZTmp
+ 		ror 	a
+ 		adc 	ZTmp
+ 		ror 	a
+ 		lsr 	a
+ 		lsr 	a
+ 		rts
+
 
 
 .echo "  _Util\t\t"

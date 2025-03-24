@@ -49,7 +49,7 @@ TestSrc
 ; .DB "10  PRINT 120-12/10"     ;  1.188e02 =  118.8 ok
 
 ; .db "10 PRINT 1234/1000"	;  1.234 ok
-.db "10 PRINT 12345+1"
+.db "10 PRINT 1234+1"
 
 ; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
 
@@ -58,11 +58,10 @@ TestSrc
  		;-- .db QT,"xyz",QT
  		;-- .db ",123"
 .db 0
- 		;-- ex  L   H   U
-NUMBER_12 	.DB 	$00,$0C,$00,$00
-NUMBER_4 	.DB 	$00,$04,$00,$00
 
 
+Str1234 	.DB 	"1234",0
+StrNeg123 	.DB 	"-123",0
 
  		;-- .DB "PRINT 1234,456,9,"
  		;-- .db QT,"Hi",QT
@@ -90,7 +89,36 @@ Warm: ;Warm Start entry point
 Main: ; MAIN code
  		CLS()
 
-; 		LDAX(1000)
+
+ 		PR_RD_MEM() 		; divert GetChr to ChrRd
+ 		ZSET(ZRd,Str1234-1)
+ 		jsr 	GetChr 		; get first char into CHRGOT
+ 		jsr 	NumParse
+ 		HEX_DUMP(NUM_A)		; 1234
+		jsr	NumPushA
+
+
+ 		ZSET(ZRd,StrNeg123-1)
+ 		jsr 	GetChr 		; get first char into CHRGOT
+ 		jsr 	NumParse
+ 		HEX_DUMP(NUM_A)		; -123
+
+		jsr	NumPopB
+
+		jsr PrNL
+ 		HEX_DUMP(NUM_A)		; -123	FF7B00
+ 		HEX_DUMP(NUM_B)		; 1234  00D204
+		jsr PrNL
+
+
+;		jsr	NumAdd		; 1234 + (-123) = 1111
+		jsr	NumSub		; 1234 - (-123) = 1357
+
+
+		PR_ZSUP_ON()
+ 		jsr 	NumPrint
+
+
 ; 		jsr	IntPrint
 ; 		HALT()
 
@@ -133,41 +161,41 @@ MainLoop 	;-- Prompt and input
 ; 		lda 	#'>'
 ; 		jsr 	ConOut
 ; 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
-
-		jsr 	CopyLine
-
- 		;-- clear screen
- 		CLS()
-
- 		;-- display input text
- 		LDAX(INBUF)
- 		jsr 	PrStrAX 	; display source line
- 		jsr 	PrNL
-
- 		;-- parse input
- 		jsr 	Parse 		; Parse INBUF into TOKBUF
- 		lda 	#0
- 		jsr 	ChrWr 		; end of program
-
- 		;-- dump TOKBUF
- 		PR_WR_IO()
- 		HEX_DUMP(TOKBUF) 	; dump 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
+ 		;--
+; 		jsr 	CopyLine
+ 		;--
+; 		;-- clear screen
+; 		CLS()
+ 		;--
+; 		;-- display input text
+; 		LDAX(INBUF)
+; 		jsr 	PrStrAX 	; display source line
+; 		jsr 	PrNL
+ 		;--
+; 		;-- parse input
+; 		jsr 	Parse 		; Parse INBUF into TOKBUF
+; 		lda 	#0
+; 		jsr 	ChrWr 		; end of program
+ 		;--
+; 		;-- dump TOKBUF
+; 		PR_WR_IO()
+; 		HEX_DUMP(TOKBUF) 	; dump 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
 ; 		;--
 ; 		PR_ZSUP_ON()
 ; 		;-- List the line in TOKBUF
 ; 		jsr 	List
-;
+ 		;--
 ; 		;-- Run
 ; 		lda 	#':'
 ; 		jsr 	PutChr
 ; 		PR_ZSUP_ON()
-;; 		PR_ZSPC_OFF()
+ 		;-- ; 		PR_ZSPC_OFF()
 ; 		jsr 	Run
 
-		;- loop back and do it again
+ 		;-- loop back and do it again
 ; 		bra 	MainLoop
 
  		HALT()

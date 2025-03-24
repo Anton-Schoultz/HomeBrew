@@ -21,7 +21,7 @@
 ; TOKBUF	Token buffer
 ;----------------------------------------------- IO Dev		$03xx
 #ifdef hide
-;.NOLIST
+ 		;-- .NOLIST
 #endif
 .list
 ;=================================================================== CONSTANTS ========
@@ -30,14 +30,9 @@
 #define BUFSZ() 64
 ; STRSZ Size for STRBUF
 #define STRSZ 128
-; calculator stack depth & mask
-#define CSTKSZ 8
-#define CSTKMSK 7
 
 ; bytes per line of Hex Dump
 #define HEXSZ 8
-; digits to convert including null at the end -> NUM_BUF
-#define NUMSZ 14
 
 
 ;=================================================================== CHRRD, VECTORS ===
@@ -74,21 +69,17 @@ Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 Int(Z_IrqPtr) 	; used in IRQ code
 
 
-;- Numeric common vars
+;----------------------------------------------- Numeric common vars
 PARAGRAPH()
-Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
 Int(TMP)
 
-
-
-#include "Math.a65"
-
+#include "Math.a65" 			; Math module ZeroPage
 
 ;=================================================================== STACK ============
 ; cpu stack grows down from 01FF..0100
 .org $0100
 
-#include "Math.a65"
+#include "Math.a65" 			; Math module Page 1
 
 
 ;=================================================================== SYSVARS ==========
@@ -115,8 +106,8 @@ Var(STRBUF,STRSZ) ; buffer for strings
 Var(VARTAB,128) ; 32 x 4 bytes vars
 
 .export STRBUF,TOKBUF,INBUF
-;.export VCHROUT,VCHRIN,
-;.export TMP
+ 		;-- .export VCHROUT,VCHRIN,
+ 		;-- .export TMP
 
 .LIST 					;-- End of Vars
 
