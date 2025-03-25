@@ -1,4 +1,7 @@
 ;=================================================================== EVALUATE =========
+;*  BoolOr               OR
+;*  BoolTerm             Boolean AND
+;*  BoolXor              XOR
 ;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              Fetch number from the code -> NUM_A (unpacked)
 ;*  EvAdd                add
@@ -14,6 +17,7 @@
 ;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
+;*  NotFactor            Boolean NOT
 ;*  Relation             Handle relation test < = > <= <> >=
 ;*  Term                 Factor [ '*'|'/'|'%' Factor]*
 ;*m MATCH(ch)            Match a Specific Input String and move on to next token
@@ -30,18 +34,76 @@ _Ev 		= $
 
 ;----------------------------------------------- EvNumeric
 EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
- 		;-- for now, just one factor
+ 		jsr 	BoolTerm
+EvNumL 		jsr 	IsOrOp
+ 		bne 	EvNumX
+ 		;--
+ 		jsr 	NumPushA
+ 		jsr 	DoOrOp
+ 		bra 	EvNumL
+ 		;--
+EvNumX 		RTN_T()
 
-; 		BREAK(1)
+;----------------------------------------------- DoOrOp
+DoOrOp 		lda 	CHRGOT
+		CASE(T_OR,BoolOr)
+ 		CASE(T_XOR,BoolXor)
+ 		RTN_F()
 
- 		jmp 	Relation
+;----------------------------------------------- IsOrOp
+IsOrOp 		; return EQ if 'OR' / 'XOR'
+ 		lda 	CHRGOT
+ 		cmp 	#T_OR
+ 		beq 	IsOrOpX
+ 		cmp 	#T_XOR
+IsOrOpX 	rts
 
+;----------------------------------------------- BoolOr
+BoolOr: ; OR
+ 		jsr 	ChrRd
+ 		jsr 	BoolTerm
+ 		jsr	NumPopB
+ 		jsr 	NumOr
 
+ 		lda 	CHRGOT
+ 		jsr 	ChrRd
 
-BoolTerm	jmp	Relation
+ 		RTN_T()
 
+;----------------------------------------------- BoolXor
+BoolXor: ; XOR
+ 		jsr 	ChrRd
+ 		jsr 	BoolTerm
+ 		jsr 	NumXor
+ 		lda 	CHRGOT
+ 		RTN_T()
 
+;----------------------------------------------- BoolTerm
+BoolTerm: ; Boolean AND
+ 		jsr 	NotFactor
+BoolTermL 	lda 	CHRGOT
+ 		cmp 	#T_AND
+ 		bne 	BoolTermX
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd
+ 		jsr 	NotFactor
+ 		jsr 	NumPopB
+ 		jsr 	NumAnd
+ 		bra 	BoolTermL
+BoolTermX 	RTN_T()
 
+;----------------------------------------------- NotFactor
+NotFactor: ; Boolean NOT
+ 		lda 	CHRGOT
+ 		cmp 	#T_NOT
+ 		bne 	Relation
+ 		;--
+ 		jsr 	ChrRd 		; consume NOT
+ 		jsr 	Relation
+ 		;-- negate realtion result 0<->1
+ 		jsr 	NumNot
+ 		lda 	CHRGOT
+ 		RTN_T()
 
 ;----------------------------------------------- Relation
 Relation: ; Handle relation test < = > <= <> >=
@@ -49,7 +111,7 @@ Relation: ; Handle relation test < = > <= <> >=
  		jsr 	IsRelOp
  		bne 	RelationX
  		;--
- 		lda CHRGOT		; fetch the token again
+ 		lda 	CHRGOT 		; fetch the token again
  		pha 			; save the relop on stack
  		;--
  		jsr 	NumPushA
@@ -61,20 +123,20 @@ Relation: ; Handle relation test < = > <= <> >=
  		jsr 	NumFlag 	; set flags bassed on result
  		;-- test condition
  		pla 			; recal the rel-op
- 		and	NUM_FLG		; and with the flag
- 		and #$7			; opcode low bits match NUM_FLG
- 		beq RelFalse		; zero is false
+ 		and 	NUM_FLG 	; and with the flag
+ 		and 	#$7 		; opcode low bits match NUM_FLG
+ 		beq 	RelFalse 	; zero is false
  		;-- non-zero means true
- 		jsr 	NumOneA		; TRUE = 1
+ 		jsr 	NumTrue 	; TRUE = FFFF
  		RTN_T()
 RelFalse 	; set NUMA to zero
- 		jsr 	NumZeroA	; FALSE = 0
+ 		jsr 	NumFalse 	; FALSE = 0
 RelationX 	RTN_T()
 
 ; return eq if op is one of  <,=,>,<=,<>,>=
-IsRelOp 	and #$F8
-		cmp #$F0
-	 	rts
+IsRelOp 	and 	#$F8
+ 		cmp 	#$F0
+ 		rts
 
 ;----------------------------------------------- Expression
 Expression: ;  [ Term ]   ( [+/-] Term)*
