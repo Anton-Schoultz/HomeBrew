@@ -20,13 +20,6 @@ X_Nop: ; NO Op
 ;----------------------------------------------- keyword
 #if BLD = BLD_KEYWORD
 .list
-W_LE 		.DB 	"<",'='+$80
-W_NE 		.DB 	"<",'>'+$80
-W_GE 		.DB 	">",'='+$80
-
-W_LT 		.DB 	'<'+$80
-W_EQ 		.DB 	'='+$80
-W_GT 		.DB 	'>'+$80
 
 
 W_AND 		.DB 	"AN",'D'+$80
@@ -40,15 +33,6 @@ W_NOT 		.DB 	"NO",'T'+$80
 ;----------------------------------------------- run
 #if BLD = BLD_TBL_RUN
 .list
-
-T_LE 		= LOW($)+$80
-.DW 	X_Nop
-
-T_NE 		= LOW($)+$80
-.DW 	X_Nop
-
-T_GE 		= LOW($)+$80
-.DW 	X_Nop
 
 T_AND 		= LOW($)+$80
 .DW 	X_Nop

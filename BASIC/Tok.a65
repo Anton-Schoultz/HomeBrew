@@ -4,18 +4,18 @@
 ;*  IsAlphaNumeric       returns true if .A is 0-9,A-Z
 ;*  IsDigit              returns T/F if .A is a digit 0..9
 ;*  IsNumValue           return T if token is a numeric value
-;*  IsRelOp              returns T/F if CHRGOT is a relational opperator <>=
+;*  IsRelOpChr           returns T/F if CHRGOT is a relational opperator <>=
 ;*  IsStrValue           return T if token is a string value
 ;*  L_LineNo             List LineNo
-;*  L_Number             list number
+;*  L_Number             List number
 ;*  L_String             list out string text
 ;*  List                 List from start of program
 ;*  ListLn               List line pointed to by ZRd
 ;*  NextLine             point ZRd to the next line LN_NXT
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
 ;*  P_LineNo             Parse line number and place int TOKBUF
-;*  P_Number             parse a number into token & value
-;*  P_String             parse quoted string into token
+;*  P_Number             Parse a number into token & value
+;*  P_String             Parse quoted string into token
 ;*  Parse                Parse INBUF into TOKBUF
 ;*  ParseIn              Parse from memory into TOKBUF
 ;*  Run                  Run from start
@@ -25,18 +25,41 @@
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokExpandA           Expand the token .A to key word
 ;*  TokFind              try to find a matching token
-;*  X_LineNo            Get LN_NUM & Set up LN_NXT
+;*  X_LineNo             Get LN_NUM & Set up LN_NXT
+;*m Short(NUM_FLG)       ; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
 _Tok 		= $
+; Value tokens F8-FF
+;                  FF			;ff
+T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
+;                  FD			;fd 123	Lit,Num  , -
+T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
+T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
+T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
+T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
+T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 
+ 		;-- = $F7
 
-
+ 		;-- 1111.0<=>		;0<=>
+#define T_LE 	$F6 			;0110
+#define T_NE	$F5 			;0101
+#define T_LT	$F4 			;0100
+#define T_GE 	$F3 			;0011
+#define T_EQ 	$F2 			;0010
+#define T_GT 	$F1 			;0001
 
 T_LineNo 	= $F0 			; header includes line number
+
+
+; Short(NUM_FLG) 	; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
+#define NUMFLGLT()	SMB2 NUM_FLG
+#define NUMFLGEQ()	SMB1 NUM_FLG
+#define NUMFLGGT()	SMB0 NUM_FLG
 
 
 BAS_EOL 	= $00 			; end of line
@@ -121,19 +144,38 @@ PNotStr 	; not string, try varname
 PNotVar 	; not varname, rel op?
  		BR_AEQ('<',PLT)
  		BR_AEQ('>',PGT)
+ 		BR_AEQ('=',PEQ)
+
  		;-- otherwise as-is
 PAsIs 		lda 	CHRGOT
- 		jsr 	ChrWr
+POut 		jsr 	ChrWr
  		bra 	P_PartNxt
-
-PLT 		; check for <= <>
-
-
-
-PGT
+; relational opperator
+PLT 		; check for <= <> <
+ 		jsr 	GetChr
+ 		BR_AEQ('=',PLE)
+ 		BR_AEQ('>',PNE)
+ 		lda 	#T_LT
+ 		bra 	PROP
+PLE 		lda 	#T_LE
+ 		bra 	POut
+PNE 		lda 	#T_NE
+ 		bra 	POut
+PGT 		; check for >= >
+ 		jsr 	GetChr
+ 		BR_AEQ('=',PGE)
+ 		lda 	#T_GT
+ 		bra 	PROP
+PGE 		lda 	#T_GE
+ 		bra 	POut
+ 		; equal
+PEQ 		lda 	#T_EQ
+ 		bra 	POut
+PROP		jsr 	ChrWr
+ 		bra 	P_Part
 
 ;----------------------------------------------- ParseClr
-; clear teh tokbuf (not realy required, butmake debuggin easier)
+; clear the tokbuf (not realy required, but makes debugging easier)
 ParseClr 	lda 	#$EE
  		ldy 	#0
 ParseClrL 	sta 	TOKBUF,y
@@ -199,13 +241,13 @@ IsDigit: ; returns T/F if .A is a digit 0..9
  		BR_AGE('9'+1,RtnFalse)
  		RTN_T()
 
-;;----------------------------------------------- IsRelOp
-;IsRelOp: ; returns T/F if CHRGOT is a relational opperator <>=
-; 		lda 	CHRGOT
-; 		BR_AEQ('<',RtnTrue) 	; 3c
-; 		BR_AEQ('=',RtnTrue) 	; 3d
-; 		BR_AEQ('>',RtnTrue) 	; 3e
-; 		RTN_F()
+ 		;-- ;----------------------------------------------- IsRelOpChr
+IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
+ 		lda 	CHRGOT
+ 		BR_AEQ('<',RtnTrue) 	; 3c
+ 		BR_AEQ('=',RtnTrue) 	; 3d
+ 		BR_AEQ('>',RtnTrue) 	; 3e
+ 		RTN_F()
 
 ;----------------------------------------------- OneOf
 ; OneOf: ; see if CHRGOT is one of char in ChkList starting at X
@@ -347,7 +389,7 @@ RunL 		jsr 	RunLn 		; (*1)
 ;----------------------------------------------- RunLn
 RunLn: ; Run [LineNo] Stmnt.... 00
  		;-- init calc
- 		jsr 	NumInit		; initialise evaluator
+ 		jsr 	NumInit 	; initialise evaluator
  		jsr 	GetChr 		; (++ZRd)->A
  		sta 	TOKNO
  		;-- line number ?
@@ -405,7 +447,7 @@ ListLnX 	jmp 	PrNL 		; NL and return
 
 ListTok 	sta 	TOKNO
  		;-- T_LineNo ?
- 		CASE(T_LineNo,L_LineNo) 	;->L_LineNo, rts to (*1)
+ 		CASE(T_LineNo,L_LineNo) ; $F0->L_LineNo, rts to (*1)
  		;-- Value ?
  		CASE(T_StrLit,L_String)
  		CASE(T_NumLit,L_Number)
@@ -414,9 +456,25 @@ ListTok 	sta 	TOKNO
  		CASE(T_StrAry,VarList)
  		CASE(T_NumVar,VarList)
  		CASE(T_NumAry,VarList)
+
+ 		;-- Relational Operator $F1-$F6
+ 		and 	#$F8
+ 		cmp 	#$F0
+ 		bne 	ListTok1
+ 		;-- expand realtional op
+ 		BBR2 	TOKNO,ListTokR1 ; '<' ?
+ 		lda 	#'<'
+ 		jsr 	PutChr
+ListTokR1 	BBR0 	TOKNO,ListTokR2 ; '>' ?
+ 		lda 	#'>'
+ 		jsr 	PutChr
+ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
+ 		lda 	#'='
+ 		jsr 	PutChr
+ListTokR3 	bra 	ListTokX
  		;--
  		;-- Token ?
- 		lda 	TOKNO
+ListTok1 	lda 	TOKNO
  		jsr 	TokExpandA
  		BR_T(ListTokX)
  		;-- not token, treat as ASCII
@@ -446,9 +504,9 @@ P_Number: ; Parse a number into token & value
  		lda 	#T_NumLit
  		jsr 	ChrWr
  		;-- Parse number value
- 		jsr 	NumParse	; read source -> NUM_A
+ 		jsr 	NumParse 	; read source -> NUM_A
  		jsr 	NumWr 		; write number value via ChrWr
-;		jsr ChrRd
+ 		;-- jsr ChrRd
  		;--
  		rts
 
@@ -493,7 +551,7 @@ P_LineNo: ; Parse line number and place int TOKBUF
  		;-- Write LineNo token
  		lda 	#T_LineNo
  		jsr 	ChrWr
- 		jsr 	IntParse	; Parse int TMP from input
+ 		jsr 	IntParse 	; Parse int TMP from input
  		;-- write int number to memory via ChrWr
  		lda 	TMP
  		jsr 	ChrWr
@@ -536,10 +594,10 @@ L_LineNo: ; List LineNo
  		;-- jsr 	ChrRd 		; get next byte into CHRGOT
  		rts
 
-;.export T_StrLit,T_LineNo,T_NumLit
-;.export TokFind,TOKNO,TokFound,Parse
-;.export TblKeyword,TblRun
-;.export L_LineNo,T_Max
+ 		;-- .export T_StrLit,T_LineNo,T_NumLit
+ 		;-- .export TokFind,TOKNO,TokFound,Parse
+ 		;-- .export TblKeyword,TblRun
+ 		;-- .export L_LineNo,T_Max
 
 
 .echo "  _Tok\t\t"

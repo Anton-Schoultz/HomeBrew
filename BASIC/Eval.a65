@@ -46,6 +46,7 @@ Relation: ; Handle relation test < = > <= <> >=
  		jsr 	IsRelOp
  		bne 	RelationX
  		;--
+ 		lda CHRGOT		; fetch the token again
  		pha 			; save the relop on stack
  		;--
  		jsr 	NumPushA
@@ -57,64 +58,20 @@ Relation: ; Handle relation test < = > <= <> >=
  		jsr 	NumFlag 	; set flags bassed on result
  		;-- test condition
  		pla 			; recal the rel-op
-
- 		;-- LT
- 		ldx 	#NUM_FLG_LT
- 		cmp 	#T_LT
- 		beq 	RelTest
- 		;-- LE
- 		ldx 	#NUM_FLG_LE
- 		cmp 	#T_LE
- 		beq 	RelTest
- 		;-- NE
- 		ldx 	#NUM_FLG_NE
- 		cmp 	#T_NE
- 		beq 	RelTest
- 		;-- EQ
- 		ldx 	#NUM_FLG_EQ
- 		cmp 	#T_EQ
- 		beq 	RelTest
- 		;-- GE
- 		ldx 	#NUM_FLG_GE
- 		cmp 	#T_GE
- 		beq 	RelTest
- 		;-- GT
- 		ldx 	#NUM_FLG_GT
- 		cmp 	#T_GT
- 		beq 	RelTest
-		;
-		RTN_F()
-
-RelTest 	; test the condition in X
- 		txa
- 		and 	NUM_FLG
- 		beq 	RelFalse
- 		;-- set NUMA to one
- 		jsr 	NumOneA
+ 		and	NUM_FLG		; and with the flag
+ 		and #$7			; opcode low bits match NUM_FLG
+ 		beq RelFalse		; zero is false
+ 		;-- non-zero means true
+ 		jsr 	NumOneA		; TRUE = 1
  		RTN_T()
 RelFalse 	; set NUMA to zero
- 		jsr 	NumZeroA
+ 		jsr 	NumZeroA	; FALSE = 0
 RelationX 	RTN_T()
 
-
-
-
 ; return eq if op is one of  <,=,>,<=,<>,>=
-IsRelOp 	lda 	CHRGOT
- 		cmp 	#'='
- 		beq 	IsRelOpX
- 		cmp 	#'<'
- 		beq 	IsRelOpX
- 		cmp 	#'>'
- 		beq 	IsRelOpX
- 		;--
- 		cmp 	#T_LE
- 		beq 	IsRelOpX
- 		cmp 	#T_NE
- 		beq 	IsRelOpX
- 		cmp 	#T_GE
- 		;--
-IsRelOpX 	rts
+IsRelOp 	and #$F8
+		cmp #$F0
+	 	rts
 
 ;----------------------------------------------- Expression
 Expression: ;  [ Term ]   ( [+/-] Term)*

@@ -1,4 +1,4 @@
-;=================================================================== VARIABLES ======== 
+;=================================================================== VARIABLES ========
 ;*  VarList              List a variable specifier
 ;*  VarParse             Parse variable spec from source
 ;*
@@ -6,26 +6,16 @@
 #ifdef hide
 .NOLIST
 #endif
- 		;-- 
+ 		;--
 ; 76543210
 ; ...aaaaa	bottom 5 bits of first char (0-31 0=@,1=A,...)
 ; 1.......	This is the last character of the variable Name
 ; .#......	Variable is an array
- 		;-- 
-
-; Value tokens
-;                  FF			;ff
-T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
-;                  FD			;fd 123	Lit,Num  , -
-T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
-T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
-T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
-T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
-T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
+ 		;--
 
 _Variables 	= $
 
-;----------------------------------------------- VarParse 
+;----------------------------------------------- VarParse
 VarParse: ; Parse variable spec from source
 ; ZRd points at the initial alpha char
  		lda 	#$F8
@@ -85,7 +75,7 @@ VarPMod 	jsr 	ChrRd
 
 VarPXX 		rts
 
-;----------------------------------------------- VarList 
+;----------------------------------------------- VarList
 VarList: ; List a variable specifier
  		;-- sta 	TOKNO		; save he var token F8..FF already there
  		;-- List a VarName

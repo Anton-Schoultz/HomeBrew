@@ -64,6 +64,8 @@ Short(LNFPAEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 
+; flags used for comparissons
+Short(NUM_FLG) 	; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
 
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
