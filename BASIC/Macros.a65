@@ -60,6 +60,8 @@
 ; HALT() Stop simulator
 #DEFINE HALT()  .db $DB
 
+#DEFINE THROW(n)  .db $DB
+
 ;----------------------------------------------- Alignment
 ; align to next n (power of 2)
 #DEFINE ALIGN(n) .org (($/n + 1) * n)

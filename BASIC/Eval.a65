@@ -38,6 +38,9 @@ EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next
 
 
 
+BoolTerm	jmp	Relation
+
+
 
 
 ;----------------------------------------------- Relation
@@ -216,8 +219,7 @@ EvFAry: ; retrieve array variable value -> NumA
 ;----------------------------------------------- FaBr
 EvFBr: ; Bracketed expression
  		jsr 	ChrRd 		; consume the '('
- 		jsr 	Expression
-; 		jsr 	BoolTerm
+ 		jsr 	BoolTerm
  		MATCH($29) 		; check for ')'
  		RTN_T() 		; got a value
 
@@ -237,7 +239,7 @@ MatchFail 	;
  		PRINT(" but got ") 	;
  		lda 	CHRGOT
  		jsr 	PrAHex
- 		BREAK(1)
+ 		THROW(1)
 
 
 
