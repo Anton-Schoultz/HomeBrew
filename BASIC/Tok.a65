@@ -48,6 +48,8 @@ BAS_PRG 	= $00 			; end of program
 
 ;----------------------------------------------- Parse
 Parse: ;Parse INBUF into TOKBUF
+; length is placed into ZCnt
+; Line no is placed into LN_FIND
  		;-- read from memory INBUF
  		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
 ;----------------------------------------------- ParseIn
@@ -85,8 +87,23 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		sec
  		lda 	ZWr+1
  		sbc 	#HIGH(TOKBUF)
- 		sta 	LNFPAEN
-P_StmntX 	rts 			; done with the whole line
+ 		sta 	LN_LEN
+
+P_StmntX 	;- work out total length for editor -> ZCnt
+ 		sec
+ 		lda 	ZWr
+ 		sbc 	#LOW(TOKBUF)
+ 		sta 	ZCnt
+ 		lda 	ZWr+1
+ 		sbc 	#HIGH(TOKBUF)
+ 		sta 	ZCnt+1
+ 		;-- copy line no to LN_FIND for editor to seek
+ 		LDA 	TOKBUF+1 	; lo line no
+ 		STA 	LN_FIND
+ 		LDA 	TOKBUF+2	; hi line no
+ 		sta 	LN_FIND+1
+ 		;-- done with the whole line
+ 		rts
 
 ;----------------------------------------------- P_Part , P_PartNxt
 P_PartNxt 	;- advance and do part
@@ -146,10 +163,10 @@ PGT 		; check for >= >
  		bra 	PROP
 PGE 		lda 	#T_GE
  		bra 	POut
- 		; equal
+ 		;-- equal
 PEQ 		lda 	#T_EQ
  		bra 	POut
-PROP		jsr 	ChrWr
+PROP 		jsr 	ChrWr
  		bra 	P_Part
 
 ;----------------------------------------------- ParseClr
@@ -166,7 +183,7 @@ ParseClrL 	sta 	TOKBUF,y
 BasTop: ; Setup to read from start of basic, for now TOKBUF
 ; for now, just TOKBUF
  		;-- set ZRd to point to first line of Program
- 		ZSET(ZRd,TOKBUF-1)
+ 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
  		;-- set to read from memory
  		PR_RD_MEM() 		; read from memory (code space)
  		;-- list to output device IO
@@ -542,7 +559,8 @@ P_LineNo: ; Parse line number and place int TOKBUF
 
 ;----------------------------------------------- X_LineNo
 X_LineNo: ; Get LN_NUM & Set up LN_NXT
-; enters with A=CHRGOT= T_LineNo, exit with CHRGOT after the line data
+; enters with A=CHRGOT=T_LineNo, exit with CHRGOT after the line data
+; sets LN_NUM=line number and LN_NXT=address of next line
  		;-- save line no
  		jsr 	ChrRd 		; get lo no
  		sta 	LN_NUM

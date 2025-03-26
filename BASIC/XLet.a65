@@ -46,7 +46,7 @@ X_Let90 	PRINT("Only single char names for now")
  		THROW(1)
 
 
-.echo "  _Let\t\t"
+.echo "  _LET\t\t"
 .echo $-_Let
 .echo "\n"
 .nolist

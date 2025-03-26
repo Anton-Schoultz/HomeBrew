@@ -1,0 +1,34 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== NEW ==============
+;*  X_New                Execute New
+;*
+_New 		= $
+
+;----------------------------------------------- X_New
+X_New: ; Execute New
+ 		jmp 	EditNew
+
+
+.echo "  _NEW\t\t"
+.echo $-_New
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_New 		.DB 	"NE",'W'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_New 		= LOW($)
+.DW 	X_New
+.nolist
+ 		;-- .export T_New
+#endif

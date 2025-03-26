@@ -15,7 +15,7 @@ X_Cls: ; Execute Cls
  		rts
 
 
-.echo "  _Cls\t\t"
+.echo "  _CLS\t\t"
 .echo $-_Cls
 .echo "\n"
 .nolist

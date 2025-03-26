@@ -65,7 +65,7 @@ X_PrSemi 	;-- Semicolon, no CR/LF
  		jsr 	ChrRd 		; comsume ,/;
  		bra 	X_PrPart
 
-.echo "  _Print\t"
+.echo "  _PRINT\t"
 .echo $-_Print
 .echo "\n"
 .nolist

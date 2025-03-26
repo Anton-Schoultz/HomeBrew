@@ -22,7 +22,7 @@ X_Rem: ; code to execute the Rem
  		sta 	ZRd+1
  		rts
 
-.echo "  _Rem\t\t"
+.echo "  _REM\t\t"
 .echo $-_Rem
 .echo "\n"
 .nolist

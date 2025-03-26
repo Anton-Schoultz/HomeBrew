@@ -7,6 +7,7 @@
 #include "XReturn.a65"
 #include "XCls.a65"
 #include "XLet.a65"
+#include "XNew.a65"
 
 ; functions / operators
 #include "KeyWords.a65"

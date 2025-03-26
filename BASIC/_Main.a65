@@ -3,6 +3,10 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 
+; .echo "ROM at $F000-$FFFF (4k)\r"
+.echo "ROM at $E000-$FFFF (8k)\r"
+; .echo "ROM at $C000-$FFFF (16k)\r"
+
 #include "Macros.a65"
 #include "Constants.a65"
 #include "_Vars.a65"
@@ -16,11 +20,6 @@
 #ifdef hide
 ; .NOLIST
 #endif
-
-
- 		;-- .echo "ROM at $F000-$FFFF (4k)\r"
-.echo "ROM at $E000-$FFFF (8k)\r"
-; .echo "ROM at $C000-$FFFF (16k)\r"
 
 .org _ROM
 .LIST
@@ -80,6 +79,15 @@ Reset: ;Reset (Cold start)
  		cld 			; Binary mode
  		cli 			; Enable irqs
 
+; RAMBEG    BASBEG          BASEND      VAREND        STREND  ARYBEG  RAMEND
+;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
+ 		LDAX($800)
+ 		SETAX(RAMBEG)
+ 		LDAX($8000) 		; end of 32K RAM
+ 		SETAX(RAMEND)
+
+ 		jsr 	EditNew 	; NEW
+
 ;----------------------------------------------- Warm
 Warm: ;Warm Start entry point
  		;-- Copy ZPage Code
@@ -108,35 +116,50 @@ MainLoop 	;-- Prompt and input
  		jsr 	PrStrAX 	; display source line
  		jsr 	PrNL
  		;--
- 		;-- parse input
+;   parse input
+;     length is placed into ZCnt
+;     Line no is placed into LN_FIND
  		jsr 	Parse 		; Parse INBUF into TOKBUF
- 		lda 	#0
- 		jsr 	ChrWr 		; end of program
- 		;--
- 		;-- dump TOKBUF
+
+		jsr 	EditSeek
+		bne	MainEq
+
+
+
+
+
+
+
  		PR_WR_IO()
+ 		;-- dump TOKBUF
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
  		jsr 	HexDump 	; dump next 8
  		jsr 	HexDump 	; dump next 8
+ 		jsr 	PrNL
+
+ 		HEX_DUMP(LN_NXT) 	; Line NXT,NUM, FIND
+ 		HEX_DUMP(ZSrc)
+ 		jsr 	PrNL
+
  		;--
- 		PR_ZSUP_ON()
- 		;-- List the line in TOKBUF
- 		jsr 	List
+; 		PR_ZSUP_ON()
+; 		;-- List the line in TOKBUF
+; 		jsr 	List
+; 		;--
+; 		;-- ; 		PR_ZSPC_OFF()
  		;--
- 		;-- ; 		PR_ZSPC_OFF()
-
- 		lda 	TOKBUF
- 		CMP 	#T_LineNo
- 		beq 	MainLoop
-
- 		;-- LineNo=zero will execute
-
- 		;-- Run
- 		lda 	#':'
- 		jsr 	PutChr
- 		PR_ZSPC_ON()
- 		jsr 	Run
+; 		lda 	TOKBUF
+; 		cmp 	#T_LineNo
+; 		beq 	MainLoop
+ 		;--
+; 		;-- LineNo=zero will execute
+ 		;--
+; 		;-- Run
+; 		lda 	#':'
+; 		jsr 	PutChr
+; 		PR_ZSPC_ON()
+; 		jsr 	Run
 
  		;-- loop back and do it again
  		bra 	MainLoop
@@ -154,9 +177,11 @@ CopyLineL 	iny
  		bne 	CopyLineL
  		rts
 
-#include "All.a65"			; include all keywords
+#include "All.a65" 			; include all keywords
 #include "Variables.a65"
 #include "Tok.a65"
+#include "Editor.a65"
+
 #include "IrqNmi.a65"
 
 ROMEND 		= $
@@ -190,13 +215,11 @@ T_Max 		= LOW($)+$80
 .dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
-.echo "  _EPROM used \t"
+.echo "\nEPROM\n  Used  "
 .echo ROMEND - _ROM
-.echo "\n"
-
-.echo "  _EPROM Avail\t"
+.echo "\n  Avail "
 .echo ($FF00 - ROMEND)
-.echo "\n"
+.echo "\n\n"
 
 
 .end

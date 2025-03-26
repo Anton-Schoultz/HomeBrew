@@ -54,27 +54,40 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
 Int(ZStr) 	; ZStr points to string result
+
+.org $0030
+Int(ZSrc)	; Source for copy/move
+Int(ZTgt)	; Destination for copy/move
+Int(ZCnt)	; Number of bytes to copy/move
+
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 Short(ZStrLen) 	; length of STRBUF used (write index)
 ;----------------------------------------------- Code Lines
+Int(LN_NXT) 	; Adress of next line
 Int(LN_NUM) 	; Line number
-Int(LN_NXT) 	; address of next line
-Short(LNFPAEN) 	; length of tokenised line in TOKBUF (for editor)
+Int(LN_FIND)	; Line number to look for
+
+Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
-
-; flags used for comparissons
-Short(NUM_FLG) 	; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
+;----------------------------------------------- BASIC program
+Int(RAMBEG) 	; Start of user ram area (set with cold start)
+Int(RAMEND) 	; End of user ram area (set at cold start)
+Int(BASBEG) 	; Start of BASIC program
+Int(BASEND) 	; end of program, start of variables
+Int(VAREND) 	; end of variables
+Int(STREND) 	; end of string work area
+Int(ARYBEG)  	; Start of array Space
 
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
 ;----------------------------------------------- Numeric common vars
-; PARAGRAPH()
+Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
 Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
-Int(TMP)
+Int(TMP) 	; Temp 16 bit value (line nos)
 
 
 

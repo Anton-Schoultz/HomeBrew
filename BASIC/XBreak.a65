@@ -16,7 +16,7 @@ _Break 		= $
 X_Break: ; code to execute the Break
  		HALT()
 
-.echo "  _Break\t"
+.echo "  _BREAK\t"
 .echo $-_Break
 .echo "\n"
 .nolist

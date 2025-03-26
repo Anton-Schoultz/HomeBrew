@@ -14,7 +14,7 @@ X_Return: ; code to execute the Return
 
 
 
-.echo "  _Return\t"
+.echo "  _RETURN\t"
 .echo $-_Return
 .echo "\n"
 .nolist

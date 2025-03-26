@@ -309,7 +309,7 @@ MatchFail 	;
 
 
 
-.echo "  _Ev\t\t"
+.echo "  _Eval\t\t"
 .echo $-_Ev
 .echo "\n"
 .list
