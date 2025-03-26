@@ -4,13 +4,13 @@
 #define _ROM $E000
 
 #include "Macros.a65"
+#include "Constants.a65"
 #include "_Vars.a65"
 
 ;=================================================================== MAIN =============
 ;*  CopyLine             copy TestSrc into INBUF
 ;*  Main                 MAIN code
 ;*  Reset                Reset (Cold start)
-;*  TblRun               Table of addresses to execute keyword
 ;*  Warm                 Warm Start entry point
 ;*
 #ifdef hide
@@ -127,10 +127,10 @@ MainLoop 	;-- Prompt and input
  		;-- ; 		PR_ZSPC_OFF()
 
  		lda 	TOKBUF
-		cmp	#T_LineNo
+ 		CMP 	#T_LineNo
  		beq 	MainLoop
 
-		;LineNo=zero will execute
+ 		;-- LineNo=zero will execute
 
  		;-- Run
  		lda 	#':'
@@ -154,34 +154,26 @@ CopyLineL 	iny
  		bne 	CopyLineL
  		rts
 
-#include "Constants.a65"
-
-#include "Tables.a65"		; includes the basic keyword files
+#include "All.a65"			; include all keywords
 #include "Variables.a65"
 #include "Tok.a65"
 #include "IrqNmi.a65"
 
-
 ROMEND 		= $
 
-.echo "  _EPROM used \t"
-.echo $- _ROM
-.echo "\n"
 
-.echo "  _EPROM Avail\t"
-.echo ($FF00 - ROMEND)
-.echo "\n"
+;----------------------------------------------- TblKeyword
+; Include for the keyword table ..
+.org TblKeyword
+#include "All.a65"
 
 ;----------------------------------------------- TblRun
-.org $FF00 				; PAGE()
-
-TblRun: ; Table of addresses to execute keyword
+; Include for the jump/run table
+.org TblRun
 .nolist
-BLD 		= BLD_TBL_RUN
 #include "All.a65"
 T_Max 		= LOW($)+$80
-
-#if T_Max > $F6
+#if T_Max > $F0
 .echo "Too many tokens\r"
 #endif
 
@@ -198,8 +190,13 @@ T_Max 		= LOW($)+$80
 .dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
- 		;-- .echo "/32 pages (x256) available in the 4k ROM. E000-FFFF\r"
+.echo "  _EPROM used \t"
+.echo ROMEND - _ROM
+.echo "\n"
 
+.echo "  _EPROM Avail\t"
+.echo ($FF00 - ROMEND)
+.echo "\n"
 
 
 .end

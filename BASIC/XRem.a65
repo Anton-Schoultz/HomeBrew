@@ -3,7 +3,7 @@
 .NOLIST
 #endif
 
-#if BLD == BLD_CODE
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== REM ==============
 ;
 ; {REM} [*..] 00
@@ -29,14 +29,14 @@ X_Rem: ; code to execute the Rem
 #endif
 
 ;----------------------------------------------- KeyWord
-#if BLD = BLD_KEYWORD
+#if ($/256) = PG_KEY
 .list
 W_Rem 		.DB 	"RE",'M'+$80
 .nolist
 #endif
 
 ;----------------------------------------------- run
-#if BLD = BLD_TBL_RUN
+#if ($/256) = PG_RUN
 .list
 T_Rem 		= LOW($)+$80
 .DW 	X_Rem

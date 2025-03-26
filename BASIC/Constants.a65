@@ -20,3 +20,11 @@ T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 #define T_GT 	$F1 			;0001
 
 T_LineNo 	= $F0 			; header includes line number
+
+
+PG_ROM = $E0			; main code
+PG_KEY = $FE			; key word table
+PG_RUN = $FF			; main jump table
+
+TblKeyword 	= (PG_KEY<<8)
+TblRun 		= (PG_RUN<<8)

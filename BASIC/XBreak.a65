@@ -3,7 +3,9 @@
 .NOLIST
 #endif
 
-#if BLD == BLD_CODE
+; main code space
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+
 ;=================================================================== BREAK ============
 ;*  X_Break              code to execute the Break
 ;*
@@ -21,14 +23,15 @@ X_Break: ; code to execute the Break
 #endif
 
 ;----------------------------------------------- keyword
-#if BLD = BLD_KEYWORD
+#if ($/256) = PG_KEY
+
 .list
 W_Break 	.DB 	"BREA",'K'+$80
 .nolist
 #endif
 
 ;----------------------------------------------- run
-#if BLD = BLD_TBL_RUN
+#if ($/256) = PG_RUN
 .list
 T_Break 	= LOW($)+$80
 .DW 	X_Break

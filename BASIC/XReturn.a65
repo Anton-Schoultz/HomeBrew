@@ -3,7 +3,7 @@
 .NOLIST
 #endif
 
-#if BLD == BLD_CODE
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== RETURN ===========
 ;*  X_Return             code to execute the Return
 ;*
@@ -22,13 +22,13 @@ X_Return: ; code to execute the Return
 
 
 ;----------------------------------------------- keyword
-#if BLD = BLD_KEYWORD
+#if ($/256) = PG_KEY
 .list
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
 ;----------------------------------------------- run
-#if BLD = BLD_TBL_RUN
+#if ($/256) = PG_RUN
 .list
 T_Return 	= LOW($)+$80
 .DW 	X_Return

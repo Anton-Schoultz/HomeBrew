@@ -1,7 +1,8 @@
 #ifdef hide
 .NOLIST
 #endif
-#if BLD == BLD_CODE
+
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== CLS ==============
 ;*  X_Cls                Execute Cls
 ;*
@@ -21,13 +22,13 @@ X_Cls: ; Execute Cls
 #endif
 
 ;----------------------------------------------- keyword
-#if BLD = BLD_KEYWORD
+#if ($/256) = PG_KEY
 .list
 W_Cls 		.DB 	"CL",'S'+$80
 .nolist
 #endif
 ;----------------------------------------------- run
-#if BLD = BLD_TBL_RUN
+#if ($/256) = PG_RUN
 .list
 T_Cls 		= LOW($)
 .DW 	X_Cls

@@ -47,8 +47,6 @@
 .echo "\n"
 
 ;  --------- Usages --------------
-; Math module must also define NUM_BUF
-
 NumInit 	; Tok.RunLn - when running a line of code
 NumParse 	; Tok.P_Number : parse literal number -> NUM_A (follow by NumWr)
 

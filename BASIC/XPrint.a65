@@ -1,13 +1,13 @@
-
-#if BLD == BLD_CODE
-;=================================================================== PRINT ===========
-;*  X_PrNum              convert and print number in NUM_A
-;*  X_Print              code to execute the Print
-;*
 .list
 #ifdef hide
 .NOLIST
 #endif
+
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== PRINT ===========
+;*  X_PrNum              convert and print number in NUM_A
+;*  X_Print              code to execute the Print
+;*
 
 _Print 		= $
 
@@ -73,14 +73,14 @@ X_PrSemi 	;-- Semicolon, no CR/LF
 
 
 ;----------------------------------------------- keyword
-#if BLD = BLD_KEYWORD
+#if ($/256) = PG_KEY
 .list
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
 
 ;----------------------------------------------- run
-#if BLD = BLD_TBL_RUN
+#if ($/256) = PG_RUN
 .list
 T_Print 	= LOW($)+$80
 .DW 	X_Print

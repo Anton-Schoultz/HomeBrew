@@ -81,6 +81,10 @@ Int(TMP)
 
 #include "Math.a65" 			; Math module ZeroPage
 
+.echo "  _ZeroPage\t"
+.echo $
+.echo "/256\n"
+
 ;=================================================================== STACK ============
 ; cpu stack grows down from 01FF..0100
 .org $0100
@@ -96,9 +100,6 @@ Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 ;----------------------------------------------- String
 .org $0280
 Var(STRBUF,STRSZ) ; buffer for strings
-
-
-
 
 
 ;======================================================================================
