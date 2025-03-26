@@ -78,16 +78,9 @@ IrqBrk0 	dec 	Z_IrqPtr 	; decr low
  		pla
  		sta 	ZPrFlg
 
- 		ldx 	#0
 IrqWait 	lda 	HLTFLG 		; check flag value
  		beq 	IrqRtn 		; cleared by NMI so exit
- 		dex 			; count down
- 		bne 	IrqWait 	;
-
-IrqWait2 	lda 	HLTFLG 		; check flag value
- 		beq 	IrqRtn 		; cleared by NMI so exit
- 		dex 			; count down
- 		bne 	IrqWait2 	;
+ 		bra 	IrqWait 	;
 
  		bra 	IrqRtn 		; exit from interrupt
 

@@ -6,7 +6,26 @@
 #ifdef hide
 .NOLIST
 #endif
- 		;--
+
+; Value tokens 1111.1kta
+; k:0=Variable		k:1=Constant/literal
+; t:0=Numeric		t:1=String
+; a:0=Simple		a:1=Array
+;
+;                  FF			;ff
+;  T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
+;                  FD			;fd 123	Lit,Num  , -
+;  T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
+;
+;  T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
+;  T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
+;
+;  T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
+;  T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
+;
+;
+
+;  VARID
 ; 76543210
 ; ...aaaaa	bottom 5 bits of first char (0-31 0=@,1=A,...)
 ; 1.......	This is the last character of the variable Name
@@ -18,7 +37,7 @@ _Variables 	= $
 ;----------------------------------------------- VarParse
 VarParse: ; Parse variable spec from source
 ; ZRd points at the initial alpha char
- 		lda 	#$F8
+ 		lda 	#T_NumVar
  		sta 	TOKNO
  		ldy 	#$FF
 ; scan forward (with Y) for non-alpha/num
@@ -56,7 +75,7 @@ VarP2 		; output Token from VARID
  		lda 	TOKNO
  		jsr 	ChrWr 		; output token
 
- 		;-- fetch 1st char again (may have had bit 87 set)
+ 		;-- fetch 1st char again (may have had bit 7 set)
  		ldy 	#0
  		lda 	(ZRd),y
  		sta 	CHRGOT
@@ -70,7 +89,7 @@ VarP4 		jsr 	ChrRd
  		rts
 
 VarPMod 	jsr 	ChrRd
- 		BR_AEQ('(',VarPMod) 	; read over (,$
+ 		BR_AEQ('(',VarPMod) 	; read over ( $
  		BR_AEQ('$',VarPMod)
 
 VarPXX 		rts

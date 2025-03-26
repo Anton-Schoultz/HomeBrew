@@ -154,13 +154,13 @@ CopyLineL 	iny
  		bne 	CopyLineL
  		rts
 
+#include "Constants.a65"
 
-#include "Tables.a65"
-
+#include "Tables.a65"		; includes the basic keyword files
 #include "Variables.a65"
-
 #include "Tok.a65"
 #include "IrqNmi.a65"
+
 
 ROMEND 		= $
 

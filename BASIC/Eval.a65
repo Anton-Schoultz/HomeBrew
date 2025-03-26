@@ -46,7 +46,7 @@ EvNumX 		RTN_T()
 
 ;----------------------------------------------- DoOrOp
 DoOrOp 		lda 	CHRGOT
-		CASE(T_OR,BoolOr)
+ 		CASE(T_OR,BoolOr)
  		CASE(T_XOR,BoolXor)
  		RTN_F()
 
@@ -62,7 +62,7 @@ IsOrOpX 	rts
 BoolOr: ; OR
  		jsr 	ChrRd
  		jsr 	BoolTerm
- 		jsr	NumPopB
+ 		jsr 	NumPopB
  		jsr 	NumOr
 
  		lda 	CHRGOT
@@ -156,6 +156,7 @@ ExpL 		jsr 	IsAddOp
 ExpXT 		RTN_T()
 
 DoAddOp: ; Do Add/Sub - rts back to inside while
+ 		lda 	CHRGOT
  		CASE('+',EvAdd)
  		CASE('-',EvSub)
  		RTN_F()
@@ -193,7 +194,8 @@ TermL 		jsr 	IsMulOp 	; while IsMulOP
  		BR_T(TermL) 		; }
 TermX 		RTN_T()
 
-DoMulOp 	CASE('*',EvMul)
+DoMulOp 	lda 	CHRGOT
+ 		CASE('*',EvMul)
  		CASE('/',EvDiv)
  		CASE('%',EvMod)
  		RTN_F()
@@ -234,7 +236,7 @@ IsMulOpX 	rts
 ;----------------------------------------------- Factor
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 ; exits with next token in CHRGOT
- 		;-- lda CHRGOT
+ 		lda 	CHRGOT
  		CASE('(',EvFBr) 	; ( BoolTerm )
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
@@ -256,8 +258,6 @@ EvFVar: ; retrieve variable value -> NumA
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
  		and 	#$1F 		; mask for index
- 		asl 	a
- 		asl 	a 		; index * 4
  		tax
  		jsr 	NumGetX 	; retrieve simple variable [X]
  		jsr 	ChrRd 		; get next token into CHRGOT

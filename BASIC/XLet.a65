@@ -1,0 +1,67 @@
+#ifdef hide
+.NOLIST
+#endif
+#if BLD == BLD_CODE
+;=================================================================== LET ==============
+;*  X_Let                Execute Let
+;*
+_Let 		= $
+
+; for now, simple vars are stored in VARTAB (fixed in memory)
+ 		;--
+
+;----------------------------------------------- X_Let
+X_Let: ; Execute Let
+ 		jsr 	ChrRd 		; consume LET
+ 		sta 	TOKNO 		; save variable token
+ 		CASE(T_NumVar,X_Let10)
+
+ 		PRINT("Excpected Numeric variable name")
+ 		THROW(1)
+
+
+X_Let10 	;- assign integer variable (not-ary)
+ 		jsr 	ChrRd 		; get first char of variable name
+ 		BPL 	X_Let90		; long var name
+		; short name, character is used as index
+ 		and 	#$1F
+
+ 		pha 			; push the index
+
+ 		jsr	ChrRd		; move to after the var name (should be '=')
+ 		;--
+ 		lda #T_EQ		; '=' TOKEN
+ 		jsr Match		; check for and skip over '='
+		;
+		jsr EvNumeric		; evaluate expression, resul in NUM_A
+
+		; recal the index
+		plx
+		jsr	NumSetX		; store the result
+		RTN_T()			; done
+
+
+X_Let90 	PRINT("Only single char names for now")
+ 		THROW(1)
+
+
+.echo "  _Let\t\t"
+.echo $-_Let
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if BLD = BLD_KEYWORD
+.list
+W_Let 		.DB 	"LE",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if BLD = BLD_TBL_RUN
+.list
+T_Let 		= LOW($)
+.DW 	X_Let
+.nolist
+ 		;-- .export T_Let
+#endif

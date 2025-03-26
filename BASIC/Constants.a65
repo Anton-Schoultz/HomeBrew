@@ -1,0 +1,22 @@
+; Constants
+; Value tokens F8-FF
+;                  FF			;ff
+T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
+;                  FD			;fd 123	Lit,Num  , -
+T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
+T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
+T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
+T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
+T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
+
+ 		;-- = $F7
+
+ 		;-- 1111.0<=>		;0<=>
+#define T_LE 	$F6 			;0110
+#define T_NE	$F5 			;0101
+#define T_LT	$F4 			;0100
+#define T_GE 	$F3 			;0011
+#define T_EQ 	$F2 			;0010
+#define T_GT 	$F1 			;0001
+
+T_LineNo 	= $F0 			; header includes line number
