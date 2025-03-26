@@ -47,6 +47,7 @@
 .echo "\n"
 
 ;  --------- Usages --------------
+; Math module must also define NUM_BUF
 
 NumInit 	; Tok.RunLn - when running a line of code
 NumParse 	; Tok.P_Number : parse literal number -> NUM_A (follow by NumWr)
@@ -58,6 +59,15 @@ NumAdd 		; Eval Add
 NumSub 		; Eval Subtract
 NumMul 		; Eval Multiply
 NumDiv 		; Eval Divide
+NumMod 		; Eval Modulus
+
+NumAnd 		; Eval   AND
+NumOr 		; Eval   OR
+NumXor 		; Eval   XOR
+NumNot 		; Eval   Negate the true/false result in NUM_A
+NumFlag 	; Eval   set flags bassed on result
+NumTrue 	; Eval   Place TRUE in NUM_A
+NumFalse 	; Eval   Place FALSE in NUM_A
 
 NumPushA 	; Eval push
 NumPopB 	; Eval pop
@@ -69,8 +79,11 @@ NumZeroA 	; Eval
 NumRd 		; Eval for literal values
 NumWr 		; Tok.P_Number to create a literal
 
-NumGetX 	; Eval to retrieve A-Z variable
-NumSetX 	; Eval to store a A-Z variable
+NumGetX 	; Eval to retrieve A-Z variable [X] X is 1..26
+NumSetX 	; Eval to store a A-Z variable  [X]
+
+
+
 
 #endif
 ;----------------------------------------------- }Dummy

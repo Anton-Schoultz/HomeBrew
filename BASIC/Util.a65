@@ -121,7 +121,6 @@ IntParse: ; Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
  		lda 	#0
  		sta 	TMP
  		sta 	TMP+1
- 		sta 	NUM_SGN 	; +ve
 IntParseL 	lda 	CHRGOT 		; term null
  		beq 	IntParseX
 IntParse1 	jsr 	IsDigit 	; messes with A
