@@ -71,9 +71,8 @@ Short(NUM_FLG) 	; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
-
 ;----------------------------------------------- Numeric common vars
-PARAGRAPH()
+; PARAGRAPH()
 Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
 Int(TMP)
 
@@ -111,9 +110,16 @@ Var(STRBUF,STRSZ) ; buffer for strings
 .org $0400
 Var(VARTAB,128) ; 32 x 4 bytes vars
 
-.export STRBUF,TOKBUF,INBUF
- 		;-- .export VCHROUT,VCHRIN,
- 		;-- .export TMP
+#define VARTAB_A VARTAB
+#define VARTAB_B VARTAB+32
+#define VARTAB_C VARTAB+64
+#define VARTAB_D VARTAB+96
 
-.LIST 					;-- End of Vars
+
+
+.export STRBUF,TOKBUF,INBUF
+;  .export VCHROUT,VCHRIN,
+;  .export TMP
+
+.LIST
 
