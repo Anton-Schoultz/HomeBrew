@@ -3,10 +3,13 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
+; NOTE: Message nos go up in 2s
 #define ERR_OK 0
 #define ERR_EXPECTED 2
 
 ;=================================================================== ERROR ============
+; NOTE: Message nos go up in 2s
+;
 ;*  Error                Hanlde error[X] resetting to warm start
 ;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/$ Char/hex
 ;*
@@ -16,7 +19,7 @@ _Err 		= $
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
- 		jsr	PrNL
+ 		JSR 	PrNL
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
@@ -25,13 +28,21 @@ Error: ; Hanlde error[X] resetting to warm start
 
  		jmp 	Warm
 
-;  Short(ZAt)	; Char to substitute for '@'/'!' in messages  A
-;  Short(ZHash)	; Char to substitute for '#'/'$' in messages  Y
+;  Short(ZRegA)	; Char to substitute for '@'/'!' in messages  A
+;  Short(ZRegY)	; Char to substitute for '#'/'$' in messages  Y
+
+; @	A as character
+; !	A as hex
+; #	Y as char
+; $	Y as hex
+; % 	Y as decimal
+
 #define ZTokPtr ZPtr
 ;----------------------------------------------- Msg
 Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
- 		sta 	ZAt 		; save .A for substitution '@'/'!'
- 		sty 	ZHash 		; save .Y for '#'/'%'
+ 		sta 	ZRegA 		; save .A for substitution '@'/'!'
+ 		sty 	ZRegY 		; save .Y for '#'/'%'
+ 		stx	ZRegX		; save msg no
  		txa
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
@@ -56,10 +67,11 @@ MsgL0 		;-- output the word
  		lda 	(ZTokPtr),y
  		beq 	MsgX 		; end of list -> done
  		bmi 	MsgLX 		; last char
- 		BR_AEQ('@',MsgAC) 	; ZAt (A) as character
- 		BR_AEQ('!',MsgAH) 	; ZAt (A) as hex
- 		BR_AEQ('#',MsgYC) 	; ZHash (Y) as character
- 		BR_AEQ('$',MsgYH) 	; ZHash (Y) as hex
+ 		BR_AEQ('@',MsgAC) 	; ZRegA as character
+ 		BR_AEQ('!',MsgAH) 	; ZRegA as hex
+ 		BR_AEQ('#',MsgYC) 	; ZRegY as character
+ 		BR_AEQ('$',MsgYH) 	; ZRegY as hex
+ 		BR_AEQ('%',MsgYD) 	; ZRegY as hex
  		jsr 	PutChr 		; echo
  		bra 	MsgL 		; loop next char
 
@@ -74,23 +86,24 @@ MsgX 		;jsr ChrRd
  		RTN_T() 		; otherwise done
 MsgInvalid 	; not found
  		RTN_F() 		; return false
-MsgAC 		lda 	ZAt 		; '@' A as char
+MsgAC 		lda 	ZRegA 		; '@' A as char
  		jsr 	PutChr
  		bra 	MsgL
-MsgAH 		lda 	ZAt 		; '!' A as hex
+MsgAH 		lda 	ZRegA 		; '!' A as hex
  		bra 	MsgHex
 
-MsgYC 		lda 	ZHash 		; '#' Y as char
+MsgYC 		lda 	ZRegY 		; '#' Y as char
  		jsr 	PutChr
  		bra 	MsgL
-MsgYH 		lda 	ZHash 		; '$' Y as hex
+MsgYH 		lda 	ZRegY 		; '$' Y as hex
 MsgHex 		pha
  		lda 	#'$'
- 		JSR 	PutChr
+ 		jsr 	PutChr
  		pla
  		jsr 	PrAHex
  		bra 	MsgL
-
+MsgYD		lda	ZRegY
+MsgDec		jmp	PrADec3
 
 #define DOT '.'+$80
 

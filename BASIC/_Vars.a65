@@ -64,8 +64,9 @@ Int(ZCnt)	; Number of bytes to copy/move
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 Short(ZStrLen) 	; length of STRBUF used (write index)
-Short(ZAt)	; Char to substitute for '@'/'&' in messages  A
-Short(ZHash)	; Char to substitute for '#'/'%' in messages  Y
+Short(ZRegA)	; Save register A (used in Msg)
+Short(ZRegX)	; Save register X (used in Msg)
+Short(ZRegY)	; Save register Y (used in Msg)
 
 ;----------------------------------------------- Code Lines
 Int(LN_NXT) 	; Adress of next line
