@@ -7,8 +7,9 @@
 .echo "ROM at $E000-$FFFF (8k)\r"
 ; .echo "ROM at $C000-$FFFF (16k)\r"
 
-#include "Macros.a65"
 #include "Constants.a65"
+
+#include "Macros.a65"
 #include "_Vars.a65"
 
 ;=================================================================== MAIN =============
@@ -208,11 +209,13 @@ T_Max 		= LOW($)+$80
 .dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
 .dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
 
-.echo "\nEPROM\n  Used  "
-.echo ROMEND - _ROM
-.echo "\n  Avail "
+.echo "\nEPROM "
+.echo ROMEND - _ROM + 512
+.echo " bytes used (~"
+.echo (ROMEND - _ROM + 512) * 100 / 8192
+.echo "%)  "
 .echo ($FF00 - ROMEND)
-.echo "\n\n"
+.echo " bytes remaining.\n\n"
 
 
 .end

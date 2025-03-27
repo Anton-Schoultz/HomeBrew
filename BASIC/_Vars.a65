@@ -24,16 +24,6 @@
  		;-- .NOLIST
 #endif
 .list
-;=================================================================== CONSTANTS ========
-
-; BUFSZ() Size for INBUF,TOKBUF
-#define BUFSZ() 64
-; STRSZ Size for STRBUF
-#define STRSZ 128
-; digits to convert into NUM_BUF  including [-] digits... NULL
-#define NUMSZ 8
-; bytes per line of Hex Dump
-#define HEXSZ 8
 
 
 ;=================================================================== CHRRD, VECTORS ===
@@ -134,7 +124,7 @@ Var(VARTAB,128) ; 32 x 4 bytes vars
 
 
 
-.export STRBUF,TOKBUF,INBUF
+;  .export STRBUF,TOKBUF,INBUF
 ;  .export VCHROUT,VCHRIN,
 ;  .export TMP
 

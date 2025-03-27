@@ -1,3 +1,19 @@
+;=================================================================== CONSTANTS ========
+SCRN_COLS = 40
+SCRN_LINES = 16
+
+
+; BUFSZ() Size for INBUF,TOKBUF
+#define BUFSZ() 64
+; STRSZ Size for STRBUF
+#define STRSZ 128
+; digits to convert into NUM_BUF  including [-] digits... NULL
+#define NUMSZ 8
+
+; bytes per line of Hex Dump  (if cols > 69 then use 16)
+#define HEXSZ 8
+
+
 ; Constants
 ; Value tokens F8-FF
 ;                  FF			;ff

@@ -19,7 +19,7 @@ _Err 		= $
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
- 		JSR 	PrNL
+ 		jsr 	PrNL
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
@@ -42,7 +42,7 @@ Error: ; Hanlde error[X] resetting to warm start
 Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
  		sta 	ZRegA 		; save .A for substitution '@'/'!'
  		sty 	ZRegY 		; save .Y for '#'/'%'
- 		stx	ZRegX		; save msg no
+ 		stx 	ZRegX 		; save msg no
  		txa
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
@@ -102,14 +102,14 @@ MsgHex 		pha
  		pla
  		jsr 	PrAHex
  		bra 	MsgL
-MsgYD		lda	ZRegY
-MsgDec		jmp	PrADec3
+MsgYD 		lda 	ZRegY
+MsgDec 		jmp 	PrADec3
 
 #define DOT '.'+$80
 
 ErrTbl
-.DB 	"O",'K'+$80 			; 0=OK
-.DB 	"Expected @ but got $",DOT 	; 1=Expected x got $YY.
+.DB "OK",DOT 				; 0=OK
+.DB "Expected @ but got $",DOT 		; 2=Expected x got $YY.
 
 .DB 0
 
