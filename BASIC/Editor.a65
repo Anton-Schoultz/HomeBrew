@@ -1,10 +1,15 @@
 ;=================================================================== EDITOR ===========
-;*  EditDwn              Move bytes down (Delete)
-;*  EditIns              Move memory up
-;*  EditNew              NEW = clear program, variables etc.
-;*  EditSeek             Search for line number >= LN_FIND
-;*  EditTop              Set ZRd up to read from the start of the program space
-;*  EditUp               Move bytes up (Insert)
+;*  EdtAdd               Append TOKBUF line to end of program
+;*  EdtClear             Clear variables and arrays
+;*  EdtDel               Delete line and fall through to Insert
+;*  EdtDwn               Move bytes down (Delete)
+;*  EdtOpn               Insert line, provided it is not an 'empty' line (length <5)
+;*  EdtOpn               Move memory up
+;*  EdtNew               NEW = clear program, variables etc.
+;*  EdtSeek              Search for line number >= LN_FIND
+;*  EdtTop               Set ZRd up to read from the start of the program space
+;*  EdtUp                Move bytes up (Insert)
+;*  EdtUpd               Update program with line in TOKBUF
 ;*
 #ifdef hide
 .NOLIST
@@ -31,10 +36,10 @@
 
 
 
-_Edit 		= $
+_Edt 		= $
 
-;----------------------------------------------- EditNew
-EditNew: ; NEW = clear program, variables etc.
+;----------------------------------------------- EdtNew
+EdtNew: ; NEW = clear program, variables etc.
  		;-- Start Basic at start of RAM
  		ZCPY(BASBEG,RAMBEG)
  		ZCPY(ZWr,BASBEG) 	; prepare to write to memory
@@ -43,118 +48,151 @@ EditNew: ; NEW = clear program, variables etc.
  		jsr 	ChrWr 		; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
- 		;-- Null var list
+EdtClear: ; Clear variables and arrays
+ 		ZCPY(ZWr,BASEND) 	; end of code
+ 		;-- clear variables
  		lda 	#0
  		jsr 	ChrWr
  		jsr 	ChrWr
  		ZCPY(VAREND,ZWr) 	; Set VAREND
  		ZCPY(STREND,ZWr) 	; Set STREND
- 		;-- end of ram
+ 		;-- clear arrays
  		ZCPY(ARYBEG,RAMEND)
  		ZDEC(ARYBEG) 		; top the last ram byte
  		lda 	#0
  		sta 	(ARYBEG)
- 		;--
  		RTN_T()
 
-;----------------------------------------------- EditTop
-EditTop: ; Set ZRd up to read from the start of the program space
+;----------------------------------------------- EdtTop
+EdtTop: ; Set ZRd up to read from the start of the program space
  		ZCPY(ZRd,BASBEG)
  		;--
  		rts
 
-;----------------------------------------------- EditSeek
-EditSeek: ; Search for line number >= LN_FIND
- 		jsr 	EditTop 	; start at the top
+;----------------------------------------------- EdtSeek
+EdtSeek: ; Search for line number >= LN_FIND
+ 		jsr 	EdtTop 		; start at the top
  		;-- get the first byte into CHRGOT
-EditSeekL 	lda 	(ZRd)
+EdtSeekL 	lda 	(ZRd)
  		sta 	CHRGOT
- 		BEQ 	EditSeekEnd 	; end of program space
-
+ 		beq 	EdtSeekEnd 	; end of program space
  		;-- set LN_NUM=line number, LN_NXT=address of next line
  		jsr 	X_LineNo
  		;-- is it >= the one we're looking for?
  		sec
- 		LDA 	LN_FIND+1
- 		SBC 	LN_NUM+1 	; CY=1
- 		BCS 	EditSeekNxt
- 		sec
- 		LDA 	LN_FIND
- 		SBC 	LN_NUM
- 		BCS 	EditSeekNxt
+ 		lda 	LN_FIND
+ 		sbc 	LN_NUM
+ 		sta 	TMP
+ 		lda 	LN_FIND+1
+ 		sbc 	LN_NUM+1
+ 		sta 	TMP+1
  		;-- Equal or greater
-EditSeekEnd 	rts
+EdtSeekEnd 	rts
 
-EditSeekNxt	ZCPY(ZRd,LN_NXT)
-		bra	EditSeekL
+EdtSeekNxt 	ZCPY(ZRd,LN_NXT)
+ 		bra 	EdtSeekL
+
+;----------------------------------------------- EdtUpdate
+EdtUpd: ; Update program with line in TOKBUF
+; LN_FIND has line no from tokbuf
+; ZCnt is length of the line in tokbuf
+ 		jsr 	EdtSeek
+ 		;-- if CHRGOT is zero we found end of program and must append
+ 		lda 	CHRGOT
+ 		beq 	EdtAdd
+ 		;-- if line no is a match we need to delete first
+ 		bmi 	EdtIns 		; N:1 NUM>FND -> Insert
+ 		ora 	TMP
+ 		bne 	EdtOpn 		; Z:1 -> Delete, then Insert
+EdtDel: ; Delete line and fall through to Insert
 
 
-;----------------------------------------------- EditDwn
+EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
+
+
+ 		rts 			; Done
+
+EdtAdd: ; Append TOKBUF line to end of program
+ 		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
+ 		ZADD(BASEND,ZCnt) 	; BASEND += Len
+ 		ZSET(ZSrc,TOKBUF) 	; from the token buffer
+ 		ldy 	ZCnt
+EdtCpy 		lda 	(ZSrc),y
+ 		sta 	(ZTgt),y
+ 		dey
+ 		bpl 	EdtCpy
+ 		rts
+.export BASEND
+
+;=================================================================== INS/DEL ==========
+
+;----------------------------------------------- EdtDwn
 ; Move bytes down (Delete)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
 ; ZCnt = number of bytes to move	Preserved
-EditDwn: ;Move bytes down (Delete)
+EdtDwn: ;Move bytes down (Delete)
  		ldy 	#0
  		ldx 	ZCnt+1
- 		beq 	EditDwn2
-EditDwn1 	lda 	(ZSrc),Y 	; move a page at a time
+ 		beq 	EdtDwn2
+EdtDwn1 	lda 	(ZSrc),Y 	; move a page at a time
  		sta 	(ZTgt),Y
  		iny
- 		bne 	EditDwn1
+ 		bne 	EdtDwn1
  		inc 	ZSrc+1
  		inc 	ZTgt+1
  		dex
- 		bne 	EditDwn1
-EditDwn2 	ldx 	ZCnt
- 		beq 	EditDwn4
-EditDwn3 	lda 	(ZSrc),Y 	; move the remaining bytes
+ 		bne 	EdtDwn1
+EdtDwn2 	ldx 	ZCnt
+ 		beq 	EdtDwn4
+EdtDwn3 	lda 	(ZSrc),Y 	; move the remaining bytes
  		sta 	(ZTgt),Y
  		iny
  		dex
- 		bne 	EditDwn3
-EditDwn4 	rts
+ 		bne 	EdtDwn3
+EdtDwn4 	rts
 
-;----------------------------------------------- EditUp
+;----------------------------------------------- EdtUp
 ; Move bytes up (Insert)
 ; ZSrc = source end address		Changed
 ; ZTgt = destination end address	Changed
 ; ZCnt = number of bytes to move 	Preserved
-EditUp: ; Move bytes up (Insert)
+EdtUp: ; Move bytes up (Insert)
  		ZINC(ZSrc) 		; adjust source and target
  		ZINC(ZTgt)
  		;--
  		ldy 	#$FF
  		ldx 	ZCnt+1
- 		beq 	EditUp3
-EditUp1 	dec 	ZSrc+1
+ 		beq 	EdtUp3
+EdtUp1 		dec 	ZSrc+1
  		dec 	ZTgt+1
-EditUp2 	lda 	(ZSrc),Y 	; move a page at a time
+EdtUp2 		lda 	(ZSrc),Y 	; move a page at a time
  		sta 	(ZTgt),Y
  		dey
- 		bne 	EditUp2
+ 		bne 	EdtUp2
  		lda 	(ZSrc),Y 	; handle Y = 0 separately
  		sta 	(ZTgt),Y
  		dey
  		dex
- 		bne 	EditUp1
-EditUp3 	ldx 	ZCnt
- 		beq 	EditUp5
+ 		bne 	EdtUp1
+EdtUp3 		ldx 	ZCnt
+ 		beq 	EdtUp5
  		dec 	ZSrc+1
  		dec 	ZTgt+1
-EditUp4 	lda 	(ZSrc),Y 	; move the remaining bytes
+EdtUp4 		lda 	(ZSrc),Y 	; move the remaining bytes
  		sta 	(ZTgt),Y
  		dey
  		dex
- 		bne 	EditUp4
-EditUp5 	rts
+ 		bne 	EdtUp4
+EdtUp5 		rts
 
-;----------------------------------------------- EditIns
+;----------------------------------------------- EdtOpn
+; Move memory up (open up a space)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
 ; ZCnt = number of bytes to move	Preseved
 ;
-EditIns: ; Move memory up
+EdtOpn: ; Move memory up
  		ldx 	ZCnt+1 		; the last byte must be moved first
  		clc 			; start at the final pages of ZSrc and ZTgt
  		txa
@@ -166,25 +204,25 @@ EditIns: ; Move memory up
  		sta 	ZTgt+1
  		inx 			; allows the use of BNE after the DEX below
  		ldy 	ZCnt
- 		beq 	EditIns3
+ 		beq 	EdtOpn3
  		dey 			; move bytes on the last page first
- 		beq 	EditIns2
-EditIns1 	lda 	(ZSrc),Y
+ 		beq 	EdtOpn2
+EdtOpn1 	lda 	(ZSrc),Y
  		sta 	(ZTgt),Y
  		dey
- 		bne 	EditIns1
-EditIns2 	lda 	(ZSrc),Y 	; handle Y = 0 separately
+ 		bne 	EdtOpn1
+EdtOpn2 	lda 	(ZSrc),Y 	; handle Y = 0 separately
  		sta 	(ZTgt),Y
-EditIns3 	dey
+EdtOpn3 	dey
  		dec 	ZSrc+1 		; move the next page (if any)
  		dec 	ZTgt+1
  		dex
- 		bne 	EditIns1
+ 		bne 	EdtOpn1
  		rts
 
 
-.echo "  _Editor\t"
-.echo $-_Edit
+.echo "  _Edtor\t"
+.echo $-_Edt
 .echo "\n"
 .nolist
 #endif

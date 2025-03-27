@@ -1,0 +1,110 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+
+#define ERR_OK 0
+#define ERR_EXPECTED 2
+
+;=================================================================== ERROR ============
+;*  Error                Hanlde error[X] resetting to warm start
+;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/$ Char/hex
+;*
+_Err 		= $
+
+;----------------------------------------------- X_Err
+Error: ; Hanlde error[X] resetting to warm start
+ 		pha
+ 		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
+ 		jsr	PrNL
+ 		pla
+ 		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
+ 		jsr 	Msg
+
+ 		HALT()
+
+ 		jmp 	Warm
+
+;  Short(ZAt)	; Char to substitute for '@'/'!' in messages  A
+;  Short(ZHash)	; Char to substitute for '#'/'$' in messages  Y
+#define ZTokPtr ZPtr
+;----------------------------------------------- Msg
+Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
+ 		sta 	ZAt 		; save .A for substitution '@'/'!'
+ 		sty 	ZHash 		; save .Y for '#'/'%'
+ 		txa
+ 		and 	#$7F
+ 		lsr 	a 		; A = TokNo / 2
+ 		tax 			; index in table
+ 		cpx 	#0
+ 		beq 	MsgL0 		; token 80 is special ;P
+ 		ldy 	#$FF
+ 		;--
+MsgNxt 		cpx 	#0 		; no more
+ 		beq 	MsgX
+ 		;-- move to next word
+MsgNxtL 	iny
+ 		lda 	(ZTokPtr),y
+ 		beq 	MsgInvalid 	; end of list, not found
+ 		bpl 	MsgNxtL
+ 		;-- got the marker
+ 		dex
+ 		bne 	MsgNxtL
+MsgL 		;-- found the start of the word
+ 		iny 			; skip over the last end-of-word marker
+MsgL0 		;-- output the word
+ 		lda 	(ZTokPtr),y
+ 		beq 	MsgX 		; end of list -> done
+ 		bmi 	MsgLX 		; last char
+ 		BR_AEQ('@',MsgAC) 	; ZAt (A) as character
+ 		BR_AEQ('!',MsgAH) 	; ZAt (A) as hex
+ 		BR_AEQ('#',MsgYC) 	; ZHash (Y) as character
+ 		BR_AEQ('$',MsgYH) 	; ZHash (Y) as hex
+ 		jsr 	PutChr 		; echo
+ 		bra 	MsgL 		; loop next char
+
+MsgLX 		;-- last character of the word (marked one)
+ 		and 	#$7F 		; mask off bit7
+ 		jsr 	PutChr 		; output it and return
+ 		jsr 	IsAlpha
+ 		BR_F(MsgX) 		; ends in alpha?
+ 		lda 	#' ' 		; yes, pad a blank
+ 		jsr 	PutChr
+MsgX 		;jsr ChrRd
+ 		RTN_T() 		; otherwise done
+MsgInvalid 	; not found
+ 		RTN_F() 		; return false
+MsgAC 		lda 	ZAt 		; '@' A as char
+ 		jsr 	PutChr
+ 		bra 	MsgL
+MsgAH 		lda 	ZAt 		; '!' A as hex
+ 		bra 	MsgHex
+
+MsgYC 		lda 	ZHash 		; '#' Y as char
+ 		jsr 	PutChr
+ 		bra 	MsgL
+MsgYH 		lda 	ZHash 		; '$' Y as hex
+MsgHex 		pha
+ 		lda 	#'$'
+ 		JSR 	PutChr
+ 		pla
+ 		jsr 	PrAHex
+ 		bra 	MsgL
+
+
+#define DOT '.'+$80
+
+ErrTbl
+.DB 	"O",'K'+$80 			; 0=OK
+.DB 	"Expected @ but got $",DOT 	; 1=Expected x got $YY.
+
+.DB 0
+
+
+
+
+.echo "  _Error\t"
+.echo $-_Err
+.echo "\n"
+.nolist
+#endif

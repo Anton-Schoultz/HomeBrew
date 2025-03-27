@@ -7,14 +7,27 @@
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
 ;=================================================================== BREAK ============
-;*  X_Break              code to execute the Break
+;*  X_Break              code to execute BREAK (Error 0=OK)
 ;*
 
 _Break 		= $
 
 ;----------------------------------------------- X_Break
-X_Break: ; code to execute the Break
- 		HALT()
+X_Break: ; Code to execute BREAK (Error 0=OK)
+
+
+
+ 		;-- reset after an error condition
+ 		sei 			; Halt IRQs
+ 		ldx 	#$ff 		; Set Stack pointer
+ 		txs
+ 		cld 			; Binary mode
+ 		cli 			; Enable irqs
+ 		jmp 	Warm
+
+
+
+
 
 .echo "  _BREAK\t"
 .echo $-_Break
@@ -36,5 +49,5 @@ W_Break 	.DB 	"BREA",'K'+$80
 T_Break 	= LOW($)+$80
 .DW 	X_Break
 .nolist
-;.export T_Break
+ 		;-- .export T_Break
 #endif
