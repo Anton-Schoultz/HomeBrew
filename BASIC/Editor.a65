@@ -63,6 +63,10 @@ EdtClear: ; Clear variables and arrays
  		ZDEC(ARYBEG) 		; top the last ram byte
  		lda 	#0
  		sta 	(ARYBEG)
+ 		tay
+EdtWipe 	sta 	(BASBEG),y
+ 		iny
+ 		bne 	EdtWipe
  		RTN_T()
 
 ;----------------------------------------------- EdtTop
@@ -106,23 +110,48 @@ EdtUpd: ; Update program with line in TOKBUF
 ; LN_FIND has line no from tokbuf
 ; ZCnt is length of the line in tokbuf
  		jsr 	EdtSeek
- 		;-- N:1 = Insert
- 		bmi 	EdtIns 		; N:1 NUM>FND -> Insert
- 		bcc 	EdtAdd 		; C:0 End of programm
+ 		;-- N:1 NUM>FND -> Insert
+ 		bpl 	EdtUpd1
+ 		jmp 	EdtIns
+
+EdtUpd1 	bcs 	EdtDel
+ 		;-- C:0 End of program
+ 		jmp 	EdtAdd
+
  		;-- Z:1 -> Delete, then Insert if not empty
 EdtDel: ; Delete line and fall through to Insert
- 		PRINT("DEL\r\n")
-
-
-
-
+ 		ZCPY(ZTgt,LN_ADR)
+ 		ZCPY(ZSrc,LN_NXT)
+ 		;--
+ 		ZCPY(ZDBug,BASEND)
+ 		ZCPY(ZCnt,BASEND)
+ 		ZSUB(ZCnt,LN_NXT)
+ 		jmp 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		lda 	#5
  		cmp 	LN_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
  		;-- Insert the line
- 		PRINT("INS ")
+ 		PRINT("INS\r\n")
+ 		;-- jsr EdtDBug
+ 		;-- ZSrc = LM_ADR
+ 		ZCPY(ZSrc,LN_ADR)
+ 		;-- ZTgt=LN_ADR+LN_LEN
+ 		ZCPY(ZTgt,LN_ADR)
+ 		ZADD(ZTgt,LN_LEN)
+ 		;-- ZCnt = BASEND - LN_ADR
+ 		ZCPY(ZCnt,BASEND)
+ 		ZSUB(ZCnt,LN_ADR) 	; ZSUB(r,n)	r = r-n
+ 		;-- copy up to make space
+ 		jsr 	EdtOpn
+ 		;-- copy line from TOKBUF to program
+ 		ZCPY(ZTgt,LN_ADR)
+ 		clc
+ 		lda 	TOKBUF+3
+ 		adc 	#2
+ 		sta 	ZCnt
+ 		jmp 	EdtCpy
 EdtInsX 	rts 			; Done
 
 ;----------------------------------------------- EdtAdd
@@ -138,6 +167,7 @@ EdtCpyL 	lda 	(ZSrc),y
  		dey
  		bpl 	EdtCpyL
  		rts
+
 .export BASEND
 
 ;=================================================================== INS/DEL ==========

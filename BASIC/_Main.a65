@@ -1,4 +1,4 @@
-;#define hide
+ 		;-- #define hide
 
 ; E000-FFFF = 8k
 #define _ROM $E000
@@ -43,7 +43,7 @@
 
 
 TestSrc
-.DB "10  PRINT 12/(3+2"	;  2.4 ok
+.DB "10  PRINT 12/(3+2" 		;  2.4 ok
 ; .DB "10  PRINT 12/10+120"	;  1.212e02 =  121.2 ok
 ; .DB "10  PRINT 120+12/10"	;  1.212e02 =  121.2 ok
 ; .DB "10  PRINT 12/10-120"	; -1.188e02 = -118.8 ok
@@ -130,25 +130,27 @@ MainLoop 	;-- Prompt and input
  		jsr 	PrNL
 
  		HEX_DUMP(LN_NUM) 	; Line NXT,NUM, FIND
- 		;HEX_DUMP(ZSrc)
+ 		;-- HEX_DUMP(ZSrc)
  		jsr 	PrNL
 
- 		jsr 	EdtUpd
-
- 		;--
- 		PR_ZSUP_ON()
- 		;-- List the line in TOKBUF
- 		jsr 	List
-; 		;--
-; 		;-- ; 		PR_ZSPC_OFF()
- 		;--
  		lda 	TOKBUF
  		cmp 	#T_LineNo
- 		beq 	MainLoop
- 		;--
-; 		;-- LineNo=zero will execute
- 		;--
- 		;-- Run
+ 		bne 	MainCmd
+
+ 		PR_ZSUP_ON()
+ 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
+ 		;-- set to read from memory
+ 		PR_RD_MEM() 		; read from memory (code space)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
+ 		jsr 	GetChr
+ 		jsr 	ListLn
+
+ 		jsr 	EdtUpd
+ 		BRA 	MainLoop
+
+;----------------------------------------------- MainCmd
+MainCmd 	;-- Run command line
  		lda 	#':'
  		jsr 	PutChr
  		PR_ZSPC_ON()

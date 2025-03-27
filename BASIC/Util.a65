@@ -8,8 +8,8 @@
 ;*  IntDH_AX             Divide AX by 10, result in ZTMP, remainder in A
 ;*  IntDT                Divide TMP by 10, remainder in A
 ;*  IntDT_AX             Divide AX by 10, result in TMP, remainder in A
-;*  IntParse             Parse Integer from source to TMP (returns value in AX)
-;*  IntPrint             Print integer AX to mem/io via PutChr
+;*  IntParse             Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
+;*  IntPrint             Print integer (U16) AX to mem/io via PutChr
 ;*  IntPrintZX           copy ZPg[x] to TMP and print it
 ;*  IntTmpMT             TMP = TMP * 10 (preserves AXY)
 ;*  PrADec2              Print A as decimal digits 00-99
@@ -121,6 +121,7 @@ IntParse: ; Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
  		lda 	#0
  		sta 	TMP
  		sta 	TMP+1
+ 		sta 	NUM_SGN
 IntParseL 	lda 	CHRGOT 		; term null
  		beq 	IntParseX
 IntParse1 	jsr 	IsDigit 	; messes with A
@@ -224,18 +225,53 @@ _Print_: ;Print in-line string
  		pla
  		plx
  		;-- set up to print from there (ZPtr)
- 		SETAX(ZPtr)
-; skip over fisrt byte (end of jsr)
- 		ZINC(ZPtr)
- 		jsr 	PrStr 		; output up to null/term
+ 		SETAX(ZPtr) 		; [0] is part of call [1] is data
+ 		ldy 	#0
+_Print_L 	iny 			; next char
+ 		lda 	(ZPtr),y
+ 		beq 	_Print_X 	; zero -> exit
+		bmi	_Print_HX
+ 		jsr 	PutChr 		; print character
+ 		bra 	_Print_L 	; loop back (no more than 255 chars)
+_Print_HX	; print hex data
+		iny
+		lda (ZPtr),y		; lo
+		sta ZDBug
+		iny
+		lda (ZPtr),y		; lo
+		sta ZDBug+1
+		iny
+		phy
+		;
+		lda #'='
+		jsr PutChr
+		lda #'$'
+		jsr PutChr
+		;
+		ldy #1
+		lda (ZDBug),y		; hi data
+		jsr PrAHex
+		dey
+		lda (ZDBug),y		; lo data
+		jsr PrAHex
+		jsr PrNL
+		;
+		ply
+		;
  		;-- Calculate the return address
- 		sec 			; adjust one more
- 		lda 	ZPtr 		; lo
- 		adc 	ZTmp 		; + Len
+_Print_X 	tya			; y is offset to the null
+		sec 			; adjust one more
+ 		adc 	ZPtr		; + Len
  		sta 	ZPtr 		; -> lo
  		bcc 	_PrintFPX 	; carry?
  		inc 	ZPtr+1 		; yes, incr hi
 _PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
+
+
+
+
+
+
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io

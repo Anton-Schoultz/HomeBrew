@@ -40,14 +40,14 @@ Int(VCHROUT) 	; Send character to output device (Screen, serial..)
 ;=================================================================== ZVARS ============
 ; Zero page variables
 .org $0020
-Int(ZBuf) 	; ZBuf pointer to a buffer
-Int(ZPtr) 	; ZPtr general pointer
-Int(ZStr) 	; ZStr points to string result
-
-.org $0030
 Int(ZSrc)	; Source for copy/move
 Int(ZTgt)	; Destination for copy/move
 Int(ZCnt)	; Number of bytes to copy/move
+Int(ZDBug)	; debug usage
+
+Int(ZBuf) 	; ZBuf pointer to a buffer
+Int(ZPtr) 	; ZPtr general pointer
+Int(ZStr) 	; ZStr points to string result
 
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
@@ -64,7 +64,9 @@ Int(LN_ADR)	; Current Line address
 Int(LN_NXT) 	; Adress of next line
 Int(LN_FIND)	; Line number to look for
 
-Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
+Int(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
+;Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
+
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 ;----------------------------------------------- BASIC program

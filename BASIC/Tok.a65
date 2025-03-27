@@ -89,6 +89,7 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
  		sta 	LN_LEN
+ 		ZZERO(LN_LEN+1)		; clear high byte
 
 P_StmntX 	;- work out total length for editor -> ZCnt
  		sec
@@ -180,16 +181,16 @@ ParseClrL 	sta 	TOKBUF,y
  		bne 	ParseClrL
  		rts
 
-;----------------------------------------------- BasTop
-BasTop: ; Setup to read from start of basic, for now TOKBUF
-; for now, just TOKBUF
- 		;-- set ZRd to point to first line of Program
- 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
- 		;-- set to read from memory
- 		PR_RD_MEM() 		; read from memory (code space)
- 		;-- list to output device IO
- 		PR_WR_IO()
- 		rts
+;	;----------------------------------------------- BasTop
+;	BasTop: ; Setup to read from start of basic, for now TOKBUF
+;	; for now, just TOKBUF
+;	 		;-- set ZRd to point to first line of Program
+;	 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
+;	 		;-- set to read from memory
+;	 		PR_RD_MEM() 		; read from memory (code space)
+;	 		;-- list to output device IO
+;	 		PR_WR_IO()
+;	 		rts
 ;----------------------------------------------- SkipBlankL
 ; reads next character nad then checks for balnks
 SkipBlankL 	; read next
@@ -330,10 +331,15 @@ TokExpand: ; Expand the token .X to key word
  		jmp 	Msg
 
 ;----------------------------------------------- Run
-Run: ; Run from start
- 		jsr 	BasTop
-; code to seek to starting line for listing
-; loop to call RunLn for each line
+Run: ; Run from TOKBUF
+
+; for now, just TOKBUF
+ 		;-- set ZRd to point to first line of Program
+ 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
+ 		;-- set to read from memory
+ 		PR_RD_MEM() 		; read from memory (code space)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
 
 RunL 		jsr 	RunLn 		; (*1)
 ; LN_NXT -> ZRd
@@ -380,17 +386,17 @@ TokErr: ; display invalid token as [xx]
  		rts
 
 
-;----------------------------------------------- List Scrn
-List: ; List from start of program
- 		;-- from start
- 		jsr 	BasTop
- 		;--
-; code to seek to starting line for listing
-; loop to call ListLn for each line in turn until last one
- 		jsr 	GetChr
- 		jsr 	ListLn
-; end of list
- 		rts
+;;----------------------------------------------- List Scrn
+;List: ; List from start of program
+; 		;-- from start
+; 		jsr 	BasTop
+; 		;--
+;; code to seek to starting line for listing
+;; loop to call ListLn for each line in turn until last one
+; 		jsr 	GetChr
+; 		jsr 	ListLn
+;; end of list
+; 		rts
 
 ;----------------------------------------------- ListLn
 ListLn: ; List line pointed to by ZRd
@@ -400,7 +406,7 @@ ListLn: ; List line pointed to by ZRd
  		bra 	ListLn
 ListLnX 	jmp 	PrNL 		; NL and return
 
-
+;  list a part of the line (token & its data)
 ListTok 	sta 	TOKNO
  		;-- T_LineNo ?
  		CASE(T_LineNo,L_LineNo) ; $F0->L_LineNo, rts to (*1)
@@ -548,7 +554,7 @@ X_LineNext: ; Move to the start of the next line LN_NXT->ZRd (ZRd)->.A->CHRGOT
  		rts
 
 ;----------------------------------------------- L_LineNo
-L_LineNo: ; List LineNo
+L_LineNo: ; List LineNo (calls X_LineNo)
  		jsr 	X_LineNo 	; Get LN_NUM & Set up LN_NXT
  		;-- output line no
  		lda 	LN_NUM

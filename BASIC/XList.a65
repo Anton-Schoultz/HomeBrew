@@ -1,0 +1,63 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== LIST ==============
+;*  X_List               Execute List
+;*
+_List 		= $
+;----------------------------------------------- X_List
+X_List: ; Execute List
+
+; CHECK I/O FOR LISTING, IT'S WRITTING OVER THE PROGRAM
+ 		CLS()
+ 		;-- set to read from memory
+ 		PR_RD_MEM() 		; read from memory (code space)
+ 		;-- list to output device IO
+ 		PR_WR_IO()
+
+ 		;-- from the top
+ 		jsr 	EdtTop		; BASBEG->LN_NXT->ZRd, (ZRd)->.A->CHRGOT
+ 		;
+
+; code to seek to starting line for listing
+; loop to call ListLn for each line in turn until last one
+X_List_L	jsr 	X_LineNext	; LN_NXT->ZRd, (ZRd)->.A->CHRGOT
+
+		; ListLn gets char from CHRGOT
+ 		jsr 	ListLn 		; List LineNo (calls X_LineNo)
+ 		;--
+ 		lda 	(LN_NXT) 	; first byte of next line
+ 		beq 	X_List_X 	; zero so loop
+
+
+		bra	X_List_L
+
+; end of list
+X_List_X	rts
+
+
+
+
+.echo "  _List\t\t"
+.echo $-_List
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_List 		.DB 	"LIS",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_List 		= LOW($)
+.DW 	X_List
+.nolist
+ 		;-- .export T_List
+#endif
+
+.list 					; end of List

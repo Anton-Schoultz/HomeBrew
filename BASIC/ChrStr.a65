@@ -9,7 +9,7 @@
 ;*  Input                Read from Mem/IO and place in INBUF, until CR
 ;*  InputIO              Input INBUF from IO
 ;*  InputIOEcho          Input INBUF from IO, echo chars to IO
-;*  PrStr                Print string pointed to by ZPtr [A]
+;*  PrStr                Print string pointed to by ZPtr [A], last Y->ZTmp
 ;*  PrStrAX              Print string at AX [A] -> PutChr -> Mem/IO
 ;*  PrStrBuf             Print STRBUF -> PutChr -> Mem/IO
 ;*  PutChr               Print character to Mem/IO
@@ -265,7 +265,9 @@ InputL:  	jsr 	GetChr 		; get char from mem/io
  		dex 			; back-up a position
  		sta 	INBUF,x 	; place in buf
  		bra 	InputL
-Input1 		sta 	INBUF,x 	; place in buf
+
+Input1 		jsr 	ToUpper
+ 		sta 	INBUF,x 	; place in buf
  		;-- check buffer full
  		cpx 	#BUFSZ
  		bpl 	InputX 		; full -> exit
@@ -277,6 +279,13 @@ InputX 		lda 	#0 		; terminate with a null
  		sta 	INBUF+1,X
  		rts
 
+ToUpper 	cmp 	#'a'
+ 		BMI 	ToUpperX 	; <'a'
+ 		cmp 	#'{'
+ 		BPL 	ToUpperX
+ 		;--
+ 		eor 	#$20
+ToUpperX 	rts
 
 ;----------------------------------------------- PrStrBuf
 PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
@@ -285,7 +294,7 @@ PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)
 ;----------------------------------------------- PrStr
-PrStr: ; Print string pointed to by ZPtr [A]
+PrStr: ; Print string pointed to by ZPtr [A], last Y->ZTmp
 ; last index saved into ZTmp
  		phy
  		ldy 	#0
