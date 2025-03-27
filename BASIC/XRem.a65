@@ -44,3 +44,4 @@ T_Rem 		= LOW($)+$80
 .nolist
 ;.export T_Rem
 #endif
+.list	; end of REM

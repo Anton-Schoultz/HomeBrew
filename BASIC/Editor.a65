@@ -3,14 +3,15 @@
 ;*  EdtClear             Clear variables and arrays
 ;*  EdtDel               Delete line and fall through to Insert
 ;*  EdtDwn               Move bytes down (Delete)
-;*  EdtOpn               Insert line, provided it is not an 'empty' line (length <5)
-;*  EdtOpn               Move memory up
+;*  EdtIns               Insert line, provided it is not an 'empty' line (length <5)
 ;*  EdtNew               NEW = clear program, variables etc.
+;*  EdtOpn               Move memory up
 ;*  EdtSeek              Search for line number >= LN_FIND
-;*  EdtTop               Set ZRd up to read from the start of the program space
+;*  EdtTop               Set LN_NXT and ZRd to start of program, (ZRd)->.A->CHRGOT
 ;*  EdtUp                Move bytes up (Insert)
 ;*  EdtUpd               Update program with line in TOKBUF
 ;*
+.LIST
 #ifdef hide
 .NOLIST
 #endif
@@ -64,63 +65,74 @@ EdtClear: ; Clear variables and arrays
  		RTN_T()
 
 ;----------------------------------------------- EdtTop
-EdtTop: ; Set ZRd up to read from the start of the program space
+EdtTop: ; Set LN_NXT and ZRd to start of program, (ZRd)->.A->CHRGOT
+ 		ZCPY(LN_NXT,BASBEG)
  		ZCPY(ZRd,BASBEG)
- 		;--
+ 		;-- this fetch for other users (EdtSeek will do it's own)
+ 		lda 	(ZRd)
+ 		sta 	CHRGOT
  		rts
 
 ;----------------------------------------------- EdtSeek
 EdtSeek: ; Search for line number >= LN_FIND
  		jsr 	EdtTop 		; start at the top
- 		;-- get the first byte into CHRGOT
-EdtSeekL 	lda 	(ZRd)
- 		sta 	CHRGOT
+EdtSeekL 	jsr 	X_LineNext 	; LN_NXT->ZRd,(ZRd)->.A->CHRGOT
  		beq 	EdtSeekEnd 	; end of program space
  		;-- set LN_NUM=line number, LN_NXT=address of next line
  		jsr 	X_LineNo
  		;-- is it >= the one we're looking for?
- 		sec
+EdtTest		sec
  		lda 	LN_FIND
  		sbc 	LN_NUM
  		sta 	TMP
  		lda 	LN_FIND+1
  		sbc 	LN_NUM+1
  		sta 	TMP+1
- 		;-- Equal or greater
-EdtSeekEnd 	rts
-
-EdtSeekNxt 	ZCPY(ZRd,LN_NXT)
+ 		bmi 	EdtSeekX
+ 		;-- check for equal
+ 		ora 	TMP
+ 		beq 	EdtSeekX
+ 		;-- Not there yet
  		bra 	EdtSeekL
+
+EdtSeekEnd 	clc			; Z:1 C:0 N:0	= end
+
+EdtSeekX 	rts
+
 
 ;----------------------------------------------- EdtUpdate
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FIND has line no from tokbuf
 ; ZCnt is length of the line in tokbuf
- 		jsr 	EdtSeek
- 		;-- if CHRGOT is zero we found end of program and must append
- 		lda 	CHRGOT
- 		beq 	EdtAdd
- 		;-- if line no is a match we need to delete first
- 		bmi 	EdtIns 		; N:1 NUM>FND -> Insert
- 		ora 	TMP
- 		bne 	EdtOpn 		; Z:1 -> Delete, then Insert
-EdtDel: ; Delete line and fall through to Insert
 
+
+; 		bra 	EdtUpd 		; ***** debug with animate
+
+ 		jsr 	EdtSeek
+ 		;-- N:1 = Insert
+ 		bmi 	EdtIns 		; N:1 NUM>FND -> Insert
+ 		bcc	EdtAdd
+
+ 		; Z:1 -> Delete, then Insert
+EdtDel: ; Delete line and fall through to Insert
+		PRINT("DEL\n")
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
-
-
+		PRINT("INS\n")
  		rts 			; Done
 
 EdtAdd: ; Append TOKBUF line to end of program
+		PRINT("ADD\n")
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
  		ZADD(BASEND,ZCnt) 	; BASEND += Len
- 		ZSET(ZSrc,TOKBUF) 	; from the token buffer
+
+EdtCpy:; Copy from TOKBUF->(ZTgt)
+		ZSET(ZSrc,TOKBUF) 	; from the token buffer
  		ldy 	ZCnt
-EdtCpy 		lda 	(ZSrc),y
+EdtCpyL		lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
- 		bpl 	EdtCpy
+ 		bpl 	EdtCpyL
  		rts
 .export BASEND
 
@@ -224,5 +236,5 @@ EdtOpn3 	dey
 .echo "  _Edtor\t"
 .echo $-_Edt
 .echo "\n"
-.nolist
+.list
 #endif

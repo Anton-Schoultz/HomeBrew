@@ -1,4 +1,4 @@
-; #define hide
+;#define hide
 
 ; E000-FFFF = 8k
 #define _ROM $E000
@@ -19,7 +19,7 @@
 ;*  Warm                 Warm Start entry point
 ;*
 #ifdef hide
-; .NOLIST
+.NOLIST
 #endif
 
 .org _ROM
@@ -101,12 +101,12 @@ Main: ; MAIN code
 MainLoop 	;-- Prompt and input
 
  		PR_WR_IO()
-; 		jsr 	PrNL
-; 		lda 	#'>'
-; 		jsr 	ConOut
-; 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+ 		jsr 	PrNL
+ 		lda 	#'>'
+ 		jsr 	ConOut
+ 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		;--
- 		jsr 	CopyLine
+; 		jsr 	CopyLine
  		;--
  		;-- clear screen
  		CLS()
@@ -142,9 +142,9 @@ MainLoop 	;-- Prompt and input
 ; 		;--
 ; 		;-- ; 		PR_ZSPC_OFF()
  		;--
-; 		lda 	TOKBUF
-; 		cmp 	#T_LineNo
-; 		beq 	MainLoop
+ 		lda 	TOKBUF
+ 		cmp 	#T_LineNo
+ 		beq 	MainLoop
  		;--
 ; 		;-- LineNo=zero will execute
  		;--
@@ -155,7 +155,7 @@ MainLoop 	;-- Prompt and input
  		jsr 	Run
 
  		;-- loop back and do it again
-; 		bra 	MainLoop
+ 		bra 	MainLoop
 
  		HALT()
 

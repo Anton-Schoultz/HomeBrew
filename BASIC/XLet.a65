@@ -66,3 +66,4 @@ T_Let 		= LOW($)
 .nolist
  		;-- .export T_Let
 #endif
+.list	; end of LET

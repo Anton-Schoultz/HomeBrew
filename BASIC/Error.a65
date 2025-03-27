@@ -12,6 +12,8 @@
 ;
 ;*  Error                Hanlde error[X] resetting to warm start
 ;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/$ Char/hex
+;*  RegLoad              Load registers from ZReg~
+;*  RegSave              Save registers into ZReg~
 ;*
 _Err 		= $
 
@@ -37,12 +39,24 @@ Error: ; Hanlde error[X] resetting to warm start
 ; $	Y as hex
 ; % 	Y as decimal
 
+;----------------------------------------------- RegLoad
+RegLoad: ; Load registers from ZReg~
+ 		lda 	ZRegA 		; load .A
+ 		ldy 	ZRegY 		; load .Y
+ 		ldx 	ZRegX 		; load .X
+ 		rts
+
+;----------------------------------------------- RegSave
+RegSave: ; Save registers into ZReg~
+ 		sta 	ZRegA 		; save .A
+ 		sty 	ZRegY 		; save .Y
+ 		stx 	ZRegX 		; save .X
+ 		rts
+
 #define ZTokPtr ZPtr
 ;----------------------------------------------- Msg
 Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
- 		sta 	ZRegA 		; save .A for substitution '@'/'!'
- 		sty 	ZRegY 		; save .Y for '#'/'%'
- 		stx 	ZRegX 		; save msg no
+ 		jsr 	RegSave 	; save regs
  		txa
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
@@ -119,5 +133,5 @@ ErrTbl
 .echo "  _Error\t"
 .echo $-_Err
 .echo "\n"
-.nolist
+.list
 #endif

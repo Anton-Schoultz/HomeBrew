@@ -32,3 +32,4 @@ T_New 		= LOW($)
 .nolist
  		;-- .export T_New
 #endif
+.list	; end of NEW

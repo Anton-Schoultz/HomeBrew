@@ -35,3 +35,4 @@ T_Cls 		= LOW($)
 .nolist
 ;.export T_Cls
 #endif
+.list	; end of CLS

@@ -48,5 +48,5 @@ T_NOT		= LOW($)+$80
 
 
 .nolist
-;.export T_LE,T_GE,T_NE
 #endif
+.list

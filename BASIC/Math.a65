@@ -1,4 +1,4 @@
-; .nolist
+.nolist
 ; this lets me select which maths implementation to use
 
 ;-----------------------------------------------
@@ -33,13 +33,17 @@
 ;  NumSetX              Pack and Store simple variable [X]
 
 
+;  A-Z		1-26
+;  @		0
+;  [\]^_	27,28,29,30,31
+
 #if 1
 #include "Math_S16.a65"
 #else
 
 ;----------------------------------------------- Dummy{
 #if $>$400
-
+.list
 .echo "\n"
 .echo "====================================\n"
 .echo " WARNING - Maths module is excluded \n"
@@ -87,3 +91,4 @@ NumSetX 	; Eval to store a A-Z variable  [X]
 ;----------------------------------------------- }Dummy
 
 #endif
+.list

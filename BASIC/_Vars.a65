@@ -21,9 +21,8 @@
 ; TOKBUF	Token buffer
 ;----------------------------------------------- IO Dev		$03xx
 #ifdef hide
- 		;-- .NOLIST
+.NOLIST
 #endif
-.list
 
 
 ;=================================================================== CHRRD, VECTORS ===
@@ -59,8 +58,10 @@ Short(ZRegX)	; Save register X (used in Msg)
 Short(ZRegY)	; Save register Y (used in Msg)
 
 ;----------------------------------------------- Code Lines
+PARAGRAPH()
+Int(LN_NUM) 	; Current Line number
+Int(LN_ADR)	; Current Line address
 Int(LN_NXT) 	; Adress of next line
-Int(LN_NUM) 	; Line number
 Int(LN_FIND)	; Line number to look for
 
 Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
@@ -83,7 +84,7 @@ Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
 Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
 Int(TMP) 	; Temp 16 bit value (line nos)
 
-
+.export LN_NUM
 
 #include "Math.a65" 			; Math module ZeroPage
 

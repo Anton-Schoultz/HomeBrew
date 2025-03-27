@@ -114,5 +114,5 @@ NmiRtn 		;-- Restore registers and return
 .echo "  _IrqNmi\t"
 .echo $-Irq
 .echo "\n"
-
+.list
 #endif

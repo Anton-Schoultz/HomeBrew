@@ -11,7 +11,6 @@
 ;*  L_String             list out string text
 ;*  List                 List from start of program
 ;*  ListLn               List line pointed to by ZRd
-;*  Msg                  Display Message (ZPtr)[X]
 ;*  NextLine             point ZRd to the next line LN_NXT
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
 ;*  P_LineNo             Parse line number and place int TOKBUF
@@ -25,6 +24,7 @@
 ;*  TokErr               display invalid token as [xx]
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokFind              try to find a matching token
+;*  X_LineNext           Move to the start of the next line LN_NXT->ZRd
 ;*  X_LineNo             Get LN_NUM & Set up LN_NXT
 ;*m Short(NUM_FLG)       ; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
 ;*
@@ -77,16 +77,17 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		lda 	#BAS_EOL 	; end-of-line marker
  		jsr 	ChrWr
 
- 		;-- check for TFPAnNo, fill in length if needed
+ 		;-- check for T_LineNo, fill in length if needed
  		lda 	TOKBUF
  		BR_ANE(T_LineNo,P_StmntX)
  		sec
  		lda 	ZWr
- 		sbc 	#LOW(TOKLEN+1) 	; one byte offset for ChrGet
+ 		sbc 	#LOW(TOKBUF+3)
  		sta 	TOKLEN
+ 		;--
  		sec
- 		lda 	ZWr+1
- 		sbc 	#HIGH(TOKBUF)
+ 		lda 	ZWr
+ 		sbc 	#LOW(TOKBUF)
  		sta 	LN_LEN
 
 P_StmntX 	;- work out total length for editor -> ZCnt
@@ -326,7 +327,7 @@ TokRtn 		lda 	TOKNO
 TokExpand: ; Expand the token .X to key word
  		ZSET(ZPtr,TblKeyword) 	; point to the keyword table
  		;-- print TblKeyword[X]
- 		jmp Msg
+ 		jmp 	Msg
 
 ;----------------------------------------------- Run
 Run: ; Run from start
@@ -521,6 +522,7 @@ P_LineNo: ; Parse line number and place int TOKBUF
 X_LineNo: ; Get LN_NUM & Set up LN_NXT
 ; enters with A=CHRGOT=T_LineNo, exit with CHRGOT after the line data
 ; sets LN_NUM=line number and LN_NXT=address of next line
+ 		ZCPY(LN_ADR,ZRd) 	; save start of this line
  		;-- save line no
  		jsr 	ChrRd 		; get lo no
  		sta 	LN_NUM
@@ -537,6 +539,13 @@ X_LineNo: ; Get LN_NUM & Set up LN_NXT
  		sta 	LN_NXT+1
  		;--
 X_LineNoX 	jmp 	ChrRd 		; read next byte->CHRGOT
+
+;----------------------------------------------- X_LineNext
+X_LineNext: ; Move to the start of the next line LN_NXT->ZRd (ZRd)->.A->CHRGOT
+ 		ZCPY(ZRd,LN_NXT)
+ 		lda 	(ZRd)
+ 		sta 	CHRGOT
+ 		rts
 
 ;----------------------------------------------- L_LineNo
 L_LineNo: ; List LineNo
@@ -559,4 +568,4 @@ L_LineNo: ; List LineNo
 .echo "  _Tok\t\t"
 .echo $-_Tok
 .echo "\n"
-
+.list
