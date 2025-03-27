@@ -1,6 +1,7 @@
 ;=================================================================== EDITOR ===========
 ;*  EdtAdd               Append TOKBUF line to end of program
 ;*  EdtClear             Clear variables and arrays
+;*  EdtCpy               Copy from TOKBUF->(ZTgt)
 ;*  EdtDel               Delete line and fall through to Insert
 ;*  EdtDwn               Move bytes down (Delete)
 ;*  EdtIns               Insert line, provided it is not an 'empty' line (length <5)
@@ -81,7 +82,7 @@ EdtSeekL 	jsr 	X_LineNext 	; LN_NXT->ZRd,(ZRd)->.A->CHRGOT
  		;-- set LN_NUM=line number, LN_NXT=address of next line
  		jsr 	X_LineNo
  		;-- is it >= the one we're looking for?
-EdtTest		sec
+EdtTest 	sec
  		lda 	LN_FIND
  		sbc 	LN_NUM
  		sta 	TMP
@@ -95,7 +96,7 @@ EdtTest		sec
  		;-- Not there yet
  		bra 	EdtSeekL
 
-EdtSeekEnd 	clc			; Z:1 C:0 N:0	= end
+EdtSeekEnd 	clc 			; Z:1 C:0 N:0	= end
 
 EdtSeekX 	rts
 
@@ -104,32 +105,35 @@ EdtSeekX 	rts
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FIND has line no from tokbuf
 ; ZCnt is length of the line in tokbuf
-
-
-; 		bra 	EdtUpd 		; ***** debug with animate
-
  		jsr 	EdtSeek
  		;-- N:1 = Insert
  		bmi 	EdtIns 		; N:1 NUM>FND -> Insert
- 		bcc	EdtAdd
-
- 		; Z:1 -> Delete, then Insert
+ 		bcc 	EdtAdd 		; C:0 End of programm
+ 		;-- Z:1 -> Delete, then Insert if not empty
 EdtDel: ; Delete line and fall through to Insert
-		PRINT("DEL\n")
+ 		PRINT("DEL\r\n")
+
+
+
+
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
-		PRINT("INS\n")
- 		rts 			; Done
+ 		lda 	#5
+ 		cmp 	LN_LEN
+ 		bpl 	EdtInsX 	; Empty Line -> exit
+ 		;-- Insert the line
+ 		PRINT("INS ")
+EdtInsX 	rts 			; Done
 
+;----------------------------------------------- EdtAdd
 EdtAdd: ; Append TOKBUF line to end of program
-		PRINT("ADD\n")
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
  		ZADD(BASEND,ZCnt) 	; BASEND += Len
-
-EdtCpy:; Copy from TOKBUF->(ZTgt)
-		ZSET(ZSrc,TOKBUF) 	; from the token buffer
+;----------------------------------------------- EdtCpy
+EdtCpy: ; Copy from TOKBUF->(ZTgt)
+ 		ZSET(ZSrc,TOKBUF) 	; from the token buffer
  		ldy 	ZCnt
-EdtCpyL		lda 	(ZSrc),y
+EdtCpyL 	lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
  		bpl 	EdtCpyL

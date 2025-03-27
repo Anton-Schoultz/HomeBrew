@@ -129,8 +129,8 @@ MainLoop 	;-- Prompt and input
  		jsr 	HexDump 	; dump next 8
  		jsr 	PrNL
 
- 		HEX_DUMP(LN_NXT) 	; Line NXT,NUM, FIND
- 		HEX_DUMP(ZSrc)
+ 		HEX_DUMP(LN_NUM) 	; Line NXT,NUM, FIND
+ 		;HEX_DUMP(ZSrc)
  		jsr 	PrNL
 
  		jsr 	EdtUpd
