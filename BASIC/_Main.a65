@@ -40,6 +40,7 @@
 
 #include "Math.a65" 			; Number code
 #include "Eval.a65" 			; Evaluator
+#include "Line.a65"
 
 
 TestSrc
@@ -78,6 +79,8 @@ Warm: ;Warm Start entry point
 Main: ; MAIN code
  		CLS()
 
+ 		PAUSE()
+
 MainLoop 	;-- Prompt and input
 
  		PR_WR_IO()
@@ -98,36 +101,40 @@ MainLoop 	;-- Prompt and input
  		;--
 ;   parse input
 ;     length is placed into ZCnt
-;     Line no is placed into LN_FIND
+;     Line no is placed into LN_FND
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
  		PR_WR_IO()
  		;-- dump TOKBUF
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
  		jsr 	PrNL
 
- 		HEX_DUMP(LN_NUM) 	; Line NXT,NUM, FIND
+ 		;-- HEX_DUMP(LN_NUM) 	; Line NXT,NUM, FIND
  		;-- HEX_DUMP(ZSrc)
- 		jsr 	PrNL
+ 		;-- jsr 	PrNL
 
  		lda 	TOKBUF
  		cmp 	#T_LineNo
  		bne 	MainCmd
 
- 		PR_ZSUP_ON()
- 		ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
- 		;-- set to read from memory
- 		PR_RD_MEM() 		; read from memory (code space)
- 		;-- list to output device IO
- 		PR_WR_IO()
- 		jsr 	GetChr
- 		jsr 	ListLn
-
  		jsr 	EdtUpd
- 		BRA 	MainLoop
+
+ 		HEX_DUMP($0800)
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	PrNL
+
+
+ 		PR_ZSUP_ON()
+ 		;-- jsr 	X_List
+
+
+ 		bra 	MainLoop
 
 ;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
@@ -139,7 +146,6 @@ MainCmd 	;-- Run command line
  		;-- loop back and do it again
  		bra 	MainLoop
 
- 		HALT()
 
 ;----------------------------------------------- CopyLine
 CopyLine: ; copy TestSrc into INBUF

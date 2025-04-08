@@ -2,13 +2,12 @@
 ;*  EdtAdd               Append TOKBUF line to end of program
 ;*  EdtClear             Clear variables and arrays
 ;*  EdtCpy               Copy from TOKBUF->(ZTgt)
+;*  EdtDBug              debug editor values
 ;*  EdtDel               Delete line and fall through to Insert
 ;*  EdtDwn               Move bytes down (Delete)
 ;*  EdtIns               Insert line, provided it is not an 'empty' line (length <5)
 ;*  EdtNew               NEW = clear program, variables etc.
 ;*  EdtOpn               Move memory up
-;*  EdtSeek              Search for line number >= LN_FIND
-;*  EdtTop               Set LN_NXT and ZRd to start of program, (ZRd)->.A->CHRGOT
 ;*  EdtUp                Move bytes up (Insert)
 ;*  EdtUpd               Update program with line in TOKBUF
 ;*
@@ -69,76 +68,39 @@ EdtWipe 	sta 	(BASBEG),y
  		bne 	EdtWipe
  		RTN_T()
 
-;----------------------------------------------- EdtTop
-EdtTop: ; Set LN_NXT and ZRd to start of program, (ZRd)->.A->CHRGOT
- 		ZCPY(LN_NXT,BASBEG)
- 		ZCPY(ZRd,BASBEG)
- 		;-- this fetch for other users (EdtSeek will do it's own)
- 		lda 	(ZRd)
- 		sta 	CHRGOT
- 		rts
-
-;----------------------------------------------- EdtSeek
-EdtSeek: ; Search for line number >= LN_FIND, sets LN_ADR,LN_NUM,LN_NXT
-;  exits with ZRd pointing top the T_LineNo byte
- 		jsr 	EdtTop 		; start at the top
-EdtSeekL 	jsr 	X_LineNext 	; LN_NXT->ZRd,(ZRd)->.A->CHRGOT
- 		beq 	EdtSeekEnd 	; end of program space
- 		;-- set LN_NUM=line number, LN_NXT=address of next line
- 		jsr 	X_LineNo
- 		;-- is it >= the one we're looking for?
-EdtTest 	jsr EdtComp
- 		bmi 	EdtSeekX
- 		;-- check for equal
- 		ora 	TMP
- 		beq 	EdtSeekX
- 		;-- Not there yet
- 		bra 	EdtSeekL
-EdtSeekEnd 	clc 			; Z:1 C:0 N:0	= end
-EdtSeekX 	rts
-
-EdtComp:; Compare line number to LN_FIND, bmi:> ora TMP beq match
-		sec
- 		lda 	LN_FIND
- 		sbc 	LN_NUM
- 		sta 	TMP
- 		lda 	LN_FIND+1
- 		sbc 	LN_NUM+1
- 		sta 	TMP+1
-		rts
-
-
 ;----------------------------------------------- EdtUpdate
 EdtUpd: ; Update program with line in TOKBUF
-; LN_FIND has line no from tokbuf
+; LN_FND has line no from tokbuf
 ; ZCnt is length of the line in tokbuf
- 		jsr 	EdtSeek
- 		;-- N:1 NUM>FND -> Insert
- 		bpl 	EdtUpd1
- 		jmp 	EdtIns
+ 		jsr 	LnSeekTop 	; seek from top of program
+; N:1 	  MI => EOF/Error
+; N:0 Z:1 EQ => NUM=FIND Match
+; N:0 Z:0 NE => NUM>FIND
 
-EdtUpd1 	bcs 	EdtDel
- 		;-- C:0 End of program
- 		jmp 	EdtAdd
+ 		jsr	EdtDBug
 
- 		;-- Z:1 -> Delete, then Insert if not empty
+ 		bmi 	EdtAdd 		; EOF/Error -> Append
+ 		beq 	EdtDel 		; Update = Del then Ins
+ 		bra 	EdtIns
+
+EdtAdd: ; Append TOKBUF line to end of program
+ 		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
+ 		ZADD(BASEND,ZCnt) 	; BASEND += Len
+ 		jmp 	EdtCpy
+
 EdtDel: ; Delete line and fall through to Insert
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
  		;--
- 		ZCPY(ZDBug,BASEND)
  		ZCPY(ZCnt,BASEND)
  		ZSUB(ZCnt,LN_NXT)
- 		jmp 	EdtDwn
+ 		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		lda 	#5
  		cmp 	LN_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
- 		;-- Insert the line
- 		PRINT("INS\r\n")
- 		;-- jsr EdtDBug
- 		;-- ZSrc = LM_ADR
+ 		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
  		;-- ZTgt=LN_ADR+LN_LEN
  		ZCPY(ZTgt,LN_ADR)
@@ -157,10 +119,6 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		jmp 	EdtCpy
 EdtInsX 	rts 			; Done
 
-;----------------------------------------------- EdtAdd
-EdtAdd: ; Append TOKBUF line to end of program
- 		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
- 		ZADD(BASEND,ZCnt) 	; BASEND += Len
 ;----------------------------------------------- EdtCpy
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
@@ -171,7 +129,24 @@ EdtCpyL 	lda 	(ZSrc),y
  		bpl 	EdtCpyL
  		rts
 
-.export BASEND
+;----------------------------------------------- EdtDBug
+EdtDBug: ; debug editor values
+ 		DBUG("ZSrc",ZSrc)
+ 		DBUG("ZTgt",ZTgt)
+ 		DBUG("ZCnt",ZCnt)
+
+ 		DBUG("LN_NUM",LN_NUM)
+ 		DBUG("LN_ADR",LN_ADR)
+ 		DBUG("LN_NXT",LN_NXT)
+ 		DBUG("LN_LEN",LN_LEN)
+
+ 		DBUG("LN_FND",LN_FND)
+
+ 		PAUSE()
+
+ 		rts
+
+
 
 ;=================================================================== INS/DEL ==========
 

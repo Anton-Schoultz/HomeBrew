@@ -67,8 +67,9 @@ Short(ZRegY) 	; Save register Y (used in Msg)
 Int(LN_NUM) 	; Current Line number
 Int(LN_ADR) 	; Current Line address
 Int(LN_NXT) 	; Adress of next line
-Int(LN_FIND) 	; Line number to look for
 Int(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
+Int(LN_FND) 	; Line number to look for
+
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 ;----------------------------------------------- BASIC program

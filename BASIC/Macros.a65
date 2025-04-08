@@ -53,6 +53,9 @@
 
 ; 00=BRK x, 02=NOP x
 
+; pause is dynamic halt - clv \ bvc self
+#define PAUSE() clv \ .db $50,$FE \ clv
+
 ; BREAK(n) Break interrupt with data byte read in Irq Rtn
 #DEFINE BREAK(n) .db $00,n \ nop
 ; #DEFINE BREAK(n) .db $02,n \ nop

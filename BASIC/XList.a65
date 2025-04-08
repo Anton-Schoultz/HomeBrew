@@ -2,7 +2,8 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ==============
+;=================================================================== LIST ============== 
+;*  ListLn               List line (LnNext called before this)
 ;*  X_List               Execute List
 ;*
 _List 		= $
@@ -10,86 +11,127 @@ _List 		= $
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-
-;----------------------------------------------- X_List
+;----------------------------------------------- X_List 
 X_List: ; Execute List
-
- 		;-- BREAK(1)
-
  		jsr 	ChrRd 		; consume LIST
-
  		;-- CLS()
  		;-- Read memory, out to I/O
  		PR_RD_MEM()
  		PR_WR_IO()
-
  		;-- default range
  		ZSET(LST_BEG,0)
  		ZSET(LST_END,65535)
- 		;--
+ 		;-- 
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
-
- 		ZCPY(LST_BEG,NUM_AA) 	; set stating value
+ 		ZCPY(LST_BEG,NUM_AA) 	; set starting value
  		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
-
- 		PRINTLN("list Arg1")
- 		DBUG("LST_BEG",LST_BEG)
- 		DBUG("LST_END",LST_END)
 
 X_List_0 	;- check for a '-'
  		lda 	CHRGOT
  		cmp 	#'-'
  		bne 	X_List_1 	; no
  		;-- default end is max
- 		PRINTLN("list -")
  		ZSET(LST_END,65535)
- 		DBUG("LST_END",LST_END)
-
  		jsr 	ChrRd 		; consume '-', get next byte
-
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
- 		;-- set to
- 		PRINTLN("list to")
+ 		;-- set TO
  		jsr 	NumRd 		; read value into NUM_A
- 		ZCPY(LST_END,NUM_AA) 	; set ending value
- 		DBUG("LST_END",LST_END)
+ 		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
 
 X_List_1 	;-- ready to do the listing
  		PRINTLN("Prep list")
  		DBUG("LST_BEG",LST_BEG)
  		DBUG("LST_END",LST_END)
-
- 		HALT()
-
  		;-- find the starting line
- 		ZCPY(LN_FIND,LST_BEG)
- 		jsr 	EdtSeek 	;Seek line>=LN_FIND, sets LN_ADR,LN_NUM,LN_NXT
+ 		ZCPY(LN_FND,LST_BEG)
+ 		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
+
+ 		;-- TODO check start line is out of range
+
  		;-- set ending lineno
- 		ZCPY(LN_FIND,LST_END)
- 		bra 	X_List_1st
+ 		ZCPY(LN_FND,LST_END)
+; 		bra 	X_List_1st
 
 ; code to seek to starting line for listing
 ; loop to call ListLn for each line in turn until last one
-X_List_L 	jsr 	X_LineNext 	; LN_NXT->ZRd, (ZRd)->.A->CHRGOT
- 		;-- check last line no
- 		jsr 	EdtComp
- 		bmi 	X_List_X
 
-X_List_1st 	; ListLn gets char from CHRGOT
- 		jsr 	ListLn 		; List LineNo (calls X_LineNo)
- 		;--
- 		lda 	(LN_NXT) 	; first byte of next line
- 		beq 	X_List_X 	; zero so done
- 		bra 	X_List_L
+ 		;-- X_List_L 	;-- check last line no
+; 		jsr 	LnComp
+
+; 		bmi 	X_List_X
+
+X_List_L 	; List the line
+ 		jsr 	ListLn 		; list the line
+ 		jsr 	LnNext 		; move to next line
+ 		;-- check if we have a line (length > 0)
+ 		LDA 	LN_LEN
+ 		beq 	X_List_X 	; end of program
+ 		;-- check max line no
+ 		jsr 	LnComp
+ 		BMI 	X_List_L
+ 		ora 	TMP
+ 		BEQ 	X_List_L
 
 ; end of list
 X_List_X 	rts
 
+;----------------------------------------------- ListLn 
+ListLn: ; List line (LnNext called before this)
+; line token already processed, CHRGOT is first byte of the line
+ 		;-- start by printing the line number
+ 		lda 	LN_NUM
+ 		ldx 	LN_NUM+1
+ 		jsr 	IntPrint
+ 		lda 	#' '
+ 		jsr 	PutChr
+ListLnL 	lda 	CHRGOT
+ 		beq 	ListLnX 	; null = dend of line
+ 		jsr 	ListTok 	; (*1) Expand
+ 		bra 	ListLnL
+ListLnX 	jmp 	PrNL 		; NL and return
+
+
+;  list a part of the line (token & its data)
+ListTok 	sta 	TOKNO
+ 		;-- Value ?
+ 		CASE(T_StrLit,L_String)
+ 		CASE(T_NumLit,L_Number)
+ 		;-- Variable ?
+ 		CASE(T_StrVar,VarList)
+ 		CASE(T_StrAry,VarList)
+ 		CASE(T_NumVar,VarList)
+ 		CASE(T_NumAry,VarList)
+
+ 		;-- Relational Operator $F1-$F6
+ 		and 	#$F8
+ 		cmp 	#$F0
+ 		bne 	ListTok1
+ 		;-- expand realtional op
+ 		BBR2 	TOKNO,ListTokR1 ; '<' ?
+ 		lda 	#'<'
+ 		jsr 	PutChr
+ListTokR1 	BBR0 	TOKNO,ListTokR2 ; '>' ?
+ 		lda 	#'>'
+ 		jsr 	PutChr
+ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
+ 		lda 	#'='
+ 		jsr 	PutChr
+ListTokR3 	bra 	ListTokX
+ 		;-- 
+ 		;-- Token ?
+ListTok1 	ldx 	TOKNO
+ 		jsr 	TokExpand
+ 		BR_T(ListTokX)
+ 		;-- not token, treat as ASCII
+ 		lda 	CHRGOT
+ 		jsr 	PutChr
+ListTokX 	jsr 	ChrRd 		; get next byte
+ 		RTN_T()
 
 
 
@@ -99,13 +141,13 @@ X_List_X 	rts
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)
