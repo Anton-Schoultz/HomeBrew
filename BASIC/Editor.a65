@@ -79,30 +79,33 @@ EdtTop: ; Set LN_NXT and ZRd to start of program, (ZRd)->.A->CHRGOT
  		rts
 
 ;----------------------------------------------- EdtSeek
-EdtSeek: ; Search for line number >= LN_FIND
+EdtSeek: ; Search for line number >= LN_FIND, sets LN_ADR,LN_NUM,LN_NXT
+;  exits with ZRd pointing top the T_LineNo byte
  		jsr 	EdtTop 		; start at the top
 EdtSeekL 	jsr 	X_LineNext 	; LN_NXT->ZRd,(ZRd)->.A->CHRGOT
  		beq 	EdtSeekEnd 	; end of program space
  		;-- set LN_NUM=line number, LN_NXT=address of next line
  		jsr 	X_LineNo
  		;-- is it >= the one we're looking for?
-EdtTest 	sec
- 		lda 	LN_FIND
- 		sbc 	LN_NUM
- 		sta 	TMP
- 		lda 	LN_FIND+1
- 		sbc 	LN_NUM+1
- 		sta 	TMP+1
+EdtTest 	jsr EdtComp
  		bmi 	EdtSeekX
  		;-- check for equal
  		ora 	TMP
  		beq 	EdtSeekX
  		;-- Not there yet
  		bra 	EdtSeekL
-
 EdtSeekEnd 	clc 			; Z:1 C:0 N:0	= end
-
 EdtSeekX 	rts
+
+EdtComp:; Compare line number to LN_FIND, bmi:> ora TMP beq match
+		sec
+ 		lda 	LN_FIND
+ 		sbc 	LN_NUM
+ 		sta 	TMP
+ 		lda 	LN_FIND+1
+ 		sbc 	LN_NUM+1
+ 		sta 	TMP+1
+		rts
 
 
 ;----------------------------------------------- EdtUpdate

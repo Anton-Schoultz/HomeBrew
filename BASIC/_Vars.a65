@@ -31,19 +31,24 @@
 ; $0000 16 bytes for z-pg code
 ZPgCode 	.BLOCK 	16
 
-; $0010 8 Vectors
 .org $0010
 ; 8 vectors here
 Int(VCHRIN) 	; Read character from input device (Keyboard, serial..)
 Int(VCHROUT) 	; Send character to output device (Screen, serial..)
+Int(V2)
+Int(V3)
+Int(V4)
+Int(V5)
+Int(V6)
+Int(V7)
 
 ;=================================================================== ZVARS ============
 ; Zero page variables
 .org $0020
-Int(ZSrc)	; Source for copy/move
-Int(ZTgt)	; Destination for copy/move
-Int(ZCnt)	; Number of bytes to copy/move
-Int(ZDBug)	; debug usage
+Int(ZSrc) 	; Source for copy/move
+Int(ZTgt) 	; Destination for copy/move
+Int(ZCnt) 	; Number of bytes to copy/move
+Int(ZDBug) 	; debug usage
 
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
@@ -53,20 +58,17 @@ Int(ZStr) 	; ZStr points to string result
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 Short(ZStrLen) 	; length of STRBUF used (write index)
-Short(ZRegA)	; Save register A (used in Msg)
-Short(ZRegX)	; Save register X (used in Msg)
-Short(ZRegY)	; Save register Y (used in Msg)
+Short(ZRegA) 	; Save register A (used in Msg)
+Short(ZRegX) 	; Save register X (used in Msg)
+Short(ZRegY) 	; Save register Y (used in Msg)
 
 ;----------------------------------------------- Code Lines
-PARAGRAPH()
+;  PARAGRAPH()
 Int(LN_NUM) 	; Current Line number
-Int(LN_ADR)	; Current Line address
+Int(LN_ADR) 	; Current Line address
 Int(LN_NXT) 	; Adress of next line
-Int(LN_FIND)	; Line number to look for
-
+Int(LN_FIND) 	; Line number to look for
 Int(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
-;Short(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
-
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 ;----------------------------------------------- BASIC program
@@ -76,7 +78,7 @@ Int(BASBEG) 	; Start of BASIC program
 Int(BASEND) 	; end of program, start of variables
 Int(VAREND) 	; end of variables
 Int(STREND) 	; end of string work area
-Int(ARYBEG)  	; Start of array Space
+Int(ARYBEG) 	; Start of array Space
 
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
@@ -107,8 +109,12 @@ Int(TMP) 	; Temp 16 bit value (line nos)
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 ;----------------------------------------------- String
-.org $0280
 Var(STRBUF,STRSZ) ; buffer for strings
+
+.echo "  _Buffers\t"
+.echo $-$200
+.echo "/256\t(see BUFSZ,STRSZ)\n"
+
 
 
 ;======================================================================================
@@ -124,12 +130,6 @@ Var(VARTAB,128) ; 32 x 4 bytes vars
 #define VARTAB_B VARTAB+32
 #define VARTAB_C VARTAB+64
 #define VARTAB_D VARTAB+96
-
-
-
-;  .export STRBUF,TOKBUF,INBUF
-;  .export VCHROUT,VCHRIN,
-;  .export TMP
 
 .LIST
 

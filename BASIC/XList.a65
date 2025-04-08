@@ -6,40 +6,94 @@
 ;*  X_List               Execute List
 ;*
 _List 		= $
+
+#define LST_BEG ZSrc
+#define LST_END ZTgt
+
+
 ;----------------------------------------------- X_List
 X_List: ; Execute List
 
-; CHECK I/O FOR LISTING, IT'S WRITTING OVER THE PROGRAM
- 		CLS()
- 		;-- set to read from memory
- 		PR_RD_MEM() 		; read from memory (code space)
- 		;-- list to output device IO
+ 		;-- BREAK(1)
+
+ 		jsr 	ChrRd 		; consume LIST
+
+ 		;-- CLS()
+ 		;-- Read memory, out to I/O
+ 		PR_RD_MEM()
  		PR_WR_IO()
 
- 		;-- from the top
- 		jsr 	EdtTop		; BASBEG->LN_NXT->ZRd, (ZRd)->.A->CHRGOT
- 		;
+ 		;-- default range
+ 		ZSET(LST_BEG,0)
+ 		ZSET(LST_END,65535)
+ 		;--
+ 		lda 	CHRGOT
+ 		BR_ANE(T_NumLit,X_List_0)
+ 		;-- set from (NumRd will consume the T_NumLit)
+ 		jsr 	NumRd 		; read value into NUM_A
+ 		jsr 	ChrRd 		; read char after the num
+
+ 		ZCPY(LST_BEG,NUM_AA) 	; set stating value
+ 		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
+
+ 		PRINTLN("list Arg1")
+ 		DBUG("LST_BEG",LST_BEG)
+ 		DBUG("LST_END",LST_END)
+
+X_List_0 	;- check for a '-'
+ 		lda 	CHRGOT
+ 		cmp 	#'-'
+ 		bne 	X_List_1 	; no
+ 		;-- default end is max
+ 		PRINTLN("list -")
+ 		ZSET(LST_END,65535)
+ 		DBUG("LST_END",LST_END)
+
+ 		jsr 	ChrRd 		; consume '-', get next byte
+
+ 		;-- check for ending number
+ 		BR_ANE(T_NumLit,X_List_1)
+ 		;-- set to
+ 		PRINTLN("list to")
+ 		jsr 	NumRd 		; read value into NUM_A
+ 		ZCPY(LST_END,NUM_AA) 	; set ending value
+ 		DBUG("LST_END",LST_END)
+
+X_List_1 	;-- ready to do the listing
+ 		PRINTLN("Prep list")
+ 		DBUG("LST_BEG",LST_BEG)
+ 		DBUG("LST_END",LST_END)
+
+ 		HALT()
+
+ 		;-- find the starting line
+ 		ZCPY(LN_FIND,LST_BEG)
+ 		jsr 	EdtSeek 	;Seek line>=LN_FIND, sets LN_ADR,LN_NUM,LN_NXT
+ 		;-- set ending lineno
+ 		ZCPY(LN_FIND,LST_END)
+ 		bra 	X_List_1st
 
 ; code to seek to starting line for listing
 ; loop to call ListLn for each line in turn until last one
-X_List_L	jsr 	X_LineNext	; LN_NXT->ZRd, (ZRd)->.A->CHRGOT
+X_List_L 	jsr 	X_LineNext 	; LN_NXT->ZRd, (ZRd)->.A->CHRGOT
+ 		;-- check last line no
+ 		jsr 	EdtComp
+ 		bmi 	X_List_X
 
-		; ListLn gets char from CHRGOT
+X_List_1st 	; ListLn gets char from CHRGOT
  		jsr 	ListLn 		; List LineNo (calls X_LineNo)
  		;--
  		lda 	(LN_NXT) 	; first byte of next line
- 		beq 	X_List_X 	; zero so loop
-
-
-		bra	X_List_L
+ 		beq 	X_List_X 	; zero so done
+ 		bra 	X_List_L
 
 ; end of list
-X_List_X	rts
+X_List_X 	rts
 
 
 
 
-.echo "  _List\t\t"
+.echo "  _LIST\t\t"
 .echo $-_List
 .echo "\n"
 .nolist

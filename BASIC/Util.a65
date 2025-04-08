@@ -30,6 +30,13 @@
 
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
+; PRINT(str) echo str to output
+#define PRINT(str) jsr _Print_ \ .db str,0
+; PRINT(str) echo str to output, with CR,LF
+#define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
+; print sting and data value
+#define DBUG(str,adr) jsr _Print_ \ .db str,$80 \ .dw adr \ jsr PrNL
+
 
 ; SGN,  A:Low, B:High, C:Upper
 #define FPS	0
@@ -266,12 +273,6 @@ _Print_X 	tya			; y is offset to the null
  		bcc 	_PrintFPX 	; carry?
  		inc 	ZPtr+1 		; yes, incr hi
 _PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
-
-
-
-
-
-
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io

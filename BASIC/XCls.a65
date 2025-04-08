@@ -10,6 +10,8 @@ _Cls 		= $
 
 ;----------------------------------------------- X_Cls
 X_Cls: ; Execute Cls
+ 		jsr 	ChrRd 		; consume CLS
+ 		;
  		lda 	#_FF
  		jsr 	ConOut
  		rts

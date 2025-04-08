@@ -199,13 +199,12 @@
 
 
 ;----------------------------------------------- PSEUDO-CODE
-; PRINT(str) echo str to output
-#define PRINT(str) jsr _Print_ \ .db str,0
-; PRINT(str) echo str to output, with CR,LF
-#define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
-
-
-#define DBUG(str,adr) jsr _Print_ \ .db str,$80 \ .dw adr \ jsr PrNL
+;; PRINT(str) echo str to output
+;#define PRINT(str) jsr _Print_ \ .db str,0
+;; PRINT(str) echo str to output, with CR,LF
+;#define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
+;; print sting and data value
+;#define DBUG(str,adr) jsr _Print_ \ .db str,$80 \ .dw adr \ jsr PrNL
 
 
 ; CLS()	Clear screen

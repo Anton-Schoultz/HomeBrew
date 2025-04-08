@@ -320,6 +320,7 @@ NumSpcX 	rts
 
 ;----------------------------------------------- NumRd
 NumRd: ; Read from memory (ChrRd) & unpack
+; ZRd points to the token before this value
  		lda 	#0
  		sta 	NUM_AS 		; clear sign (+ve)
  		jsr 	ChrRd

@@ -138,6 +138,8 @@ CHRGOT 		= $0C 			; most recently fetched character
 HLTFLG 		= $0D 			; halt flag 00=run (error code)
 ZWr 		= $0E 			; address for ChrWr to write to
 
+ChrReRd		= $06			; ReRead (ZRd)->A->CHRGOT
+
 _ChrStr 	= $
 ;----------------------------------------------- ChrNext
 ; increment the ZRd pointer (inside the lda) and then fetch the character

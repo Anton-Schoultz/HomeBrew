@@ -48,30 +48,10 @@ TestSrc
 ; .DB "10  PRINT 120+12/10"	;  1.212e02 =  121.2 ok
 ; .DB "10  PRINT 12/10-120"	; -1.188e02 = -118.8 ok
 ; .DB "10  PRINT 120-12/10"     ;  1.188e02 =  118.8 ok
-
 ; .db "10 PRINT 1234/1000"	;  1.234 ok
 ; .db "10 PRINT 1234"
-
 ; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
-
- 		;-- .DB "10 PRINT 12/5"
-
- 		;-- .db QT,"xyz",QT
- 		;-- .db ",123"
 .db 0
-
-
-Str1234 	.DB 	"1234",0
-StrNeg123 	.DB 	"-12",0
-
- 		;-- .DB "PRINT 1234,456,9,"
- 		;-- .db QT,"Hi",QT
- 		;-- .db " 					;12"
- 		;-- .db 0
-
- 		;-- 0123456789a
-Text 		.DB 	"  Hello  1234  ",0
-Text1 		.DB 	" - Happy days",0
 
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)

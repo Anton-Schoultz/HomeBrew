@@ -18,7 +18,7 @@ _Print 		= $
 
 ;----------------------------------------------- X_Print
 X_Print: ; code to execute the Print
- 		jsr 	ChrRd 		; read next char
+ 		jsr 	ChrRd 		; consume PRINT
 X_PrintL 	lda 	CHRGOT
  		beq 	X_PrEnd 	; null = done
  		jsr 	X_PrPart 	; (*1) Expand
