@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ==============
+;=================================================================== LIST ============== 
 ;*  ListLn               List line (LnNext called before this)
 ;*  X_List               Execute List
 ;*
@@ -11,70 +11,74 @@ _List 		= $
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-;----------------------------------------------- X_List
+;----------------------------------------------- X_List 
 X_List: ; Execute List
  		jsr 	ChrRd 		; consume LIST
  		;-- CLS()
  		;-- Read memory, out to I/O
  		PR_RD_MEM()
  		PR_WR_IO()
-		PR_ZSUP_ON()
+ 		PR_ZSUP_ON()
  		;-- default range 0000-FFFF
- 		lda #0
- 		sta LST_BEG
- 		sta LST_BEG+1
- 		dec a
- 		sta LST_END
- 		sta LST_END+1
- 		;--
+ 		lda 	#0
+ 		sta 	LST_BEG
+ 		sta 	LST_BEG+1
+ 		dec 	a
+ 		sta 	LST_END
+ 		sta 	LST_END+1
+ 		;-- 
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
- 		; set start & end to number
- 		lda NUM_AA
- 		sta LST_BEG
- 		sta LST_END
- 		lda NUM_AA+1
- 		sta LST_BEG+1
- 		sta LST_END+1
+ 		;-- set start & end to number
+ 		lda 	NUM_AA
+ 		sta 	LST_BEG
+ 		sta 	LST_END
+ 		lda 	NUM_AA+1
+ 		sta 	LST_BEG+1
+ 		sta 	LST_END+1
 
 X_List_0 	;- check for a '-'
  		lda 	CHRGOT
  		cmp 	#'-'
  		bne 	X_List_1 	; no
  		;-- default end is FFFF
- 		lda #$ff
- 		sta LST_END
- 		sta LST_END+1
+ 		lda 	#$ff
+ 		sta 	LST_END
+ 		sta 	LST_END+1
  		jsr 	ChrRd 		; consume '-', get next byte
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
  		jsr 	NumRd 		; read value into NUM_A
  		ZCPY(LST_END,NUM_AA) 	; set ending value
 
-X_List_1	;-- find the starting line
+X_List_1 	;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
  		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
  		;-- TODO check start line is out of range
-		; set ending line no
+ 		;-- set ending line no
  		ZCPY(LN_FND,LST_END)
-X_List_L	;-- check last line no
+X_List_L 	;-- check last line no
  		jsr 	LnComp
- 		beq	X_List1
-		bcs	X_List_X
-X_List1		jsr 	ListLn 		; list the line
+ 		BEQ 	X_List1
+ 		BCS 	X_List_X
+X_List1 	jsr 	ListLn 		; list the line
  		jsr 	LnNext 		; move to next line
  		;-- check if we have a line (length > 0)
- 		lda 	LN_LEN		; get length
- 		bne 	X_List_L	; non-zero, so loop
+ 		lda 	LN_LEN 		; get length
+ 		bne 	X_List_L 	; non-zero, so loop
 X_List_X 	rts
 
-;----------------------------------------------- ListLn
+;----------------------------------------------- ListLn 
 ListLn: ; List line (LnNext called before this)
 ; line token already processed
-		jsr 	ChrRd
+ 		jsr 	ChrRd
+ 		;-- if line no is zero the exit
+ 		lda 	LN_NUM
+ 		ora 	LN_NUM+1
+ 		beq 	ListLnX
  		;-- start by printing the line number
  		lda 	LN_NUM
  		ldx 	LN_NUM+1
@@ -114,7 +118,7 @@ ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
  		jsr 	PutChr
 ListTokR3 	bra 	ListTokX
- 		;--
+ 		;-- 
  		;-- Token ?
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
@@ -126,30 +130,30 @@ ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
 
-;;----------------------------------------------- ListDBug
-;;ListDBug: ; debug values
-;		php
-;		pha
-;		phx
-;		phy
-;
-;		PRINTLN("BEG  END  NUM  FLG  FND")
-;		HEX_INT(LST_BEG)
-;		HEX_INT(LST_END)
-;		HEX_INT(LN_NUM)
-;
-;		HEX_INT(LN_FLG)
-;		HEX_INT(LN_LEN)
-;		HEX_INT(LN_FND)
-;		CRLF()
-;
+ 		;-- ;----------------------------------------------- ListDBug
+ 		;-- ;ListDBug: ; debug values
+ 		;-- php
+ 		;-- pha
+ 		;-- phx
+ 		;-- phy
+ 		;-- 
+ 		;-- PRINTLN("BEG  END  NUM  FLG  FND")
+ 		;-- HEX_INT(LST_BEG)
+ 		;-- HEX_INT(LST_END)
+ 		;-- HEX_INT(LN_NUM)
+ 		;-- 
+ 		;-- HEX_INT(LN_FLG)
+ 		;-- HEX_INT(LN_LEN)
+ 		;-- HEX_INT(LN_FND)
+ 		;-- CRLF()
+ 		;-- 
 ; 		;PAUSE()
-;
-;		ply
-;		plx
-;		pla
-;		plp
-;
+ 		;-- 
+ 		;-- ply
+ 		;-- plx
+ 		;-- pla
+ 		;-- plp
+ 		;-- 
 ; 		rts
 
 
@@ -160,13 +164,13 @@ ListTokX 	jsr 	ChrRd 		; get next byte
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)

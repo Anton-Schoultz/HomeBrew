@@ -106,7 +106,7 @@ MainLoop 	;-- Prompt and input
 		PR_WR_IO()
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
  		jsr 	PrNL
 
 		;-- immediate command ? (No line number)
@@ -131,9 +131,14 @@ MainLoop 	;-- Prompt and input
 
 ;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
+		lda #']'
+		jsr ConOut
  		jsr 	PrNL
  		PR_ZSPC_ON()
- 		jsr 	Run
+
+PAUSE()
+
+ 		jsr 	RunCmd
  		bra 	MainLoop
 
 ;----------------------------------------------- CopyLine
