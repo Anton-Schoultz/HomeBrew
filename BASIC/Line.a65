@@ -3,10 +3,11 @@
 .NOLIST
 #endif
 ;=================================================================== LINE =============
-;*  LnComp               Compare line number to LN_FND
-;*  LnNext               Start the next line
-;*  LnSeek               Search forward for LN_FND
-;*  LnSeekTop            search for LN_FND from top of program
+;*  LnComp               Compare line number to LN_FND, (NUM-FND)
+;*  LnComp_Test          Test line compare
+;*  LnNext               Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
+;*  LnSeek               Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
+;*  LnSeekTop            Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
 ;*  LnTop                Sets address of next line to top ( BASBEG->LN_NXT) and does LnNext
 ;*
 
@@ -24,73 +25,101 @@ LnTop: ; Sets address of next line to top ( BASBEG->LN_NXT) and does LnNext
  		ZCPY(LN_NXT,BASBEG)
 
 ;----------------------------------------------- LnNext
-LnNext: ; Start the next line
+LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ; LN_NXT -> ZRd -> LN_ADR
 ; Process the T_LineNo, sets LN_ADR,LN_NUM,LN_LEN and LN_NXT
-; fetch first byte after the lineNo token
  		ZCPY(ZRd,LN_NXT) 	; point ChrGet to the line
  		ZCPY(LN_ADR,ZRd) 	; save start of this line
- 		;-- zero length
- 		lda 	#0
- 		sta 	LN_LEN
- 		sta 	LN_LEN+1
  		;-- check that it points to a line
  		lda 	(ZRd)
+ 		sta 	CHRGOT
  		beq 	LnEOF
  		cmp 	#T_LineNo
  		beq 	LnNextRd
- 		lda 	#0 		; return null for error
-LnEOF 		rts 			; return EQ=1
- 		;-- fetch the line no -> LN_NUM
-LnNextRd 	jsr 	ChrRd 		; get lo no
+LnEOF 		;-- zero length and number
+ 		lda 	#0
+ 		sta 	LN_LEN
+ 		sta 	LN_LEN+1
+ 		sta 	LN_NUM
+ 		sta 	LN_NUM+1
+		rts 			; return EQ=1
+
+LnNextRd 	;-- fetch the line no -> LN_NUM
+	 	jsr 	ChrRd 		; get lo no
  		sta 	LN_NUM
  		jsr 	ChrRd 		; hi num
  		sta 	LN_NUM+1
- 		;-- get length of line and address of next line
- 		jsr 	ChrRd
- 		sta 	LN_LEN
+ 		;-- setup LN_LEN and LN_NXT
+ 		jsr 	ChrRd		; length from line
+ 		sta 	LN_LEN		; save it
  		clc
- 		adc 	ZRd
- 		sta 	LN_NXT
- 		lda 	#0
- 		sta 	LN_LEN+1
- 		adc 	ZRd+1
- 		sta 	LN_NXT+1
- 		;-- fetch the first byte of line
- 		jmp 	ChrRd 		; read next byte->CHRGOT
-
+ 		adc 	LN_ADR		; add start address
+ 		sta 	LN_NXT		; next address
+ 		lda 	#0		; hi length is zero
+ 		sta 	LN_LEN+1	; save len.hi
+ 		adc 	LN_ADR+1	; add start address
+ 		sta 	LN_NXT+1	; store next.hi
+ 		;-- return the first byte
+ 		lda 	CHRGOT
+ 		rts
 
 ;----------------------------------------------- LnComp
-LnComp: ; Compare line number to LN_FND
-; NUM < FIND  N:1 Z:0 C:0	mi => continue search
-; NUM = FIND  N:0 Z:1 C:1	eq => match
-; NUM > FIND  N:0 Z:0 C:1	missing / insert
+LnComp: ; Compare line number to LN_FND, (NUM-FND)
+; returns with difference in A (and saved in LN_FLG)
+; N:1 Z:0 C:0  MI => NUM<FIND
+; N:0 Z:1 C:1  EQ => NUM=FIND Match
+; N:0 Z:0 C:1  NE => NUM>FIND
+ 		sec
  		lda 	LN_NUM+1
- 		cmp 	LN_FND+1
+ 		sbc 	LN_FND+1
  		bne 	LnCompX
  		;-- high byte is eq so test low byte
+ 		sec
  		lda 	LN_NUM
- 		cmp 	LN_FND
-LnCompX 	rts
+ 		sbc 	LN_FND
+LnCompX 	sta 	LN_FLG 		; save result
+ 		rts
 
 ;----------------------------------------------- LnSeekTop
-LnSeekTop: ; search for LN_FND from top of program
- 		;-- top of code & read line
+LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnTop
- 		beq	LnSeekEOF
+ 		beq 	LnSeekEOF
+ 		;-- fall through to Seek
 ;----------------------------------------------- LnSeek
-LnSeek: ; Search forward for LN_FND
+LnSeek: ; Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnComp 		; mi=Cont, eq=Match ne=ins
- 		bpl 	LnSeekX 	; eq=match, c:1=ins
+ 		bpl 	LnSeekX 	; num>=find
  		;-- Not there yet, next line
 LnSeekNxt 	jsr 	LnNext 		; move to next line
- 		BNE 	LnSeek
+ 		bne 	LnSeek
  		;-- EOF or not T_LineNo
-LnSeekEOF	lda 	#$FF 		; sets Minus for EOF/Error
+LnSeekEOF 	lda 	#$FF 		; sets Minus for EOF/Error
 LnSeekX 	rts
-; N:1 	  MI => EOF/Error
-; N:0 Z:1 EQ => NUM=FIND Match
-; N:0 Z:0 NE => NUM>FIND
+
+#if _DBUG
+;=================================================================== TEST =============
+LnComp_Test ; Test line compare
+ 		ZSET(LN_FND,100)
+ 		;-- NUM<FIND
+ 		ZSET(LN_NUM,90)
+ 		jsr 	LnComp 		; N:1 Z:0 C:0
+ 		PAUSE()
+ 		;-- NUM=FND
+ 		ZSET(LN_NUM,100)
+ 		jsr 	LnComp 		; N:0 Z:1 C:1
+ 		PAUSE()
+ 		;-- NUM>FND
+ 		ZSET(LN_NUM,110)
+ 		jsr 	LnComp 		; N:0 Z:0 C:1
+ 		PAUSE()
+ 		rts
+; N:1 Z:0 C:0  MI => NUM<FIND
+; N:0 Z:1 C:1  EQ => NUM=FIND Match
+; N:0 Z:0 C:1  NE => NUM>FIND
+
+#endif
+
+
 
 .echo "  _Line\t\t"
 .echo $-_Ln

@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ============== 
+;=================================================================== LIST ==============
 ;*  ListLn               List line (LnNext called before this)
 ;*  X_List               Execute List
 ;*
@@ -11,17 +11,18 @@ _List 		= $
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-;----------------------------------------------- X_List 
+;----------------------------------------------- X_List
 X_List: ; Execute List
  		jsr 	ChrRd 		; consume LIST
  		;-- CLS()
  		;-- Read memory, out to I/O
  		PR_RD_MEM()
  		PR_WR_IO()
+		PR_ZSUP_ON()
  		;-- default range
  		ZSET(LST_BEG,0)
  		ZSET(LST_END,65535)
- 		;-- 
+ 		;--
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
@@ -44,9 +45,11 @@ X_List_0 	;- check for a '-'
  		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
 
 X_List_1 	;-- ready to do the listing
- 		PRINTLN("Prep list")
- 		DBUG("LST_BEG",LST_BEG)
- 		DBUG("LST_END",LST_END)
+ 		PRINTLN("LIST FROM -TO-")
+ 		PRINT("      ")
+ 		HEX_INT(LST_BEG)
+ 		HEX_INT(LST_END)
+ 		CRLF()
  		;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
  		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
@@ -55,34 +58,34 @@ X_List_1 	;-- ready to do the listing
 
  		;-- set ending lineno
  		ZCPY(LN_FND,LST_END)
-; 		bra 	X_List_1st
 
-; code to seek to starting line for listing
-; loop to call ListLn for each line in turn until last one
+X_List_L 	;-- check last line no
+ 		jsr 	LnComp
 
- 		;-- X_List_L 	;-- check last line no
-; 		jsr 	LnComp
+ 		PAUSE()
 
-; 		bmi 	X_List_X
+; returns with difference in A (and saved in LN_FLG)
+; N:1 Z:0 C:0  MI => NUM<FIND
+; N:0 Z:1 C:1  EQ => NUM=FIND Match
+; N:0 Z:0 C:1  NE => NUM>FIND
+; 		bmi	X_List_1
+; 		bmi	X_List1		; not at end yet
+; 		beq	X_List1		; last line
+; 		rts			; done
 
-X_List_L 	; List the line
- 		jsr 	ListLn 		; list the line
+	 	; List the line
+X_List1		jsr 	ListLn 		; list the line
  		jsr 	LnNext 		; move to next line
  		;-- check if we have a line (length > 0)
- 		LDA 	LN_LEN
- 		beq 	X_List_X 	; end of program
- 		;-- check max line no
- 		jsr 	LnComp
- 		BMI 	X_List_L
- 		ora 	TMP
- 		BEQ 	X_List_L
-
-; end of list
+ 		lda 	LN_LEN		; get length
+ 		bne 	X_List_L	; non-zero, so loop
+		; end of list
 X_List_X 	rts
 
-;----------------------------------------------- ListLn 
+;----------------------------------------------- ListLn
 ListLn: ; List line (LnNext called before this)
-; line token already processed, CHRGOT is first byte of the line
+; line token already processed
+		jsr 	ChrRd
  		;-- start by printing the line number
  		lda 	LN_NUM
  		ldx 	LN_NUM+1
@@ -122,7 +125,7 @@ ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
  		jsr 	PutChr
 ListTokR3 	bra 	ListTokX
- 		;-- 
+ 		;--
  		;-- Token ?
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
@@ -134,6 +137,33 @@ ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
 
+;----------------------------------------------- ListDBug
+ListDBug: ; debug values
+		php
+		pha
+		phx
+		phy
+
+		PRINTLN("BEG  END  NUM  FLG  FND")
+		HEX_INT(LST_BEG)
+		HEX_INT(LST_END)
+		HEX_INT(LN_NUM)
+
+		HEX_INT(LN_FLG)
+		HEX_INT(LN_LEN)
+		HEX_INT(LN_FND)
+		CRLF()
+
+ 		;PAUSE()
+
+		ply
+		plx
+		pla
+		plp
+
+ 		rts
+
+
 
 .echo "  _LIST\t\t"
 .echo $-_List
@@ -141,13 +171,13 @@ ListTokX 	jsr 	ChrRd 		; get next byte
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)

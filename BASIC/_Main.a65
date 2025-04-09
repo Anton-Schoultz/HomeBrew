@@ -3,6 +3,8 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 
+_DBUG = 0
+
 ; .echo "ROM at $F000-$FFFF (4k)\r"
 .echo "ROM at $E000-$FFFF (8k)\r"
 ; .echo "ROM at $C000-$FFFF (16k)\r"
@@ -26,6 +28,10 @@
 .LIST
 ;----------------------------------------------- START OF ROM
 ; 		START OF ROM
+#if _DBUG
+ 		jsr 	LnComp_Test
+#endif
+
  		jmp 	Reset
 
 .db DATE
@@ -79,8 +85,6 @@ Warm: ;Warm Start entry point
 Main: ; MAIN code
  		CLS()
 
- 		PAUSE()
-
 MainLoop 	;-- Prompt and input
 
  		PR_WR_IO()
@@ -111,16 +115,15 @@ MainLoop 	;-- Prompt and input
 ; 		jsr 	HexDump 	; dump next 8
  		jsr 	PrNL
 
- 		;-- HEX_DUMP(LN_NUM) 	; Line NXT,NUM, FIND
- 		;-- HEX_DUMP(ZSrc)
- 		;-- jsr 	PrNL
-
+		;-- immediate command ? (No line number)
  		lda 	TOKBUF
  		cmp 	#T_LineNo
  		bne 	MainCmd
 
+		;-- has line number so update the program
  		jsr 	EdtUpd
 
+		;-- Dump of program space
  		HEX_DUMP($0800)
  		jsr 	HexDump 	; dump next 8
  		jsr 	HexDump 	; dump next 8
@@ -129,12 +132,8 @@ MainLoop 	;-- Prompt and input
  		jsr 	HexDump 	; dump next 8
  		jsr 	PrNL
 
-
- 		PR_ZSUP_ON()
- 		;-- jsr 	X_List
-
-
- 		bra 	MainLoop
+		;-- back to main loop
+ 		jmp 	MainLoop
 
 ;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
@@ -142,14 +141,11 @@ MainCmd 	;-- Run command line
  		jsr 	PutChr
  		PR_ZSPC_ON()
  		jsr 	Run
-
  		;-- loop back and do it again
  		bra 	MainLoop
 
-
 ;----------------------------------------------- CopyLine
 CopyLine: ; copy TestSrc into INBUF
- 		;-- Copy test source into INBUF
  		ldy 	#$FF
 CopyLineL 	iny
  		lda 	TestSrc,y

@@ -37,10 +37,8 @@ _Tok 		= $
 #define NUMFLGGT()	SMB0 NUM_FLG
 
 
-BAS_EOL 	= $00 			; end of line
+BAS_EOL 	= $00			; end of line
 BAS_PRG 	= $00 			; end of program
-
-#define TOKLEN TOKBUF+3
 
 
 ;----------------------------------------------- Parse
@@ -56,7 +54,8 @@ ParseIn: ;Parse from memory into TOKBUF
  		;-- write to TOKBUF
  		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
  		PR_WR_MEM() 		; write to memory
- 		jsr 	ParseClr 	; clear TOKBUF
+ 		jsr 	ParseClr 	; clear TOKBUF, LN_FND
+
  		;-- prime pump -> CHRGOT
  		jsr 	GetChr
 
@@ -72,36 +71,31 @@ ParseIn: ;Parse from memory into TOKBUF
 P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
- 		jsr 	ChrWr
+ 		jsr 	ChrWr		; line marker
 
- 		;-- check for T_LineNo, fill in length if needed
- 		lda 	TOKBUF
- 		BR_ANE(T_LineNo,P_StmntX)
- 		sec
- 		lda 	ZWr
- 		sbc 	#LOW(TOKBUF+3)
- 		sta 	TOKLEN
- 		;--
+ 		;- length of line for editor -> TOK_LEN
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
- 		sta 	LN_LEN
- 		ZZERO(LN_LEN+1) 	; clear high byte
-
-P_StmntX 	;- work out total length for editor -> ZCnt
- 		sec
- 		lda 	ZWr
- 		sbc 	#LOW(TOKBUF)
- 		sta 	ZCnt
+ 		sta 	TOK_LEN
  		lda 	ZWr+1
  		sbc 	#HIGH(TOKBUF)
- 		sta 	ZCnt+1
- 		;-- copy line no to LN_FND for editor to seek
- 		lda 	TOKBUF+1 	; lo line no
+ 		sta 	TOK_LEN+1
+
+ 		;-- check for T_LineNo
+ 		lda 	TOKBUF
+ 		BR_ANE(T_LineNo,P_StmntX)
+
+		;-- T_LineNo : set length
+		lda 	TOK_LEN
+ 		sta 	TOKBUF+3
+ 		;-- set LN_FND to tokbuf line no
+ 		lda 	TOKBUF+1
  		sta 	LN_FND
- 		lda 	TOKBUF+2 	; hi line no
+ 		lda 	TOKBUF+2
  		sta 	LN_FND+1
- 		;-- done with the whole line
+
+P_StmntX 	;-- done with the whole line
  		rts
 
 ;----------------------------------------------- P_Part , P_PartNxt
@@ -176,18 +170,11 @@ ParseClrL 	sta 	TOKBUF,y
  		iny
  		cpy 	#BUFSZ
  		bne 	ParseClrL
+ 		;- clear seek line no
+ 		sta LN_FND
+ 		sta LN_FND+1
  		rts
 
- 		;-- ;----------------------------------------------- BasTop
- 		;-- BasTop: ; Setup to read from start of basic, for now TOKBUF
- 		;-- ; for now, just TOKBUF
- 		;-- ;-- set ZRd to point to first line of Program
- 		;-- ZSET(ZRd,TOKBUF-1) 	; jsr	EditTop
- 		;-- ;-- set to read from memory
- 		;-- PR_RD_MEM() 		; read from memory (code space)
- 		;-- ;-- list to output device IO
- 		;-- PR_WR_IO()
- 		;-- rts
 ;----------------------------------------------- SkipBlankL
 ; reads next character nad then checks for balnks
 SkipBlankL 	; read next
@@ -242,21 +229,6 @@ IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
  		BR_AEQ('=',RtnTrue) 	; 3d
  		BR_AEQ('>',RtnTrue) 	; 3e
  		RTN_F()
-
-;----------------------------------------------- OneOf
-; OneOf: ; see if CHRGOT is one of char in ChkList starting at X
-; 		lda 	CHRGOT
-; 		beq 	OneOfNo 	; null -> exit F
-; OneOfL 		lda 	ChkList,X
-; 		beq 	OneOfNo
-; 		cmp 	CHRGOT
-; 		beq 	OneOfYes
-; 		inx
-; 		bne 	OneOfL
-; OneOfNo 	lda 	CHRGOT
-; 		RTN_F() 		; NOPE, set carry & exit
-; OneOfYes 	lda 	CHRGOT
-; 		RTN_T() 		; YES, clear carry & exit
 
 ;----------------------------------------------- P_IsToken
 P_IsToken: ; Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -382,11 +354,6 @@ TokErr: ; display invalid token as [xx]
  		jsr 	PutChr
  		rts
 
-
-;=================================================================== VARIABLE =========
-
-;=================================================================== NUM_A ===========
-
 ;----------------------------------------------- P_Number
 P_Number: ; Parse a number into token & value
  		;-- Write Number token
@@ -395,7 +362,6 @@ P_Number: ; Parse a number into token & value
  		;-- Parse number value
  		jsr 	NumParse 	; read source -> NUM_A
  		jsr 	NumWr 		; write number value via ChrWr
- 		;-- jsr ChrRd
  		;--
  		rts
 

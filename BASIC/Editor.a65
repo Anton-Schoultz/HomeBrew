@@ -47,7 +47,7 @@ EdtNew: ; NEW = clear program, variables etc.
  		;-- Null terminate Program
  		lda 	#0
  		jsr 	ChrWr 		; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
- 		jsr 	ChrWr
+ 		;jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
 EdtClear: ; Clear variables and arrays
  		ZCPY(ZWr,BASEND) 	; end of code
@@ -71,11 +71,12 @@ EdtWipe 	sta 	(BASBEG),y
 ;----------------------------------------------- EdtUpdate
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FND has line no from tokbuf
-; ZCnt is length of the line in tokbuf
+; TOK_LEN is length of the line in tokbuf
+
+	PRINTLN("Edit-Seek")
+
+;  Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnSeekTop 	; seek from top of program
-; N:1 	  MI => EOF/Error
-; N:0 Z:1 EQ => NUM=FIND Match
-; N:0 Z:0 NE => NUM>FIND
 
  		jsr	EdtDBug
 
@@ -84,45 +85,50 @@ EdtUpd: ; Update program with line in TOKBUF
  		bra 	EdtIns
 
 EdtAdd: ; Append TOKBUF line to end of program
+	PRINTLN("Add")
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
- 		ZADD(BASEND,ZCnt) 	; BASEND += Len
+ 		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		jmp 	EdtCpy
 
 EdtDel: ; Delete line and fall through to Insert
+	PRINTLN("Del")
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
- 		;--
  		ZCPY(ZCnt,BASEND)
- 		ZSUB(ZCnt,LN_NXT)
+ 		ZSUB(ZCnt,LN_ADR)
+ 		ZSUB(BASEND,ZSrc) 	; BASEND -= Len
+ 		ZADD(BASEND,ZTgt)
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
+	PRINTLN("Ins")
  		lda 	#5
- 		cmp 	LN_LEN
+ 		cmp 	TOK_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
  		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
- 		;-- ZTgt=LN_ADR+LN_LEN
+ 		;-- ZTgt=LN_ADR+TOK_LEN
  		ZCPY(ZTgt,LN_ADR)
- 		ZADD(ZTgt,LN_LEN)
+ 		ZADD(ZTgt,TOK_LEN)
  		;-- ZCnt = BASEND - LN_ADR
  		ZCPY(ZCnt,BASEND)
  		ZSUB(ZCnt,LN_ADR) 	; ZSUB(r,n)	r = r-n
+ 		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		;-- copy up to make space
  		jsr 	EdtOpn
+
  		;-- copy line from TOKBUF to program
  		ZCPY(ZTgt,LN_ADR)
- 		clc
- 		lda 	TOKBUF+3
- 		adc 	#2
- 		sta 	ZCnt
  		jmp 	EdtCpy
-EdtInsX 	rts 			; Done
+
+EdtInsX    	rts 			; Done
 
 ;----------------------------------------------- EdtCpy
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
+		ZCPY(ZCnt,TOK_LEN)
  		ldy 	ZCnt
+ 		dey			; zero base
 EdtCpyL 	lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
@@ -131,18 +137,33 @@ EdtCpyL 	lda 	(ZSrc),y
 
 ;----------------------------------------------- EdtDBug
 EdtDBug: ; debug editor values
- 		DBUG("ZSrc",ZSrc)
- 		DBUG("ZTgt",ZTgt)
- 		DBUG("ZCnt",ZCnt)
+		php
+		pha
+		phx
+		phy
 
- 		DBUG("LN_NUM",LN_NUM)
- 		DBUG("LN_ADR",LN_ADR)
- 		DBUG("LN_NXT",LN_NXT)
- 		DBUG("LN_LEN",LN_LEN)
+		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
+		HEX_INT(ZSrc)
+		HEX_INT(ZTgt)
+		HEX_INT(ZCnt)
+		HEX_INT(BASEND)
+		HEX_INT(TOK_LEN)
+		CRLF()
 
- 		DBUG("LN_FND",LN_FND)
+		PRINTLN("NUM  ADR  NXT  LEN  FND")
+		HEX_INT(LN_NUM)
+		HEX_INT(LN_ADR)
+		HEX_INT(LN_NXT)
+		HEX_INT(LN_LEN)
+		HEX_INT(LN_FND)
+		CRLF()
 
- 		PAUSE()
+ 		;PAUSE()
+
+		ply
+		plx
+		pla
+		plp
 
  		rts
 
