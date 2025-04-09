@@ -5,7 +5,6 @@
 ;*  IsNumValue           return T if token is a numeric value
 ;*  IsRelOpChr           returns T/F if CHRGOT is a relational opperator <>=
 ;*  IsStrValue           return T if token is a string value
-;*  L_LineNo             List LineNo (calls X_LineNo)
 ;*  L_Number             List number
 ;*  L_String             list out string text
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -15,14 +14,13 @@
 ;*  Parse                Parse INBUF into TOKBUF
 ;*  ParseIn              Parse from memory into TOKBUF
 ;*  Run                  Run from TOKBUF
+;*  RunCmd               Run Cmd from TOKBUF
 ;*  RunLn                Run [LineNo] Stmnt.... 00
+;*  RunProg              Run program
 ;*  SkipBlank            Skip blank/tabs, end char in A, T if not null
 ;*  TokErr               display invalid token as [xx]
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokFind              try to find a matching token
-;*  X_LineNext           Move to the start of the next line LN_NXT->ZRd (ZRd)->.A->CHRGOT
-;*  X_LineNo             Get LN_NUM & Set up LN_NXT
-;*  X_LineNoNxt          LN_NXT->LN_ADR, process T_LineNo
 ;*m Short(NUM_FLG)       ; flags 4:<0 2:=0 1:>0   3:GE 5:NE ect
 ;*
 #ifdef hide
@@ -37,7 +35,7 @@ _Tok 		= $
 #define NUMFLGGT()	SMB0 NUM_FLG
 
 
-BAS_EOL 	= $00			; end of line
+BAS_EOL 	= $00 			; end of line
 BAS_PRG 	= $00 			; end of program
 
 
@@ -71,9 +69,9 @@ ParseIn: ;Parse from memory into TOKBUF
 P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
- 		jsr 	ChrWr		; line marker
+ 		jsr 	ChrWr 		; line marker
 
- 		;- length of line for editor -> TOK_LEN
+ 		;-- length of line for editor -> TOK_LEN
  		sec
  		lda 	ZWr
  		sbc 	#LOW(TOKBUF)
@@ -86,8 +84,8 @@ P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		lda 	TOKBUF
  		BR_ANE(T_LineNo,P_StmntX)
 
-		;-- T_LineNo : set length
-		lda 	TOK_LEN
+ 		;-- T_LineNo : set length
+ 		lda 	TOK_LEN
  		sta 	TOKBUF+3
  		;-- set LN_FND to tokbuf line no
  		lda 	TOKBUF+1
@@ -170,9 +168,9 @@ ParseClrL 	sta 	TOKBUF,y
  		iny
  		cpy 	#BUFSZ
  		bne 	ParseClrL
- 		;- clear seek line no
- 		sta LN_FND
- 		sta LN_FND+1
+ 		;-- clear seek line no
+ 		sta 	LN_FND
+ 		sta 	LN_FND+1
  		rts
 
 ;----------------------------------------------- SkipBlankL
@@ -299,6 +297,23 @@ TokExpand: ; Expand the token .X to key word
  		;-- print TblKeyword[X]
  		jmp 	Msg
 
+
+;	;----------------------------------------------- RunCmd
+;	RunCmd: ; Run Cmd from TOKBUF
+;	 		ZSET(ZRd,TOKBUF-1)
+;
+;	;----------------------------------------------- Run
+;	Run: ; Run from ZRd
+;	 		;-- set to read from memory, write to I/O
+;	 		PR_RD_MEM() 		; read from memory (code space)
+;	 		PR_WR_IO()		; output to I/O
+;
+;	RunL 		jsr 	RunLn
+;
+;
+;
+;	 		rts
+
 ;----------------------------------------------- Run
 Run: ; Run from TOKBUF
 
@@ -317,19 +332,18 @@ RunL 		jsr 	RunLn 		; (*1)
 ; end of program
  		rts
 
+
 ;----------------------------------------------- RunLn
 RunLn: ; Run [LineNo] Stmnt.... 00
- 		;-- init calc
  		jsr 	NumInit 	; initialise evaluator
  		jsr 	GetChr 		; (++ZRd)->A
  		sta 	TOKNO
  		;-- line number ?
  		BR_ANE(T_LineNo,RunStmnt)
  		;-- line number so execute that
- 		jsr 	LnNextRd	; sets up LN_NUM,LN_NXT,LN_ADR etc
+ 		jsr 	LnNextRd 	; sets up LN_NUM,LN_NXT,LN_ADR etc
  		sta 	TOKNO
- 		;-- fall through
-RunStmnt 	;---------------------- STATEMENT
+RunStmnt 	;- STATEMENT
  		;-- end of statement?
  		beq 	RunLnX 		; null = End-of-statement
  		;-- remark ?
@@ -341,7 +355,6 @@ RunStmnt 	;---------------------- STATEMENT
  		and 	#$7F
  		tax
  		jmp 	(TblRun,X) 	; rts->(*2)
-
 RunLnX 		rts 			; done, return
 
 ;----------------------------------------------- TokErr

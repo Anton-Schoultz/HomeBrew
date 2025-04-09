@@ -1,0 +1,38 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== Run ==============
+;*  X_Run                Execute Run
+;*
+_Run 		= $
+
+;----------------------------------------------- X_Run
+X_Run: ; Execute Run
+ 		ZSET(ZRd,BASBEG)
+		jmp Run
+
+
+
+.echo "  _Run\t\t"
+.echo $-_Run
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Run 		.DB 	"RU",'N'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Run 		= LOW($)
+.DW 	X_Run
+.nolist
+;.export T_Run
+#endif
+.list	; end of Run

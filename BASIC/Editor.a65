@@ -72,26 +72,18 @@ EdtWipe 	sta 	(BASBEG),y
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FND has line no from tokbuf
 ; TOK_LEN is length of the line in tokbuf
-
-	PRINTLN("Edit-Seek")
-
 ;  Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnSeekTop 	; seek from top of program
-
- 		jsr	EdtDBug
-
  		bmi 	EdtAdd 		; EOF/Error -> Append
  		beq 	EdtDel 		; Update = Del then Ins
  		bra 	EdtIns
 
 EdtAdd: ; Append TOKBUF line to end of program
-	PRINTLN("Add")
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
  		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		jmp 	EdtCpy
 
 EdtDel: ; Delete line and fall through to Insert
-	PRINTLN("Del")
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
  		ZCPY(ZCnt,BASEND)
@@ -101,7 +93,6 @@ EdtDel: ; Delete line and fall through to Insert
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
-	PRINTLN("Ins")
  		lda 	#5
  		cmp 	TOK_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
@@ -135,37 +126,37 @@ EdtCpyL 	lda 	(ZSrc),y
  		bpl 	EdtCpyL
  		rts
 
-;----------------------------------------------- EdtDBug
-EdtDBug: ; debug editor values
-		php
-		pha
-		phx
-		phy
-
-		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
-		HEX_INT(ZSrc)
-		HEX_INT(ZTgt)
-		HEX_INT(ZCnt)
-		HEX_INT(BASEND)
-		HEX_INT(TOK_LEN)
-		CRLF()
-
-		PRINTLN("NUM  ADR  NXT  LEN  FND")
-		HEX_INT(LN_NUM)
-		HEX_INT(LN_ADR)
-		HEX_INT(LN_NXT)
-		HEX_INT(LN_LEN)
-		HEX_INT(LN_FND)
-		CRLF()
-
- 		;PAUSE()
-
-		ply
-		plx
-		pla
-		plp
-
- 		rts
+;	;----------------------------------------------- EdtDBug
+;	EdtDBug: ; debug editor values
+;			php
+;			pha
+;			phx
+;			phy
+;
+;			PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
+;			HEX_INT(ZSrc)
+;			HEX_INT(ZTgt)
+;			HEX_INT(ZCnt)
+;			HEX_INT(BASEND)
+;			HEX_INT(TOK_LEN)
+;			CRLF()
+;
+;			PRINTLN("NUM  ADR  NXT  LEN  FND")
+;			HEX_INT(LN_NUM)
+;			HEX_INT(LN_ADR)
+;			HEX_INT(LN_NXT)
+;			HEX_INT(LN_LEN)
+;			HEX_INT(LN_FND)
+;			CRLF()
+;
+;	 		;PAUSE()
+;
+;			ply
+;			plx
+;			pla
+;			plp
+;
+;	 		rts
 
 
 

@@ -93,23 +93,17 @@ MainLoop 	;-- Prompt and input
  		jsr 	ConOut
  		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		;--
-; 		jsr 	CopyLine
- 		;--
  		;-- clear screen
  		CLS()
- 		;--
  		;-- display input text
  		LDAX(INBUF)
  		jsr 	PrStrAX 	; display source line
  		jsr 	PrNL
  		;--
-;   parse input
-;     length is placed into ZCnt
-;     Line no is placed into LN_FND
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
- 		PR_WR_IO()
  		;-- dump TOKBUF
+		PR_WR_IO()
  		HEX_DUMP(TOKBUF) 	; dump 8
  		jsr 	HexDump 	; dump next 8
 ; 		jsr 	HexDump 	; dump next 8
@@ -123,25 +117,23 @@ MainLoop 	;-- Prompt and input
 		;-- has line number so update the program
  		jsr 	EdtUpd
 
-		;-- Dump of program space
- 		HEX_DUMP($0800)
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	PrNL
+;		;-- Dump of program space
+; 		HEX_DUMP($0800)
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	PrNL
 
 		;-- back to main loop
  		jmp 	MainLoop
 
 ;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
- 		lda 	#':'
- 		jsr 	PutChr
+ 		jsr 	PrNL
  		PR_ZSPC_ON()
  		jsr 	Run
- 		;-- loop back and do it again
  		bra 	MainLoop
 
 ;----------------------------------------------- CopyLine

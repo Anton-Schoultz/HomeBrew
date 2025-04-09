@@ -2,10 +2,10 @@
 #ifdef hide
 .NOLIST
 #endif
-;=================================================================== LINE =============
+;=================================================================== LINE ============= 
 ;*  LnComp               Compare line number to LN_FND, (NUM-FND)
-;*  LnComp_Test          Test line compare
 ;*  LnNext               Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
+;*  LnNextRd             fetch the line no -> LN_NUM
 ;*  LnSeek               Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
 ;*  LnSeekTop            Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
 ;*  LnTop                Sets address of next line to top ( BASBEG->LN_NXT) and does LnNext
@@ -20,11 +20,11 @@ _Ln 		= $
 
 ; $003C  Int(LN_FND)   ; Line number to look for
 
-;----------------------------------------------- LnTop
+;----------------------------------------------- LnTop 
 LnTop: ; Sets address of next line to top ( BASBEG->LN_NXT) and does LnNext
  		ZCPY(LN_NXT,BASBEG)
 
-;----------------------------------------------- LnNext
+;----------------------------------------------- LnNext 
 LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ; LN_NXT -> ZRd -> LN_ADR
 ; Process the T_LineNo, sets LN_ADR,LN_NUM,LN_LEN and LN_NXT
@@ -42,28 +42,28 @@ LnEOF 		;-- zero length and number
  		sta 	LN_LEN+1
  		sta 	LN_NUM
  		sta 	LN_NUM+1
-		rts 			; return EQ=1
+ 		rts 			; return EQ=1
 
-LnNextRd 	;-- fetch the line no -> LN_NUM
-	 	jsr 	ChrRd 		; get lo no
+LnNextRd: ; fetch the line no -> LN_NUM
+ 		jsr 	ChrRd 		; get lo no
  		sta 	LN_NUM
  		jsr 	ChrRd 		; hi num
  		sta 	LN_NUM+1
  		;-- setup LN_LEN and LN_NXT
- 		jsr 	ChrRd		; length from line
- 		sta 	LN_LEN		; save it
+ 		jsr 	ChrRd 		; length from line
+ 		sta 	LN_LEN 		; save it
  		clc
- 		adc 	LN_ADR		; add start address
- 		sta 	LN_NXT		; next address
- 		lda 	#0		; hi length is zero
- 		sta 	LN_LEN+1	; save len.hi
- 		adc 	LN_ADR+1	; add start address
- 		sta 	LN_NXT+1	; store next.hi
+ 		adc 	LN_ADR 		; add start address
+ 		sta 	LN_NXT 		; next address
+ 		lda 	#0 		; hi length is zero
+ 		sta 	LN_LEN+1 	; save len.hi
+ 		adc 	LN_ADR+1 	; add start address
+ 		sta 	LN_NXT+1 	; store next.hi
  		;-- return the first byte
  		lda 	CHRGOT
  		rts
 
-;----------------------------------------------- LnComp
+;----------------------------------------------- LnComp 
 LnComp: ; Compare line number to LN_FND, (NUM-FND)
 ; returns with difference in A (and saved in LN_FLG)
 ; N:1 Z:0 C:0  MI => NUM<FIND
@@ -80,12 +80,12 @@ LnComp: ; Compare line number to LN_FND, (NUM-FND)
 LnCompX 	sta 	LN_FLG 		; save result
  		rts
 
-;----------------------------------------------- LnSeekTop
+;----------------------------------------------- LnSeekTop 
 LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnTop
  		beq 	LnSeekEOF
  		;-- fall through to Seek
-;----------------------------------------------- LnSeek
+;----------------------------------------------- LnSeek 
 LnSeek: ; Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnComp 		; mi=Cont, eq=Match ne=ins
  		bpl 	LnSeekX 	; num>=find
@@ -97,8 +97,8 @@ LnSeekEOF 	lda 	#$FF 		; sets Minus for EOF/Error
 LnSeekX 	rts
 
 #if _DBUG
-;=================================================================== TEST =============
-LnComp_Test ; Test line compare
+;=================================================================== TEST ============= 
+LnComp_Test 	; Test line compare
  		ZSET(LN_FND,100)
  		;-- NUM<FIND
  		ZSET(LN_NUM,90)

@@ -19,67 +19,56 @@ X_List: ; Execute List
  		PR_RD_MEM()
  		PR_WR_IO()
 		PR_ZSUP_ON()
- 		;-- default range
- 		ZSET(LST_BEG,0)
- 		ZSET(LST_END,65535)
+ 		;-- default range 0000-FFFF
+ 		lda #0
+ 		sta LST_BEG
+ 		sta LST_BEG+1
+ 		dec a
+ 		sta LST_END
+ 		sta LST_END+1
  		;--
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
- 		ZCPY(LST_BEG,NUM_AA) 	; set starting value
- 		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
+ 		; set start & end to number
+ 		lda NUM_AA
+ 		sta LST_BEG
+ 		sta LST_END
+ 		lda NUM_AA+1
+ 		sta LST_BEG+1
+ 		sta LST_END+1
 
 X_List_0 	;- check for a '-'
  		lda 	CHRGOT
  		cmp 	#'-'
  		bne 	X_List_1 	; no
- 		;-- default end is max
- 		ZSET(LST_END,65535)
+ 		;-- default end is FFFF
+ 		lda #$ff
+ 		sta LST_END
+ 		sta LST_END+1
  		jsr 	ChrRd 		; consume '-', get next byte
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
- 		;-- set TO
  		jsr 	NumRd 		; read value into NUM_A
- 		ZCPY(LST_END,NUM_AA) 	; set ending value  (same)
+ 		ZCPY(LST_END,NUM_AA) 	; set ending value
 
-X_List_1 	;-- ready to do the listing
- 		PRINTLN("LIST FROM -TO-")
- 		PRINT("      ")
- 		HEX_INT(LST_BEG)
- 		HEX_INT(LST_END)
- 		CRLF()
- 		;-- find the starting line
+X_List_1	;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
  		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
-
  		;-- TODO check start line is out of range
-
- 		;-- set ending lineno
+		; set ending line no
  		ZCPY(LN_FND,LST_END)
-
-X_List_L 	;-- check last line no
+X_List_L	;-- check last line no
  		jsr 	LnComp
-
- 		PAUSE()
-
-; returns with difference in A (and saved in LN_FLG)
-; N:1 Z:0 C:0  MI => NUM<FIND
-; N:0 Z:1 C:1  EQ => NUM=FIND Match
-; N:0 Z:0 C:1  NE => NUM>FIND
-; 		bmi	X_List_1
-; 		bmi	X_List1		; not at end yet
-; 		beq	X_List1		; last line
-; 		rts			; done
-
-	 	; List the line
+ 		beq	X_List1
+		bcs	X_List_X
 X_List1		jsr 	ListLn 		; list the line
  		jsr 	LnNext 		; move to next line
  		;-- check if we have a line (length > 0)
  		lda 	LN_LEN		; get length
  		bne 	X_List_L	; non-zero, so loop
-		; end of list
 X_List_X 	rts
 
 ;----------------------------------------------- ListLn
@@ -137,31 +126,31 @@ ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
 
-;----------------------------------------------- ListDBug
-ListDBug: ; debug values
-		php
-		pha
-		phx
-		phy
-
-		PRINTLN("BEG  END  NUM  FLG  FND")
-		HEX_INT(LST_BEG)
-		HEX_INT(LST_END)
-		HEX_INT(LN_NUM)
-
-		HEX_INT(LN_FLG)
-		HEX_INT(LN_LEN)
-		HEX_INT(LN_FND)
-		CRLF()
-
- 		;PAUSE()
-
-		ply
-		plx
-		pla
-		plp
-
- 		rts
+;;----------------------------------------------- ListDBug
+;;ListDBug: ; debug values
+;		php
+;		pha
+;		phx
+;		phy
+;
+;		PRINTLN("BEG  END  NUM  FLG  FND")
+;		HEX_INT(LST_BEG)
+;		HEX_INT(LST_END)
+;		HEX_INT(LN_NUM)
+;
+;		HEX_INT(LN_FLG)
+;		HEX_INT(LN_LEN)
+;		HEX_INT(LN_FND)
+;		CRLF()
+;
+; 		;PAUSE()
+;
+;		ply
+;		plx
+;		pla
+;		plp
+;
+; 		rts
 
 
 
