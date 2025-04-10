@@ -29,32 +29,6 @@ X_PrEnd 	;- end so new line?
  		jmp 	PrNL 		; output CR,LF and exit
 X_PrX 		rts
 
-; handle parts inside   (part | , | ;)*
-
-X_PrPart 	;-- first check for comma / semi-colon
- 		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
- 		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
-
- 		;-- try as numeric expression
- 		jsr 	EvNumeric
- 		BR_F(X_PrStr) 		; not numeric, try string
-
-
-X_PrNum: ; convert and print number in NUM_A
- 		jsr 	NumCvt 		; to string
- 		jsr 	NumFmt 		; handle leading zeroes
- 		;-- print the string
- 		LDAX(NUM_BUF)
- 		jsr 	PrStrAX
- 		;-- done
- 		RTN_T() 		; OK
-
-X_PrStr 	;- handle as string expression
- 		jsr 	EvString
- 		jsr 	StrOut
- 		RTN_T()
-
-
 ;  -- ',' or ';' control output spacing / NL
 X_PrComma 	;-- comma, do a tab, no CRLF
  		lda 	#HT 		; tab
@@ -63,7 +37,35 @@ X_PrComma 	;-- comma, do a tab, no CRLF
 X_PrSemi 	;-- Semicolon, no CR/LF
  		NONL()
  		jsr 	ChrRd 		; comsume ,/;
- 		bra 	X_PrPart
+		; fall through to X_PrPart
+
+; handle parts inside   (part | , | ;)*
+
+X_PrPart 	;-- first check for comma / semi-colon
+ 		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
+ 		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
+ 		;- is it a string?
+ 		jsr	EvIsStr
+ 		bne	X_PrNum
+
+X_PrStr:; evaluate a string expression & print it
+ 		jsr 	EvString
+ 		jsr 	StrOut
+ 		RTN_T()	; OK
+
+X_PrNum: ; evaluate numeric expresion, convert & print
+ 		jsr 	EvNumeric
+; 		RTN_IFF()		; non-numeric/error
+ 		; convert to string
+ 		jsr 	NumCvt 		; to string
+ 		jsr 	NumFmt 		; handle leading zeroes
+ 		;-- print the string
+ 		LDAX(NUM_BUF)
+ 		jsr 	PrStrAX
+ 		;-- done
+ 		RTN_T() 		; OK
+
+
 
 .echo "  _PRINT\t"
 .echo $-_Print

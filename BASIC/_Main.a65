@@ -134,10 +134,7 @@ MainCmd 	;-- Run command line
 		lda #']'
 		jsr ConOut
  		jsr 	PrNL
- 		PR_ZSPC_ON()
-
-PAUSE()
-
+ 		PR_ZSUP_ON()
  		jsr 	RunCmd
  		bra 	MainLoop
 
