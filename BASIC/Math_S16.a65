@@ -321,10 +321,12 @@ NumSpcX 	rts
 ;----------------------------------------------- NumRd
 NumRd: ; Read from memory (ChrRd) & unpack
 ; ZRd points to the token before this value
+; returns in A=Hi, X=Lo
  		lda 	#0
  		sta 	NUM_AS 		; clear sign (+ve)
  		jsr 	ChrRd
  		sta 	NUM_AA 		; L
+ 		tax			; save low in X
  		jsr 	ChrRd
  		sta 	NUM_AB 		; H
 NumRdX 		rts

@@ -18,6 +18,10 @@ RunInit: ; prepare to run by setting flags
  		PR_ZSUP_ON() 		; suppress leading zeroes
  		;-- init
  		jsr 	NumInit 	; initialise evaluator
+ 		; default line no zero
+ 		lda #0
+ 		sta LN_FND
+ 		sta LN_FND+1
  		rts
 
 ;----------------------------------------------- RunCmd
@@ -29,19 +33,21 @@ RunCmd: ; Run Cmd from TOKBUF
 ;----------------------------------------------- X_Run
 X_Run: ; Execute Run
  		jsr 	RunInit 	; set I/O, Zero suppress etc
-
- 		;-- FUTURE handle line no to start from - 'RUN 1000'
-; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
-; includes LnNextRd
- 		jsr 	LnTop		; EQ=>EOF
-
+		jsr	ChrRd		; consume RUN
+		BR_ANE(T_NumLit,Run)	; start at default line no 0
+		;-- numeric literal is start line
+		jsr 	NumRd		; returns in A=Hi, X=Lo
+		sta LN_FND+1
+		stx LN_FND
+		;-- find starting line (or first after it)
+Run		jsr LnSeekTop
+		lda CHRGOT
 RunL 		beq 	RunX 		; EOF -> exit
  		;-- exectute, GOTO/GOSUB etc set LN_NXT
  		jsr 	RunStmnt
  		;-- move to next line
  		jsr 	LnNext		; Next line LN_NXT->ZRd->LN_ADR
  		bra 	RunL
-
 RunX 		rts
 
 ;----------------------------------------------- RunLn
