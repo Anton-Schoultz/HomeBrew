@@ -25,7 +25,7 @@ LnTop: ; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
  		ZCPY(LN_NXT,BASBEG)
 
 ;----------------------------------------------- LnNext
-LnNext: ; Next line LN_NXT->ZRd->LN_ADR
+LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ; LN_NXT -> ZRd -> LN_ADR
 ; Process the T_LineNo, sets LN_ADR,LN_NUM,LN_LEN and LN_NXT
  		ZCPY(ZRd,LN_NXT) 	; point ChrGet to the line

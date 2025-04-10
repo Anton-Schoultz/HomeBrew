@@ -31,11 +31,11 @@ X_Run: ; Execute Run
  		jsr 	RunInit 	; set I/O, Zero suppress etc
 
  		;-- FUTURE handle line no to start from - 'RUN 1000'
-; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR
+; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
+; includes LnNextRd
  		jsr 	LnTop		; EQ=>EOF
 
 RunL 		beq 	RunX 		; EOF -> exit
-		jsr 	LnNextRd 	; sets up LN_NUM,LN_NXT,LN_ADR etc
  		;-- exectute, GOTO/GOSUB etc set LN_NXT
  		jsr 	RunStmnt
  		;-- move to next line
