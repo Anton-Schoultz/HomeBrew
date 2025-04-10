@@ -3,16 +3,72 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== Run ==============
+;=================================================================== RUN ==============
+;*  RunCmd               Run Cmd from TOKBUF
+;*  RunInit              prepare to run by setting flags
+;*  RunLn                Run [LineNo] Stmnt.... 00
+;*  TokErr               display invalid token as [xx]
 ;*  X_Run                Execute Run
 ;*
 _Run 		= $
 
+RunInit: ; prepare to run by setting flags
+ 		PR_RD_MEM() 		; read from memory (code space)
+ 		PR_WR_IO() 		; output to I/O
+ 		PR_ZSUP_ON() 		; suppress leading zeroes
+ 		;-- init
+ 		jsr 	NumInit 	; initialise evaluator
+ 		rts
+
+;----------------------------------------------- RunCmd
+RunCmd: ; Run Cmd from TOKBUF
+ 		ZSET(ZRd,TOKBUF-1) 	; where to run from
+ 		jsr 	RunInit 	; set I/O, Zero suppress etc
+ 		jmp 	RunStmnt
+
 ;----------------------------------------------- X_Run
 X_Run: ; Execute Run
- 		ZSET(ZRd,BASBEG)
-		jmp Run
+ 		jsr 	RunInit 	; set I/O, Zero suppress etc
 
+ 		;-- FUTURE handle line no to start from - 'RUN 1000'
+; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR
+ 		jsr 	LnTop		; EQ=>EOF
+
+RunL 		beq 	RunX 		; EOF -> exit
+		jsr 	LnNextRd 	; sets up LN_NUM,LN_NXT,LN_ADR etc
+ 		;-- exectute, GOTO/GOSUB etc set LN_NXT
+ 		jsr 	RunStmnt
+ 		;-- move to next line
+ 		jsr 	LnNext		; Next line LN_NXT->ZRd->LN_ADR
+ 		bra 	RunL
+
+RunX 		rts
+
+;----------------------------------------------- RunLn
+RunStmnt: ; Run a statement
+ 		jsr 	ChrRd 		; (++ZRd)->A->CHRGOT
+ 		sta 	TOKNO
+ 		beq 	RunLnX 		; null = End-of-statement
+ 		;-- remark ?
+ 		BR_AEQ(T_Rem,RunLnX) 	; remark skip rest
+ 		;-- token
+ 		BR_AGT(T_Max,TokErr) 	; >max = invalid token
+ 		BR_ALT($80,TokErr) 	; <$80 = invalid token
+ 		;-- jump to X_xxxx, rts to run loop
+ 		and 	#$7F
+ 		tax
+ 		jmp 	(TblRun,X)
+RunLnX 		rts 			; done, return
+
+;----------------------------------------------- TokErr
+TokErr: ; display invalid token as [xx]
+ 		lda 	#'['
+ 		jsr 	PutChr
+ 		lda 	TOKNO
+ 		jsr 	PrAHex
+ 		lda 	#']'
+ 		jsr 	PutChr
+ 		rts
 
 
 .echo "  _Run\t\t"
@@ -33,6 +89,6 @@ W_Run 		.DB 	"RU",'N'+$80
 T_Run 		= LOW($)
 .DW 	X_Run
 .nolist
-;.export T_Run
+ 		;-- .export T_Run
 #endif
-.list	; end of Run
+.list 					; end of Run
