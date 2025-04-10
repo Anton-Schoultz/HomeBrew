@@ -7,7 +7,7 @@
 #define ERR_OK 0
 #define ERR_EXPECTED 2
 
-;=================================================================== ERROR ============
+;=================================================================== ERROR ============ 
 ; NOTE: Message nos go up in 2s
 ;
 ;*  Error                Hanlde error[X] resetting to warm start
@@ -17,7 +17,7 @@
 ;*
 _Err 		= $
 
-;----------------------------------------------- X_Err
+;----------------------------------------------- X_Err 
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
@@ -39,14 +39,14 @@ Error: ; Hanlde error[X] resetting to warm start
 ; $	Y as hex
 ; % 	Y as decimal
 
-;----------------------------------------------- RegLoad
+;----------------------------------------------- RegLoad 
 RegLoad: ; Load registers from ZReg~
  		lda 	ZRegA 		; load .A
  		ldy 	ZRegY 		; load .Y
  		ldx 	ZRegX 		; load .X
  		rts
 
-;----------------------------------------------- RegSave
+;----------------------------------------------- RegSave 
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
@@ -54,9 +54,10 @@ RegSave: ; Save registers into ZReg~
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg
+;----------------------------------------------- Msg 
 Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
  		jsr 	RegSave 	; save regs
+ 		ldy 	#0
  		txa
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
@@ -64,7 +65,7 @@ Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
  		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
- 		;--
+ 		;-- 
 MsgNxt 		cpx 	#0 		; no more
  		beq 	MsgX
  		;-- move to next word
