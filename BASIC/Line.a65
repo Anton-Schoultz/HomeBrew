@@ -4,11 +4,12 @@
 #endif
 ;=================================================================== LINE =============
 ;*  LnComp               Compare line number to LN_FND, (NUM-FND)
+;*  LnGo                 seek line for GOTO/GOSUB
 ;*  LnNext               Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
-;*  LnNextRd             fetch the line no -> LN_NUM
+;*  LnNextRd             fetch the line info - set NUM,LEN,NXT
 ;*  LnSeek               Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
 ;*  LnSeekTop            Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
-;*  LnTop                Sets address of next line to top ( BASBEG->LN_NXT) and does LnNext
+;*  LnTop                Start of program   BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ;*
 
 _Ln 		= $
@@ -79,6 +80,12 @@ LnComp: ; Compare line number to LN_FND, (NUM-FND)
  		sbc 	LN_FND
 LnCompX 	sta 	LN_FLG 		; save result
  		rts
+
+;----------------------------------------------- LnGo
+LnGo: ; seek line for GOTO/GOSUB
+ 		jsr 	LnComp
+ 		bmi 	LnSeekNxt
+ 		;-- fall through to seek from top
 
 ;----------------------------------------------- LnSeekTop
 LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error

@@ -3,9 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
+#define ERROR(n) ldx #n\ jmp Error
+
 ; NOTE: Message nos go up in 2s
 #define ERR_OK 0
 #define ERR_EXPECTED 2
+#define ERR_CONST 4
 
 ;=================================================================== ERROR ============
 ; NOTE: Message nos go up in 2s
@@ -125,6 +128,7 @@ MsgDec 		jmp 	PrADec3
 ErrTbl
 .DB "OK",DOT 				; 0=OK
 .DB "Expected @ but got $",DOT 		; 2=Expected x got $YY.
+.DB "Expected constant",DOT 		; 4=Expected constant
 
 .DB 0
 

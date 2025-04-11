@@ -4,13 +4,17 @@
 #include "XRem.a65"
 #include "XPrint.a65"
 #include "XBreak.a65"
-#include "XReturn.a65"
 #include "XCls.a65"
 #include "XLet.a65"
 #include "XNew.a65"
 #include "XList.a65"
 
 #include "XRun.a65"
+#include "XGoto.a65"
+
+
+#include "XReturn.a65"
+
 
 ; functions / operators
 #include "KeyWords.a65"

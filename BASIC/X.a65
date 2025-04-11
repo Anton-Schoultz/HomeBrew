@@ -9,7 +9,7 @@ _Tmp 		= $
 
 ;----------------------------------------------- X_Tmp
 X_Tmp: ; Execute Tmp
-
+		jsr 	ChrRd 		; consume token
 
 .echo "  _Tmp\t"
 .echo $-_Tmp
