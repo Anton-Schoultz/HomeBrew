@@ -2,8 +2,8 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== Goto ==============
-;*  X_Goto                Execute Goto
+;=================================================================== GOTO ==============
+;*  X_Goto               Execute Goto
 ;*
 _Goto 		= $
 
@@ -11,18 +11,19 @@ _Goto 		= $
 
 ;----------------------------------------------- X_Goto
 X_Goto: ; Execute Goto
-		jsr 	ChrRd 		; consume token
- 		BR_AEQ(T_NumLit,Goto)
+ 		jsr 	ChrRd 		; consume token
+X_GotoNum:; GOTO Num
+		BR_AEQ(T_NumLit,Goto)
  		;-- Expected constant
  		ERROR(ERR_CONST)
-Goto	;- find the line and transfer
-		jsr 	NumRd 		; returns in A=Hi, X=Lo
+Goto 		;- find the line and transfer
+ 		jsr 	NumRd 		; returns in A=Hi, X=Lo
  		sta 	LN_FND+1
  		stx 	LN_FND
-		jsr	LnGo
-		; return will go to next line, so back up
-		ZCPY(LN_NXT,LN_ADR)
-		rts
+ 		jsr 	LnGo
+ 		;-- return will go to next line, so back up
+ 		ZCPY(LN_NXT,LN_ADR)
+ 		rts
 
 
 .echo "  _Goto\t\t"
@@ -43,7 +44,7 @@ W_Goto 		.DB 	"GOT",'O'+$80
 T_Goto 		= LOW($)
 .DW 	X_Goto
 .nolist
-;.export T_Goto
+ 		;-- .export T_Goto
 #endif
 
-.list	; end of Goto
+.list 					; end of Goto

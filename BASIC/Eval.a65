@@ -2,6 +2,7 @@
 ;*  BoolOr               OR
 ;*  BoolTerm             Boolean AND
 ;*  BoolXor              XOR
+;*  Check                check for a given token in CHRGOT
 ;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              Fetch number from the code -> NUM_A (unpacked)
 ;*  EvAdd                add
@@ -20,14 +21,16 @@
 ;*  NotFactor            Boolean NOT
 ;*  Relation             Handle relation test < = > <= <> >=
 ;*  Term                 Factor [ '*'|'/'|'%' Factor]*
-;*m MATCH(ch)            Match a Specific Input String and move on to next token
+;*m MATCH(ch)            Match a Specific Input Character and move on to next token
 ;*
 #ifdef hide
 .NOLIST
 #endif
 
-; MATCH(ch)  Match a Specific Input String and move on to next token
+; MATCH(ch)  Match a Specific Input Character and move on to next token
 #define MATCH(ch) lda #ch\ jsr Match
+; CHECK(ch)  Check that CHRGOT matches ch, (Don't move on)
+#define CHECK(ch) lda #ch\ jsr Check
 
 
 _Ev 		= $
@@ -43,20 +46,23 @@ EvNumL 		jsr 	IsOrOp
  		jsr 	DoOrOp
  		bra 	EvNumL
  		;--
-EvNumX 		rts
+EvNumX 		php
+ 		jsr 	NumPack
+ 		plp
+ 		rts 			; return value in AX lo/hi
 
 ;----------------------------------------------- DoOrOp
 DoOrOp 		lda 	CHRGOT
- 		CASE(T_OR,BoolOr)
- 		CASE(T_XOR,BoolXor)
+ 		CASE(T_Or,BoolOr)
+ 		CASE(T_Xor,BoolXor)
  		RTN_F()
 
 ;----------------------------------------------- IsOrOp
 IsOrOp 		; return EQ if 'OR' / 'XOR'
  		lda 	CHRGOT
- 		cmp 	#T_OR
+ 		cmp 	#T_Or
  		beq 	IsOrOpX
- 		cmp 	#T_XOR
+ 		cmp 	#T_Xor
 IsOrOpX 	rts
 
 ;----------------------------------------------- BoolOr
@@ -65,10 +71,8 @@ BoolOr: ; OR
  		jsr 	BoolTerm
  		jsr 	NumPopB
  		jsr 	NumOr
-
  		lda 	CHRGOT
  		jsr 	ChrRd
-
  		RTN_T()
 
 ;----------------------------------------------- BoolXor
@@ -83,7 +87,7 @@ BoolXor: ; XOR
 BoolTerm: ; Boolean AND
  		jsr 	NotFactor
 BoolTermL 	lda 	CHRGOT
- 		cmp 	#T_AND
+ 		cmp 	#T_And
  		bne 	BoolTermX
  		jsr 	NumPushA
  		jsr 	ChrRd
@@ -96,7 +100,7 @@ BoolTermX 	RTN_T()
 ;----------------------------------------------- NotFactor
 NotFactor: ; Boolean NOT
  		lda 	CHRGOT
- 		cmp 	#T_NOT
+ 		cmp 	#T_Not
  		bne 	Relation
  		;--
  		jsr 	ChrRd 		; consume NOT
@@ -286,6 +290,12 @@ EvFBr: ; Bracketed expression
  		MATCH($29) 		; check for ')'
  		RTN_T() 		; got a value
 
+;----------------------------------------------- Check
+Check: ; check for a given token in CHRGOT
+ 		cmp 	CHRGOT
+ 		bne 	MatchFail
+ 		rts
+
 ;----------------------------------------------- Match
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
@@ -295,23 +305,6 @@ MatchFail 	; expected in A
  		ldy 	CHRGOT 		; got in Y
  		ldx 	#ERR_EXPECTED
  		jmp 	Error
-
-; 		pha 			; save expected
-; 		PRINT("Excpected ")
-; 		pla
-; 		pha
-; 		jsr 	ConOut
-; 		pla
-; 		jsr 	PrAHex
-; 		PRINT(" but got ") 	;
-; 		lda 	CHRGOT
-; 		jsr 	PrAHex
-; 		THROW(1)
-
-
-
-
-
 
 
 .echo "  _Eval\t\t"

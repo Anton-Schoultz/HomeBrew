@@ -27,6 +27,7 @@ W_OR 		.DB 	"O",'R'+$80
 W_XOR 		.DB 	"XO",'R'+$80
 W_NOT 		.DB 	"NO",'T'+$80
 
+W_THEN		.DB 	"THE",'N'+$80
 
 .nolist
 #endif
@@ -34,18 +35,20 @@ W_NOT 		.DB 	"NO",'T'+$80
 #if ($/256) = PG_RUN
 .list
 
-T_AND 		= LOW($)+$80
+T_And 		= LOW($)+$80
 .DW 	X_Nop
 
-T_OR 		= LOW($)+$80
+T_Or 		= LOW($)+$80
 .DW 	X_Nop
 
-T_XOR 		= LOW($)+$80
+T_Xor 		= LOW($)+$80
 .DW 	X_Nop
 
-T_NOT		= LOW($)+$80
+T_Not		= LOW($)+$80
 .DW 	X_Nop
 
+T_Then		= LOW($)+$80
+.dw	X_Nop
 
 .nolist
 #endif

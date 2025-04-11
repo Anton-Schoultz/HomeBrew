@@ -1,0 +1,48 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== IF ==============
+;*  X_If                 Execute If
+;*
+_If 		= $
+
+; IF <expression> THEN <Statment>
+
+;----------------------------------------------- X_If
+X_If: ; Execute If
+ 		jsr 	ChrRd 		; consume token
+ 		;-- evaluate expression
+ 		JSR 	EvNumeric 	; AX lo/hi
+ 		LDA 	NUM_AA
+ 		ORA 	NUM_AB
+ 		BNE 	IfTrue
+ 		rts 			; false return to do next line
+
+IfTrue 		;-- result is true
+		CHECK(T_Then)
+ 		; will ChrRd to get first token of statement
+ 		jmp 	RunStmnt
+
+.echo "  _If\t"
+.echo $-_If
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_If 		.DB 	"I",'F'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_If 		= LOW($)
+.DW 	X_If
+.nolist
+ 		;-- .export T_If
+#endif
+
+.list 					; end of If

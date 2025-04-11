@@ -11,6 +11,7 @@
 
 #include "XRun.a65"
 #include "XGoto.a65"
+#include "XIf.a65"
 
 
 #include "XReturn.a65"

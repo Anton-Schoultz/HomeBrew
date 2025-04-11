@@ -33,9 +33,6 @@ Error: ; Hanlde error[X] resetting to warm start
 
  		jmp 	Warm
 
-;  Short(ZRegA)	; Char to substitute for '@'/'!' in messages  A
-;  Short(ZRegY)	; Char to substitute for '#'/'$' in messages  Y
-
 ; @	A as character
 ; !	A as hex
 ; #	Y as char
@@ -124,10 +121,15 @@ MsgYD 		lda 	ZRegY
 MsgDec 		jmp 	PrADec3
 
 #define DOT '.'+$80
+; @	A as character
+; !	A as hex
+; #	Y as char
+; $	Y as hex
+; % 	Y as decimal
 
 ErrTbl
 .DB "OK",DOT 				; 0=OK
-.DB "Expected @ but got $",DOT 		; 2=Expected x got $YY.
+.DB "Expected ! but got $",DOT 		; 2=Expected $aa got $yy.
 .DB "Expected constant",DOT 		; 4=Expected constant
 
 .DB 0
