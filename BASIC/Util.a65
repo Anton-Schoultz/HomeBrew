@@ -128,7 +128,6 @@ IntDH_AX2 	dex
  		bne 	IntDH_AX1
  		rts
 
-
 ;----------------------------------------------- IntParse 
 IntParse: ; Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
 ; DO NOT PARSE '-'
@@ -145,8 +144,8 @@ IntParse1 	jsr 	IsDigit 	; messes with A
  		clc 			; and add to TMP
  		adc 	TMP
  		sta 	TMP
- 		bne 	IntParseAX
- 		inc 	TMP+1
+ 		BCC 	IntParseAX
+ 		INC 	TMP+1
 IntParseAX 	jsr 	GetChr 		; next character
  		bra 	IntParseL
 IntParseX 	lda 	TMP
