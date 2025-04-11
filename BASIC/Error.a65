@@ -31,7 +31,7 @@ Error: ; Hanlde error[X] resetting to warm start
 
  		HALT()
 
- 		jmp 	Warm
+ 		jmp 	Main
 
 ; @	A as character
 ; !	A as hex

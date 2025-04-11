@@ -3,7 +3,7 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 
-_DBUG = 0
+_DBUG 		= 0
 
 ; .echo "ROM at $F000-$FFFF (4k)\r"
 .echo "ROM at $E000-$FFFF (8k)\r"
@@ -14,11 +14,12 @@ _DBUG = 0
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN =============
-;*  CopyLine             copy TestSrc into INBUF
-;*  Main                 MAIN code
+;=================================================================== MAIN ============= 
+;*  Main                 Warm Start entry point
+;*  MainLoop             Main Loop
+;*  MainProg             Dump start of Program space
+;*  MainTokBuf           Dump TOKBUF
 ;*  Reset                Reset (Cold start)
-;*  Warm                 Warm Start entry point
 ;*
 #ifdef hide
 .NOLIST
@@ -26,7 +27,7 @@ _DBUG = 0
 
 .org _ROM
 .LIST
-;----------------------------------------------- START OF ROM
+;----------------------------------------------- START OF ROM 
 ; 		START OF ROM
 #if _DBUG
  		jsr 	LnComp_Test
@@ -60,7 +61,7 @@ TestSrc
 ; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
 .db 0
 
-;----------------------------------------------- Reset
+;----------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -73,76 +74,58 @@ Reset: ;Reset (Cold start)
  		LDAX($8000) 		; end of 32K RAM
  		SETAX(RAMEND)
 
+ 		jsr 	ChrInit 	; Set up ZPage Code & vectors
  		jsr 	EdtNew 		; NEW
+ 		CLS() 			; CLS
 
-;----------------------------------------------- Warm
-Warm: ;Warm Start entry point
+;----------------------------------------------- Main 
+Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
-
-;----------------------------------------------- Main
-Main: ; MAIN code
- 		CLS()
-
-MainLoop 	;-- Prompt and input
+;----------------------------------------------- MainLoop 
+MainLoop: ; Main Loop
  		PR_WR_IO()
  		lda 	#'>'
  		jsr 	ConOut
  		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
-		jsr 	PrNL
-
-; 		;-- CLS and display input buffer
-; 		CLS()
-; 		LDAX(INBUF)
-; 		jsr 	PrStrAX 	; display source line
-; 		jsr 	PrNL
-
+ 		jsr 	PrNL
  		jsr 	Parse 		; Parse INBUF into TOKBUF
-
-;  		;-- dump TOKBUF
-; 		PR_WR_IO()
-;  		HEX_DUMP(TOKBUF) 	; dump 8
-;  		jsr 	HexDump 	; dump next 8
-;  		jsr 	HexDump 	; dump next 8
-;  		jsr 	PrNL
-
-		;-- immediate command ? (No line number)
+ 		;-- immediate command ? (No line number)
  		lda 	TOKBUF
  		cmp 	#T_LineNo
  		bne 	MainCmd
-
-		;-- has line number so update the program
+ 		;-- has line number so update the program
  		jsr 	EdtUpd
-
-;		;-- Dump of program space
-; 		HEX_DUMP($0800)
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	PrNL
-
-		;-- back to main loop
+ 		;-- back to main loop
  		jmp 	MainLoop
 
-;----------------------------------------------- MainCmd
+;----------------------------------------------- MainCmd 
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
  		jsr 	PrNL
  		bra 	MainLoop
 
-;	;----------------------------------------------- CopyLine
-;	CopyLine: ; copy TestSrc into INBUF
-;	 		ldy 	#$FF
-;	CopyLineL 	iny
-;	 		lda 	TestSrc,y
-;	 		sta 	INBUF,y
-;	 		cmp 	#0
-;	 		bne 	CopyLineL
-;	 		rts
+;======================================================================================
+
+MainTokBuf: ; Dump TOKBUF
+; 		PR_WR_IO()
+;  		HEX_DUMP(TOKBUF) 	; dump 8
+;  		jsr 	HexDump 	; dump next 8
+;  		jsr 	HexDump 	; dump next 8
+;  		jmp 	PrNL
+
+MainProg: ; Dump start of Program space
+; 		HEX_DUMP($0800)
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jsr 	HexDump 	; dump next 8
+; 		jmp 	PrNL
+
+
 
 #include "Variables.a65" 		; Variable parse/list
 
@@ -155,12 +138,12 @@ MainCmd 	;-- Run command line
 ROMEND 		= $
 
 
-;----------------------------------------------- TblKeyword
+;----------------------------------------------- TblKeyword 
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
 
-;----------------------------------------------- TblRun
+;----------------------------------------------- TblRun 
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -174,7 +157,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;----------------------------------------------- hardware vectors
+;----------------------------------------------- hardware vectors 
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
