@@ -10,6 +10,12 @@ SCRN_LINES = 16
 ; digits to convert into NUM_BUF  including [-] digits... NULL
 #define NUMSZ 8
 
+; Nesting depth for GOSUB calls
+#define RTNSZ 32
+
+; Nesting depth for FOR..NEXT
+#define FORSZ  8
+
 ; bytes per line of Hex Dump  (if cols > 69 then use 16)
 #define HEXSZ 8
 

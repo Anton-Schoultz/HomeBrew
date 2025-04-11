@@ -133,5 +133,17 @@ Var(VARTAB,128) ; 32 x 4 bytes vars
 #define VARTAB_C VARTAB+64
 #define VARTAB_D VARTAB+96
 
+;Gosub to depth of RTNSZ=32  (CBM has ~23)
+; return value is the address of the line following the GOSUB (2bytes)
+Var(RTNSTK,RTNSZ*2)	; 32 x 2byte return line address
+
+;FOR nesting depth FORSZ=8 (CBM has 9)
+; 2	Addr of line after the FOR...STEP
+; 2	Addr of variable to be updated (or index?)
+; 2	Step
+; 2	Limit
+Var(FORSTK,FORSZ*8)
+
+
 .LIST
 

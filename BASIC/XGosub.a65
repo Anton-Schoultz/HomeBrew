@@ -1,0 +1,51 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== GOSUB ==============
+;*  X_Gosub              Execute Gosub
+;*  X_GosubNum           Gosub Num
+;*
+_Gosub 		= $
+
+; Gosub NumLit
+
+;----------------------------------------------- X_Gosub
+X_Gosub: ; Execute Gosub
+ 		jsr 	ChrRd 		; consume token
+X_GosubNum: ; Gosub Num
+ 		BR_AEQ(T_NumLit,Gosub)
+ 		;-- Expected constant
+ 		ERROR(ERR_CONST)
+Gosub 		;- find the line and transfer
+ 		jsr 	NumRd 		; returns in A=Hi, X=Lo
+ 		sta 	LN_FND+1
+ 		stx 	LN_FND
+ 		jsr 	LnGo
+ 		;-- return will go to next line, so back up
+ 		ZCPY(LN_NXT,LN_ADR)
+ 		rts
+
+
+.echo "  _Gosub\t\t"
+.echo $-_Gosub
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Gosub 	.DB 	"GOSU",'B'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Gosub 	= LOW($)
+.DW 	X_Gosub
+.nolist
+ 		;-- .export T_Gosub
+#endif
+
+.list 					; end of Gosub

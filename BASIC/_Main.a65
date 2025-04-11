@@ -49,18 +49,6 @@ _DBUG 		= 0
 #include "Eval.a65" 			; Evaluator
 #include "Line.a65"
 
-
-TestSrc
-.DB "10  PRINT 12/(3+2" 		;  2.4 ok
-; .DB "10  PRINT 12/10+120"	;  1.212e02 =  121.2 ok
-; .DB "10  PRINT 120+12/10"	;  1.212e02 =  121.2 ok
-; .DB "10  PRINT 12/10-120"	; -1.188e02 = -118.8 ok
-; .DB "10  PRINT 120-12/10"     ;  1.188e02 =  118.8 ok
-; .db "10 PRINT 1234/1000"	;  1.234 ok
-; .db "10 PRINT 1234"
-; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
-.db 0
-
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
@@ -83,19 +71,6 @@ Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
-
-;		; NUM_A = $1234 = 4660
-; 		lda #$12
-; 		sta NUM_AA
-; 		lda #$34
-; 		sta NUM_AB
-; 		lda #0
-; 		sta NUM_AS
-;		PAUSE()
-;		jsr	NumCvt
-; 		LDAX(NUM_BUF)		; print it
-; 		jsr 	PrStrAX
-;		HALT()
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop

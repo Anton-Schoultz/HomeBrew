@@ -17,17 +17,20 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
+; $0400	VARTAB	32 x 4 for A-Z vars
+;
 
-;  Int(RAMBEG)	; Start of user ram area (set with cold start)
-;  Int(RAMEND)	; End of user ram area (set at cold start)
+;  Int(RAMBEG)	; Start of user ram area (set with cold start)	$0800
+;  Int(RAMEND)	; End of user ram area (set at cold start)	$8000
 ;  Int(BASBEG)	; Start of BASIC program
 ;  Int(BASEND)	; end of program, start of variables
 ;  Int(VAREND)	; end of variables
 ;  Int(STREND)  ; end of string work area
 ;  Int(ARYBEG)  ; Start of array Space
 
-; RAMBEG    BASBEG          BASEND      VAREND        STREND  ARYBEG  RAMEND
-;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
+; RAMBEG
+; BASBEG          BASEND      VAREND        STREND  ARYBEG  RAMEND
+;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
 ;-----------------------------------------------
 ; X_LineNo: ; Get LN_NUM & Set up LN_NXT
@@ -49,6 +52,7 @@ EdtNew: ; NEW = clear program, variables etc.
  		jsr 	ChrWr 		; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		;jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
+
 EdtClear: ; Clear variables and arrays
  		ZCPY(ZWr,BASEND) 	; end of code
  		;-- clear variables

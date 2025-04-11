@@ -47,11 +47,13 @@ Short(ZDIV) 	; short divisor 10/100
 #if ($/256) = 1
 ;----------------------------------------------- CSTK
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
+; 16 x 4 => 64 bytes, leaves 192 for cpu
 CSTK
 Var(CSTKS,CSTKSZ) ; Sign
 Var(CSTKA,CSTKSZ) ; A:Low    | S16.L
 Var(CSTKB,CSTKSZ) ; B:High   | S16.H
 Var(CSTKC,CSTKSZ) ; C:Upper
+
 ; Var(CSTKD,CSTKSZ) 	; D
 ; Var(CSTKE,CSTKSZ) 	; E
 ; Var(CSTKF,CSTKSZ) 	; F
