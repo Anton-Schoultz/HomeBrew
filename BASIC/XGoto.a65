@@ -26,7 +26,7 @@ Goto 		;- find the line and transfer
  		rts
 
 
-.echo "  _Goto\t\t"
+.echo "  _GOTO\t\t"
 .echo $-_Goto
 .echo "\n"
 .nolist

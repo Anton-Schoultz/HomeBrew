@@ -39,7 +39,7 @@ Gosub 		;- push return line address onto RTNSTK
 
 GosubOvr	ERROR(ERR_GOSUB)
 
-.echo "  _Gosub\t"
+.echo "  _GOSUB\t"
 .echo $-_Gosub
 .echo "\n"
 .nolist

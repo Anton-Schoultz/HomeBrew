@@ -6,17 +6,14 @@
 ; main code space
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
-;=================================================================== BREAK ============
-;*  X_Break              code to execute BREAK (Error 0=OK)
+;=================================================================== Stop ============
+;*  X_Stop              code to execute Stop (Error 0=OK)
 ;*
 
-_Break 		= $
+_Stop 		= $
 
-;----------------------------------------------- X_Break
-X_Break: ; Code to execute BREAK (Error 0=OK)
-
-
-
+;----------------------------------------------- X_Stop
+X_Stop: ; Code to execute Stop (Error 0=OK)
  		;-- reset after an error condition
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -25,12 +22,8 @@ X_Break: ; Code to execute BREAK (Error 0=OK)
  		cli 			; Enable irqs
  		jmp 	Main
 
-
-
-
-
-.echo "  _BREAK\t"
-.echo $-_Break
+.echo "  _STOP\t\t"
+.echo $-_Stop
 .echo "\n"
 .nolist
 #endif
@@ -39,16 +32,16 @@ X_Break: ; Code to execute BREAK (Error 0=OK)
 #if ($/256) = PG_KEY
 
 .list
-W_Break 	.DB 	"BREA",'K'+$80
+W_Stop 	.DB 	"STO",'P'+$80
 .nolist
 #endif
 
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Break 	= LOW($)+$80
-.DW 	X_Break
+T_Stop 	= LOW($)+$80
+.DW 	X_Stop
 .nolist
- 		;-- .export T_Break
+ 		;-- .export T_Stop
 #endif
-.list	; end of BREAK
+.list	; end of Stop

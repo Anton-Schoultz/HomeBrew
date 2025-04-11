@@ -77,7 +77,7 @@ TokErr: ; display invalid token as [xx]
  		rts
 
 
-.echo "  _Run\t\t"
+.echo "  _RUN\t\t"
 .echo $-_Run
 .echo "\n"
 .nolist

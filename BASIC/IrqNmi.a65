@@ -27,7 +27,7 @@ Irq: ; Interrupt Request service routine
  		tsx
  		lda 	$0104,x 	; get the pushed status
  		and 	#$10 		; check the BRK bit
- 		bne 	IrqBrk 		; BREAK -> IrqBrk
+ 		bne 	IrqBrk 		; Stop -> IrqBrk
 
  		;-- jsr 	IrqDo
 

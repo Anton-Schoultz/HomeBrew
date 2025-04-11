@@ -1,5 +1,5 @@
 ;=================================================================== MACROS ===========
-;*m BREAK(n)             Break interrupt with data byte read in Irq Rtn
+;*m Stop(n)             Stop interrupt with data byte read in Irq Rtn
 ;*m BRFPAE(tgt)          bmi tgt\ beq tgt
 ;*m BRFPAT(tgt)          bmi tgt
 ;*m BR_AEQ(n,tgt)        if(A==n) branch -> tgt
@@ -56,9 +56,9 @@
 ; pause is dynamic halt - clv \ bvc self
 #define PAUSE() clv \ .db $50,$FE \ clv
 
-; BREAK(n) Break interrupt with data byte read in Irq Rtn
-#DEFINE BREAK(n) .db $00,n \ nop
-; #DEFINE BREAK(n) .db $02,n \ nop
+; Stop(n) Stop interrupt with data byte read in Irq Rtn
+#DEFINE Stop(n) .db $00,n \ nop
+; #DEFINE Stop(n) .db $02,n \ nop
 
 ; HALT() Stop simulator
 #DEFINE HALT()  .db $DB

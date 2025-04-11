@@ -914,8 +914,8 @@ NumPopB: ; Pop Num_B from the calculator stack
 ;	 		dey
 ;	 		rts
 ;
-;	; TODO  break 'Convert to integer overflow error'
-;	NumSaveIntErr 	BREAK(1)
+;	; TODO  Stop 'Convert to integer overflow error'
+;	NumSaveIntErr 	Stop(1)
 ;
 ;
 ;	;----------------------------------------------- NumLoadInt

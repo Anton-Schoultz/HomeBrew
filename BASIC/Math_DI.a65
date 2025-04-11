@@ -667,8 +667,8 @@ NumSaveInt2 	ply 			; restore Y
  		dey
  		rts
 
-; TODO  break 'Convert to integer overflow error'
-NumSaveIntErr 	BREAK(1)
+; TODO  Stop 'Convert to integer overflow error'
+NumSaveIntErr 	Stop(1)
 
 
 ;----------------------------------------------- NumLoadInt
@@ -916,7 +916,7 @@ NumSwapL 	ldy 	NUM_A,x
 ; on entry, set NUM_SGN to 00 for add or $80 for subtract
 NumPreAS: ; Prepare to Add/Subtract - align & sign
 
-; 		BREAK(1)
+; 		Stop(1)
 
 NumPreAS1 	sec
  		lda 	NUM_AX 		; 120   E=0 S=0 M=120

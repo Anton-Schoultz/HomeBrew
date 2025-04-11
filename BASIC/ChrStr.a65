@@ -230,7 +230,7 @@ ChrVecIn 	jmp 	(VCHRIN)
 ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
  		jsr 	GetChr 		; get from Mem / IO
  		beq 	ChrCopyX 	; Null -> exit
- 		BR_ND7(ChrCopy2) 	; BREAK=Off, skip bit test
+ 		BR_ND7(ChrCopy2) 	; Stop=Off, skip bit test
  		bmi 	ChrCopyX 	; bit 7 set -> exit
  		and 	#$7F 		; force ascii
 ChrCopy2 	jsr 	PutChr 		; put Mem / IO
@@ -303,7 +303,7 @@ PrStr: ; Print string pointed to by ZPtr [A], last Y->ZTmp
 PrStr1 		lda 	(ZPtr),y
  		beq 	PrStrX 		; zero -> exit
  		;-- end of bit 7=1 ?
- 		BR_ND7(PrStr2) 		; BREAK=Off, skip bit test
+ 		BR_ND7(PrStr2) 		; Stop=Off, skip bit test
  		bmi 	PrStrX 		; bit 7 set -> exit
  		and 	#$7F 		; force ascii
  		;--

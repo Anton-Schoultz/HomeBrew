@@ -24,7 +24,7 @@ IfTrue 		;-- result is true
  		; will ChrRd to get first token of statement
  		jmp 	RunStmnt
 
-.echo "  _If\t"
+.echo "  _IF\t\t"
 .echo $-_If
 .echo "\n"
 .nolist
