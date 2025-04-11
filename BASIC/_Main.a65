@@ -14,7 +14,7 @@ _DBUG 		= 0
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN ============= 
+;=================================================================== MAIN =============
 ;*  Main                 Warm Start entry point
 ;*  MainLoop             Main Loop
 ;*  MainProg             Dump start of Program space
@@ -27,7 +27,7 @@ _DBUG 		= 0
 
 .org _ROM
 .LIST
-;----------------------------------------------- START OF ROM 
+;----------------------------------------------- START OF ROM
 ; 		START OF ROM
 #if _DBUG
  		jsr 	LnComp_Test
@@ -61,7 +61,7 @@ TestSrc
 ; .db "10 PRINT 12345+1234/1000"	; 4.433450e3 = 4433.45 FAIL 12346.234
 .db 0
 
-;----------------------------------------------- Reset 
+;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -78,12 +78,26 @@ Reset: ;Reset (Cold start)
  		jsr 	EdtNew 		; NEW
  		CLS() 			; CLS
 
-;----------------------------------------------- Main 
+;----------------------------------------------- Main
 Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
-;----------------------------------------------- MainLoop 
+
+;		; NUM_A = $1234 = 4660
+; 		lda #$12
+; 		sta NUM_AA
+; 		lda #$34
+; 		sta NUM_AB
+; 		lda #0
+; 		sta NUM_AS
+;		PAUSE()
+;		jsr	NumCvt
+; 		LDAX(NUM_BUF)		; print it
+; 		jsr 	PrStrAX
+;		HALT()
+
+;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop
  		PR_WR_IO()
  		lda 	#'>'
@@ -100,7 +114,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;----------------------------------------------- MainCmd 
+;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -138,12 +152,12 @@ MainProg: ; Dump start of Program space
 ROMEND 		= $
 
 
-;----------------------------------------------- TblKeyword 
+;----------------------------------------------- TblKeyword
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
 
-;----------------------------------------------- TblRun 
+;----------------------------------------------- TblRun
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -157,7 +171,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;----------------------------------------------- hardware vectors 
+;----------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ

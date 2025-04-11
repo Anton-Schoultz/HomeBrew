@@ -214,11 +214,40 @@ NumParse: ;  Parse a number from source into NUM_A
  		sta 	NUM_AS
  		rts
 
+;;----------------------------------------------- NumCvt
+;NumCvt: ; Convert NUM_A to digits in NUM_BUF
+;; $3412 => 13330 in 2726 cycles   (5028 bytes)
+; 		ldx 	#NUM_A
+; 		jsr 	NumUnSign 	; extract sign
+; 		;-- fill buffer with zeroes
+; 		ldx 	#NUMSZ-1
+; 		lda 	#0
+; 		sta 	NUM_BUF,x
+; 		dex
+; 		sta 	NUM_BUF,x
+; 		dex
+;NumCvtL 	;- num/10 remainder .A as digit
+; 		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
+; 		ora 	#'0' 		; convert remainder to a digit
+; 		sta 	NUM_BUF,X 	; store the digit
+; 		dex 			; back-up one pos to the left
+; 		bpl 	NumCvtL 	; loop until done
+;NumCvtS 	;-- Place sign in NR[0] based on SGN
+; 		lda 	#'0' 		; leading zero
+; 		sta 	NUM_BUF
+; 		;-- check if negative
+; 		lda 	NUM_AS 		; extracted sign
+; 		bpl 	NumCvtX
+; 		lda 	#'-' 		; replace by '-' for negative
+; 		sta 	NUM_BUF 	; place sign at Res[0]
+;NumCvtX 	rts
+
+
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A to digits in NUM_BUF
+; $3412 => 13330 in 1514 cycles   (5055 bytes)
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
-
  		;-- fill buffer with zeroes
  		ldx 	#NUMSZ-1
  		lda 	#0
@@ -226,9 +255,22 @@ NumCvt: ; Convert NUM_A to digits in NUM_BUF
  		dex
  		sta 	NUM_BUF,x
  		dex
-NumCvtL 	;- num/10 remainder .A as digit
- 		;-- jsr 	NumDT 	; div NUM_TMP by 10, remainder in A
- 		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
+NumCvtL 	;- num/100 remainder .A as 0-99
+ 		jsr 	NumDH 		; div NUM_TMP by 10, remainder in A
+ 		phx
+ 		tax
+ 		lda	BinTbl,x
+ 		plx
+ 		pha
+ 		and #$f
+ 		ora 	#'0' 		; convert remainder to a digit
+ 		sta 	NUM_BUF,X 	; store the digit
+ 		dex 			; back-up one pos to the left
+ 		pla
+ 		lsr	a
+ 		lsr	a
+ 		lsr	a
+ 		lsr	a
  		ora 	#'0' 		; convert remainder to a digit
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
@@ -242,14 +284,14 @@ NumCvtS 	;-- Place sign in NR[0] based on SGN
  		lda 	#'-' 		; replace by '-' for negative
  		sta 	NUM_BUF 	; place sign at Res[0]
 NumCvtX 	rts
+;----------------------------------------------- NumDH
+NumDH: ; NUM_A = NUM_A / 100  remainder in A
+	phx
+	phy
+	lda 	#100
+	sta 	ZDIV
+	bra 	NumDN
 
-; ;----------------------------------------------- NumDH
-; NumDH: ; NUM_A = NUM_A / 100  remainder in A
-;  		phx
-;  		phy
-;  		lda 	#100
-;  		sta 	ZDIV
-;  		bra 	NumDN
 ;----------------------------------------------- NumDT
 NumDT 		; NUM_A = NUM_A / 10 (48Bit), remainder in A
  		phx
