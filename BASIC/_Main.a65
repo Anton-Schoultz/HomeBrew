@@ -86,7 +86,6 @@ Main: ; MAIN code
  		CLS()
 
 MainLoop 	;-- Prompt and input
-
  		PR_WR_IO()
  		lda 	#'>'
  		jsr 	ConOut
