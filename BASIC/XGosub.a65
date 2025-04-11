@@ -2,33 +2,31 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== GOSUB ==============
-;*  X_Gosub              Execute Gosub
+;=================================================================== GOSUB ============== 
+;*  X_Gosub              GOSUB <NumLit>
 ;*  X_GosubNum           Gosub Num
 ;*
 _Gosub 		= $
 
-; Gosub NumLit
-
-;----------------------------------------------- X_Gosub
-X_Gosub: ; Execute Gosub
+;----------------------------------------------- X_Gosub 
+X_Gosub: ; GOSUB <NumLit>
  		jsr 	ChrRd 		; consume token
 X_GosubNum: ; Gosub Num
  		BR_AEQ(T_NumLit,Gosub)
  		;-- Expected constant
  		ERROR(ERR_CONST)
 Gosub 		;- push return line address onto RTNSTK
-		ldx	RTNSP
-		lda	LN_NXT
-		sta	RTNSTK_L
-		lda 	LN_NXT+1
-		sta	RTNSTK_H
-		; bump stack pointer
-		inx
-		cmp #RTNSZ
-		bpl GosubOvr
-		stx	RTNSP
-		;- find the line and transfer
+ 		LDX 	RTNSP
+ 		LDA 	LN_NXT
+ 		STA 	RTNSTK_L
+ 		lda 	LN_NXT+1
+ 		STA 	RTNSTK_H
+ 		;-- bump stack pointer
+ 		inx
+ 		cmp 	#RTNSZ
+ 		bpl 	GosubOvr
+ 		STX 	RTNSP
+ 		;-- find the line and transfer
  		jsr 	NumRd 		; returns in A=Hi, X=Lo
  		sta 	LN_FND+1
  		stx 	LN_FND
@@ -37,7 +35,7 @@ Gosub 		;- push return line address onto RTNSTK
  		ZCPY(LN_NXT,LN_ADR)
  		rts
 
-GosubOvr	ERROR(ERR_GOSUB)
+GosubOvr 	ERROR(ERR_GOSUB)
 
 .echo "  _GOSUB\t"
 .echo $-_Gosub
@@ -45,13 +43,13 @@ GosubOvr	ERROR(ERR_GOSUB)
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Gosub 	.DB 	"GOSU",'B'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Gosub 	= LOW($)

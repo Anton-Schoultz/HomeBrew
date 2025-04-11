@@ -16,7 +16,7 @@ _Print 		= $
 
 
 ;----------------------------------------------- X_Print
-X_Print: ; code to execute the Print
+X_Print: ; PRINT ( <expr>|<str>|;|, )*
  		jsr 	ChrRd 		; consume PRINT
  		DONL() 			; default end with CRLF
 X_PrintL 	lda 	CHRGOT

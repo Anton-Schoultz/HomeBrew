@@ -4,17 +4,17 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== REM ==============
+;=================================================================== REM ============== 
 ;
 ; {REM} [*..] 00
 ;
-;*  X_Rem                code to execute the Rem
+;*  X_Rem                REM remark line
 ;*
 
 _Rem 		= $
 
-;----------------------------------------------- X_Rem
-X_Rem: ; code to execute the Rem
+;----------------------------------------------- X_Rem 
+X_Rem: ; REM remark line
  		;-- code to jump to the next line (no processing)
  		lda 	LN_NXT 		; LN_NXT is set up by line no token
  		sta 	ZRd
@@ -28,20 +28,20 @@ X_Rem: ; code to execute the Rem
 .nolist
 #endif
 
-;----------------------------------------------- KeyWord
+;----------------------------------------------- KeyWord 
 #if ($/256) = PG_KEY
 .list
 W_Rem 		.DB 	"RE",'M'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Rem 		= LOW($)+$80
 .DW 	X_Rem
 
 .nolist
-;.export T_Rem
+ 		;-- .export T_Rem
 #endif
-.list	; end of REM
+.list 					; end of REM

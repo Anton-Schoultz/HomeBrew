@@ -4,7 +4,7 @@
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LIST ============== 
 ;*  ListLn               List line (LnNext called before this)
-;*  X_List               Execute List
+;*  X_List               LIST [from] [- [to]]
 ;*
 _List 		= $
 
@@ -12,7 +12,7 @@ _List 		= $
 #define LST_END ZTgt
 
 ;----------------------------------------------- X_List 
-X_List: ; Execute List
+X_List: ; LIST [from] [- [to]]
  		jsr 	ChrRd 		; consume LIST
  		;-- CLS()
  		;-- Read memory, out to I/O
@@ -62,8 +62,8 @@ X_List_1 	;-- find the starting line
  		ZCPY(LN_FND,LST_END)
 X_List_L 	;-- check last line no
  		jsr 	LnComp
- 		BEQ 	X_List1
- 		BCS 	X_List_X
+ 		beq 	X_List1
+ 		bcs 	X_List_X
 X_List1 	jsr 	ListLn 		; list the line
  		jsr 	LnNext 		; move to next line
  		;-- check if we have a line (length > 0)

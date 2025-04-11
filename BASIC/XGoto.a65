@@ -3,17 +3,16 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== GOTO ==============
-;*  X_Goto               Execute Goto
+;*  X_Goto               GOTO NumLit
+;*  X_GotoNum            GOTO Num
 ;*
 _Goto 		= $
 
-; GOTO NumLit
-
 ;----------------------------------------------- X_Goto
-X_Goto: ; Execute Goto
+X_Goto: ;  GOTO <NumLit>
  		jsr 	ChrRd 		; consume token
-X_GotoNum:; GOTO Num
-		BR_AEQ(T_NumLit,Goto)
+X_GotoNum: ; GOTO Num
+ 		BR_AEQ(T_NumLit,Goto)
  		;-- Expected constant
  		ERROR(ERR_CONST)
 Goto 		;- find the line and transfer

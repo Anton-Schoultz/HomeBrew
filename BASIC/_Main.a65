@@ -143,10 +143,13 @@ ROMEND 		= $
 .nolist
 #include "All.a65"
 T_Max 		= LOW($)+$80
+.echo "Tokens "
+.echo (T_Max-$80)/2
+.echo "/64"
 #if T_Max > $F0
-.echo "Too many tokens\r"
+.echo " Too many tokens"
 #endif
-
+.echo "\n"
 .dw 0
 .list
 

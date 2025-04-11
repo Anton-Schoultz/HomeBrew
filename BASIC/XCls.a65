@@ -3,15 +3,15 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== CLS ==============
-;*  X_Cls                Execute Cls
+;=================================================================== CLS ============== 
+;*  X_Cls                CLS	Clear Screen
 ;*
 _Cls 		= $
 
-;----------------------------------------------- X_Cls
-X_Cls: ; Execute Cls
+;----------------------------------------------- X_Cls 
+X_Cls: ; CLS	Clear Screen
  		jsr 	ChrRd 		; consume CLS
- 		;
+ 		;-- 
  		lda 	#_FF
  		jsr 	ConOut
  		rts
@@ -23,18 +23,18 @@ X_Cls: ; Execute Cls
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Cls 		.DB 	"CL",'S'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Cls 		= LOW($)
 .DW 	X_Cls
 .nolist
-;.export T_Cls
+ 		;-- .export T_Cls
 #endif
-.list	; end of CLS
+.list 					; end of CLS

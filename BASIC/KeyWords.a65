@@ -28,6 +28,8 @@ W_XOR 		.DB 	"XO",'R'+$80
 W_NOT 		.DB 	"NO",'T'+$80
 
 W_THEN		.DB 	"THE",'N'+$80
+W_TO		.DB 	"T",'O'+$80
+W_STEP		.DB 	"STE",'P'+$80
 
 .nolist
 #endif
@@ -48,6 +50,12 @@ T_Not		= LOW($)+$80
 .DW 	X_Nop
 
 T_Then		= LOW($)+$80
+.dw	X_Nop
+
+T_To		= LOW($)+$80
+.dw	X_Nop
+
+T_Step		= LOW($)+$80
 .dw	X_Nop
 
 .nolist
