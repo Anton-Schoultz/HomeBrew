@@ -71,6 +71,11 @@ Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
+ 		;-- Gosub/Rtn, Forn/Next
+ 		lda 	#0
+ 		sta	RTNSP
+ 		sta	FORSP
+
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop

@@ -5,10 +5,6 @@
 
 #define ERROR(n) ldx #n\ jmp Error
 
-; NOTE: Message nos go up in 2s
-#define ERR_OK 0
-#define ERR_EXPECTED 2
-#define ERR_CONST 4
 
 ;=================================================================== ERROR ============
 ; NOTE: Message nos go up in 2s
@@ -127,10 +123,19 @@ MsgDec 		jmp 	PrADec3
 ; $	Y as hex
 ; % 	Y as decimal
 
+
+; NOTE: Message nos go up in 2s
+#define ERR_OK 0
+#define ERR_EXPECTED 2
+#define ERR_CONST 4
+#define ERR_GOSUB 6
+
+
 ErrTbl
-.DB "OK",DOT 				; 0=OK
-.DB "Expected ! but got $",DOT 		; 2=Expected $aa got $yy.
-.DB "Expected constant",DOT 		; 4=Expected constant
+.DB "OK",DOT 				; 0=ERR_OK
+.DB "Expected ! but got $",DOT 		; 2=ERR_EXPECTED
+.DB "Expected constant",DOT 		; 4=ERR_CONST
+.DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
 
 .DB 0
 

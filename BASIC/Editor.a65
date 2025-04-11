@@ -66,6 +66,7 @@ EdtClear: ; Clear variables and arrays
  		ZDEC(ARYBEG) 		; top the last ram byte
  		lda 	#0
  		sta 	(ARYBEG)
+
  		tay
 EdtWipe 	sta 	(BASBEG),y
  		iny

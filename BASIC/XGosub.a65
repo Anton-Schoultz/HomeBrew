@@ -17,7 +17,18 @@ X_GosubNum: ; Gosub Num
  		BR_AEQ(T_NumLit,Gosub)
  		;-- Expected constant
  		ERROR(ERR_CONST)
-Gosub 		;- find the line and transfer
+Gosub 		;- push return line address onto RTNSTK
+		ldx	RTNSP
+		lda	LN_NXT
+		sta	RTNSTK_L
+		lda 	LN_NXT+1
+		sta	RTNSTK_H
+		; bump stack pointer
+		inx
+		cmp #RTNSZ
+		bpl GosubOvr
+		stx	RTNSP
+		;- find the line and transfer
  		jsr 	NumRd 		; returns in A=Hi, X=Lo
  		sta 	LN_FND+1
  		stx 	LN_FND
@@ -26,8 +37,9 @@ Gosub 		;- find the line and transfer
  		ZCPY(LN_NXT,LN_ADR)
  		rts
 
+GosubOvr	ERROR(ERR_GOSUB)
 
-.echo "  _Gosub\t\t"
+.echo "  _Gosub\t"
 .echo $-_Gosub
 .echo "\n"
 .nolist

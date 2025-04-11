@@ -82,6 +82,9 @@ Int(VAREND) 	; end of variables
 Int(STREND) 	; end of string work area
 Int(ARYBEG) 	; Start of array Space
 
+Short(RTNSP)	; Gosub/Return stack pointer	RTNSZ x2
+Short(FORSP)	; FOR/NEXT stack pointer  	FORSZ x8
+
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
@@ -90,7 +93,7 @@ Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
 Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
 Int(TMP) 	; Temp 16 bit value (line nos)
 
-.export LN_NUM
+
 
 #include "Math.a65" 			; Math module ZeroPage
 
@@ -136,6 +139,9 @@ Var(VARTAB,128) ; 32 x 4 bytes vars
 ;Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)
 Var(RTNSTK,RTNSZ*2)	; 32 x 2byte return line address
+
+#define RTNSTK_L RTNSTK
+#define RTNSTK_H RTNSTK+RTNSZ
 
 ;FOR nesting depth FORSZ=8 (CBM has 9)
 ; 2	Addr of line after the FOR...STEP
