@@ -3,47 +3,40 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LET ============== 
+;=================================================================== LET ==============
 ;*  X_Let                LET <var> = <expr>
 ;*
 _Let 		= $
 
 ; for now, simple vars are stored in VARTAB (fixed in memory)
- 		;-- 
+ 		;--
 
-;----------------------------------------------- X_Let 
+;----------------------------------------------- X_Let
 X_Let: ; LET <var> = <expr>
  		jsr 	ChrRd 		; consume LET
- 		sta 	TOKNO 		; save variable token
- 		CASE(T_NumVar,X_Let10)
+; 		sta 	TOKNO 		; save variable token
 
- 		PRINT("Excpected Numeric variable name")
- 		THROW(1)
-
-
+X_LetDo		CASE(T_NumVar,X_Let10)
+ 		ERROR(ERR_VAR) 		; "Expected Variable"
 X_Let10 	;- assign integer variable (not-ary)
  		jsr 	ChrRd 		; get first char of variable name
  		bpl 	X_Let90 	; long var name
  		;-- short name, character is used as index
  		and 	#$1F
-
  		pha 			; push the index
+ 		jsr 	ChrRd 		; move to after the var name (should be '=')
 
- 		JSR 	ChrRd 		; move to after the var name (should be '=')
- 		;-- 
  		lda 	#T_EQ 		; '=' TOKEN
  		jsr 	Match 		; check for and skip over '='
- 		;-- 
- 		jsr 	EvNumeric 	; evaluate expression, resul in NUM_A
 
- 		;-- recal the index
+		;-- evaluate the expression
+ 		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
+ 		;-- recal the index and save value
  		plx
- 		JSR 	NumSetX 	; store the result
+ 		jsr 	NumSetX 	; store the result
  		RTN_T() 		; done
 
-
-X_Let90 	PRINT("Only single char names for now")
- 		THROW(1)
+X_Let90 	ERROR(ERR_BADVAR)
 
 
 .echo "  _LET\t\t"
@@ -52,13 +45,13 @@ X_Let90 	PRINT("Only single char names for now")
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Let 		.DB 	"LE",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Let 		= LOW($)

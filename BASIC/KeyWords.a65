@@ -40,22 +40,22 @@ W_STEP		.DB 	"STE",'P'+$80
 T_And 		= LOW($)+$80
 .DW 	X_Nop
 
-T_Or 		= LOW($)+$80
+T_OR 		= LOW($)+$80
 .DW 	X_Nop
 
-T_Xor 		= LOW($)+$80
+T_XOR 		= LOW($)+$80
 .DW 	X_Nop
 
-T_Not		= LOW($)+$80
+T_NOT		= LOW($)+$80
 .DW 	X_Nop
 
-T_Then		= LOW($)+$80
+T_THEN		= LOW($)+$80
 .dw	X_Nop
 
-T_To		= LOW($)+$80
+T_TO		= LOW($)+$80
 .dw	X_Nop
 
-T_Step		= LOW($)+$80
+T_STEP		= LOW($)+$80
 .dw	X_Nop
 
 .nolist

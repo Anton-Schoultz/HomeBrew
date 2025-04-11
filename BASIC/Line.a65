@@ -4,6 +4,7 @@
 #endif
 ;=================================================================== LINE =============
 ;*  LnComp               Compare line number to LN_FND, (NUM-FND)
+;*  LnDump               dump line info
 ;*  LnGo                 seek line for GOTO/GOSUB
 ;*  LnNext               Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ;*  LnNextRd             fetch the line info - set NUM,LEN,NXT
@@ -103,8 +104,19 @@ LnSeekNxt 	jsr 	LnNext 		; move to next line
 LnSeekEOF 	lda 	#$FF 		; sets Minus for EOF/Error
 LnSeekX 	rts
 
+
 #if _DBUG
 ;=================================================================== TEST =============
+
+LnDump: ; dump line info
+ 		PRINTLN("NUM  ADR  NXT  LEN  FND")
+ 		HEX_INT(LN_NUM)
+ 		HEX_INT(LN_ADR)
+ 		HEX_INT(LN_NXT)
+ 		HEX_INT(LN_LEN)
+ 		HEX_INT(LN_FND)
+ 		jmp 	PrNL
+
 LnComp_Test 	; Test line compare
  		ZSET(LN_FND,100)
  		;-- NUM<FIND

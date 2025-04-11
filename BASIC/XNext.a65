@@ -1,0 +1,38 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== NEXT ==============
+;*  X_Next               NEXT <var>
+;*
+_Next 		= $
+
+;----------------------------------------------- X_Next
+X_Next: ; NEXT <var>
+ 		jsr 	ChrRd 		; consume token
+
+
+		rts
+
+.echo "  _NEXT\t\t"
+.echo $-_Next
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Next 		.DB 	"NEX",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_NEXT 		= LOW($)
+.DW 	X_Next
+.nolist
+ 		;-- .export T_Next
+#endif
+
+.list 					; end of Next

@@ -22,8 +22,12 @@
 ;*  PtrAXY               set ZPtr to AX (lo,hi) and set Y to zero
 ;*  PtrX                 Set ZPtr from ZPg[.X]
 ;*  _PrHexInt            print int .A.X as hex value with space
+;*  _PrHexShort          print int .A.X as hex value with space
 ;*  _Print_              Print in-line string
+;*m DBUG(str,adr)        print sting and data value
 ;*m HEX_DUMP(adr)        Print hex dump to IO/Mem [Zptr++]
+;*m HEX_INT(adr)         print hex value
+;*m HEX_SHORT(adr)       print hex value
 ;*m PRINT(str)           echo str to output
 ;*m PRINT(str)           echo str to output, with CR,LF
 ;*
@@ -37,10 +41,12 @@
 #define PRINT(str) jsr _Print_ \ .db str,0
 ; PRINT(str) echo str to output, with CR,LF
 #define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
-; print sting and data value
+; DBUG(str,adr) print sting and data value
 #define DBUG(str,adr) jsr _Print_ \ .db str,$80 \ .dw adr \ jsr PrNL
-; print hex value
+; HEX_INT(adr) print hex value
 #define HEX_INT(adr)  GETAX(adr) \ jsr _PrHexInt
+; HEX_SHORT(adr) print hex value
+#define HEX_SHORT(adr)  lda adr \ jsr _PrHexShort
 
 #define CRLF() jsr PrNL
 
@@ -144,8 +150,8 @@ IntParse1 	jsr 	IsDigit 	; messes with A
  		clc 			; and add to TMP
  		adc 	TMP
  		sta 	TMP
- 		BCC 	IntParseAX
- 		INC 	TMP+1
+ 		bcc 	IntParseAX
+ 		inc 	TMP+1
 IntParseAX 	jsr 	GetChr 		; next character
  		bra 	IntParseL
 IntParseX 	lda 	TMP
@@ -292,6 +298,12 @@ Nib2HexTbl
 ;    ____ BCD:0______===== BCD:1 ====
 .db "0123456789ABCDEF0123456789+-e.E "
 ;   "0123456789ABCDEF0123456789abcdef"
+
+;----------------------------------------------- _PrHexShort 
+_PrHexShort: ; print int .A.X as hex value with space
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jmp 	PutChr
 
 ;----------------------------------------------- _PrHexInt 
 _PrHexInt: ; print int .A.X as hex value with space

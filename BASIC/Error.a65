@@ -125,10 +125,13 @@ MsgDec 		jmp 	PrADec3
 
 
 ; NOTE: Message nos go up in 2s
-#define ERR_OK 0
-#define ERR_EXPECTED 2
-#define ERR_CONST 4
-#define ERR_GOSUB 6
+#define ERR_OK 		0
+#define ERR_EXPECTED 	2
+#define ERR_CONST 	4
+#define ERR_GOSUB 	6
+#define ERR_FOR 	8
+#define ERR_VAR 	10
+#define ERR_BADVAR 	12
 
 
 ErrTbl
@@ -136,6 +139,9 @@ ErrTbl
 .DB "Expected ! but got $",DOT 		; 2=ERR_EXPECTED
 .DB "Expected constant",DOT 		; 4=ERR_CONST
 .DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
+.DB "FOR/NEXT",DOT 			; 8=ERR_FOR
+.DB "Expected variable",DOT 		;10=ERR_VAR
+.DB "Invalid variable",DOT 		;12=ERR_BADVAR
 
 .DB 0
 

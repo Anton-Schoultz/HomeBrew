@@ -56,7 +56,7 @@ RunStmnt: ; Run a statement
  		sta 	TOKNO
  		beq 	RunLnX 		; null = End-of-statement
  		;-- remark ?
- 		BR_AEQ(T_Rem,RunLnX) 	; remark skip rest
+ 		BR_AEQ(T_REM,RunLnX) 	; remark skip rest
  		;-- token
  		BR_AGT(T_Max,TokErr) 	; >max = invalid token
  		BR_ALT($80,TokErr) 	; <$80 = invalid token

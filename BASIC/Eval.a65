@@ -53,16 +53,16 @@ EvNumX 		php
 
 ;----------------------------------------------- DoOrOp
 DoOrOp 		lda 	CHRGOT
- 		CASE(T_Or,BoolOr)
- 		CASE(T_Xor,BoolXor)
+ 		CASE(T_OR,BoolOr)
+ 		CASE(T_XOR,BoolXor)
  		RTN_F()
 
 ;----------------------------------------------- IsOrOp
 IsOrOp 		; return EQ if 'OR' / 'XOR'
  		lda 	CHRGOT
- 		cmp 	#T_Or
+ 		cmp 	#T_OR
  		beq 	IsOrOpX
- 		cmp 	#T_Xor
+ 		cmp 	#T_XOR
 IsOrOpX 	rts
 
 ;----------------------------------------------- BoolOr
@@ -100,7 +100,7 @@ BoolTermX 	RTN_T()
 ;----------------------------------------------- NotFactor
 NotFactor: ; Boolean NOT
  		lda 	CHRGOT
- 		cmp 	#T_Not
+ 		cmp 	#T_NOT
  		bne 	Relation
  		;--
  		jsr 	ChrRd 		; consume NOT

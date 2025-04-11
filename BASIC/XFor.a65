@@ -1,0 +1,117 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== FOR ==============
+;*  ForDump              Debug For values
+;*  ForPush              Push FOR structure onto the stack
+;*  X_For                FOR <var>=<expr> TO <expr> [STEP <expr>]
+;*
+_For 		= $
+;----------------------------------------------- stack pointer starts at 0, push++, pop--
+;Short 	FORSP		; FOR/NEXT stack pointer  	FORSZ x8
+;----------------------------------------------- inner most loop data is here
+;Int 	FOR_ADR		; loop line address
+;Int 	FOR_STP		; Step size
+;Int 	FOR_LIM		; Limit
+;Short 	FOR_NDX		; Index to var
+
+;----------------------------------------------- X_For
+X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
+
+ 		JSR 	LnDump
+
+ 		PAUSE()
+
+ 		;-- Push
+ 		jsr 	ForPush
+ 		;-- handle assignment
+ 		jsr 	ChrRd 		; consume token
+ 		jsr 	X_LetDo 	; returns index in X
+ 		stx 	FOR_NDX 	; save index
+ 		;-- save return address
+ 		ZCPY(FOR_ADR,LN_NXT)
+ 		;-- TO
+ 		;MATCH(T_TO)
+
+ 		lda 	#T_TO 		; TO
+ 		jsr 	Match 		; check for and skip over '='
+
+ 		jsr 	ChrRd 		; consume token
+ 		jsr 	EvNumeric
+
+ 		ZCPY(FOR_LIM,NUM_A)
+ 		;-- STEP
+ 		ZSET(FOR_STP,1) 	; default step is 1
+
+ 		jsr 	ForDump
+
+
+ 		PAUSE()
+ 		rts
+
+
+;----------------------------------------------- ForPush
+ForPush: ; Push FOR structure onto the stack
+ 		lda 	FORSP
+ 		asl 	a
+ 		asl 	a
+ 		asl 	a 		; a = 8 * sp
+ 		tay
+ 		;--
+ 		ldx 	#0
+ 		;--
+ForPushL 	lda 	FOR_ADR,X
+ 		sta 	FORSTK,y
+ 		iny
+ 		inx
+ 		cpx 	#8
+ 		bne 	ForPushL
+ 		;--
+ 		lda 	FORSP
+ 		inc 	a
+ 		cmp 	#FORSZ
+ 		bpl 	ForOvr
+ 		sta 	FORSP
+ 		rts
+
+;----------------------------------------------- ForOvr
+ForOvr 		ERROR(ERR_FOR)
+
+
+#if _DBUG
+;=================================================================== TEST =============
+ForDump: ; Debug For values
+ 		PRINTLN("ADR  STP  LIM  IX SP")
+ 		HEX_INT(FOR_ADR)
+ 		HEX_INT(FOR_STP)
+ 		HEX_INT(FOR_LIM)
+ 		HEX_SHORT(FOR_NDX)
+ 		HEX_SHORT(FORSP)
+ 		jmp	PrNL
+
+.export FOR_ADR,FOR_STP,FOR_LIM,FOR_NDX,FORSP, T_NEXT
+#endif
+
+.echo "  _FOR\t\t"
+.echo $-_For
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_For 		.DB 	"FO",'R'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_For 		= LOW($)
+.DW 	X_For
+.nolist
+ 		;-- .export T_For
+#endif
+
+.list 					; end of For

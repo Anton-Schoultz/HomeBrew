@@ -38,10 +38,10 @@ W_Rem 		.DB 	"RE",'M'+$80
 ;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
-T_Rem 		= LOW($)+$80
+T_REM 		= LOW($)+$80
 .DW 	X_Rem
 
 .nolist
- 		;-- .export T_Rem
+ 		;-- .export T_REM
 #endif
 .list 					; end of REM

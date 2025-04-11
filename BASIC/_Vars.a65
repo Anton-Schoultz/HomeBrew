@@ -85,6 +85,12 @@ Int(ARYBEG) 	; Start of array Space
 Short(RTNSP)	; Gosub/Return stack pointer	RTNSZ x2
 Short(FORSP)	; FOR/NEXT stack pointer  	FORSZ x8
 
+;-- inner most loop data is here
+Int(FOR_ADR)	; loop line address
+Int(FOR_STP)	; Step size
+Int(FOR_LIM)	; Limit
+Short(FOR_NDX)	; Index to var
+
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
@@ -130,7 +136,6 @@ Var(STRBUF,STRSZ) ; buffer for strings
 ;=================================================================== SIMPLE VARIABLES =
 .org $0400
 Var(VARTAB,128) ; 32 x 4 bytes vars
-
 #define VARTAB_A VARTAB
 #define VARTAB_B VARTAB+32
 #define VARTAB_C VARTAB+64
@@ -139,15 +144,10 @@ Var(VARTAB,128) ; 32 x 4 bytes vars
 ;Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)
 Var(RTNSTK,RTNSZ*2)	; 32 x 2byte return line address
-
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
 
 ;FOR nesting depth FORSZ=8 (CBM has 9)
-; 2	Addr of line after the FOR...STEP
-; 2	Addr of variable to be updated (or index?)
-; 2	Step
-; 2	Limit
 Var(FORSTK,FORSZ*8)
 
 
