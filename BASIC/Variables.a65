@@ -7,6 +7,13 @@
 .NOLIST
 #endif
 
+;                 1111111111111111
+; 0123456789ABCDEF0123456789ABCDEF
+; @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+;
+; $5B 91 [x=27]  [
+
+
 ; Value tokens 1111.1kta
 ; k:0=Variable		k:1=Constant/literal
 ; t:0=Numeric		t:1=String

@@ -10,6 +10,30 @@ _Next 		= $
 ;----------------------------------------------- X_Next
 X_Next: ; NEXT <var>
  		jsr 	ChrRd 		; consume token
+		; loop var
+		CASE(T_NumVar,X_Next1)
+ 		ERROR(ERR_VAR) 		; "Expected Variable"
+
+X_Next1
+ 		jsr 	ChrRd 		; get first char of variable name
+ 		bpl 	X_Next99 	; long var name
+ 		;-- short name, character is used as index
+ 		and 	#$1F
+ 		tax			; var index in X
+ 		; check match to inner loop
+ 		sta	VARID		; save var index
+ 		cpx	FOR_NDX
+ 		beq 	X_Next2
+ 		ERROR(ERR_FOR)		; FOR/NEXT error (mismatch var names)
+
+X_Next2		;- add step
+		jsr	NumGetX		; retrieve into calc NUM_A
+
+
+  		jsr 	NumSetX 	; store the result
+ 		RTN_T() 		; done
+
+X_Next99 	ERROR(ERR_BADVAR)
 
 
 		rts

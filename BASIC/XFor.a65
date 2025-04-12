@@ -14,6 +14,7 @@ _For 		= $
 ;Int 	FOR_ADR		; loop line address
 ;Int 	FOR_STP		; Step size
 ;Int 	FOR_LIM		; Limit
+
 ;Short 	FOR_NDX		; Index to var
 
 ;----------------------------------------------- X_For
