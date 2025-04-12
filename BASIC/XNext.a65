@@ -27,10 +27,10 @@ X_Next1
  		ERROR(ERR_FOR)		; FOR/NEXT error (mismatch var names)
 
 X_Next2		;- add step
-		jsr	NumGetX		; retrieve into calc NUM_A
+		jsr	NumGet		; retrieve into calc NUM_A
 
 
-  		jsr 	NumSetX 	; store the result
+  		jsr 	NumSet 	; store the result
  		RTN_T() 		; done
 
 X_Next99 	ERROR(ERR_BADVAR)

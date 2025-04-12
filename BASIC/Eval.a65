@@ -260,11 +260,11 @@ ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
 ; VARTAB has XX AABBCC format (packed)
+; .A is the index, math module multiplies for size as required
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
  		and 	#$1F 		; mask for index
- 		tax
- 		jsr 	NumGetX 	; retrieve simple variable [X]
+ 		jsr 	NumGet 	; retrieve simple variable [A]
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 

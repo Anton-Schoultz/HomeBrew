@@ -135,11 +135,10 @@ Var(STRBUF,STRSZ) ; buffer for strings
 
 ;=================================================================== SIMPLE VARIABLES =
 .org $0400
-Var(VARTAB,128) ; 32 x 4 bytes vars
-#define VARTAB_A VARTAB
-#define VARTAB_B VARTAB+32
-#define VARTAB_C VARTAB+64
-#define VARTAB_D VARTAB+96
+Var(VARTAB,128) ;Vars stored as sequence of bytes, [Exp] Low...Hi
+
+
+
 
 ;Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)

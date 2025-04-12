@@ -25,15 +25,14 @@ X_Let10 	;- assign integer variable (not-ary)
  		and 	#$1F
  		pha 			; push the index
  		jsr 	ChrRd 		; move to after the var name (should be '=')
-
  		lda 	#T_EQ 		; '=' TOKEN
  		jsr 	Match 		; check for and skip over '='
 
 		;-- evaluate the expression
  		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
- 		;-- recal the index and save value
- 		plx
- 		jsr 	NumSetX 	; store the result
+ 		;-- recal the index, math module multiplies for size
+ 		pla
+ 		jsr 	NumSet 	; fetch & store
  		RTN_T() 		; done
 
 X_Let90 	ERROR(ERR_BADVAR)

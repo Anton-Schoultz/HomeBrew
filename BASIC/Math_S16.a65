@@ -69,7 +69,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; .NumCvt               Convert NUM_A(unpacked) to digits in NUM_BUF
 ; .NumDiv               NumA = NumB / NumA
 ; .NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-; .NumGetX              Retrieve simple variable [X] and unpack to internal form
+; .NumGet              Retrieve simple variable [X] and unpack to internal form
 ; .NumInit              Initialise calculator
 ; .NumMul               NumA = NumB * NumA (in unpacked form)
 ;  NumParse             Parse a number from source into NUM_A
@@ -78,7 +78,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; .NumPushA             Push Num_A onto calculator stack
 ; .NumRd                Read number from memory using ChrRd & unpack to internal form
 ;  NumSet               Set NUM_A to integer value in AX (lo,Hi)
-;  NumSetX              Pack and Store simple variable [X]
+;  NumSet              Pack and Store simple variable [X]
 ; .NumSub               NumA = NumB + NumA
 ; .NumWr                Wwrite number value to memory via ChrWr
 ; .NumZeroA             Place zero into NUM_A
@@ -93,7 +93,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumFalse             Place FALSE in NUM_A
 ;*  NumFlag              set flags bassed on result
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-;*  NumGetX              Retrieve simple variable [X] and unpack to internal form
+;*  NumGet              Retrieve simple variable [X] and unpack to internal form
 ;*  NumInit              Initialise calculator (clear stack pointer)
 ;*  NumMod               NumA = NumB % NumA
 ;*  NumMul               NumA = NumB * NumA (in unpacked form)
@@ -106,7 +106,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumPrint             Convert number to string & output (via PutChr mem/io)
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumRd                Read from memory (ChrRd) & unpack
-;*  NumSetX              Pack and Store simple variable [X]
+;*  NumSet              Pack and Store simple variable [X]
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
 ;*  NumTrue              Place TRUE in NUM_A
@@ -139,32 +139,48 @@ NumInit: ; Initialise calculator (clear stack pointer)
  		rts
 
 ;----------------------------------------------- NumGet
-NumGetX: ; Retrieve simple variable [X] and unpack to internal form
+NumGet: ; Retrieve simple variable VARTAB[A].. and unpack to internal form
+; .A is the index, math module multiplies for size as required
+		asl	a		; S16 is 2 bytes
+		tax
+		;- clearthe sign (+ve)
  		lda 	#0
  		sta 	NUM_AS
- 		lda 	VARTAB_A,X
+ 		;
+ 		lda 	VARTAB,X
  		sta 	NUM_AA
- 		lda 	VARTAB_B,X
+ 		;
+ 		inx
+ 		lda 	VARTAB,X
  		sta 	NUM_AB
+ 		;
  		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		rts
+
+;----------------------------------------------- NumSet
+NumSet: ; Pack and Store simple VARTAB[A]..
+; .A is the index, math module multiplies for size as required
+		asl	a		; S16 is 2 bytes
+		tax
+		;
+ 		phx			; push offset
+ 		jsr 	NumPack
+ 		plx			; rcall offset
+ 		;
+ 		lda 	NUM_AA
+ 		sta 	VARTAB,X
+ 		;
+ 		inx
+ 		lda 	NUM_AB
+ 		sta 	VARTAB,X
+ 		rts
+
 ;----------------------------------------------- NumUnpack
 NumUnpack: ; Unpack memory format into calculation format
 ;  for S16 this simply means puling the sign out
  		ldx 	#NUM_A
  		bra 	NumUnSign
 
-
-;----------------------------------------------- NumSetX
-NumSetX: ; Pack and Store simple variable [X]
- 		phx
- 		jsr 	NumPack
- 		plx
- 		lda 	NUM_AA
- 		sta 	VARTAB_A,X
- 		lda 	NUM_AB
- 		sta 	VARTAB_B,X
- 		rts
 ;----------------------------------------------- NumPack
 NumPack: ; Pack NUM_A into memory format for storing
 ;  for S16 we just apply the sign to the mantissa
@@ -621,7 +637,7 @@ NumTrue: ; Place TRUE in NUM_A
  		phx
  		ldx 	#NUM_A
  		lda 	#$FF
- 		jmp 	NumSet
+ 		jmp 	NumPreSet	; set as FF FFFF
 
 ;----------------------------------------------- NumZeroTmp
 NumZeroTmp 	; place zero into NUM_TMP
@@ -640,8 +656,8 @@ NumFalse: ; Place FALSE in NUM_A
  		ldx 	#NUM_A
  		;-- fall through
 NumZeroX 	; zero the number at .X (extend version EXP,1,2,3,4,5,6)
- 		lda 	#0 		; zero number
-NumSet 		sta 	FPA,X
+ 		lda 	#0 		; zero 00 0000
+NumPreSet	sta 	FPA,X
  		sta 	FPB,X
  		sta 	FPC,X
  		sta 	FPS,X

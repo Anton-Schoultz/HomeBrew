@@ -29,8 +29,8 @@
 ;  NumRd                Read number from memory using ChrRd & unpack to internal form
 ;  NumWr                Wwrite number value to memory via ChrWr
 
-;  NumGetX              Retrieve simple variable [X] and unpack to internal form
-;  NumSetX              Pack and Store simple variable [X]
+;  NumGet              Retrieve simple variable [X] and unpack to internal form
+;  NumSet              Pack and Store simple variable [X]
 
 
 ;  A-Z		1-26
@@ -81,8 +81,8 @@ NumZeroA 	; Eval
 NumRd 		; Eval for literal values
 NumWr 		; Tok.P_Number to create a literal
 
-NumGetX 	; Eval to retrieve A-Z variable [X] X is 1..26
-NumSetX 	; Eval to store a A-Z variable  [X]
+NumGet 	; Eval to retrieve A-Z variable [X] X is 1..26
+NumSet 	; Eval to store a A-Z variable  [X]
 
 
 

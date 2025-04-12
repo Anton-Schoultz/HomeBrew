@@ -105,7 +105,7 @@ Var(CSTK7,CSTKSZ) ; F8-FF
 ;*  NumDigit             NUM_A = NUM_A * 10 + .A
 ;*  NumDiv               NumA = NumB / NumA
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-;*  NumGetX              retrieve simple variable [X] and unpack to internal form
+;*  NumGet              retrieve simple variable [X] and unpack to internal form
 ;*  NumIncA              Increment NUM_A
 ;*  NumInit              Initialise calculator
 ;*  NumLoadFP            Load a FP number from ZPg[X] at offset Y
@@ -218,7 +218,7 @@ NumWrInt: ; write int number to memory via ChrWr
  		jsr 	ChrWr
 
 ;----------------------------------------------- NumGet
-NumGetX: ; retrieve simple variable [X] and unpack to internal form
+NumGet: ; retrieve simple variable [X] and unpack to internal form
  		lda 	VARTAB,X
  		sta 	NUM_AX
  		lda 	VARTAB+1,X
