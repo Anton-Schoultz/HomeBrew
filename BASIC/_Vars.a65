@@ -70,7 +70,7 @@ Int(LN_NXT) 	; Adress of next line
 Int(LN_LEN) 	; length of tokenised line in TOKBUF (for editor)
 Int(LN_FND) 	; Line number to look for
 Int(TOK_LEN) 	; length of tok buffer
-Short(LN_FLG)	; direction to search
+Short(LN_FLG) 	; direction to search
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
 ;----------------------------------------------- BASIC program
@@ -82,21 +82,17 @@ Int(VAREND) 	; end of variables
 Int(STREND) 	; end of string work area
 Int(ARYBEG) 	; Start of array Space
 
-Short(RTNSP)	; Gosub/Return stack pointer	RTNSZ x2
-Short(FORSP)	; FOR/NEXT stack pointer  	FORSZ x8
-
-;-- inner most loop data is here
-Int(FOR_ADR)	; loop line address
-Int(FOR_STP)	; Step size
-Int(FOR_LIM)	; Limit
-Short(FOR_NDX)	; Index to var
+Short(RTNSP) 	; Gosub/Return stack pointer	RTNSZ x2
+Short(FORSP) 	; FOR/NEXT stack pointer  	FORSZ x8
 
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
 ;----------------------------------------------- Numeric common vars
 Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
-Var(NUM_BUF,NUMSZ) ; Conversion work area NUMSZ=14
+Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
+Short(NUM_SP) 	; calculator stack pointer
+Short(NUM_SGN) 	; sign
 Int(TMP) 	; Temp 16 bit value (line nos)
 
 
@@ -135,19 +131,28 @@ Var(STRBUF,STRSZ) ; buffer for strings
 
 ;=================================================================== SIMPLE VARIABLES =
 .org $0400
-Var(VARTAB,128) ;Vars stored as sequence of bytes, [Exp] Low...Hi
-
-
-
-
-;Gosub to depth of RTNSZ=32  (CBM has ~23)
+;----------------------------------------------- GOSUB stack 32x2 = 64
+; Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)
-Var(RTNSTK,RTNSZ*2)	; 32 x 2byte return line address
+Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
+;----------------------------------------------- Vars 27 x NUMSZ
+; Vars stored as sequence of bytes, [Exp] Low...Hi
+; index 0 is for RND, 1-26 for A-Z => 27 slots
+Var(VARTAB, 	27*NUMSZ)
+;----------------------------------------------- For/Next
+; FOR values are stored immediately after the A-Z, so access with index 27,28
+#define FOR_STP_X 27
+#define FOR_LIM_X 28
+FOR_DATA 	;-- DATA
+Var(FOR_STP,NUMSZ) ; [27] Step size
+Var(FOR_LIM,NUMSZ) ; [28] Limit
+Int(FOR_ADR) 	; Address of loop line (after the FOR line)
+Short(FOR_NDX) 	; Loop variable number (1-26)
+ 		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
+Var(FORSTK,8*FORDEEP)
 
-;FOR nesting depth FORSZ=8 (CBM has 9)
-Var(FORSTK,FORSZ*8)
 
 
 .LIST

@@ -746,7 +746,7 @@ NumCvt: ; Convert NUM_A(unpacked) to digits in NUM_BUF
  		jsr 	NumUnSign 	; make mantissa positive
 
  		;-- fill buffer with zeroes
- 		ldx 	#NUMSZ-1
+ 		ldx 	#CVTSZ-1
  		lda 	#0
  		sta 	NUM_BUF,x 	;u
  		dex
@@ -770,7 +770,7 @@ NumCvtL 	;- num/10 remainder .A as digit
  		;-- find first non-zero
  		ldx 	#$FF
 NumCvt1 	inx
- 		cpx 	#NUMSZ-4 	; incase its all zeroes
+ 		cpx 	#CVTSZ-4 	; incase its all zeroes
  		beq 	NumCvt2
  		lda 	NUM_BUF+1,X
  		cmp 	#'0'
@@ -792,7 +792,7 @@ NumCvt2 	sta 	NUM_BUF,X
  		beq 	NumCvtS
  		tay
  		;-- append the E
- 		ldx 	#NUMSZ-4
+ 		ldx 	#CVTSZ-4
  		;-- 'E'
  		lda 	#'e'
  		sta 	NUM_BUF,X
@@ -859,7 +859,7 @@ NumSupL 	lda 	NUM_BUF,y
  		cmp 	#'0'
  		bne 	NumSupC 	; go copy
  		iny
- 		cpy 	#NUMSZ-1
+ 		cpy 	#CVTSZ-1
  		bmi 	NumSupL
 
 
@@ -885,7 +885,7 @@ NumSpcL 	lda 	NUM_BUF,y
  		lda 	#' '
  		sta 	NUM_BUF,y
  		iny
- 		cpy 	#NUMSZ-1
+ 		cpy 	#CVTSZ-1
  		bne 	NumSpcL
 NumSpcX 	rts
 

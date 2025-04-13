@@ -32,15 +32,13 @@ Var(NUM_B,4) 	; Secondary accumulator
 Var(DBUGNUM,4) 	; Debug value
 Var(NUM_DIV,4) 	; Scratch divisor
 
-Short(NUM_SP) 	; calculator stack pointer
-Short(NUM_SGN) 	; sign
+; these are defined in Vars
+; Short(NUM_SP) 	; calculator stack pointer
+; Short(NUM_SGN) 	; sign
+
 
 Short(ZDIV) 	; short divisor 10/100
  		;-- Short(NUM_DEC) ; decimals counter
-
-.export NUM_A,NUM_B,CSTK,DBUGNUM
-
-
 
 #endif
 
@@ -131,6 +129,8 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 
 _Math 		= $
 
+; MATHOFF()  covert index in .A to an offset in .X based on size
+#define MATHOFF() asl a\ tax
 
 ;----------------------------------------------- NumInit
 NumInit: ; Initialise calculator (clear stack pointer)
@@ -141,8 +141,7 @@ NumInit: ; Initialise calculator (clear stack pointer)
 ;----------------------------------------------- NumGet
 NumGet: ; Retrieve simple variable VARTAB[A].. and unpack to internal form
 ; .A is the index, math module multiplies for size as required
-		asl	a		; S16 is 2 bytes
-		tax
+		MATHOFF()
 		;- clearthe sign (+ve)
  		lda 	#0
  		sta 	NUM_AS
@@ -160,8 +159,7 @@ NumGet: ; Retrieve simple variable VARTAB[A].. and unpack to internal form
 ;----------------------------------------------- NumSet
 NumSet: ; Pack and Store simple VARTAB[A]..
 ; .A is the index, math module multiplies for size as required
-		asl	a		; S16 is 2 bytes
-		tax
+		MATHOFF()
 		;
  		phx			; push offset
  		jsr 	NumPack
@@ -238,7 +236,7 @@ NumParse: ;  Parse a number from source into NUM_A
 ; 		ldx 	#NUM_A
 ; 		jsr 	NumUnSign 	; extract sign
 ; 		;-- fill buffer with zeroes
-; 		ldx 	#NUMSZ-1
+; 		ldx 	#CVTSZ-1
 ; 		lda 	#0
 ; 		sta 	NUM_BUF,x
 ; 		dex
@@ -267,7 +265,7 @@ NumCvt: ; Convert NUM_A to digits in NUM_BUF
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
  		;-- fill buffer with zeroes
- 		ldx 	#NUMSZ-1
+ 		ldx 	#CVTSZ-1
  		lda 	#0
  		sta 	NUM_BUF,x
  		dex
@@ -351,7 +349,7 @@ NumSupL 	lda 	NUM_BUF,y
  		cmp 	#'0'
  		bne 	NumSupC 	; go copy
  		iny
- 		cpy 	#NUMSZ-3 	; make sure we leave the last digit at least
+ 		cpy 	#CVTSZ-3 	; make sure we leave the last digit at least
  		bmi 	NumSupL
 NumSupC 	lda 	NUM_BUF,y
  		sta 	NUM_BUF,x
@@ -374,7 +372,7 @@ NumSpcL 	lda 	NUM_BUF,y
  		lda 	#' '
  		sta 	NUM_BUF,y
  		iny
- 		cpy 	#NUMSZ-1
+ 		cpy 	#CVTSZ-1
  		bne 	NumSpcL
 NumSpcX 	rts
 

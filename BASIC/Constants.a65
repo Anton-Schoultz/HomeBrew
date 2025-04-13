@@ -2,19 +2,26 @@
 SCRN_COLS = 40
 SCRN_LINES = 16
 
+; size of a numeric format in internal for - S16 is 2 bytes
+#define NUMSZ 2
+
 
 ; BUFSZ() Size for INBUF,TOKBUF
 #define BUFSZ() 64
 ; STRSZ Size for STRBUF
 #define STRSZ 128
+
 ; digits to convert into NUM_BUF  including [-] digits... NULL
-#define NUMSZ 8
+#define CVTSZ 8
 
 ; Nesting depth for GOSUB calls
 #define RTNSZ 32
 
 ; Nesting depth for FOR..NEXT
-#define FORSZ  8
+#define FORDEEP 8
+
+; Size of FOR block = NUMSZ+NUMSZ+3 = STP,LIM, ADR,IX
+#define FORSZ  7
 
 ; bytes per line of Hex Dump  (if cols > 69 then use 16)
 #define HEXSZ 8

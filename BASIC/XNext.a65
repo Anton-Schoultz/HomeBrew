@@ -6,37 +6,75 @@
 ;*  X_Next               NEXT <var>
 ;*
 _Next 		= $
+;----------------------------------------------- For/Next
+; FOR values are stored immediately after the A-Z, so access with index 27,28
+; #define FOR_STP_X 27
+; #define FOR_LIM_X 28
+; FOR_DATA 	;-- DATA
+; Var(FOR_STP,NUMSZ) ; [27] Step size
+; Var(FOR_LIM,NUMSZ) ; [28] Limit
+; Int(FOR_ADR) 	; Address of loop line (after the FOR line)
+; Short(FOR_NDX) 	; Loop variable number (1-26)
+;  		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
+; Var(FORSTK,8*FORDEEP)
 
 ;----------------------------------------------- X_Next
 X_Next: ; NEXT <var>
  		jsr 	ChrRd 		; consume token
-		; loop var
-		CASE(T_NumVar,X_Next1)
- 		ERROR(ERR_VAR) 		; "Expected Variable"
+ 		;-- loop var
+ 		CASE(T_NumVar,X_Next1)
+X_NextErr 	ERROR(ERR_VAR) 		; "Expected Variable"
 
-X_Next1
- 		jsr 	ChrRd 		; get first char of variable name
- 		bpl 	X_Next99 	; long var name
- 		;-- short name, character is used as index
- 		and 	#$1F
- 		tax			; var index in X
- 		; check match to inner loop
- 		sta	VARID		; save var index
- 		cpx	FOR_NDX
+X_Next1 	jsr 	ChrRd 		; get first char of variable name
+ 		bpl 	X_NextErr 	; long var name -> Expected Variable
+ 		and 	#$1F 		; get var index
+ 		sta 	VARID 		; save it
+ 		;-- check that it matches
+ 		cmp 	FOR_NDX
  		beq 	X_Next2
- 		ERROR(ERR_FOR)		; FOR/NEXT error (mismatch var names)
+ 		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
+X_Next2 	; Retrieve step from VARTAB and unpack to internal form
+ 		lda 	#FOR_STP_X
+ 		jsr 	NumGet
+ 		lda 	NUM_AS
+ 		sta 	NUM_SGN 	; save sign of step (up/down)
+ 		jsr 	NumPushA
+ 		;-- get loop var value
+ 		lda 	VARID
+ 		jsr 	NumGet
+ 		;-- add the step
+ 		jsr 	NumPopB
+ 		jsr 	NumAdd
+ 		;-- save value in loop var
+ 		lda 	VARID
+ 		jsr 	NumSet
+ 		;-- test the limit
+ 		lda 	#FOR_LIM_X
+ 		jsr 	NumGet 		; RCL limit
+ 		jsr 	NumPushA 	; ^
+ 		lda 	VARID
+ 		jsr 	NumGet 		; RCL var
+ 		jsr 	NumPopB
+ 		jsr 	NumSub 		; Limit-Value
+ 		jsr 	NumFlag 	; check < = >
+ 		;-- if equal then last itteration
+ 		BBS1 	NUM_FLG,X_NextLoop
+ 		;-- in range?
+ 		lda 	NUM_SGN
+ 		eor 	NUM_FLG
+ 		and 	#4
+ 		bne 	X_NextLoop 	; < so loop
+ 		;-- loop is done so pop
+ 		jmp 	ForPop
 
-X_Next2		;- add step
-		jsr	NumGet		; retrieve into calc NUM_A
+X_NextLoop 	; loop by going back to the loop line
+ 		lda 	FOR_ADR
+ 		sta 	LN_NXT
+ 		lda 	FOR_ADR+1
+ 		sta 	LN_NXT+1
+ 		rts
 
-
-  		jsr 	NumSet 	; store the result
- 		RTN_T() 		; done
-
-X_Next99 	ERROR(ERR_BADVAR)
-
-
-		rts
+;  NUM_FLG ; Comparisson flags 4:< 2:= 1:>
 
 .echo "  _NEXT\t\t"
 .echo $-_Next
