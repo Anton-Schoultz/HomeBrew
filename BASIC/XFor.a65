@@ -41,11 +41,19 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		jsr	NumToInt	; num as AX l/h
  		sta	FOR_LIM
  		stx	FOR_LIM+1
-
- 		;-- STEP=1 for now
+ 		;-- STEP?
  		ZSET(FOR_STP,1) 	; default step is 1
-
- 		rts
+ 		lda 	CHRGOT
+ 		beq	X_ForX		; STEP ommitted -> done
+ 		;-- evaluate step size & save it
+ 		lda 	#T_STEP		; STEP
+ 		jsr 	Match 		; check for and skip over 'TO'
+ 		jsr 	EvNumeric
+ 		jsr	NumToInt	; num as AX l/h
+ 		sta	FOR_STP
+ 		stx	FOR_STP+1
+X_ForX
+		rts
 
 ;----------------------------------------------- ForPush
 ForPush: ; Push FOR structure onto the stack
@@ -98,13 +106,18 @@ ForPopL 	lda 	FORSTK,y
 #if _DBUG
 ;=================================================================== DBUG =============
 ForDump: ; Debug For values
+ 		PUSHALL()
+ 		jsr 	PrNL
  		PRINTLN("STP  LIM  ADR  IX SP")
  		HEX_INT(FOR_STP)
  		HEX_INT(FOR_LIM)
  		HEX_INT(FOR_ADR)
  		HEX_SHORT(FOR_NDX)
  		HEX_SHORT(FOR_SP)
- 		jmp 	PrNL
+ 		jsr 	PrNL
+ 		PULLALL()
+		PAUSE()
+ 		rts
 #endif
 
 

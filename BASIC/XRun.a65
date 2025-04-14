@@ -15,8 +15,8 @@ _Run 		= $
 RunInit: ; prepare to run by setting flags
  		PR_RD_MEM() 		; read from memory (code space)
  		PR_WR_IO() 		; output to I/O
- 		PR_ZSUP_OFF()
-		PR_ZSPC_ON()
+ 		PR_ZSUP_ON()
+		PR_ZSPC_OFF()
  		;-- init
  		jsr 	NumInit 	; initialise evaluator
  		;-- default line no zero

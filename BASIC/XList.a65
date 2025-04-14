@@ -150,10 +150,7 @@ ListTokX 	jsr 	ChrRd 		; get next byte
 #if _DBUG
 ;=================================================================== DBUG =============
 ListDBug: ; debug values
- 		php
- 		pha
- 		phx
- 		phy
+ 		php \ pha \ phx \ phy
 
  		PRINTLN("BEG  END  NUM  FLG  FND")
  		HEX_INT(LST_BEG)
@@ -165,10 +162,7 @@ ListDBug: ; debug values
 
  		PAUSE()
 
- 		ply
- 		plx
- 		pla
- 		plp
+ 		ply \ plx \ pla \ plp
 
  		rts
 #endif

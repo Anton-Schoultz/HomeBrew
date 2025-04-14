@@ -20,9 +20,6 @@ _Next 		= $
 
 ;----------------------------------------------- X_Next
 X_Next: ; NEXT <var>
-
-;	PAUSE()
-
  		jsr 	ChrRd 		; consume token
  		;-- loop var
  		BR_AEQ(T_NumVar,X_Next1)
@@ -36,6 +33,7 @@ X_Next1 	jsr 	ChrRd 		; get first char of variable name
  		cmp 	FOR_NDX
  		beq 	X_Next2
  		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
+
 X_Next2 	; Retrieve step from VARTAB and unpack to internal form
  		lda 	#FOR_STP_X
  		jsr 	NumGet		; returns sign in A
@@ -59,13 +57,11 @@ X_Next2 	; Retrieve step from VARTAB and unpack to internal form
  		jsr 	NumPopB
  		jsr 	NumSub 		; Limit-Value
  		jsr 	NumFlag 	; check < = >
- 		;-- if equal then last itteration
- 		BBS1 	NUM_FLG,X_NextLoop
- 		;-- in range?
- 		lda 	NUM_SGN
- 		eor 	NUM_FLG
- 		and 	#1
- 		bne 	X_NextLoop 	; < so loop
+ 		beq	X_NextLoop	; if equal then last iteration
+ 		; account for direction
+ 		eor	NUM_SGN
+ 		and	#4		; 4< 2= 1>
+ 		bne	X_NextLoop
  		;-- loop is done so pop
  		jmp 	ForPop
 
