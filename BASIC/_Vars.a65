@@ -83,17 +83,17 @@ Int(STREND) 	; end of string work area
 Int(ARYBEG) 	; Start of array Space
 
 Short(RTNSP) 	; Gosub/Return stack pointer	RTNSZ x2
-Short(FORSP) 	; FOR/NEXT stack pointer  	FORSZ x8
+Short(FOR_SP) 	; FOR/NEXT stack pointer  	FORSZ x8
 
 ;----------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
 ;----------------------------------------------- Numeric common vars
+Int(TMP) 	; Temp 16 bit value (line nos)
 Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
-Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
-Int(TMP) 	; Temp 16 bit value (line nos)
+Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 
 
 
@@ -153,7 +153,7 @@ Short(FOR_NDX) 	; Loop variable number (1-26)
  		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 Var(FORSTK,8*FORDEEP)
 
-
+.export FOR_DATA, VARTAB
 
 .LIST
 

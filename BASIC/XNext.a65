@@ -20,9 +20,12 @@ _Next 		= $
 
 ;----------------------------------------------- X_Next
 X_Next: ; NEXT <var>
+
+;	PAUSE()
+
  		jsr 	ChrRd 		; consume token
  		;-- loop var
- 		CASE(T_NumVar,X_Next1)
+ 		BR_AEQ(T_NumVar,X_Next1)
 X_NextErr 	ERROR(ERR_VAR) 		; "Expected Variable"
 
 X_Next1 	jsr 	ChrRd 		; get first char of variable name
@@ -62,7 +65,7 @@ X_Next2 	; Retrieve step from VARTAB and unpack to internal form
  		;-- in range?
  		lda 	NUM_SGN
  		eor 	NUM_FLG
- 		and 	#4
+ 		and 	#1
  		bne 	X_NextLoop 	; < so loop
  		;-- loop is done so pop
  		jmp 	ForPop

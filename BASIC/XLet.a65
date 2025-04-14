@@ -3,20 +3,20 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LET ==============
+;=================================================================== LET ============== 
 ;*  X_Let                LET <var> = <expr>
 ;*
 _Let 		= $
 
 ; for now, simple vars are stored in VARTAB (fixed in memory)
- 		;--
+ 		;-- 
 
-;----------------------------------------------- X_Let
+;----------------------------------------------- X_Let 
 X_Let: ; LET <var> = <expr>
  		jsr 	ChrRd 		; consume LET
 ; 		sta 	TOKNO 		; save variable token
 
-X_LetDo		CASE(T_NumVar,X_Let10)
+X_LetDo 	CASE(T_NumVar,X_Let10)
  		ERROR(ERR_VAR) 		; "Expected Variable"
 X_Let10 	;- assign integer variable (not-ary)
  		jsr 	ChrRd 		; get first char of variable name
@@ -28,11 +28,12 @@ X_Let10 	;- assign integer variable (not-ary)
  		lda 	#T_EQ 		; '=' TOKEN
  		jsr 	Match 		; check for and skip over '='
 
-		;-- evaluate the expression
+ 		;-- evaluate the expression
  		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
  		;-- recal the index, math module multiplies for size
  		pla
- 		jsr 	NumSet 	; fetch & store
+ 		sta 	VARID 		; save the Var index
+ 		jsr 	NumSet 		; fetch & store
  		RTN_T() 		; done
 
 X_Let90 	ERROR(ERR_BADVAR)
@@ -44,13 +45,13 @@ X_Let90 	ERROR(ERR_BADVAR)
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Let 		.DB 	"LE",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Let 		= LOW($)

@@ -74,7 +74,7 @@ Main: ;Warm Start entry point
  		;-- Gosub/Rtn, Forn/Next
  		lda 	#0
  		sta	RTNSP
- 		sta	FORSP
+ 		sta	FOR_SP
  		sta	FOR_ADR		; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 

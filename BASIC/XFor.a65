@@ -23,38 +23,30 @@ _For 		= $
 
 ;----------------------------------------------- X_For
 X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
-
- 		jsr 	LnDump
-
- 		PAUSE()
-
  		;-- Push
  		jsr 	ForPush
  		;-- handle assignment
  		jsr 	ChrRd 		; consume token
  		jsr 	X_LetDo 	; returns index in X
- 		stx 	FOR_NDX 	; save index
+		; store var index
+		lda	VARID
+ 		sta 	FOR_NDX 	; save index
  		;-- save return address
  		ZCPY(FOR_ADR,LN_NXT)
  		;-- TO
  		lda 	#T_TO 		; TO
- 		jsr 	Match 		; check for and skip over '='
+ 		jsr 	Match 		; check for and skip over 'TO'
  		;-- limit
- 		jsr 	ChrRd 		; consume token
+ 		;jsr 	ChrRd 		; consume token
  		jsr 	EvNumeric
- 		ZCPY(FOR_LIM,NUM_A)
+ 		ZCPY(FOR_LIM,NUM_AA)
  		;-- STEP=1 for now
  		ZSET(FOR_STP,1) 	; default step is 1
- 		jsr 	ForDump
-
- 		PAUSE()
-
  		rts
-
 
 ;----------------------------------------------- ForPush
 ForPush: ; Push FOR structure onto the stack
- 		lda 	FORSP
+ 		lda 	FOR_SP
  		asl 	a
  		asl 	a
  		asl 	a 		; a = 8 * sp
@@ -68,11 +60,11 @@ ForPushL 	lda 	FOR_DATA,X
  		CPX 	#FORSZ
  		bne 	ForPushL
  		;-- update stack pointer
- 		lda 	FORSP
+ 		lda 	FOR_SP
  		inc 	a
  		cmp 	#FORDEEP
  		bpl 	ForErr 		; stack overflow
- 		sta 	FORSP
+ 		sta 	FOR_SP
  		rts
 
 ;----------------------------------------------- ForOvr
@@ -81,10 +73,10 @@ ForErr 		ERROR(ERR_FOR)
 ;----------------------------------------------- ForPop
 ForPop: ; Pop for info from stack to inner vars
  		;-- decr for stack pointer
- 		LDA 	FORSP
+ 		LDA 	FOR_SP
  		DEC 	a
  		BMI 	ForErr 		; stack underflow
- 		STA 	FORSP
+ 		STA 	FOR_SP
  		;-- calc offset in stack
  		asl 	a
  		asl 	a
@@ -108,7 +100,7 @@ ForDump: ; Debug For values
  		HEX_INT(FOR_LIM)
  		HEX_INT(FOR_ADR)
  		HEX_SHORT(FOR_NDX)
- 		HEX_SHORT(FORSP)
+ 		HEX_SHORT(FOR_SP)
  		jmp 	PrNL
 
 #endif
