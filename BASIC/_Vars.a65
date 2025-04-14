@@ -90,7 +90,9 @@ Int(Z_IrqPtr) 	; used in IRQ code
 
 ;----------------------------------------------- Numeric common vars
 Int(TMP) 	; Temp 16 bit value (line nos)
-Short(NUM_FLG) 	; Comparisson flags 4:< 2:= 1:>
+
+Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
+
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
 Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14

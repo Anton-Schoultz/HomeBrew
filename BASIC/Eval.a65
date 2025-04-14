@@ -49,7 +49,7 @@ EvNumL 		jsr 	IsOrOp
 EvNumX 		php
  		jsr 	NumPack
  		plp
- 		rts 			; return value in AX lo/hi
+ 		rts
 
 ;----------------------------------------------- DoOrOp
 DoOrOp 		lda 	CHRGOT

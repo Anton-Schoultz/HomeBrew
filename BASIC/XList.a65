@@ -34,12 +34,11 @@ X_List: ; LIST [from] [- [to]]
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
  		;-- set start & end to number
- 		lda 	NUM_AA
+ 		jsr	NumToInt	; num as AX l/h
  		sta 	LST_BEG
  		sta 	LST_END
- 		lda 	NUM_AA+1
- 		sta 	LST_BEG+1
- 		sta 	LST_END+1
+ 		stx 	LST_BEG+1
+ 		stx 	LST_END+1
 
 X_List_0 	;- check for a '-'
  		lda 	CHRGOT
@@ -53,7 +52,9 @@ X_List_0 	;- check for a '-'
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
  		jsr 	NumRd 		; read value into NUM_A
- 		ZCPY(LST_END,NUM_AA) 	; set ending value
+ 		jsr	NumToInt	; num as AX l/h
+		sta	LST_END
+		stx	LST_END+1
 
 X_List_1 	;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)

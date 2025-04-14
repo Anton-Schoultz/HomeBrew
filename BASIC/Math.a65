@@ -88,11 +88,11 @@ NumZeroA 	; Eval
 NumRd 		; Eval for literal values
 NumWr 		; Tok.P_Number to create a literal
 
-NumGet 	; Eval to retrieve A-Z variable [X] X is 1..26
-NumSet 	; Eval to store a A-Z variable  [X]
+NumGet 		; Eval to retrieve A-Z variable [X] X is 1..26
+NumSet 		; Eval to store a A-Z variable  [X]
 
-
-
+NumToInt 	; Return integer value in AX (lo,hi) - sets NUM_FLG
+NumFromInt 	; Set NUMA to int value in AX (lo,hi)
 
 #endif
 ;----------------------------------------------- }Dummy

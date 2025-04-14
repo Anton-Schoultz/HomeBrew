@@ -37,11 +37,14 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		lda 	#T_TO 		; TO
  		jsr 	Match 		; check for and skip over 'TO'
  		;-- limit
- 		;jsr 	ChrRd 		; consume token
  		jsr 	EvNumeric
- 		ZCPY(FOR_LIM,NUM_AA)
+ 		jsr	NumToInt	; num as AX l/h
+ 		sta	FOR_LIM
+ 		stx	FOR_LIM+1
+
  		;-- STEP=1 for now
  		ZSET(FOR_STP,1) 	; default step is 1
+
  		rts
 
 ;----------------------------------------------- ForPush

@@ -38,8 +38,7 @@ X_Next1 	jsr 	ChrRd 		; get first char of variable name
  		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
 X_Next2 	; Retrieve step from VARTAB and unpack to internal form
  		lda 	#FOR_STP_X
- 		jsr 	NumGet
- 		lda 	NUM_AS
+ 		jsr 	NumGet		; returns sign in A
  		sta 	NUM_SGN 	; save sign of step (up/down)
  		jsr 	NumPushA
  		;-- get loop var value
