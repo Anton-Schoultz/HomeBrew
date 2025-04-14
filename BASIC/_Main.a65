@@ -86,6 +86,11 @@ MainLoop: ; Main Loop
  		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		jsr 	PrNL
  		jsr 	Parse 		; Parse INBUF into TOKBUF
+
+;	jsr MainTokBuf
+;	jsr MainList
+;	jmp MainLoop
+
  		;-- immediate command ? (No line number)
  		lda 	TOKBUF
  		cmp 	#T_LineNo
@@ -102,24 +107,32 @@ MainCmd 	;-- Run command line
  		jsr 	PrNL
  		bra 	MainLoop
 
-;======================================================================================
-
+#if _DBUG
+;=================================================================== DBUG =============
 MainTokBuf: ; Dump TOKBUF
-; 		PR_WR_IO()
-;  		HEX_DUMP(TOKBUF) 	; dump 8
-;  		jsr 	HexDump 	; dump next 8
-;  		jsr 	HexDump 	; dump next 8
-;  		jmp 	PrNL
+ 		PR_WR_IO()
+  		HEX_DUMP(TOKBUF) 	; dump 8
+  		jsr 	HexDump 	; dump next 8
+  		jsr 	HexDump 	; dump next 8
+  		jmp 	PrNL
+
+MainList:; list TOKBUF
+		ZSET(ZRd,TOKBUF)
+		lda (ZRd)
+		sta CHRGOT
+		jmp ListLnL
+
+
 
 MainProg: ; Dump start of Program space
-; 		HEX_DUMP($0800)
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jsr 	HexDump 	; dump next 8
-; 		jmp 	PrNL
-
+ 		HEX_DUMP($0800)
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 	; dump next 8
+ 		jmp 	PrNL
+#endif
 
 
 #include "Variables.a65" 		; Variable parse/list

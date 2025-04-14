@@ -86,15 +86,29 @@ ListLn: ; List line (LnNext called before this)
  		jsr 	IntPrint
  		lda 	#' '
  		jsr 	PutChr
-ListLnL 	lda 	CHRGOT
+
+ListLnL 	;-- check for end of line null
+ 		lda 	CHRGOT
  		beq 	ListLnX 	; null = dend of line
- 		jsr 	ListTok 	; (*1) Expand
+ 		bpl	ListChr		; $00-7F => character
+
+ 		;-- have a token $80-FF
+ 		jsr 	ListTok
+ 		;-- loop back for more
  		bra 	ListLnL
-ListLnX 	jmp 	PrNL 		; NL and return
+
+ListLnX 	;-- end of the line, CRLF and done
+ 		jmp 	PrNL
+
+ListChr		; non-token
+		jsr 	PutChr
+		jsr 	ChrRd
+		bra	ListLnL
 
 
 ;  list a part of the line (token & its data)
 ListTok 	sta 	TOKNO
+
  		;-- Value ?
  		CASE(T_StrLit,L_String)
  		CASE(T_NumLit,L_Number)
@@ -124,6 +138,7 @@ ListTokR3 	bra 	ListTokX
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
  		BR_T(ListTokX)
+
  		;-- not token, treat as ASCII
  		lda 	TOKNO 		; CHRGOT
  		jsr 	PutChr
