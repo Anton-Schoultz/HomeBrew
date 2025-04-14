@@ -261,42 +261,9 @@ Function	;-- process a function
  		cmp #'('		; braces?
  		beq FunctionX		; yes - done ok
 		;- jump to perform the function
- 		and 	#$7F
- 		tax
- 		jmp 	(TblRun,X)
+ 		jsr	RunJump
  		RTN_F()
 FunctionX	RTN_T()
-
-;;----------------------------------------------- FABR
-EvBr: ; Bracketed expression
- 		jsr 	ChrRd 		; consume the '('
- 		jsr 	Expression 	; BoolTerm
- 		MATCH($29) 		; check for ')'
- 		RTN_T() 		; got a value
-
-;----------------------------------------------- EvFn
-EvFn: ; Evaluate function  FN( BoolTerm )
- 		;-- save function
- 		lda 	CHRGOT
- 		pha 			; save function required
- 		jsr 	ChrRd 		; consume the 'Fx' token
- 		jsr 	BoolTerm
- 		MATCH($29) 		; check for ')'
- 		pla 			; recall function
-
- 		PAUSE()
-
- 		;-- jump to perform function based on the token
- 		CASE('(',EvFnX) 	; '(' has no function required
- 		;-- CASE(T_Sqr,X_Sqr)
- 		;--
- 		PRINTLN("Invalid function !")
- 		RTN_F()
-
-EvFnX 		RTN_T() 		; got a value
-
-
-
 
 ;----------------------------------------------- ENumLit
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)

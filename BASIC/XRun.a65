@@ -65,7 +65,8 @@ RunStmnt: ; Run a statement
  		BR_AGT(T_Max,TokErr) 	; >max = invalid token
  		BR_ALT($80,TokErr) 	; <$80 = invalid token
  		;-- jump to X_xxxx, rts to run loop
- 		and 	#$7F
+RunJump:; Jump via table for token in A
+		and 	#$7F
  		tax
  		jmp 	(TblRun,X)
 RunLnX 		rts 			; done, return
