@@ -21,4 +21,4 @@
 
 ;- Functions
 #include "XFRnd.a65"
-#include "XFSQR.a65"
+#include "XFSqr.a65"

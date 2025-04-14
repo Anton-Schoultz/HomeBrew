@@ -183,7 +183,7 @@ W_List 		.DB 	"LIS",'T'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_List 		= LOW($)
+T_List 		= LOW($)+$80
 .DW 	X_List
 .nolist
  		;-- .export T_List

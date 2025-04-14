@@ -2,13 +2,13 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== GOSUB ============== 
+;=================================================================== GOSUB ==============
 ;*  X_Gosub              GOSUB <NumLit>
 ;*  X_GosubNum           Gosub Num
 ;*
 _Gosub 		= $
 
-;----------------------------------------------- X_Gosub 
+;----------------------------------------------- X_Gosub
 X_Gosub: ; GOSUB <NumLit>
  		jsr 	ChrRd 		; consume token
 X_GosubNum: ; Gosub Num
@@ -43,16 +43,16 @@ GosubOvr 	ERROR(ERR_GOSUB)
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Gosub 	.DB 	"GOSU",'B'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Gosub 	= LOW($)
+T_Gosub 	= LOW($)+$80
 .DW 	X_Gosub
 .nolist
  		;-- .export T_Gosub

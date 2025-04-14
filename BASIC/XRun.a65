@@ -96,7 +96,7 @@ W_Run 		.DB 	"RU",'N'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Run 		= LOW($)
+T_Run 		= LOW($)+$80
 .DW 	X_Run
 .nolist
  		;-- .export T_Run

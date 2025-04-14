@@ -40,7 +40,7 @@ W_Goto 		.DB 	"GOT",'O'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Goto 		= LOW($)
+T_Goto 		= LOW($)+$80
 .DW 	X_Goto
 .nolist
  		;-- .export T_Goto

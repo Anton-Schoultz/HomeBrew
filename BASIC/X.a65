@@ -26,7 +26,7 @@ W_Tmp 		.DB 	"Tmp",'T'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Tmp 		= LOW($)
+T_Tmp 		= LOW($)+$80
 .DW 	X_Tmp
 .nolist
 ;.export T_Tmp

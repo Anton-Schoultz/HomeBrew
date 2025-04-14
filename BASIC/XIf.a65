@@ -38,7 +38,7 @@ W_If 		.DB 	"I",'F'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_If 		= LOW($)
+T_If 		= LOW($)+$80
 .DW 	X_If
 .nolist
  		;-- .export T_If

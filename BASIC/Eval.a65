@@ -244,32 +244,30 @@ IsMulOpX 	rts
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 ; exits with next token in CHRGOT
  		lda 	CHRGOT
-; 		bmi	Function
-
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
  		CASE(T_NumLit,ENumLit) 	; Literal value
- 		CASE('(',EvBr) 		; ( BoolTerm )
-
- 		and 	#$7f
- 		CASE(T_Sqr,Function)
-
- 		RTN_F()
-
-Function
- ;	PAUSE()
+; 		CASE('(',EvBr) 		; ( BoolTerm )
+		jsr	IsFunction
+		BR_T(Function)
+ 		PRINTLN("Invalid factor")
+ 		HALT()
+Function	;-- process a function
  		pha
-
- 		jsr 	ChrRd 		; consume the '('
+ 		jsr 	ChrRd 		; consume T_fn
  		jsr 	BoolTerm
  		MATCH($29) 		; check for ')'
-
  		pla
-
- 		CASE(T_Sqr,X_Sqr)
-
+ 		cmp #'('		; braces?
+ 		beq FunctionX		; yes - done ok
+		;- jump to perform the function
+ 		and 	#$7F
+ 		tax
+ 		jmp 	(TblRun,X)
  		RTN_F()
-;----------------------------------------------- FABR
+FunctionX	RTN_T()
+
+;;----------------------------------------------- FABR
 EvBr: ; Bracketed expression
  		jsr 	ChrRd 		; consume the '('
  		jsr 	Expression 	; BoolTerm

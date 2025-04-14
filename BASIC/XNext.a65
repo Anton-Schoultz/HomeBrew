@@ -89,7 +89,7 @@ W_Next 		.DB 	"NEX",'T'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_NEXT 		= LOW($)
+T_NEXT 		= LOW($)+$80
 .DW 	X_Next
 .nolist
  		;-- .export T_Next

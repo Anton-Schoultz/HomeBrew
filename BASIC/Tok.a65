@@ -226,13 +226,10 @@ IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
 IsFunction: ; Return T/F if CHRGOT is a function and token in A
 ; () is also treated as a functionj
  		lda 	CHRGOT
- 		BR_AEQ('(',IsFnTrue)
- 		BR_AEQ(T_Sqr,IsFnTrue)
-
- 		;cmp 	#_FNBEG
- 		;bpl 	IsFnTrue
+ 		BR_AEQ('(',IsFnTrue)	; Brace treated as null function
+ 		cmp 	#_FNBEG
+ 		bpl 	IsFnTrue
  		RTN_F()
-
 IsFnTrue 	RTN_T()
 
 ;----------------------------------------------- P_IsToken

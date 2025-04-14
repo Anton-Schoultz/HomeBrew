@@ -30,10 +30,12 @@ W_Sqr		.DB 	"SQR",'('+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Sqr		= LOW($)
+T_Sqr		= LOW($)+$80
 .DW 	X_Sqr
 .nolist
 ;.export T_Sqr
 #endif
+
+.export T_Sqr
 
 .list	; end of Sqr

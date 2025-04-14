@@ -136,7 +136,7 @@ W_For 		.DB 	"FO",'R'+$80
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_For 		= LOW($)
+T_For 		= LOW($)+$80
 .DW 	X_For
 .nolist
  		;-- .export T_For
