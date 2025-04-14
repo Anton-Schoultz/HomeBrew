@@ -93,7 +93,7 @@ ForPopL 	lda 	FORSTK,y
  		rts
 
 #if _DBUG
-;=================================================================== TEST =============
+;=================================================================== DBUG =============
 ForDump: ; Debug For values
  		PRINTLN("STP  LIM  ADR  IX SP")
  		HEX_INT(FOR_STP)
@@ -102,8 +102,8 @@ ForDump: ; Debug For values
  		HEX_SHORT(FOR_NDX)
  		HEX_SHORT(FOR_SP)
  		jmp 	PrNL
-
 #endif
+
 
 .echo "  _FOR\t\t"
 .echo $-_For

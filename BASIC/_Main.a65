@@ -3,7 +3,7 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 
-_DBUG 		= 1
+_DBUG 		= 0
 
 ; .echo "ROM at $F000-$FFFF (4k)\r"
 .echo "ROM at $E000-$FFFF (8k)\r"

@@ -121,7 +121,7 @@ ListVarAry 	BBR0 	TOKNO,ListVarEnd ; array ?
  		lda 	#'(' 		; yes '('
  		jsr 	PutChr
 
-ListVarEnd 	;- doen with var name
+ListVarEnd 	;- done with var name
  		jsr 	GetChr
  		RTN_T()
 

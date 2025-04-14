@@ -3,6 +3,8 @@
 #define CSTKSZ 16
 #define CSTKMSK CSTKSZ-1
 
+; FPA,FPB.. defined in Math.a65
+
 #define NUM_AA NUM_A+FPA
 #define NUM_AB NUM_A+FPB
 #define NUM_AC NUM_A+FPC
@@ -87,11 +89,13 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumAdd               NumA = NumB + NumA
 ;*  NumAnd               AND
 ;*  NumCvt               Convert NUM_A to digits in NUM_BUF
+;*  NumDBug              Debug values
+;*  NumDH                NUM_A = NUM_A / 100  remainder in A
 ;*  NumDiv               NumA = NumB / NumA
 ;*  NumFalse             Place FALSE in NUM_A
 ;*  NumFlag              set flags bassed on result
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-;*  NumGet              Retrieve simple variable [X] and unpack to internal form
+;*  NumGet               Retrieve simple variable VARTAB[A].. and unpack to internal form
 ;*  NumInit              Initialise calculator (clear stack pointer)
 ;*  NumMod               NumA = NumB % NumA
 ;*  NumMul               NumA = NumB * NumA (in unpacked form)
@@ -104,7 +108,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumPrint             Convert number to string & output (via PutChr mem/io)
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumRd                Read from memory (ChrRd) & unpack
-;*  NumSet              Pack and Store simple variable [X]
+;*  NumSet               Pack and Store simple VARTAB[A]..
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
 ;*  NumTrue              Place TRUE in NUM_A
@@ -113,6 +117,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumWr                Pack & write to Memory (ChrWr)
 ;*  NumXor               XOR
 ;*  NumZeroA             place zero into NUM_A
+;*m MATHOFF()            covert index in .A to an offset in .X based on size
 ;*
 
 
@@ -141,33 +146,33 @@ NumInit: ; Initialise calculator (clear stack pointer)
 ;----------------------------------------------- NumGet
 NumGet: ; Retrieve simple variable VARTAB[A].. and unpack to internal form
 ; .A is the index, math module multiplies for size as required
-		MATHOFF()
-		;- clearthe sign (+ve)
+ 		MATHOFF()
+ 		;-- clearthe sign (+ve)
  		lda 	#0
  		sta 	NUM_AS
- 		;
+ 		;--
  		lda 	VARTAB,X
  		sta 	NUM_AA
- 		;
+ 		;--
  		inx
  		lda 	VARTAB,X
  		sta 	NUM_AB
- 		;
+ 		;--
  		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		rts
 
 ;----------------------------------------------- NumSet
 NumSet: ; Pack and Store simple VARTAB[A]..
 ; .A is the index, math module multiplies for size as required
-		MATHOFF()
-		;
- 		phx			; push offset
+ 		MATHOFF()
+ 		;--
+ 		phx 			; push offset
  		jsr 	NumPack
- 		plx			; rcall offset
- 		;
+ 		plx 			; rcall offset
+ 		;--
  		lda 	NUM_AA
  		sta 	VARTAB,X
- 		;
+ 		;--
  		inx
  		lda 	NUM_AB
  		sta 	VARTAB,X
@@ -230,33 +235,33 @@ NumParse: ;  Parse a number from source into NUM_A
  		sta 	NUM_AS
  		rts
 
-;;----------------------------------------------- NumCvt
-;NumCvt: ; Convert NUM_A to digits in NUM_BUF
-;; $3412 => 13330 in 2726 cycles   (5028 bytes)
-; 		ldx 	#NUM_A
-; 		jsr 	NumUnSign 	; extract sign
-; 		;-- fill buffer with zeroes
-; 		ldx 	#CVTSZ-1
-; 		lda 	#0
-; 		sta 	NUM_BUF,x
-; 		dex
-; 		sta 	NUM_BUF,x
-; 		dex
-;NumCvtL 	;- num/10 remainder .A as digit
+; ----------------------------------------------- NumCvt
+; -- NumCvt: ; Convert NUM_A to digits in NUM_BUF
+; $3412 => 13330 in 2726 cycles   (5028 bytes)
+;  		ldx 	#NUM_A
+;  		jsr 	NumUnSign 	; extract sign
+;  		;-- fill buffer with zeroes
+;  		ldx 	#CVTSZ-1
+;  		lda 	#0
+;  		sta 	NUM_BUF,x
+;  		dex
+;  		sta 	NUM_BUF,x
+;  		dex
+ 		;-- NumCvtL 	;- num/10 remainder .A as digit
 ; 		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
 ; 		ora 	#'0' 		; convert remainder to a digit
 ; 		sta 	NUM_BUF,X 	; store the digit
 ; 		dex 			; back-up one pos to the left
 ; 		bpl 	NumCvtL 	; loop until done
-;NumCvtS 	;-- Place sign in NR[0] based on SGN
-; 		lda 	#'0' 		; leading zero
-; 		sta 	NUM_BUF
-; 		;-- check if negative
-; 		lda 	NUM_AS 		; extracted sign
-; 		bpl 	NumCvtX
-; 		lda 	#'-' 		; replace by '-' for negative
-; 		sta 	NUM_BUF 	; place sign at Res[0]
-;NumCvtX 	rts
+ 		;-- NumCvtS 	;-- Place sign in NR[0] based on SGN
+;  		lda 	#'0' 		; leading zero
+;  		sta 	NUM_BUF
+;  		;-- check if negative
+;  		lda 	NUM_AS 		; extracted sign
+;  		bpl 	NumCvtX
+;  		lda 	#'-' 		; replace by '-' for negative
+;  		sta 	NUM_BUF 	; place sign at Res[0]
+ 		;-- NumCvtX 	rts
 
 
 ;----------------------------------------------- NumCvt
@@ -275,18 +280,18 @@ NumCvtL 	;- num/100 remainder .A as 0-99
  		jsr 	NumDH 		; div NUM_TMP by 10, remainder in A
  		phx
  		tax
- 		lda	BinTbl,x
+ 		lda 	BinTbl,x
  		plx
  		pha
- 		and #$f
+ 		and 	#$f
  		ora 	#'0' 		; convert remainder to a digit
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
  		pla
- 		lsr	a
- 		lsr	a
- 		lsr	a
- 		lsr	a
+ 		lsr 	a
+ 		lsr 	a
+ 		lsr 	a
+ 		lsr 	a
  		ora 	#'0' 		; convert remainder to a digit
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
@@ -302,11 +307,11 @@ NumCvtS 	;-- Place sign in NR[0] based on SGN
 NumCvtX 	rts
 ;----------------------------------------------- NumDH
 NumDH: ; NUM_A = NUM_A / 100  remainder in A
-	phx
-	phy
-	lda 	#100
-	sta 	ZDIV
-	bra 	NumDN
+ 		phx
+ 		phy
+ 		lda 	#100
+ 		sta 	ZDIV
+ 		bra 	NumDN
 
 ;----------------------------------------------- NumDT
 NumDT 		; NUM_A = NUM_A / 10 (48Bit), remainder in A
@@ -384,7 +389,7 @@ NumRd: ; Read from memory (ChrRd) & unpack
  		sta 	NUM_AS 		; clear sign (+ve)
  		jsr 	ChrRd
  		sta 	NUM_AA 		; L
- 		tax			; save low in X
+ 		tax 			; save low in X
  		jsr 	ChrRd
  		sta 	NUM_AB 		; H
 NumRdX 		rts
@@ -635,7 +640,7 @@ NumTrue: ; Place TRUE in NUM_A
  		phx
  		ldx 	#NUM_A
  		lda 	#$FF
- 		jmp 	NumPreSet	; set as FF FFFF
+ 		jmp 	NumPreSet 	; set as FF FFFF
 
 ;----------------------------------------------- NumZeroTmp
 NumZeroTmp 	; place zero into NUM_TMP
@@ -655,7 +660,7 @@ NumFalse: ; Place FALSE in NUM_A
  		;-- fall through
 NumZeroX 	; zero the number at .X (extend version EXP,1,2,3,4,5,6)
  		lda 	#0 		; zero 00 0000
-NumPreSet	sta 	FPA,X
+NumPreSet 	sta 	FPA,X
  		sta 	FPB,X
  		sta 	FPC,X
  		sta 	FPS,X
@@ -698,287 +703,19 @@ NumPopB: ; Pop Num_B from the calculator stack
  		;--
  		rts
 
+#if _DBUG
+;=================================================================== DBUG =============
+NumDBug: ; Debug values
+ 		PRINT("NUMA:")
+ 		HEX_SHORT(NUM_AS)
+ 		HEX_INT(NUM_AA)
+ 		jsr 	PrNL
 
-;======================================================================================
-
-
-
-
-
-;	;----------------------------------------------- NumCpyA2B
-;	NumCpyA2B 	; Copy NUM_A to NUM_B (8bytes) - preserves X,Y
-;	 		phx
-;	 		ldx 	#7
-;	NumCpyA2BL 	lda 	NUM_A,x
-;	 		sta 	NUM_B,x
-;	 		dex
-;	 		bpl 	NumCpyA2BL
-;	 		plx
-;	 		rts
-;
-;	;----------------------------------------------- NumCpyA2T
-;	NumCpyA2T 	; Copy NUM_A to TMP (8bytes) - preserves X,Y
-;	 		phx
-;	 		ldx 	#7
-;	NumCpyA2TL 	lda 	NUM_A,x
-;	 		sta 	NUM_TMP,x
-;	 		dex
-;	 		bpl 	NumCpyA2TL
-;	 		plx
-;	 		rts
-;
-;
-;	;----------------------------------------------- NumCpyB2A
-;	NumCpyB2A 	; Copy NUM_B to NUM_A (8bytes)  - preserves X,Y
-;	 		phx
-;	 		ldx 	#7
-;	NumCpyB2AL 	lda 	NUM_B,x
-;	 		sta 	NUM_A,x
-;	 		dex
-;	 		bpl 	NumCpyB2AL
-;	 		plx
-;	 		rts
-;
-;
-;	;----------------------------------------------- NumVal
-;	NumVal 		; VAL() Get numeric value (NUM_A) from String (STRBUF)
-;	 		jsr 	NumZeroA
-;	 		ldy 	#255
-;	NumValL 	iny
-;	 		lda 	NUM_BUF,Y 	; term null
-;	 		beq 	NumValX
-;	 		jsr 	IsDigit 	; messes with A
-;	 		BR_F(NumValX) 		; no more digits
-;	 		;-- ; NUM_A = NUM_A * 10 + .A
-;	 		jsr 	NumDigit
-;	NumValAX 	bra 	NumValL 	; next character
-;	NumValX 	ZCPY4(DBUGNUM,NUM_A) 	; just for me to see it !
-;	 		rts
-;
-;
-;	;----------------------------------------------- NumDigit
-;	NumDigit 	; NUM_A = NUM_A * 10 + .A
-;	 		jsr 	NumMT 		; A*=10
-;	 		and 	#$0F
-;	 		clc
-;	 		adc 	NUM_AA
-;	 		sta 	NUM_AA
-;	 		bcc 	NumDigitX
-;	 		inc 	NUM_AB
-;	 		bcc 	NumDigitX
-;	 		inc 	NUM_AC
-;	NumDigitX 	rts
-;
-;	;----------------------------------------------- NumMT
-;	;NumMT: ; NUM_A = NUM_A * 10 (24Bit) - preserves AXY, destroys NUM_TMP
-;	NumMT 		; NUM_A = NUM_A * 10 (48Bit) - preserves AXY, destroys NUM_B
-;	 		pha
-;	 		jsr 	NumCpyA2T 	; NUM_B <= NUM_A
-;	 		jsr 	NumSLA 		; NUM_A << 1       *2
-;	 		jsr 	NumSLA 		;  *4
-;	 		;-- NUM_A += NUM_TMP
-;	 		clc
-;	 		lda 	NUM_TMPA
-;	 		adc 	NUM_AA
-;	 		sta 	NUM_AA
-;	 		lda 	NUM_TMPB
-;	 		adc 	NUM_AB
-;	 		sta 	NUM_AB
-;	 		lda 	NUM_TMPC
-;	 		adc 	NUM_AC
-;	 		sta 	NUM_AC
-;	; 		lda 	NUM_TMPD
-;	; 		adc 	NUM_AD
-;	; 		sta 	NUM_AD
-;	; 		lda 	NUM_TMPE
-;	; 		adc 	NUM_AE
-;	; 		sta 	NUM_AE
-;	; 		lda 	NUM_TMPF
-;	; 		adc 	NUM_AF
-;	; 		sta 	NUM_AF
-;	 		;--
-;	 		jsr 	NumSLA
-;	 		pla
-;	 		rts
-;
-;	;----------------------------------------------- NumSLA
-;	NumSLA 		; NUM_A shift left by 1 (*2)
-;	 		asl 	NUM_AA
-;	 		rol 	NUM_AB
-;	 		rol 	NUM_AC
-;	 		rol 	NUM_AD
-;	; 		rol 	NUM_AE
-;	; 		rol 	NUM_AF
-;	 		rts
-;
-;	;----------------------------------------------- NumPlus
-;	NumPlus 	; NumB = NumB + NumA (Used in NumMH)
-;	 		clc
-;	 		lda 	NUM_BA
-;	 		adc 	NUM_AA
-;	 		sta 	NUM_BA
-;	 		lda 	NUM_BB
-;	 		adc 	NUM_AB
-;	 		sta 	NUM_BB
-;	 		lda 	NUM_BC
-;	 		adc 	NUM_AC
-;	 		sta 	NUM_BC
-;	; 		lda 	NUM_BD
-;	; 		adc 	NUM_AD
-;	; 		sta 	NUM_BD
-;	; 		lda 	NUM_BE
-;	; 		adc 	NUM_AE
-;	; 		sta 	NUM_BE
-;	; 		lda 	NUM_BF
-;	; 		adc 	NUM_AF
-;	; 		sta 	NUM_BF
-;	 		rts
-;
-;	 		;-- ;----------------------------------------------- NumMH
-;	 		;-- NumMH 		; NUM_A = NUM_A * 100 (24bit) - preserves AXY, destroys NUM_TMP
-;	; 		pha
-;	; 		jsr 	NumCpyA2B 	; B=n
-;	; 		jsr 	NumSLA 		; A=2n
-;	; 		jsr 	NumSLA 		; A=4n
-;	; 		jsr 	NumSLA 		; A=8n
-;	; 		jsr 	NumPlus 	; B=9n
-;	; 		jsr 	NumSLA 		; A=16n
-;	; 		jsr 	NumAddMan 	; A+=B = 16n+9n = 25n
-;	; 		jsr 	NumSLA 		; A=50n
-;	; 		jsr 	NumSLA 		; A=100n
-;	; 		pla
-;	; 		rts
-;
-;
-;
-;	 		;-- ;----------------------------------------------- NumSaveFP_AX
-;	 		;-- NumSaveFP_AX 	; Pack & save at address AX
-;	; 		sta 	ZPtr
-;	; 		stx 	ZPtr+1
-;	; 		phy
-;	; 		ldy 	#0
-;	; 		bra 	NumSaveFP1
-;	;----------------------------------------------- NumSaveFP
-;	;NumSaveFP 	; Pack and Save a FP number at Zpg[X],Y
-;	; 		;--
-;	; 		jsr 	PtrX 		; ZPtr = ZPg[X]
-;	; 		;--
-;	; 		phy
-;	;NumSaveFP1 	jsr 	NumPack 	; pack into 4 byte format
-;	; 		;--
-;	; 		lda 	NUM_AS
-;	; 		sta 	(ZPtr),y
-;	; 		iny
-;	; 		lda 	NUM_AA
-;	; 		sta 	(ZPtr),y
-;	; 		iny
-;	; 		lda 	NUM_AB
-;	; 		sta 	(ZPtr),y
-;	; 		iny
-;	; 		lda 	NUM_AC
-;	; 		sta 	(ZPtr),y
-;	; 		;--
-;	; 		ply
-;	; 		RTN_T()
-;
-;	;;----------------------------------------------- NumLoadFP_AX
-;	;NumLoadFP_AX 	; Load & unpack Fp number from address AX
-;	; 		phy
-;	; 		jsr 	PtrAXY
-;	; 		bra 	NumLoadFP1
-;	;;----------------------------------------------- NumLoaFP
-;	;NumLoadFP 	; Load a FP number from ZPg[X] at offset Y
-;	; 		jsr 	PtrX 		; ZPtr = ZPg[X]
-;	; 		phy
-;	;NumLoadFP1 	lda 	(ZPtr),y
-;	; 		sta 	NUM_AX
-;	; 		iny
-;	; 		lda 	(ZPtr),y
-;	; 		sta 	NUM_AA
-;	; 		iny
-;	; 		lda 	(ZPtr),y
-;	; 		sta 	NUM_AB
-;	; 		iny
-;	; 		lda 	(ZPtr),y
-;	; 		sta 	NUM_AC
-;	; 		jsr 	NumUnpack 	; unpack for internal use
-;	; 		ply
-;	; 		RTN_T()
-;
-;	;----------------------------------------------- NumSaveInt_AX
-;	NumSaveInt_AX 	; Convert to int and save at AX
-;	 		phy
-;	 		jsr 	PtrAXY
-;	 		bra 	NumSaveInt1
-;	;----------------------------------------------- NumSaveInt
-;	NumSaveInt 	; Convert to int (or error) and save at ZPg[X],Y
-;	 		jsr 	PtrX
-;	 		;--
-;	 		phy 			; store Y
-;	NumSaveInt1 	;-- S16
-;	 		jsr 	NumSign 	; get binary as 2's complement
-;	 		;--
-;	NumSaveInt2 	ply 			; restore Y
-;	 		;--
-;	 		lda 	NUM_AA
-;	 		sta 	(ZPtr),y
-;	 		iny
-;	 		lda 	NUM_AB
-;	 		sta 	(ZPtr),y
-;	 		dey
-;	 		rts
-;
-;	; TODO  Stop 'Convert to integer overflow error'
-;	NumSaveIntErr 	Stop(1)
-;
-;
-;	;----------------------------------------------- NumLoadInt
-;	NumLoadInt 	; Load Integer from ZPg[X],Y
-;	 		jsr 	PtrX 		; ZPtr = ZPg[X]
-;	 		phy
-;	 		iny
-;	 		lda 	(ZPtr),y 	; get hi
-;	 		tax
-;	 		dey
-;	 		lda 	(ZPtr),y 	; get lo
-;	 		;-- fall through to NumSet
-;	;----------------------------------------------- NumSet
-;	NumSet 		; Set NUM_A to integer value in AX (lo,Hi)
-;	 		sta 	NUM_AA
-;	 		stx 	NUM_AB
-;	 		lda 	#0
-;	 		sta 	NUM_AC
-;	 		;-- fall through to Unpack it
-;	;----------------------------------------------- NumUnpack
-;	NumUnpack 	; SX AA BB CC  =>  XX AA BB CC DD EE FF SS
-;	 		rts
-;
-;	;----------------------------------------------- NumPack
-;	NumPack 	; SX AA BB CC  <=  XX AA BB CC DD EE FF SS
-;	 		rts
-;
-;	;----------------------------------------------- NumSwap
-;	NumSwap 	; Swap NUM_A <-> NUM_B, flip sign based on NUM_SGN (00:+, 80:-)
-;	 		ldx 	#7
-;	NumSwapL 	ldy 	NUM_A,x
-;	 		lda 	NUM_B,x
-;	 		sta 	NUM_A,x
-;	 		sty 	NUM_B,x
-;	 		dex
-;	 		bpl 	NumSwapL
-;	 		;--
-;	 		lda 	NUM_SGN
-;	 		eor 	#$80
-;	 		sta 	NUM_SGN
-;
-;	; 		lda 	NUM_AS
-;	; 		eor 	NUM_SGN
-;	; 		sta 	NUM_AS
-;	; 		;--
-;	; 		lda 	NUM_BS
-;	; 		eor 	NUM_SGN
-;	; 		sta 	NUM_BS
-;	 		rts
+ 		PRINT("NUMB:")
+ 		HEX_SHORT(NUM_BS)
+ 		HEX_INT(NUM_BA)
+ 		jsr 	PrNL
+#endif
 
 .echo "  _Math\t\t"
 .echo $-_Math

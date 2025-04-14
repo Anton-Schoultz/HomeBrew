@@ -37,6 +37,13 @@
 ;  @		0
 ;  [\]^_	27,28,29,30,31
 
+; SGN,  A:Low, B:High, C:Upper
+#define FPS	0
+#define FPA	1
+#define FPB	2
+#define FPC	3
+#define FPD	4
+
 #if 1
 #include "Math_S16.a65"
 #else
