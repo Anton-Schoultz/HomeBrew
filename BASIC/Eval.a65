@@ -6,21 +6,23 @@
 ;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              Fetch number from the code -> NUM_A (unpacked)
 ;*  EvAdd                add
+;*  EvBr                 Bracketed expression
 ;*  EvDiv                Do Divide
-;*  EvFAry               retrieve array variable value -> NumA
-;*  EvFBr                Bracketed expression
+;*  EvFAry               TODO Retrieve array variable value -> NumA
 ;*  EvFVar               retrieve variable value -> NumA
+;*  EvFn                 Evaluate function  FN( BoolTerm )
 ;*  EvMod                Do Modulus
 ;*  EvMul                Do Multiply
-;*  EvNumeric            Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
+;*  EvNumeric            Evaluate numeric expression, return T if valid (and CHRGOT is next char)
 ;*  EvSub                subtract
-;*  EvVarLong            Get value of long name variable
+;*  EvVarLong            TODO Get value of long name variable
 ;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
 ;*  NotFactor            Boolean NOT
 ;*  Relation             Handle relation test < = > <= <> >=
 ;*  Term                 Factor [ '*'|'/'|'%' Factor]*
+;*m CHECK(ch)            Check that CHRGOT matches ch, (Don't move on)
 ;*m MATCH(ch)            Match a Specific Input Character and move on to next token
 ;*
 #ifdef hide
@@ -36,7 +38,7 @@
 _Ev 		= $
 
 ;----------------------------------------------- EvNumeric
-EvNumeric: ; Evaluate numeric expressioni, return T if valid (and CHRGOT is next char)
+EvNumeric: ; Evaluate numeric expression, return T if valid (and CHRGOT is next char)
  		jsr 	BoolTerm
  		RTN_IFF()
 EvNumL 		jsr 	IsOrOp
@@ -242,11 +244,61 @@ IsMulOpX 	rts
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar
 ; exits with next token in CHRGOT
  		lda 	CHRGOT
- 		CASE('(',EvFBr) 	; ( BoolTerm )
+; 		bmi	Function
+
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
  		CASE(T_NumLit,ENumLit) 	; Literal value
+ 		CASE('(',EvBr) 		; ( BoolTerm )
+
+ 		and 	#$7f
+ 		CASE(T_Sqr,Function)
+
  		RTN_F()
+
+Function
+ ;	PAUSE()
+ 		pha
+
+ 		jsr 	ChrRd 		; consume the '('
+ 		jsr 	BoolTerm
+ 		MATCH($29) 		; check for ')'
+
+ 		pla
+
+ 		CASE(T_Sqr,X_Sqr)
+
+ 		RTN_F()
+;----------------------------------------------- FABR
+EvBr: ; Bracketed expression
+ 		jsr 	ChrRd 		; consume the '('
+ 		jsr 	Expression 	; BoolTerm
+ 		MATCH($29) 		; check for ')'
+ 		RTN_T() 		; got a value
+
+;----------------------------------------------- EvFn
+EvFn: ; Evaluate function  FN( BoolTerm )
+ 		;-- save function
+ 		lda 	CHRGOT
+ 		pha 			; save function required
+ 		jsr 	ChrRd 		; consume the 'Fx' token
+ 		jsr 	BoolTerm
+ 		MATCH($29) 		; check for ')'
+ 		pla 			; recall function
+
+ 		PAUSE()
+
+ 		;-- jump to perform function based on the token
+ 		CASE('(',EvFnX) 	; '(' has no function required
+ 		;-- CASE(T_Sqr,X_Sqr)
+ 		;--
+ 		PRINTLN("Invalid function !")
+ 		RTN_F()
+
+EvFnX 		RTN_T() 		; got a value
+
+
+
 
 ;----------------------------------------------- ENumLit
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
@@ -259,36 +311,21 @@ ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ;----------------------------------------------- EvFVar
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
-; VARTAB has XX AABBCC format (packed)
+; VARNUM has XX AABBCC format (packed)
 ; .A is the index, math module multiplies for size as required
  		jsr 	ChrRd 		; get first letter of name
  		bpl 	EvVarLong 	; get value of long name variable
  		and 	#$1F 		; mask for index
- 		jsr 	NumGet 	; retrieve simple variable [A]
+ 		jsr 	NumGet 		; retrieve simple variable [A]
  		jsr 	ChrRd 		; get next token into CHRGOT
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- EvVarLong
-EvVarLong: ; Get value of long name variable
-; TODO
- 		jsr 	ChrRd 		; get next token into CHRGOT
- 		;--
- 		RTN_T() 		; got a value
-
-
+EvVarLong: ; TODO Get value of long name variable
+ 		ERROR(ERR_BADVAR) 	; invalid variable
 ;----------------------------------------------- EvFAry
-EvFAry: ; retrieve array variable value -> NumA
-; TODO
- 		jsr 	ChrRd 		; get next token into CHRGOT
- 		;--
- 		RTN_T() 		; got a value
-
-;----------------------------------------------- FaBr
-EvFBr: ; Bracketed expression
- 		jsr 	ChrRd 		; consume the '('
- 		jsr 	BoolTerm
- 		MATCH($29) 		; check for ')'
- 		RTN_T() 		; got a value
+EvFAry: ; TODO Retrieve array variable value -> NumA
+ 		ERROR(ERR_BADVAR) 	; invalid variable
 
 ;----------------------------------------------- Check
 Check: ; check for a given token in CHRGOT

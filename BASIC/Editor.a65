@@ -17,7 +17,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
-; $0400	VARTAB	32 x 4 for A-Z vars
+; $0400	VARNUM	32 x 4 for A-Z vars
 ;
 
 ;  Int(RAMBEG)	; Start of user ram area (set with cold start)	$0800

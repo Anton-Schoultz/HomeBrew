@@ -1,0 +1,39 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== Sqr==============
+;*  X_Sqr               Function Sqr
+;*
+_Sqr		= $
+
+;----------------------------------------------- X_Sqr
+X_Sqr: ; Function Sqr
+		jsr	NumPushA
+		jsr	NumPopB
+		jsr	NumMul
+		RTN_T()
+
+
+.echo "  _SQR(\t\t"
+.echo $-_Sqr
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Sqr		.DB 	"SQR",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Sqr		= LOW($)
+.DW 	X_Sqr
+.nolist
+;.export T_Sqr
+#endif
+
+.list	; end of Sqr

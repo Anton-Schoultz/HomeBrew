@@ -219,13 +219,13 @@ NumWrInt: ; write int number to memory via ChrWr
 
 ;----------------------------------------------- NumGet
 NumGet: ; retrieve simple variable [X] and unpack to internal form
- 		lda 	VARTAB,X
+ 		lda 	VARNUM,X
  		sta 	NUM_AX
- 		lda 	VARTAB+1,X
+ 		lda 	VARNUM+1,X
  		sta 	NUM_AA
- 		lda 	VARTAB+2,X
+ 		lda 	VARNUM+2,X
  		sta 	NUM_AB
- 		lda 	VARTAB+3,X
+ 		lda 	VARNUM+3,X
  		sta 	NUM_AC
  		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
  		rts

@@ -58,6 +58,9 @@ T_TO		= LOW($)+$80
 T_STEP		= LOW($)+$80
 .dw	X_Nop
 
+; token number at which functions will start
+_FNBEG = LOW($)+$80
+
 .nolist
 #endif
 .list

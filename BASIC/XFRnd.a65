@@ -1,0 +1,37 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== Rnd==============
+;*  X_Rnd               Function Rnd
+;*
+_Rnd		= $
+
+;----------------------------------------------- X_Rnd
+X_Rnd: ; Function Rnd
+		jsr	NumRnd
+		rts
+
+
+.echo "  _RND(\t\t"
+.echo $-_Rnd
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Rnd		.DB 	"RND",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Rnd		= LOW($)
+.DW 	X_Rnd
+.nolist
+;.export T_Rnd
+#endif
+
+.list	; end of Rnd

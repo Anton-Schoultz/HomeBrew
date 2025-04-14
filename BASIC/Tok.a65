@@ -2,6 +2,7 @@
 ;*  IsAlpha              returns T/F if .A is a Alpha A-Z
 ;*  IsAlphaNumeric       returns true if .A is 0-9,A-Z
 ;*  IsDigit              returns T/F if .A is a digit 0..9
+;*  IsFunction           Return T/F if CHRGOT is a function and token in A
 ;*  IsNumValue           return T if token is a numeric value
 ;*  IsRelOpChr           returns T/F if CHRGOT is a relational opperator <>=
 ;*  IsStrValue           return T if token is a string value
@@ -213,13 +214,26 @@ IsDigit: ; returns T/F if .A is a digit 0..9
  		BR_AGE('9'+1,RtnFalse)
  		RTN_T()
 
- 		;-- ;----------------------------------------------- IsRelOpChr
+;----------------------------------------------- IsRelOpChr
 IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
  		lda 	CHRGOT
  		BR_AEQ('<',RtnTrue) 	; 3c
  		BR_AEQ('=',RtnTrue) 	; 3d
  		BR_AEQ('>',RtnTrue) 	; 3e
  		RTN_F()
+
+;----------------------------------------------- IsFunction
+IsFunction: ; Return T/F if CHRGOT is a function and token in A
+; () is also treated as a functionj
+ 		lda 	CHRGOT
+ 		BR_AEQ('(',IsFnTrue)
+ 		BR_AEQ(T_Sqr,IsFnTrue)
+
+ 		;cmp 	#_FNBEG
+ 		;bpl 	IsFnTrue
+ 		RTN_F()
+
+IsFnTrue 	RTN_T()
 
 ;----------------------------------------------- P_IsToken
 P_IsToken: ; Parse for a token, returns TOKNO or CHRGOT, returns found T/F

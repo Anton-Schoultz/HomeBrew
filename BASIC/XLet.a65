@@ -8,7 +8,7 @@
 ;*
 _Let 		= $
 
-; for now, simple vars are stored in VARTAB (fixed in memory)
+; for now, simple vars are stored in VARNUM (fixed in memory)
  		;-- 
 
 ;----------------------------------------------- X_Let 

@@ -34,7 +34,7 @@ X_Next1 	jsr 	ChrRd 		; get first char of variable name
  		beq 	X_Next2
  		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
 
-X_Next2 	; Retrieve step from VARTAB and unpack to internal form
+X_Next2 	; Retrieve step from VARNUM and unpack to internal form
  		lda 	#FOR_STP_X
  		jsr 	NumGet		; returns sign in A
  		sta 	NUM_SGN 	; save sign of step (up/down)

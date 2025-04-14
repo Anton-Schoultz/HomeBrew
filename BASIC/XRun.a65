@@ -23,6 +23,10 @@ RunInit: ; prepare to run by setting flags
  		lda 	#0
  		sta 	LN_FND
  		sta 	LN_FND+1
+ 		;-- random seed
+ 		lda	BASEND
+ 		ora	#1
+ 		sta	VARNUM		; low byte of var[0]=Seed
  		rts
 
 ;----------------------------------------------- RunCmd
