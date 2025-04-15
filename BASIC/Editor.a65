@@ -25,11 +25,11 @@
 ;  Int(BASBEG)	; Start of BASIC program
 ;  Int(BASEND)	; end of program, start of variables
 ;  Int(VAREND)	; end of variables
-;  Int(STREND)  ; end of string work area
+;  Int(STR_END)  ; end of string work area
 ;  Int(ARYBEG)  ; Start of array Space
 
 ; RAMBEG
-; BASBEG          BASEND      VAREND        STREND  ARYBEG  RAMEND
+; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
 ;-----------------------------------------------
@@ -60,7 +60,7 @@ EdtClear: ; Clear variables and arrays
  		jsr 	ChrWr
  		jsr 	ChrWr
  		ZCPY(VAREND,ZWr) 	; Set VAREND
- 		ZCPY(STREND,ZWr) 	; Set STREND
+ 		ZCPY(STR_END,ZWr) 	; Set STR_END
  		;-- clear arrays
  		ZCPY(ARYBEG,RAMEND)
  		ZDEC(ARYBEG) 		; top the last ram byte
@@ -131,38 +131,40 @@ EdtCpyL 	lda 	(ZSrc),y
  		bpl 	EdtCpyL
  		rts
 
-;	;----------------------------------------------- EdtDBug
-;	EdtDBug: ; debug editor values
-;			php
-;			pha
-;			phx
-;			phy
-;
-;			PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
-;			HEX_INT(ZSrc)
-;			HEX_INT(ZTgt)
-;			HEX_INT(ZCnt)
-;			HEX_INT(BASEND)
-;			HEX_INT(TOK_LEN)
-;			CRLF()
-;
-;			PRINTLN("NUM  ADR  NXT  LEN  FND")
-;			HEX_INT(LN_NUM)
-;			HEX_INT(LN_ADR)
-;			HEX_INT(LN_NXT)
-;			HEX_INT(LN_LEN)
-;			HEX_INT(LN_FND)
-;			CRLF()
-;
-;	 		;PAUSE()
-;
-;			ply
-;			plx
-;			pla
-;			plp
-;
-;	 		rts
+#if _DBUG
+;----------------------------------------------- EdtDBug
+EdtDBug: ; debug editor values
+		php
+		pha
+		phx
+		phy
 
+		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
+		HEX_INT(ZSrc)
+		HEX_INT(ZTgt)
+		HEX_INT(ZCnt)
+		HEX_INT(BASEND)
+		HEX_INT(TOK_LEN)
+		CRLF()
+
+		PRINTLN("NUM  ADR  NXT  LEN  FND")
+		HEX_INT(LN_NUM)
+		HEX_INT(LN_ADR)
+		HEX_INT(LN_NXT)
+		HEX_INT(LN_LEN)
+		HEX_INT(LN_FND)
+		CRLF()
+
+ 		;PAUSE()
+
+		ply
+		plx
+		pla
+		plp
+
+ 		rts
+
+#endif
 
 
 ;=================================================================== INS/DEL ==========

@@ -3,7 +3,7 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 
-_DBUG 		= 0
+_DBUG 		= 1
 
 ; .echo "ROM at $F000-$FFFF (4k)\r"
 .echo "ROM at $E000-$FFFF (8k)\r"
@@ -49,13 +49,18 @@ _DBUG 		= 0
 #include "Eval.a65" 			; Evaluator
 #include "Line.a65"
 
+
+Hi: .db T_StrLit,"Hello ",0
+Wo: .db T_StrLit,"World.",0
+
+
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
  		txs
  		cld 			; Binary mode
-; RAMBEG    BASBEG          BASEND      VAREND        STREND  ARYBEG  RAMEND
+; RAMBEG    BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
  		LDAX($800)
  		SETAX(RAMBEG)
@@ -77,6 +82,27 @@ Main: ;Warm Start entry point
  		sta	FOR_SP
  		sta	FOR_ADR		; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
+
+ 		PR_WR_IO()
+
+
+ 		jsr	StrInit
+ 		ZSET(ZRd,Hi)
+ 		jsr	StrLit
+
+ 		ZSET(ZRd,Wo)
+ 		jsr	StrLit
+ 		jsr	StrLower
+ 		jsr	StrAdd
+
+;	nop
+;	PAUSE()
+;	nop
+
+ 		jsr	StrOut
+
+ 		HALT()
+
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop

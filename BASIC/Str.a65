@@ -1,60 +1,68 @@
-;=================================================================== STR ============= 
+;=================================================================== STR =============
 ; String functions
 ;
 ;*  EvIsStr              Return EQ if the token in A is a string value
 ;*  EvString             Evuate a string expression -> STRBUF
-;*  PrStrBuf             Print STRBUF -> PutChr -> Mem/IO
-;*  StrAdd               Append string (ZStr) to STRBUF (Recall)
-;*  StrAddChr            Add character .A to STRBUF
-;*  StrAddNum            Append the converted numeric (in NUM_BUF) to STRBUF [AXY]
-;*  StrClr               Clear STRBUF
-;*  StrCpy               Copy STRBUF to memory at ZStr (Store)
-;*  StrEnd               Save index and exit
+;*  StrAdd               Append top two strings
+;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
 ;*  StrHead              Truncate STRBUF at Y
-;*  StrInit              Initialise string buffers
-;*  StrLit               Append literal to STRBUF [AX]
+;*  StrInit              Initialise string buffer
+;*  StrLit               Recall a string litteral
 ;*  StrLower             convert to LOWER case
 ;*  StrOut               Copy STRBUF to output (Print)
-;*  StrOvr               Overflow
+;*  StrOvr               Overflow - truncate
+;*  StrPush              Push temp string
+;*  StrSet               Copy String to the variable at (ZPtr)
 ;*  StrSubMT             Make string empty
 ;*  StrTail              Keep from Y onwards
 ;*  StrTrim              trim leading and trailing blanks
 ;*  StrUpper             convert to UPPER case
 ;*
-;
-; STRSZ			Size for STRBUF
-; Int(ZStr) 		ZStr points to string result
-; Short(ZStrLen)	Length of STRBUF used (write index)
-;
-;----------------------------------------------- String 
-; (Z) ->    LenL|LenH|Characters.....|00|
-; Int(STR_PTR) 	; pointer to string
-; Int(STREND) 	; end of string work area
-; Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
-
 #ifdef hide
 .NOLIST
 #endif
+
+; STRSZ			Size for STRBUF
+; Int(ZStr) 		ZStr points to string result
+; Short(ZStrLen)	Length of STRBUF used (write index)
+
+;----------------------------------------------- String
+; (Z) ->    LenL|LenH|Characters.....|00|
+; Int(STR_PTR) 	; pointer to string
+; Int(STR_END) 	; end of string work area
+; Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
+
+; RAMBEG
+; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
+;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
+
+; NUM_A has Sgn,Exp, A,B,C...
+
+; re-use NUM_A A,B to point to the top most string
+#define S_PTR_A NUM_AA
+; re-use NUM_A S,X as the length
+#define S_LEN_A NUM_AS
+
+; re-use NUM_B A,B to point to the operand string
+#define S_PTR_B NUM_BA
+; re-use NUM_B S,X as the length of opperand
+#define S_LEN_B NUM_BS
+
+
 _Str 		= $
 
-#define STRBUF $0280
-
-; re-use NUM_A space to point to the top most string
-#define ZStr NUM_AA
-; re-use the sign byta as the length (0-255)
-#define ZStrLen NUM_AS
- 		;-- Short(ZStrLen) 	; length of STRBUF used (write index)
+;#define STRBUF (ZStr)
 
 
 ;-----------------------------------------------
 EvString: ; Evuate a string expression -> STRBUF
 ; return T=OK, F otherwise
- 		jsr 	StrClr 		; clear the result
+; 		jsr 	StrClr 		; clear the result
 
  		;-- for now, just handle one item
 EvStrL 		jsr 	EvStrItem
  		RTN_IFF()
- 		;-- 
+ 		;--
  		lda 	CHRGOT
  		cmp 	#'+'
  		bne 	EvStrX
@@ -79,222 +87,298 @@ EvStrNxt 	;-- next token
  		bne 	EvStrL
  		rts
 
-;----------------------------------------------- StrLit 
-StrLit: ; Append literal to STRBUF [AX]
-; uses ChrRd to get next byte from source
-; CHRGOT will be T_StrLit
-; exits with CHRGOT=Null (terminator of string)
- 		ldx 	ZStrLen
-StrLitL 	jsr 	ChrRd
- 		sta 	STRBUF,X
- 		beq 	StrLitX 	; ending null
- 		;-- 
- 		inx
- 		cpx 	#STRSZ
- 		bne 	StrLitL 	; in size
- 		;-- overflow, so back up and null
- 		jmp 	StrOvr
- 		;-- fall through to save index
-StrLitX 	stx 	ZStrLen
- 		jsr 	ChrRd
- 		rts
-
-;----------------------------------------------- StrInit 
-StrInit: ; Initialise string buffers
- 		;-- point writing to STRBUF
- 		ZSET(ZWr,STRBUF)
- 		rts
-
-;----------------------------------------------- EvIsStr 
+;----------------------------------------------- EvIsStr
 EvIsStr: ; Return EQ if the token in A is a string value
  		BR_AEQ(T_StrLit,EvIsStrX)
  		;-- BR_AEQ(T_StrVar,EvIsStrX)
  		;-- BR_AEQ(T_StrAry,EvIsStrX)
 EvIsStrX 	rts
 
+;======================================================================================
 
-;----------------------------------------------- StrClr 
-StrClr: ; Clear STRBUF
+;----------------------------------------------- StrInit
+StrInit: ;Initialise string buffer
+ 		ZCPY(STR_END,VAREND) 	; point to open area
+ 		ZSET(STR_LEN,0) 	; set length as zero
+ 		rts
+
+;----------------------------------------------- StrPush
+StrPush: ;Push temp string
+ 		jsr 	NumPushA
+ 		;--
+ 		ZADD(STR_END,STR_LEN)
+ 		ZCPY(S_PTR_A,STR_END) 	; set pointer
+ 		ZSET(STR_LEN,0) 	; set length as zero
+ 		ZSET(S_LEN_A,0) 	; zero length
+ 		rts
+
+;----------------------------------------------- StrOvr
+StrOvr: ; Overflow - truncate
+ 		dey 			; back up to last char
+ 		lda 	#0 		; make it null
+ 		sta 	(S_PTR_A),Y
+StrEnd 		sty 	S_LEN_A
+ 		rts
+
+;----------------------------------------------- StrLit
+StrLit: ; Recall a string literal
+; CHRGOT is T_StrLit, ChrRd will get the first character
+ 		jsr 	StrPush 	; create a temp space
  		ldy 	#0
- 		tya
- 		sta 	ZStrLen
-StrClrL 	sta 	STRBUF,y
+ 		sty	S_LEN_A+1	; clear high
+StrLitL 	jsr 	ChrRd 		; read literal from code
+ 		sta 	(S_PTR_A),Y
+ 		beq 	StrLitX 	; ending null
  		iny
- 		cpy 	#STRSZ
- 		bne 	StrClrL
-StrRtn 		rts
-
-;----------------------------------------------- StrAddChr 
-StrAddChr: ; Add character .A to STRBUF
- 		ldx 	ZStrLen
- 		sta 	STRBUF,x
- 		inx
- 		lda 	#0
- 		sta 	STRBUF,x
- 		cpx 	#STRSZ
- 		bmi 	StrAddChrX
+ 		bne 	StrLitL 	; max out at 255
  		;-- overflow, so back up and null
- 		;-- jmp 	StrOvr
-StrAddChrX 	stx 	ZStrLen
+ 		jsr 	StrOvr
+ 		;-- fall through to save index
+StrLitX 	sty 	S_LEN_A
+		ZCPY(STR_LEN,S_LEN_A)
+ 		rts
+
+;----------------------------------------------- StrAddNum
+StrAddNum: ; Append the converted numeric (in NUM_BUF) to the string
+ 		jsr 	StrPush 	; create a temp space
+ 		ldy 	#0
+ 		sty	S_LEN_A+1	; clear high
+StrAddNumL 	lda 	NUM_BUF,Y
+ 		sta 	(S_PTR_A),y
+ 		beq 	StrAddNumX
+ 		iny
+ 		bne 	StrAddNumL
+ 		;-- overflow, so back up and null
+ 		jmp 	StrOvr
+ 		;-- fall through to save index
+StrAddNumX 	sty 	S_LEN_A
+		ZCPY(STR_LEN,S_LEN_A)
+ 		rts
+
+;----------------------------------------------- StrAdd
+StrAdd: ; Append top two strings
+; StrPush sets it up so that the second string is already in the right place
+; so just swap data and adjust initial length to add second's length
+ 		jsr 	NumPopB
+ 		jsr 	NumSwap
+; 		;-- point at the null of first
+; 		ZCPY(ZTgt,S_PTR_A)
+; 		ZADD(ZTgt,S_LEN_A)
+; 		;-- point to start of second
+; 		ZCPY(ZSrc,S_PTR_B)
+; 		;-- get length of second
+; 		ZCPY(ZCnt,S_LEN_B)
+; 		;-- copy characters
+; 		jsr	EdtDwn		; copy down
+; 		;
+ 		ZADD(S_LEN_A,S_LEN_B)	; adjust length of result
  		rts
 
 
-;----------------------------------------------- StrOut 
-StrOut: ; Copy STRBUF to output (Print)
+;----------------------------------------------- StrOut
+StrOut: ; Output the resulting string (cut at 255)
  		ldy 	#0
-StrOutL 	lda 	STRBUF,y
+StrOutL 	lda 	(S_PTR_A),y
  		pha
  		jsr 	PutChr 		; A -> mem/io
  		pla
  		beq 	StrOutX 	; null -> done
  		iny
- 		beq 	StrOutX 	; max of 256 -> done
- 		cpy 	#STRSZ 		; buf size?
  		bne 	StrOutL
- 		;-- end reached, force null
- 		lda 	#0
- 		sta 	(ZStr),y
 StrOutX 	rts
 
-;----------------------------------------------- PrStrBuf 
-PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
- 		LDAX(STRBUF)
- 		jmp 	PrStrAX
-
-;----------------------------------------------- StrCpy 
-StrCpy: ; Copy STRBUF to memory at ZStr (Store)
- 		ldy 	#0
-StrCpyL 	lda 	STRBUF,y
- 		sta 	(ZStr),y
- 		beq 	StrCpyX 	; null -> done
- 		iny
- 		beq 	StrCpyX 	; max of 256 -> done
- 		cpy 	#STRSZ 		; buf size?
- 		bne 	StrCpyL
- 		;-- end reached, force null
- 		lda 	#0
- 		sta 	(ZStr),y
-StrCpyX 	rts
-
-;----------------------------------------------- StrAddNum 
-StrAddNum: ; Append the converted numeric (in NUM_BUF) to STRBUF [AXY]
- 		ZSET(ZStr,NUM_BUF)
-
-;----------------------------------------------- StrAdd 
-StrAdd: ; Append string (ZStr) to STRBUF (Recall)
- 		ldy 	#0
- 		ldx 	ZStrLen
-StrAddL 	lda 	(ZStr),y
- 		sta 	STRBUF,X
- 		beq 	StrEnd 		; ending null
- 		;-- 
- 		iny
- 		inx
- 		cpx 	#STRSZ
- 		bne 	StrAddL 	; in size
-;----------------------------------------------- StrOvr 
-StrOvr: ; Overflow
- 		dex 			; back up to last char
- 		lda 	#0 		; make it null
- 		sta 	STRBUF,x
- 		;-- fall through to save index
-StrEnd: ; Save index and exit
- 		stx 	ZStrLen
- 		rts
-
-;----------------------------------------------- StrTail 
-StrTail: ; Keep from Y onwards
- 		;-- index is outof range so result is empty
- 		cpy 	#STRSZ
- 		bpl 	StrSubMT 	; could jmp to StrClr
- 		;-- index beyond end so result is empty
- 		cpy 	ZStrLen
- 		bpl 	StrSubMT 	; could jmp to StrClr
- 		;-- 
- 		ldx 	#0
-StrSubL 	lda 	STRBUF,y
- 		sta 	STRBUF,x
- 		beq 	StrEnd 		; save len & exit
- 		iny
- 		inx
- 		cpx 	#STRSZ
- 		bne 	StrSubL
- 		bra 	StrOvr 		; force stop at max
-
-;----------------------------------------------- StrSubMT 
-StrSubMT: ;Make string empty
- 		lda 	#0
- 		sta 	STRBUF
- 		sta 	ZStrLen
- 		rts
-
-;----------------------------------------------- StrHead 
-StrHead: ; Truncate STRBUF at Y
- 		;-- index is out of range - keep all
- 		cpy 	#STRSZ
- 		bpl 	StrHeadX 	; keep all
- 		;-- index beyond end - keep all
- 		cpy 	ZStrLen
- 		bpl 	StrHeadX 	; keep all
- 		;-- place the nul
- 		lda 	#0
- 		sta 	STRBUF,Y
- 		;-- save new index
- 		sty 	ZStrLen
-StrHeadX 	rts
-
-;----------------------------------------------- StrTrim 
-StrTrim: ; trim leading and trailing blanks
- 		ldy 	#$FF
- 		ldx 	#0
-StrTrim1 	iny
- 		lda 	STRBUF,Y
- 		beq 	StrTrimX 	; null -> done
- 		cmp 	#' '
- 		beq 	StrTrim1 	; blank -> loop
-StrTrim2 	sta 	STRBUF,X 	; save char
- 		iny
- 		inx
- 		lda 	STRBUF,Y
- 		bne 	StrTrim2 	; copy up to null
- 		sta 	STRBUF,X 	; write the null
- 		dex
-StrTrim3 	;-- now trim trailing ' '
- 		lda 	STRBUF,X
- 		cmp 	#' '
- 		bne 	StrTrimX 	; non-space -> exit
- 		lda 	#0 		; null the space
- 		sta 	STRBUF,x
- 		dex
- 		bne 	StrTrim3
-StrTrimX 	rts
-
-;----------------------------------------------- StrUpper 
+;----------------------------------------------- StrUpper
 StrUpper: ; convert to UPPER case
  		ldy 	#$FF
 StrUpper1 	iny
- 		lda 	STRBUF,Y
+ 		lda 	(S_PTR_A),Y
  		beq 	StrUpperX
  		BR_ALT('a',StrUpper1)
  		BR_AGE('{',StrUpper1)
  		and 	#$DF
- 		sta 	STRBUF,Y
+ 		sta 	(S_PTR_A),Y
  		bra 	StrUpper1
 StrUpperX 	rts
 
-
-;----------------------------------------------- StrLower 
+;----------------------------------------------- StrLower
 StrLower: ; convert to LOWER case
  		ldy 	#$FF
 StrLower1 	iny
- 		lda 	STRBUF,Y
+ 		lda 	(S_PTR_A),Y
  		beq 	StrUpperX
  		BR_ALT('A',StrLower1)
  		BR_AGE('[',StrLower1)
  		ora 	#$20
- 		sta 	STRBUF,Y
+ 		sta 	(S_PTR_A),Y
  		bra 	StrLower1
 StrLowerX 	rts
+
+
+;==
+
+#if _DBUG
+;----------------------------------------------- StrDBug
+StrDBug: ; debug editor values
+		php
+		pha
+		phx
+		phy
+
+		PRINTLN("PtrA LenA PtrB LenB")
+		HEX_INT(S_PTR_A)
+		HEX_INT(S_LEN_A)
+		HEX_INT(S_PTR_B)
+		HEX_INT(S_LEN_B)
+		CRLF()
+
+		PRINTLN("VEND SEND SLEN")
+		HEX_INT(VAREND)
+		HEX_INT(STR_END)
+		HEX_INT(STR_LEN)
+		CRLF()
+
+ 		PAUSE()
+
+		ply
+		plx
+		pla
+		plp
+
+ 		rts
+
+#endif
+
+;;----------------------------------------------- StrSet
+;StrSet: ; Copy String to the variable at (ZPtr)
+; 		ldy 	#0
+;StrSetL 	lda 	(ZStr),y
+; 		sta 	(ZPtr),y
+; 		beq 	StrSetX 	; null -> done
+; 		iny
+;
+; 		;-- need to check DIM size
+;
+; 		bne 	StrSetL
+; 		lda 	#0
+; 		sta 	(ZStr),y
+;StrSetX 	rts
+;
+
+ 		;-- ;----------------------------------------------- StrAdd
+ 		;-- StrAdd: ; Append string (ZStr) to STRBUF (Recall)
+; 		ldy 	#0
+; 		ldx 	ZStrLen
+ 		;-- StrAddL 	lda 	(ZStr),y
+; 		sta 	STRBUF,X
+; 		beq 	StrEnd 		; ending null
+; 		;--
+; 		iny
+; 		inx
+; 		cpx 	#STRSZ
+; 		bne 	StrAddL 	; in size
+
+
+ 		;-- ;----------------------------------------------- StrClr
+ 		;-- StrClr: ; Clear STRBUF
+; 		ldy 	#0
+; 		tya
+; 		sta 	ZStrLen
+ 		;-- StrClrL 	sta 	STRBUF,y
+; 		iny
+; 		cpy 	#STRSZ
+; 		bne 	StrClrL
+ 		;-- StrRtn 		rts
+
+ 		;-- ;----------------------------------------------- StrAddChr
+ 		;-- StrAddChr: ; Add character .A to STRBUF
+; 		ldx 	ZStrLen
+; 		sta 	STRBUF,x
+; 		inx
+; 		lda 	#0
+; 		sta 	STRBUF,x
+; 		cpx 	#STRSZ
+; 		bmi 	StrAddChrX
+; 		;-- overflow, so back up and null
+; 		;-- jmp 	StrOvr
+ 		;-- StrAddChrX 	stx 	ZStrLen
+; 		rts
+
+ 		;-- ;----------------------------------------------- PrStrBuf
+ 		;-- PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
+; 		LDAX(STRBUF)
+; 		jmp 	PrStrAX
+
+
+
+;;----------------------------------------------- StrTail
+;StrTail: ; Keep from Y onwards
+; 		;-- index is outof range so result is empty
+; 		cpy 	#STRSZ
+; 		bpl 	StrSubMT 	; could jmp to StrClr
+; 		;-- index beyond end so result is empty
+; 		cpy 	ZStrLen
+; 		bpl 	StrSubMT 	; could jmp to StrClr
+; 		;--
+; 		ldx 	#0
+;StrSubL 	lda 	STRBUF,y
+; 		sta 	STRBUF,x
+; 		beq 	StrEnd 		; save len & exit
+; 		iny
+; 		inx
+; 		cpx 	#STRSZ
+; 		bne 	StrSubL
+; 		bra 	StrOvr 		; force stop at max
+;
+;;----------------------------------------------- StrSubMT
+;StrSubMT: ;Make string empty
+; 		lda 	#0
+; 		sta 	STRBUF
+; 		sta 	ZStrLen
+; 		rts
+;
+;;----------------------------------------------- StrHead
+;StrHead: ; Truncate STRBUF at Y
+; 		;-- index is out of range - keep all
+; 		cpy 	#STRSZ
+; 		bpl 	StrHeadX 	; keep all
+; 		;-- index beyond end - keep all
+; 		cpy 	ZStrLen
+; 		bpl 	StrHeadX 	; keep all
+; 		;-- place the nul
+; 		lda 	#0
+; 		sta 	STRBUF,Y
+; 		;-- save new index
+; 		sty 	ZStrLen
+;StrHeadX 	rts
+;
+;;----------------------------------------------- StrTrim
+;StrTrim: ; trim leading and trailing blanks
+; 		ldy 	#$FF
+; 		ldx 	#0
+;StrTrim1 	iny
+; 		lda 	STRBUF,Y
+; 		beq 	StrTrimX 	; null -> done
+; 		cmp 	#' '
+; 		beq 	StrTrim1 	; blank -> loop
+;StrTrim2 	sta 	STRBUF,X 	; save char
+; 		iny
+; 		inx
+; 		lda 	STRBUF,Y
+; 		bne 	StrTrim2 	; copy up to null
+; 		sta 	STRBUF,X 	; write the null
+; 		dex
+;StrTrim3 	;-- now trim trailing ' '
+; 		lda 	STRBUF,X
+; 		cmp 	#' '
+; 		bne 	StrTrimX 	; non-space -> exit
+; 		lda 	#0 		; null the space
+; 		sta 	STRBUF,x
+; 		dex
+; 		bne 	StrTrim3
+;StrTrimX 	rts
+;
+;
+;
 
 
 

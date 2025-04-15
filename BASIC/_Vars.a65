@@ -102,7 +102,7 @@ Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 ;----------------------------------------------- String
 ; (Z) ->    LenL|LenH|Characters.....|00|
 Int(STR_PTR) 	; pointer to string
-Int(STREND) 	; end of string work area
+Int(STR_END) 	; end of string work area
 Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 
 
