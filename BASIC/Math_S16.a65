@@ -651,6 +651,25 @@ NumPreSet 	sta 	FPA,X
  		plx
  		rts
 
+; This version has bad distribution
+; ;----------------------------------------------- NumRnd
+; NumRnd: ; Random number 0-32767  (kept in var[0])
+;  		lda 	#0
+;  		jsr 	NumGet
+;  		ldy 	#16
+;  		lda 	NUM_AA
+; NumRnd0 	asl 	a
+;  		rol 	NUM_AB
+;  		bcc 	NumRnd1
+;  		eor 	#$39
+; NumRnd1 	dey
+;  		bne 	NumRnd0
+;  		sta 	NUM_AA
+;  		;-- store back in vartable
+;  		lda 	#0
+;  		jsr 	NumSet
+;  		rts
+
 
 ;----------------------------------------------- NumRnd
 NumRnd: ; Random number 0-32767  (kept in var[0])
