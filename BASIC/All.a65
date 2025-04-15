@@ -22,3 +22,5 @@
 ;- Functions
 #include "XFRnd.a65"
 #include "XFSqr.a65"
+#include "XFAbs.a65"
+#include "XFSgn.a65"

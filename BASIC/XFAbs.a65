@@ -1,0 +1,39 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== ABS =============
+;*  X_Abs               Function Abs
+;*
+_Abs		= $
+
+;----------------------------------------------- X_Abs
+X_Abs: ; Function Abs
+; num should already have sign extracted, so just make it positive
+		lda 	#0
+		sta	NUM_AS
+		rts
+
+
+.echo "  _ABS(\t\t"
+.echo $-_Abs
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Abs		.DB 	"ABS",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Abs		= LOW($)+$80
+.DW 	X_Abs
+.nolist
+;.export T_Abs
+#endif
+
+.list	; end of Abs

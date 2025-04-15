@@ -16,10 +16,6 @@ X_Rnd: ; Function Rnd
 		jsr	NumMod		; rand % v
 		rts
 
-		jsr	NumRnd
-		rts
-
-
 .echo "  _RND(\t\t"
 .echo $-_Rnd
 .echo "\n"
