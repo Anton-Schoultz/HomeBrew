@@ -92,6 +92,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumDBug              Debug values
 ;*  NumDH                NUM_A = NUM_A / 100  remainder in A
 ;*  NumDiv               NumA = NumB / NumA
+;*  NumDivZero           divide by zero error
 ;*  NumFalse             Place FALSE in NUM_A
 ;*  NumFlag              set flags bassed on unpacked result
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
@@ -109,10 +110,11 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ;*  NumPrint             Convert number to string & output (via PutChr mem/io)
 ;*  NumPushA             Push Num_A onto calculator stack
 ;*  NumRd                Read from memory (ChrRd) & unpack
-;*  NumRnd               Random number (kept in var[0])
+;*  NumRnd               Random number 0-32767  (kept in var[0])
 ;*  NumSet               Pack and Store simple VARNUM[A]..
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
+;*  NumSwap              Swap NUM_A <-> NUM_B
 ;*  NumToInt             Return integer value in AX (lo,hi) - sets NUM_FLG
 ;*  NumTrue              Place TRUE in NUM_A
 ;*  NumUnSign            Move sign from mantissa to SGN byte (for Mul/Div)
@@ -151,18 +153,17 @@ NumGet: ; Retrieve simple variable VARNUM[A].. and unpack to internal form
 ; .A is the index, math module multiplies for size as required
 ; returns with sign byte in A
  		MATHOFF()
- 		;-- clearthe sign (+ve)
+ 		;-- clear the sign (+ve)
  		lda 	#0
  		sta 	NUM_AS
  		;-- 
  		lda 	VARNUM,X
  		sta 	NUM_AA
  		;-- 
- 		inx
- 		lda 	VARNUM,X
+ 		lda 	VARNUM+1,X
  		sta 	NUM_AB
  		;-- 
- 		jsr 	NumUnpack 	; pad with zero, extract SGN & 2s exp
+ 		jsr 	NumUnpack 	; pad NUMA with zero, extract SGN & 2s exp
  		lda 	NUM_AS 		; 0:+ve
  		rts
 
@@ -218,7 +219,6 @@ NumSign: ; Move sign from SGN to mantissa (for Add/Sub)
  		lda 	#0
  		sta 	FPS,X 		; clear sign byte
  		bra 	NumNegX 	; complement mantissa
-
 
 ;----------------------------------------------- NumUnSign 
 NumUnSign: ; Move sign from mantissa to SGN byte (for Mul/Div)
@@ -289,6 +289,7 @@ NumParse: ;  Parse a number from source into NUM_A
 
 ;----------------------------------------------- NumCvt 
 NumCvt: ; Convert NUM_A to digits in NUM_BUF
+; NUM should be in unpacked form (with sign extracted)
 ; $3412 => 13330 in 1514 cycles   (5055 bytes)
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
@@ -570,15 +571,21 @@ NumMod: ; NumA = NumB % NumA
  		sta 	NUM_AA
  		lda 	NUM_TMPB
  		sta 	NUM_AB
- 		lda 	NUM_TMPS
- 		sta 	NUM_AS
  		RTN_T()
+
+;----------------------------------------------- NumDivZero 
+NumDivZero: ; divide by zero error
+ 		ERROR(ERR_DIV0)
 
 ;----------------------------------------------- NumDiv 
 NumDiv: ; NumA = NumB / NumA
  		jsr 	NumPreMD 	; pull signs out (make both pos)
  		;-- place divisor in NUM_DIV
  		ZCPY4(NUM_DIV,NUM_A)
+ 		;-- check divide by zero
+ 		lda 	NUM_DIV
+ 		ora 	NUM_DIV+1
+ 		beq 	NumDivZero
  		;-- zero result (6 bytes)
  		jsr 	NumZeroA
  		;-- zero TMP
@@ -732,22 +739,53 @@ NumPopB: ; Pop Num_B from the calculator stack
  		;-- 
  		rts
 
+;----------------------------------------------- NumSwap 
+NumSwap: ; Swap NUM_A <-> NUM_B
+ 		ldx 	#NUMSZ
+NumSwapL 	lda 	NUM_A,X
+ 		tay
+ 		lda 	NUM_B,X
+ 		sta 	NUM_A,X
+ 		tya
+ 		sta 	NUM_B,X
+ 		dex
+ 		bpl 	NumSwapL
+ 		rts
+
 ;----------------------------------------------- NumRnd 
-NumRnd: ; Random number (kept in var[0])
+NumRnd: ; Random number 0-32767  (kept in var[0])
+; for 16 bit version randomise in memory, then fetch it
+; https://codebase64.org/doku.php?id=base:small_fast_16-bit_prng
+; 2048 'magic' numbers, I'm using $ca65
+#define rand VARNUM
+#define RANDH $ca
+#define RANDL $65
+ 		;-- random sequence in rand,rand+1 = VAR[0}
+ 		lda 	rand
+ 		beq 	NumRnd1
+ 		asl 	rand
+ 		lda 	rand+1
+ 		rol 	a
+ 		bcc 	NumRnd2
+NumRnd0 	eor 	#RANDH
+ 		sta 	rand+1
+ 		lda 	rand
+ 		eor 	#RANDL
+ 		sta 	rand
+ 		bra 	NumRndX
+NumRnd1 	lda 	rand+1
+ 		beq 	NumRnd0
+ 		asl 	a
+ 		beq 	NumRnd2
+ 		bcs 	NumRnd0
+NumRnd2 	sta 	rand+1
+ 		;-- ora	rand 		; exclude zero
+ 		;-- beq	NumRnd
+NumRndX 	;-- get as a number
  		lda 	#0
  		jsr 	NumGet
- 		ldy 	#8
- 		lda 	NUM_AA
-NumRnd0 	asl 	a
- 		rol 	NUM_AB
- 		bcc 	NumRnd1
- 		eor 	#$39
-NumRnd1 	dey
- 		bne 	NumRnd0
- 		sta 	NUM_AA
- 		;-- store back in vartable
- 		lda 	#0
- 		jsr 	NumSet
+ 		lda 	NUM_AS
+ 		bmi 	NumRnd
  		rts
 
 

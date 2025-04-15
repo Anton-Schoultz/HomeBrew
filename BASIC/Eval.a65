@@ -253,6 +253,7 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar
  		PRINTLN("Invalid factor")
  		HALT()
 Function	;-- process a function
+		lda 	CHRGOT
  		pha
  		jsr 	ChrRd 		; consume T_fn
  		jsr 	BoolTerm

@@ -9,6 +9,13 @@ _Rnd		= $
 
 ;----------------------------------------------- X_Rnd
 X_Rnd: ; Function Rnd
+		jsr	NumPushA	; value passed to rnd( v )
+		jsr	NumRnd		; rnd -> NUM_A
+		jsr	NumPopB		; v -> NUM_B
+		jsr	NumSwap		; NUM_A <=> NUM_B
+		jsr	NumMod		; rand % v
+		rts
+
 		jsr	NumRnd
 		rts
 

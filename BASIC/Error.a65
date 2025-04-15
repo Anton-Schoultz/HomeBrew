@@ -24,9 +24,6 @@ Error: ; Hanlde error[X] resetting to warm start
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
-
- 		HALT()
-
  		jmp 	Main
 
 ; @	A as character
@@ -132,6 +129,7 @@ MsgDec 		jmp 	PrADec3
 #define ERR_FOR 	8
 #define ERR_VAR 	10
 #define ERR_BADVAR 	12
+#define ERR_DIV0 	14
 
 
 ErrTbl
@@ -142,6 +140,7 @@ ErrTbl
 .DB "FOR/NEXT",DOT 			; 8=ERR_FOR
 .DB "Expected variable",DOT 		;10=ERR_VAR
 .DB "Invalid variable",DOT 		;12=ERR_BADVAR
+.DB "Divide by zero",DOT 		;14=ERR_DIV0
 
 .DB 0
 
