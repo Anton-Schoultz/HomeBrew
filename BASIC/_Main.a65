@@ -50,9 +50,6 @@ _DBUG 		= 1
 #include "Line.a65"
 
 
-Hi: .db T_StrLit,"Hello ",0
-Big .db T_StrLit,"BiG ",0
-Wo: .db T_StrLit,"World.",0
 
 
 ;----------------------------------------------- Reset
@@ -86,30 +83,10 @@ Main: ;Warm Start entry point
 
  		PR_WR_IO()
 
-
- 		jsr	StrInit
-
- 		ZSET(ZRd,Hi)
- 		jsr	StrLit
-
- 		ZSET(ZRd,Big)
- 		jsr	StrLit
- 		jsr	StrUpper
-
- 		ZSET(ZRd,Wo)
- 		jsr	StrLit
- 		jsr	StrLower
-
- 		jsr	StrAdd
- 		jsr	StrAdd
-
-;	nop
-;	PAUSE()
-;	nop
-
- 		jsr	StrOut
-
+#if _DBUG
+		jsr	StrTest
  		HALT()
+#endif
 
 
 ;----------------------------------------------- MainLoop
