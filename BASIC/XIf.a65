@@ -12,12 +12,9 @@ X_If: ; IF <expression> THEN <Statment>
  		jsr 	ChrRd 		; consume token
  		;-- evaluate expression
  		jsr 	EvNumeric 	; AX lo/hi
-
 		jsr	NumFlag		; Eq=>False
  		bne 	IfTrue
-
  		rts 			; false return to do next line
-
 IfTrue 		;-- result is true
  		CHECK(T_THEN)
  		;-- will ChrRd to get first token of statement

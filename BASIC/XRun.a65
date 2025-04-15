@@ -1,7 +1,7 @@
+.list
 #ifdef hide
 .NOLIST
 #endif
-
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== RUN ==============
 ;*  RunCmd               Run Cmd from TOKBUF

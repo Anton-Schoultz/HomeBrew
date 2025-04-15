@@ -2,14 +2,14 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== FOR ==============
+;=================================================================== FOR ============== 
 ;*  ForDump              Debug For values
 ;*  ForPop               Pop for info from stack to inner vars
 ;*  ForPush              Push FOR structure onto the stack
 ;*  X_For                FOR <var>=<expr> TO <expr> [STEP <expr>]
 ;*
 _For 		= $
-;----------------------------------------------- For/Next
+;----------------------------------------------- For/Next 
 ; FOR values are stored immediately after the A-Z, so access with index 27,28
 ; #define FOR_STP_X 27
 ; #define FOR_LIM_X 28
@@ -21,15 +21,15 @@ _For 		= $
 ;  		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 ; Var(FORSTK,8*FORDEEP)
 
-;----------------------------------------------- X_For
+;----------------------------------------------- X_For 
 X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		;-- Push
  		jsr 	ForPush
  		;-- handle assignment
  		jsr 	ChrRd 		; consume token
  		jsr 	X_LetDo 	; returns index in X
-		; store var index
-		lda	VARID
+ 		;-- store var index
+ 		LDA 	VARID
  		sta 	FOR_NDX 	; save index
  		;-- save return address
  		ZCPY(FOR_ADR,LN_NXT)
@@ -38,24 +38,24 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		jsr 	Match 		; check for and skip over 'TO'
  		;-- limit
  		jsr 	EvNumeric
- 		jsr	NumToInt	; num as AX l/h
- 		sta	FOR_LIM
- 		stx	FOR_LIM+1
+ 		JSR 	NumToInt 	; num as AX l/h
+ 		STA 	FOR_LIM
+ 		STX 	FOR_LIM+1
  		;-- STEP?
  		ZSET(FOR_STP,1) 	; default step is 1
  		lda 	CHRGOT
- 		beq	X_ForX		; STEP ommitted -> done
+ 		BEQ 	X_ForX 		; STEP ommitted -> done
  		;-- evaluate step size & save it
- 		lda 	#T_STEP		; STEP
+ 		lda 	#T_STEP 	; STEP
  		jsr 	Match 		; check for and skip over 'TO'
  		jsr 	EvNumeric
- 		jsr	NumToInt	; num as AX l/h
- 		sta	FOR_STP
- 		stx	FOR_STP+1
+ 		JSR 	NumToInt 	; num as AX l/h
+ 		STA 	FOR_STP
+ 		STX 	FOR_STP+1
 X_ForX
-		rts
+ 		rts
 
-;----------------------------------------------- ForPush
+;----------------------------------------------- ForPush 
 ForPush: ; Push FOR structure onto the stack
  		lda 	FOR_SP
  		asl 	a
@@ -68,7 +68,7 @@ ForPushL 	lda 	FOR_DATA,X
  		sta 	FORSTK,y
  		iny
  		inx
- 		CPX 	#FORSZ
+ 		cpx 	#FORSZ
  		bne 	ForPushL
  		;-- update stack pointer
  		lda 	FOR_SP
@@ -78,16 +78,16 @@ ForPushL 	lda 	FOR_DATA,X
  		sta 	FOR_SP
  		rts
 
-;----------------------------------------------- ForOvr
+;----------------------------------------------- ForOvr 
 ForErr 		ERROR(ERR_FOR)
 
-;----------------------------------------------- ForPop
+;----------------------------------------------- ForPop 
 ForPop: ; Pop for info from stack to inner vars
  		;-- decr for stack pointer
- 		LDA 	FOR_SP
- 		DEC 	a
- 		BMI 	ForErr 		; stack underflow
- 		STA 	FOR_SP
+ 		lda 	FOR_SP
+ 		dec 	a
+ 		bmi 	ForErr 		; stack underflow
+ 		sta 	FOR_SP
  		;-- calc offset in stack
  		asl 	a
  		asl 	a
@@ -99,12 +99,12 @@ ForPopL 	lda 	FORSTK,y
  		sta 	FOR_DATA,x
  		iny
  		inx
- 		CPX 	#FORSZ
+ 		cpx 	#FORSZ
  		bne 	ForPopL
  		rts
 
 #if _DBUG
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 ForDump: ; Debug For values
  		PUSHALL()
  		jsr 	PrNL
@@ -116,7 +116,7 @@ ForDump: ; Debug For values
  		HEX_SHORT(FOR_SP)
  		jsr 	PrNL
  		PULLALL()
-		PAUSE()
+ 		PAUSE()
  		rts
 #endif
 
@@ -127,13 +127,13 @@ ForDump: ; Debug For values
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_For 		.DB 	"FO",'R'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_For 		= LOW($)+$80

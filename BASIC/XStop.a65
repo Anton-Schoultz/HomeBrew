@@ -2,12 +2,9 @@
 #ifdef hide
 .NOLIST
 #endif
-
-; main code space
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-
-;=================================================================== Stop ============
-;*  X_Stop              code to execute Stop (Error 0=OK)
+;=================================================================== STOP ============
+;*  X_Stop               Code to execute Stop (Error 0=OK)
 ;*
 
 _Stop 		= $
@@ -32,16 +29,16 @@ X_Stop: ; Code to execute Stop (Error 0=OK)
 #if ($/256) = PG_KEY
 
 .list
-W_Stop 	.DB 	"STO",'P'+$80
+W_Stop 		.DB 	"STO",'P'+$80
 .nolist
 #endif
 
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
-T_Stop 	= LOW($)+$80
+T_Stop 		= LOW($)+$80
 .DW 	X_Stop
 .nolist
  		;-- .export T_Stop
 #endif
-.list	; end of Stop
+.list 					; end of Stop

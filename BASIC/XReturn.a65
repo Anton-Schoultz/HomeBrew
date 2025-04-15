@@ -2,14 +2,13 @@
 #ifdef hide
 .NOLIST
 #endif
-
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== RETURN =========== 
+;=================================================================== RETURN ===========
 ;*  X_Return             code to execute the Return
 ;*
 _Return 	= $
 
-;----------------------------------------------- X_Return 
+;----------------------------------------------- X_Return
 X_Return: ; code to execute the Return
  		jsr 	ChrRd 		; consume token
  		;-- pop return
@@ -31,13 +30,13 @@ RtnOver 	ERROR(ERR_GOSUB)
 #endif
 
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Return 	= LOW($)+$80
