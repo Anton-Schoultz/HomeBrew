@@ -51,6 +51,7 @@ _DBUG 		= 1
 
 
 Hi: .db T_StrLit,"Hello ",0
+Big .db T_StrLit,"BiG ",0
 Wo: .db T_StrLit,"World.",0
 
 
@@ -87,12 +88,19 @@ Main: ;Warm Start entry point
 
 
  		jsr	StrInit
+
  		ZSET(ZRd,Hi)
  		jsr	StrLit
+
+ 		ZSET(ZRd,Big)
+ 		jsr	StrLit
+ 		jsr	StrUpper
 
  		ZSET(ZRd,Wo)
  		jsr	StrLit
  		jsr	StrLower
+
+ 		jsr	StrAdd
  		jsr	StrAdd
 
 ;	nop
