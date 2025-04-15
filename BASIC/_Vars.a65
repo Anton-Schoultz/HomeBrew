@@ -52,12 +52,10 @@ Int(ZDBug) 	; debug usage
 
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
-Int(ZStr) 	; ZStr points to string result
 
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
-Short(ZStrLen) 	; length of STRBUF used (write index)
 Short(ZRegA) 	; Save register A (used in Msg)
 Short(ZRegX) 	; Save register X (used in Msg)
 Short(ZRegY) 	; Save register Y (used in Msg)
@@ -79,7 +77,6 @@ Int(RAMEND) 	; End of user ram area (set at cold start)
 Int(BASBEG) 	; Start of BASIC program
 Int(BASEND) 	; end of program, start of variables
 Int(VAREND) 	; end of variables
-Int(STREND) 	; end of string work area
 Int(ARYBEG) 	; Start of array Space
 
 Short(RTNSP) 	; Gosub/Return stack pointer	RTNSZ x2
@@ -90,13 +87,23 @@ Int(Z_IrqPtr) 	; used in IRQ code
 
 ;----------------------------------------------- Numeric common vars
 Int(TMP) 	; Temp 16 bit value (line nos)
+; NUMUSZ = size of numeric value once 'unpacked' for calcualtions
+Var(NUM_A,NUMUSZ) ; Number parsed / Primary accumulator
+Var(NUM_TMP,NUMUSZ) ; Temp number
+Var(NUM_B,NUMUSZ) ; Secondary accumulator
+Var(NUM_DIV,NUMUSZ) ; Scratch divisor
 
 Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
-
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
+
 Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 
+;----------------------------------------------- String
+; (Z) ->    LenL|LenH|Characters.....|00|
+Int(STR_PTR) 	; pointer to string
+Int(STREND) 	; end of string work area
+Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 
 
 #include "Math.a65" 			; Math module ZeroPage
@@ -117,8 +124,6 @@ Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 ;----------------------------------------------- Basic Editing
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
-;----------------------------------------------- String
-Var(STRBUF,STRSZ) ; buffer for strings
 
 .echo "  _Buffers\t"
 .echo $-$200
@@ -140,9 +145,8 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
 
-;-- String Vars
-
-
+;----------------------------------------------- String Vars A-Z, max length
+Var(VARSTR,27*3) ; Len, Plo,Phi
 
 ;----------------------------------------------- Numeric Vars 27 x NUMSZ
 ; Vars stored as sequence of bytes, [Exp] Low...Hi
@@ -162,11 +166,11 @@ Short(FOR_NDX) 	; Loop variable number (1-26)
 Var(FORSTK,8*FORDEEP)
 
 
-.echo "High Var space ($400) 1024-"
-.echo $
-.echo " ("
+.echo "  SysRAM ($400)\t"
 .echo $-$400
-.echo " bytes)\r\n"
+.echo "\t1024-"
+.echo $
+.echo "\n"
 
 .export FOR_DATA, VARNUM
 

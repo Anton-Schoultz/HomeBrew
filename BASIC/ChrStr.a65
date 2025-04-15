@@ -175,8 +175,6 @@ ChrInitL 	lda 	ChrRd_,X
  		bne 	ChrInitL
  		;-- reset control flags
  		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
- 		;-- point writing to STRBUF
- 		ZSET(ZWr,STRBUF)
  		rts
 
 
@@ -289,9 +287,6 @@ ToUpper 	cmp 	#'a'
  		eor 	#$20
 ToUpperX 	rts
 
-;----------------------------------------------- PrStrBuf
-PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
- 		LDAX(STRBUF)
 ;----------------------------------------------- PrStrAX
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)

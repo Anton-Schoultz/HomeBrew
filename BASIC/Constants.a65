@@ -5,6 +5,9 @@ SCRN_LINES = 16
 ; size of a numeric format in internal for - S16 is 2 bytes
 #define NUMSZ 2
 
+; size of numeric value once 'unpacked' for calcualtions
+#define NUMUSZ 5
+
 
 ; BUFSZ() Size for INBUF,TOKBUF
 #define BUFSZ() 64
