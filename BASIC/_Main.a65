@@ -29,10 +29,6 @@ _DBUG 		= 1
 .LIST
 ;----------------------------------------------- START OF ROM
 ; 		START OF ROM
-#if _DBUG
-; 		jsr 	LnComp_Test
-#endif
-
  		jmp 	Reset
 
 .db DATE
@@ -84,7 +80,11 @@ Main: ;Warm Start entry point
  		PR_WR_IO()
 
 #if _DBUG
-		jsr	StrTest
+		ZSET(ZCnt,100)
+		jsr 	EdtFresh
+
+		;jsr	StrTest
+
  		HALT()
 #endif
 

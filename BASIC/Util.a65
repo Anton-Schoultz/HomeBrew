@@ -236,20 +236,20 @@ _Print_: ;Print in-line string
  		pla
  		plx
  		;-- set up to print from there (ZPtr)
- 		SETAX(ZPtr) 		; [0] is part of call [1] is data
+ 		SETAX(ZDPtr) 		; [0] is part of call [1] is data
  		ldy 	#0
 _Print_L 	iny 			; next char
- 		lda 	(ZPtr),y
+ 		lda 	(ZDPtr),y
  		beq 	_Print_X 	; zero -> exit
  		bmi 	_Print_HX
  		jsr 	PutChr 		; print character
  		bra 	_Print_L 	; loop back (no more than 255 chars)
 _Print_HX 	; print hex data
  		iny
- 		lda 	(ZPtr),y 	; lo
+ 		lda 	(ZDPtr),y 	; lo
  		sta 	ZDBug
  		iny
- 		lda 	(ZPtr),y 	; lo
+ 		lda 	(ZDPtr),y 	; lo
  		sta 	ZDBug+1
  		iny
  		phy
@@ -272,11 +272,12 @@ _Print_HX 	; print hex data
  		;-- Calculate the return address
 _Print_X 	tya 			; y is offset to the null
  		sec 			; adjust one more
- 		adc 	ZPtr 		; + Len
- 		sta 	ZPtr 		; -> lo
- 		bcc 	_PrintFPX 	; carry?
- 		inc 	ZPtr+1 		; yes, incr hi
-_PrintFPX 	jmp 	(ZPtr) 		; jump to code after the in-line string
+ 		adc 	ZDPtr 		; + Len
+ 		sta 	ZDPtr 		; -> lo
+ 		lda 	#0
+ 		adc	ZDPtr+1
+ 		sta 	ZDPtr+1
+_PrintFPX 	jmp 	(ZDPtr) 		; jump to code after the in-line string
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io

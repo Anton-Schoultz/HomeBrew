@@ -48,10 +48,13 @@ Int(V7)
 Int(ZSrc) 	; Source for copy/move
 Int(ZTgt) 	; Destination for copy/move
 Int(ZCnt) 	; Number of bytes to copy/move
+
 Int(ZDBug) 	; debug usage
+Int(ZDPtr)
 
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
+
 
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details

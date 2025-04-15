@@ -1,5 +1,6 @@
 ;=================================================================== EDITOR ===========
 ;*  EdtAdd               Append TOKBUF line to end of program
+;*  EdtNew             Allocate high memory block - payload size in ZCnt, Returns pointer in ZPtr
 ;*  EdtClear             Clear variables and arrays
 ;*  EdtCpy               Copy from TOKBUF->(ZTgt)
 ;*  EdtDBug              debug editor values
@@ -8,7 +9,6 @@
 ;*  EdtIns               Insert line, provided it is not an 'empty' line (length <5)
 ;*  EdtNew               NEW = clear program, variables etc.
 ;*  EdtOpn               Move memory up
-;*  EdtUp                Move bytes up (Insert)
 ;*  EdtUpd               Update program with line in TOKBUF
 ;*
 .LIST
@@ -18,7 +18,7 @@
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
 ; $0400	VARNUM	32 x 4 for A-Z vars
-;
+ 		;--
 
 ;  Int(RAMBEG)	; Start of user ram area (set with cold start)	$0800
 ;  Int(RAMEND)	; End of user ram area (set at cold start)	$8000
@@ -50,7 +50,7 @@ EdtNew: ; NEW = clear program, variables etc.
  		;-- Null terminate Program
  		lda 	#0
  		jsr 	ChrWr 		; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
- 		;jsr 	ChrWr
+ 		;-- jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
 
 EdtClear: ; Clear variables and arrays
@@ -117,54 +117,62 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		ZCPY(ZTgt,LN_ADR)
  		jmp 	EdtCpy
 
-EdtInsX    	rts 			; Done
+EdtInsX 	rts 			; Done
 
 ;----------------------------------------------- EdtCpy
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
-		ZCPY(ZCnt,TOK_LEN)
+ 		ZCPY(ZCnt,TOK_LEN)
  		ldy 	ZCnt
- 		dey			; zero base
+ 		dey 			; zero base
 EdtCpyL 	lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
  		bpl 	EdtCpyL
  		rts
 
-#if _DBUG
-;----------------------------------------------- EdtDBug
-EdtDBug: ; debug editor values
-		php
-		pha
-		phx
-		phy
+;=================================================================== MEM-ALLOC ========
 
-		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
-		HEX_INT(ZSrc)
-		HEX_INT(ZTgt)
-		HEX_INT(ZCnt)
-		HEX_INT(BASEND)
-		HEX_INT(TOK_LEN)
-		CRLF()
+;-- EdtAlloc
+EdtAlloc:; TODO Allocate space - reuse old space otherwiser create new space
+; payload size in ZCnt, Returns pointer in ZPtr
 
-		PRINTLN("NUM  ADR  NXT  LEN  FND")
-		HEX_INT(LN_NUM)
-		HEX_INT(LN_ADR)
-		HEX_INT(LN_NXT)
-		HEX_INT(LN_LEN)
-		HEX_INT(LN_FND)
-		CRLF()
+;-- EdtFresh
+EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
+; payload size in ZCnt, Returns pointer in ZPtr
+; Move ARYBEG down
+	PRINTLN("EdtFreshBeg")
+	jsr EdtDBugMem
 
- 		;PAUSE()
+ 		ZCPY(ZPtr,ZCnt) 	; data size
+ 		ZINC(ZPtr) 		; add space for the block size
+ 		ZINC(ZPtr)
+ 		;--
+ 		ZSUB(ARYBEG,ZPtr) 	; reduce ARYBEG
+ 		ZCPY(ZPtr,ARYBEG) 	; place in ZPtr
 
-		ply
-		plx
-		pla
-		plp
+	PRINTLN("EdtFreshMid")
+	jsr EdtDBugMem
+
+ 		;-- copy the block size
+ 		ldy 	#0
+ 		lda 	ZCnt
+ 		tax
+ 		sta 	(ZPtr),y
+ 		iny
+ 		lda 	ZCnt+1
+ 		STA 	(ZPtr),y
+ 		lda 	#0
+EdtFreshClr 	iny
+ 		sta 	(ZPtr),y
+ 		dex
+ 		bpl 	EdtFreshClr
+
+	PRINTLN("EdtFreshEnd")
+	jsr EdtDBugMem
 
  		rts
 
-#endif
 
 
 ;=================================================================== INS/DEL ==========
@@ -195,39 +203,39 @@ EdtDwn3 	lda 	(ZSrc),Y 	; move the remaining bytes
  		bne 	EdtDwn3
 EdtDwn4 	rts
 
-;----------------------------------------------- EdtUp
-; Move bytes up (Insert)
-; ZSrc = source end address		Changed
-; ZTgt = destination end address	Changed
-; ZCnt = number of bytes to move 	Preserved
-EdtUp: ; Move bytes up (Insert)
- 		ZINC(ZSrc) 		; adjust source and target
- 		ZINC(ZTgt)
- 		;--
- 		ldy 	#$FF
- 		ldx 	ZCnt+1
- 		beq 	EdtUp3
-EdtUp1 		dec 	ZSrc+1
- 		dec 	ZTgt+1
-EdtUp2 		lda 	(ZSrc),Y 	; move a page at a time
- 		sta 	(ZTgt),Y
- 		dey
- 		bne 	EdtUp2
- 		lda 	(ZSrc),Y 	; handle Y = 0 separately
- 		sta 	(ZTgt),Y
- 		dey
- 		dex
- 		bne 	EdtUp1
-EdtUp3 		ldx 	ZCnt
- 		beq 	EdtUp5
- 		dec 	ZSrc+1
- 		dec 	ZTgt+1
-EdtUp4 		lda 	(ZSrc),Y 	; move the remaining bytes
- 		sta 	(ZTgt),Y
- 		dey
- 		dex
- 		bne 	EdtUp4
-EdtUp5 		rts
+ 		;-- ;----------------------------------------------- EdtUp
+ 		;-- ; Move bytes up (Insert)
+ 		;-- ; ZSrc = source end address		Changed
+ 		;-- ; ZTgt = destination end address	Changed
+ 		;-- ; ZCnt = number of bytes to move 	Preserved
+ 		;-- EdtUp: ; Move bytes up (Insert)
+; 		ZINC(ZSrc) 		; adjust source and target
+; 		ZINC(ZTgt)
+; 		;--
+; 		ldy 	#$FF
+; 		ldx 	ZCnt+1
+; 		beq 	EdtUp3
+ 		;-- EdtUp1 		dec 	ZSrc+1
+; 		dec 	ZTgt+1
+ 		;-- EdtUp2 		lda 	(ZSrc),Y 	; move a page at a time
+; 		sta 	(ZTgt),Y
+; 		dey
+; 		bne 	EdtUp2
+; 		lda 	(ZSrc),Y 	; handle Y = 0 separately
+; 		sta 	(ZTgt),Y
+; 		dey
+; 		dex
+; 		bne 	EdtUp1
+ 		;-- EdtUp3 		ldx 	ZCnt
+; 		beq 	EdtUp5
+; 		dec 	ZSrc+1
+; 		dec 	ZTgt+1
+ 		;-- EdtUp4 		lda 	(ZSrc),Y 	; move the remaining bytes
+; 		sta 	(ZTgt),Y
+; 		dey
+; 		dex
+; 		bne 	EdtUp4
+ 		;-- EdtUp5 		rts
 
 ;----------------------------------------------- EdtOpn
 ; Move memory up (open up a space)
@@ -262,6 +270,80 @@ EdtOpn3 	dey
  		dex
  		bne 	EdtOpn1
  		rts
+
+
+#if _DBUG
+;=================================================================== DBUG =============
+;----------------------------------------------- EdtDBug
+EdtDBug: ; debug editor values
+ 		php
+ 		pha
+ 		phx
+ 		phy
+
+ 		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
+ 		HEX_INT(ZSrc)
+ 		HEX_INT(ZTgt)
+ 		HEX_INT(ZCnt)
+ 		HEX_INT(BASEND)
+ 		HEX_INT(TOK_LEN)
+ 		CRLF()
+
+ 		PRINTLN("NUM  ADR  NXT  LEN  FND")
+ 		HEX_INT(LN_NUM)
+ 		HEX_INT(LN_ADR)
+ 		HEX_INT(LN_NXT)
+ 		HEX_INT(LN_LEN)
+ 		HEX_INT(LN_FND)
+ 		CRLF()
+
+ 		;-- PAUSE()
+
+ 		ply
+ 		plx
+ 		pla
+ 		plp
+
+ 		rts
+
+;----------------------------------------------- EdtDBug
+EdtDBugMem: ; debug memory values
+; RAMBEG
+; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
+;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
+
+.export ARYBEG
+
+ 		php
+ 		pha
+ 		phx
+ 		phy
+
+ 		PRINTLN("BBeg BEnd VEnd SEnd ABeg")
+ 		HEX_INT(BASBEG)
+ 		HEX_INT(BASEND)
+ 		HEX_INT(VAREND)
+ 		HEX_INT(STR_END)
+ 		HEX_INT(ARYBEG)
+ 		CRLF()
+
+ 		PRINTLN("ZPtr ZCnt ZSrc ZTgt")
+ 		HEX_INT(ZPtr)
+ 		HEX_INT(ZCnt)
+ 		HEX_INT(ZSrc)
+ 		HEX_INT(ZTgt)
+ 		CRLF()
+
+   PAUSE()
+ 		ply
+ 		plx
+ 		pla
+ 		plp
+
+ 		rts
+
+
+#endif
 
 
 .echo "  _Edtor\t"
