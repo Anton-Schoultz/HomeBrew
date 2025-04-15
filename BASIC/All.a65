@@ -8,6 +8,7 @@
 #include "XLet.a65"
 #include "XList.a65"
 #include "XNew.a65"
+#include "XClear.a65"
 #include "XPrint.a65"
 #include "XRem.a65"
 #include "XReturn.a65"

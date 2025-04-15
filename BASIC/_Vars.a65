@@ -141,6 +141,28 @@ Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 
 ;=================================================================== SIMPLE VARIABLES =
 .org $0400
+VARTAB
+
+;----------------------------------------------- String Vars A-Z
+Var(VARSTR,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
+
+;----------------------------------------------- Numeric Vars 27 x NUMSZ
+; Vars stored as sequence of bytes, [Exp] Low...Hi
+; index 0 is for RND, 1-26 for A-Z => 27 slots
+Var(VARNUM,27*NUMSZ)
+;----------------------------------------------- For/Next
+; FOR values are stored immediately after the A-Z, so access with index 27,28
+FOR_DATA 	;-- DATA
+Var(FOR_STP,NUMSZ) ; [27] Step size
+Var(FOR_LIM,NUMSZ) ; [28] Limit
+Int(FOR_ADR) 	; Address of loop line (after the FOR line)
+Short(FOR_NDX) 	; Loop variable number (1-26)
+#define FOR_STP_X 27
+#define FOR_LIM_X 28
+
+; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
+Var(FORSTK,8*FORDEEP)
+
 ;----------------------------------------------- GOSUB stack 32x2 = 64
 ; Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)
@@ -148,32 +170,12 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
 
-;----------------------------------------------- String Vars A-Z, max length
-Var(VARSTR,27*3) ; Len, Plo,Phi
-
-;----------------------------------------------- Numeric Vars 27 x NUMSZ
-; Vars stored as sequence of bytes, [Exp] Low...Hi
-; index 0 is for RND, 1-26 for A-Z => 27 slots
-Var(VARNUM, 	27*NUMSZ)
-;----------------------------------------------- For/Next
-; FOR values are stored immediately after the A-Z, so access with index 27,28
-#define FOR_STP_X 27
-#define FOR_LIM_X 28
-
-FOR_DATA 	;-- DATA
-Var(FOR_STP,NUMSZ) ; [27] Step size
-Var(FOR_LIM,NUMSZ) ; [28] Limit
-Int(FOR_ADR) 	; Address of loop line (after the FOR line)
-Short(FOR_NDX) 	; Loop variable number (1-26)
- 		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
-Var(FORSTK,8*FORDEEP)
-
 
 .echo "  SysRAM ($400)\t"
 .echo $-$400
 .echo "\t1024-"
 .echo $
-.echo "\n"
+.echo " (first 255 cleared by CLEAR/EdtClear)\n"
 
 .export FOR_DATA, VARNUM
 

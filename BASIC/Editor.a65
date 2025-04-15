@@ -67,8 +67,9 @@ EdtClear: ; Clear variables and arrays
  		lda 	#0
  		sta 	(ARYBEG)
 
+		;- clear vartable (nums, strings, stacks)
  		tay
-EdtWipe 	sta 	(BASBEG),y
+EdtWipe 	sta 	VARTAB,y
  		iny
  		bne 	EdtWipe
  		RTN_T()
@@ -139,21 +140,14 @@ EdtAlloc:; TODO Allocate space - reuse old space otherwiser create new space
 
 ;-- EdtFresh
 EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
-; payload size in ZCnt, Returns pointer in ZPtr
+; payload size in ZCnt, Returns pointer in ZPtr (points to the length bytes)
 ; Move ARYBEG down
-	PRINTLN("EdtFreshBeg")
-	jsr EdtDBugMem
-
  		ZCPY(ZPtr,ZCnt) 	; data size
  		ZINC(ZPtr) 		; add space for the block size
  		ZINC(ZPtr)
  		;--
  		ZSUB(ARYBEG,ZPtr) 	; reduce ARYBEG
  		ZCPY(ZPtr,ARYBEG) 	; place in ZPtr
-
-	PRINTLN("EdtFreshMid")
-	jsr EdtDBugMem
-
  		;-- copy the block size
  		ldy 	#0
  		lda 	ZCnt
@@ -167,10 +161,6 @@ EdtFreshClr 	iny
  		sta 	(ZPtr),y
  		dex
  		bpl 	EdtFreshClr
-
-	PRINTLN("EdtFreshEnd")
-	jsr EdtDBugMem
-
  		rts
 
 
