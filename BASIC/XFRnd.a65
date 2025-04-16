@@ -7,14 +7,14 @@
 ;*
 _Rnd 		= $
 
-;----------------------------------------------- X_Rnd 
+;----------------------------------------------- X_Rnd
 X_Rnd: ; Function Rnd
  		jsr 	NumPushA 	; value passed to rnd( v )
  		jsr 	NumRnd 		; rnd -> NUM_A
  		jsr 	NumPopB 	; v -> NUM_B
  		jsr 	NumSwap 	; NUM_A <=> NUM_B
  		jsr 	NumMod 		; rand % v
- 		rts
+ 		RTN_T()
 
 .echo "  _RND(\t\t"
 .echo $-_Rnd
@@ -22,19 +22,19 @@ X_Rnd: ; Function Rnd
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Rnd 		.DB 	"RND",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Rnd 		= LOW($)+$80
 .DW 	X_Rnd
 .nolist
- 		;-- .export T_Rnd
+.export T_Rnd
 #endif
 
 .list 					; end of Rnd

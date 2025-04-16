@@ -31,6 +31,9 @@ RunInit: ; prepare to run by setting flags
 
 ;----------------------------------------------- RunCmd
 RunCmd: ; Run Cmd from TOKBUF
+		lda	#0
+		sta	LN_NUM
+		sta	LN_NUM+1
  		ZSET(ZRd,TOKBUF-1) 	; where to run from
  		jsr 	RunInit 	; set I/O, Zero suppress etc
  		jmp 	RunStmnt

@@ -80,6 +80,7 @@
 ;*
 
 #if ($/256) = 1
+.list
 ;----------------------------------------------- CSTK 
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
 ; 16 x 5 => 80 bytes
@@ -106,7 +107,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; Short(NUM_SP) 	; calculator stack pointer
 ; Short(NUM_SGN) 	; sign
 ; Var(NUM_BUF,CVTSZ) 	; Conversion work area CVTSZ=14
-
+.nolist
 .echo "  CPU Stack\t"
 .echo $200 - $
 .echo "\tAvailable\n"
@@ -115,6 +116,10 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 
 #if ($/256) > $80
 _Math 		= $
+
+#ifdef hide
+.NOLIST
+#endif
 
 ;----------------------------------------------- NumInit 
 NumInit: ; Initialise calculator (clear stack pointer)
@@ -181,9 +186,8 @@ NumSwapL 	lda 	NUM_A,X
  		bpl 	NumSwapL
  		rts
 
-
-
 #endif
+.list 					;"Math"
 
 ;=================================================================== MATH MODULE ====== 
 #if 1

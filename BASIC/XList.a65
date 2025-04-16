@@ -34,7 +34,7 @@ X_List: ; LIST [from] [- [to]]
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
  		;-- set start & end to number
- 		JSR 	NumToInt 	; num as AX l/h
+ 		jsr 	NumToInt 	; num as AX l/h
  		sta 	LST_BEG
  		sta 	LST_END
  		stx 	LST_BEG+1
@@ -52,9 +52,9 @@ X_List_0 	;- check for a '-'
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
  		jsr 	NumRd 		; read value into NUM_A
- 		JSR 	NumToInt 	; num as AX l/h
- 		STA 	LST_END
- 		STX 	LST_END+1
+ 		jsr 	NumToInt 	; num as AX l/h
+ 		sta 	LST_END
+ 		stx 	LST_END+1
 
 X_List_1 	;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
@@ -91,7 +91,7 @@ ListLn: ; List line (LnNext called before this)
 ListLnL 	;-- check for end of line null
  		lda 	CHRGOT
  		beq 	ListLnX 	; null = dend of line
- 		BPL 	ListChr 	; $00-7F => character
+ 		bpl 	ListChr 	; $00-7F => character
 
  		;-- have a token $80-FF
  		jsr 	ListTok
@@ -104,7 +104,7 @@ ListLnX 	;-- end of the line, CRLF and done
 ListChr 	; non-token
  		jsr 	PutChr
  		jsr 	ChrRd
- 		BRA 	ListLnL
+ 		bra 	ListLnL
 
 
 ;  list a part of the line (token & its data)

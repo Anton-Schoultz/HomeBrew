@@ -1,8 +1,8 @@
-;=================================================================== STR =============
+;=================================================================== STR ============= 
 ; String functions
 ;
 ;*  DB_Str               Debug String values - PtrA LenA PtrB LenB
-;*  EvIsStr              Return EQ if the token in A is a string value
+;*  EvIsStr              Return EQ if A is T_StrLit,T_StrVar
 ;*  EvString             Evuate a string expression -> STRBUF
 ;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
 ;*  StrAppend            Append top two strings
@@ -28,7 +28,7 @@
 ; Int(ZStr) 		ZStr points to string result
 ; Short(ZStrLen)	Length of STRBUF used (write index)
 
-;----------------------------------------------- String
+;----------------------------------------------- String 
 ; (Z) ->    LenL|LenH|Characters.....|00|
 ; Int(STR_PTR) 	; pointer to string
 ; Int(STR_END) 	; end of string work area
@@ -61,10 +61,10 @@ _Str 		= $
 ;    copy the data to the string space checking limit
 ; otherwise
 ;    copy data to it, checking limit
- 		;--
+ 		;-- 
 ; ZPtr must point to the memory block
 
-;----------------------------------------------- StrVar
+;----------------------------------------------- StrVar 
 StrVar: ; recall a String variable T_StrVar ID
  		jsr 	ChrRd 		; consume T_StrVar
  		bpl 	StrVar1
@@ -77,7 +77,7 @@ StrVar1 	;-- recall the variable
 ; 		pla
 
  		;-- drop through to recall
-;----------------------------------------------- StrGet
+;----------------------------------------------- StrGet 
 StrGet: ; get string at index A  A$..Z$ 1..26
  		STROFF()
  		lda 	VARSTR,X
@@ -105,7 +105,7 @@ StrLoadX 	sty 	S_LEN_A
  		ZCPY(STR_LEN,S_LEN_A)
  		rts
 
-;----------------------------------------------- StrSet
+;----------------------------------------------- StrSet 
 StrSet: ; Store string at index A  A$..Z$ 1..26
  		STROFF()
  		lda 	VARSTR,X
@@ -127,7 +127,7 @@ StrSave 	;- ZPtr points to the string space
  		jsr 	EdtDwn
  		rts
 
-;----------------------------------------------- StrPoint
+;----------------------------------------------- StrPoint 
 StrPoint: ; (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
  		ldy 	#0
  		lda 	(ZPtr),y
@@ -151,7 +151,7 @@ EvString: ; Evuate a string expression -> STRBUF
  		;-- for now, just handle one item
 EvStrL 		jsr 	EvStrItem
  		RTN_IFF()
- 		;--
+ 		;-- 
  		lda 	CHRGOT
  		cmp 	#'+'
  		bne 	EvStrX
@@ -176,8 +176,8 @@ EvStrNxt 	;-- next token
  		bne 	EvStrL
  		rts
 
-;----------------------------------------------- EvIsStr
-EvIsStr: ; Return EQ if the token in A is a string value
+;----------------------------------------------- EvIsStr 
+EvIsStr: ; Return EQ if A is T_StrLit,T_StrVar
  		BR_AEQ(T_StrLit,EvIsStrX)
  		BR_AEQ(T_StrVar,EvIsStrX)
  		;-- BR_AEQ(T_StrAry,EvIsStrX)
@@ -185,27 +185,27 @@ EvIsStrX 	rts
 
 ;======================================================================================
 
-;----------------------------------------------- StrInit
+;----------------------------------------------- StrInit 
 StrInit: ;Initialise string buffer
  		ZCPY(STR_END,VAREND) 	; point to open area
  		ZSET(STR_LEN,0) 	; set length as zero
  		rts
 
-;----------------------------------------------- StrPush
+;----------------------------------------------- StrPush 
 StrPush: ;Push temp string sets up S_PTR_A,S_LEN_A
  		jsr 	NumPushA
- 		;--
+ 		;-- 
  		ZADD(STR_END,STR_LEN)
  		ZCPY(S_PTR_A,STR_END) 	; set pointer
  		ZSET(STR_LEN,0) 	; set length as zero
  		ZSET(S_LEN_A,0) 	; zero length
 #if _DB_STR
  		PRINTLN("StrPushX")
- 		JSR 	DB_Str
+ 		jsr 	DB_Str
 #endif
  		rts
 
-;----------------------------------------------- StrOvr
+;----------------------------------------------- StrOvr 
 StrOvr: ; Overflow - truncate
  		dey 			; back up to last char
  		lda 	#0 		; make it null
@@ -213,7 +213,7 @@ StrOvr: ; Overflow - truncate
 StrEnd 		sty 	S_LEN_A
  		rts
 
-;----------------------------------------------- StrLit
+;----------------------------------------------- StrLit 
 StrLit: ; Recall a string literal
 ; CHRGOT is T_StrLit, ChrRd will get the first character
  		jsr 	StrPush 	; create a temp space
@@ -232,19 +232,19 @@ StrLitX 	sty 	S_LEN_A
  		dec 	EVFLG 		; note that we got something
 #if _DB_STR
  		PRINTLN("StrLitX")
- 		JSR 	DB_Str
+ 		jsr 	DB_Str
 #endif
  		rts
 
 
-;----------------------------------------------- StrAppend
+;----------------------------------------------- StrAppend 
 StrAppend: ; Append top two strings
 ; StrPush sets it up so that the second string is already in the right place
 ; so just swap data and adjust initial length to add second's length
  		jsr 	NumPopB
  		jsr 	NumSwap
  		;-- fall through to get the new length
-;----------------------------------------------- StrLen
+;----------------------------------------------- StrLen 
 StrLen: ; check length of Str_A, set in S_LEN_A
  		ldy 	#0
  		sta 	S_LEN_A+1
@@ -255,7 +255,7 @@ StrLenL 	lda 	(S_PTR_A),Y
 StrLenX 	sty 	S_LEN_A
  		rts
 
-;----------------------------------------------- StrOut
+;----------------------------------------------- StrOut 
 StrOut: ; Output the resulting string (cut at 255)
  		ldy 	#0
 StrOutL 	lda 	(S_PTR_A),y
@@ -267,7 +267,7 @@ StrOutL 	lda 	(S_PTR_A),y
  		bne 	StrOutL
 StrOutX 	rts
 
-;----------------------------------------------- StrUpper
+;----------------------------------------------- StrUpper 
 StrUpper: ; convert to UPPER case
  		ldy 	#$FF
 StrUpper1 	iny
@@ -280,7 +280,7 @@ StrUpper1 	iny
  		bra 	StrUpper1
 StrUpperX 	rts
 
-;----------------------------------------------- StrLower
+;----------------------------------------------- StrLower 
 StrLower: ; convert to LOWER case
  		ldy 	#$FF
 StrLower1 	iny
@@ -296,7 +296,7 @@ StrLowerX 	rts
 
 ;======================================================================================
 
-;----------------------------------------------- StrAddNum
+;----------------------------------------------- StrAddNum 
 StrAddNum: ; Append the converted numeric (in NUM_BUF) to the string
  		jsr 	StrPush 	; create a temp space
  		ldy 	#0
@@ -316,7 +316,7 @@ StrAddNumX 	sty 	S_LEN_A
 
 
 #if _DB_STR
-;----------------------------------------------- DB_Str
+;----------------------------------------------- DB_Str 
 DB_Str: ; Debug String values - PtrA LenA PtrB LenB
  		PUSHALL()
  		PRINTLN("PtrA LenA PtrB LenB")
@@ -335,7 +335,7 @@ DB_Str: ; Debug String values - PtrA LenA PtrB LenB
  		rts
 
 #ifdef _TEST
-;----------------------------------------------- StrTest
+;----------------------------------------------- StrTest 
 Hi:  		.DB 	T_StrLit,"HellO ",0
 Big 		.DB 	T_StrLit,"BiG ",0
 Wo:  		.DB 	T_StrLit,"WorlD.",0
@@ -364,14 +364,14 @@ StrTest
 ; 		sta 	(ZPtr),y
 ; 		beq 	StrSetX 	; null -> done
 ; 		iny
- 		;--
+ 		;-- 
 ; 		;-- need to check DIM size
- 		;--
+ 		;-- 
 ; 		bne 	StrSetL
 ; 		lda 	#0
 ; 		sta 	(ZStr),y
  		;-- StrSetX 	rts
- 		;--
+ 		;-- 
 
  		;-- ;----------------------------------------------- StrAppend
  		;-- StrAppend: ; Append string (ZStr) to STRBUF (Recall)
@@ -437,14 +437,14 @@ StrTest
 ; 		cpx 	#STRSZ
 ; 		bne 	StrSubL
 ; 		bra 	StrOvr 		; force stop at max
- 		;--
+ 		;-- 
  		;-- ;----------------------------------------------- StrSubMT
  		;-- StrSubMT: ;Make string empty
 ; 		lda 	#0
 ; 		sta 	STRBUF
 ; 		sta 	ZStrLen
 ; 		rts
- 		;--
+ 		;-- 
  		;-- ;----------------------------------------------- StrHead
  		;-- StrHead: ; Truncate STRBUF at Y
 ; 		;-- index is out of range - keep all
@@ -459,7 +459,7 @@ StrTest
 ; 		;-- save new index
 ; 		sty 	ZStrLen
  		;-- StrHeadX 	rts
- 		;--
+ 		;-- 
  		;-- ;----------------------------------------------- StrTrim
  		;-- StrTrim: ; trim leading and trailing blanks
 ; 		ldy 	#$FF
@@ -485,9 +485,9 @@ StrTest
 ; 		dex
 ; 		bne 	StrTrim3
  		;-- StrTrimX 	rts
- 		;--
- 		;--
- 		;--
+ 		;-- 
+ 		;-- 
+ 		;-- 
 
 
 

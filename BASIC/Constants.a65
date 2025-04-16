@@ -43,13 +43,13 @@ T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 
  		;-- = $F7
 
- 		;-- 1111.0<=>		;0<=>
-#define T_LE 	$F6 			;0110
+ 		;-- 1111.0<=>		;0>=<
+#define T_LE 	$F3 			;0011
 #define T_NE	$F5 			;0101
-#define T_LT	$F4 			;0100
-#define T_GE 	$F3 			;0011
+#define T_LT	$F1 			;0001
+#define T_GE 	$F6 			;0110
 #define T_EQ 	$F2 			;0010
-#define T_GT 	$F1 			;0001
+#define T_GT 	$F4 			;0100
 
 T_LineNo 	= $F0 			; header includes line number
 

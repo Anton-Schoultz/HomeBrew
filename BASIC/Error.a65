@@ -24,7 +24,22 @@ Error: ; Hanlde error[X] resetting to warm start
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
- 		jmp 	Main
+ 		jsr	PrNL
+		;-- check if command line
+		lda	LN_NUM
+		ora	LN_NUM+1
+		beq	ErrorX
+		;-- from program, so set up the offending line
+		clc
+		lda	#3
+		adc	LN_ADR
+		sta	ZRd
+		lda	#0
+		adc	LN_ADR+1
+		sta 	ZRd+1
+		;-- and list it
+		jsr	ListLn
+ErrorX 		jmp 	Main
 
 ; @	A as character
 ; !	A as hex
