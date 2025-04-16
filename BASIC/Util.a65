@@ -1,3 +1,7 @@
+#ifdef hide
+.NOLIST
+#endif
+
 ;=================================================================== UTIL =============
 ;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
@@ -30,9 +34,6 @@
 ;*m PRINT(str)           echo str to output
 ;*m PRINT(str)           echo str to output, with CR,LF
 ;*
-#ifdef hide
-.NOLIST
-#endif
 
 #if _DBUG
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
@@ -232,6 +233,7 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
 
 ;=================================================================== UTIL_PRINT =======
 
+.nolist
 #if _DBUG
 ;----------------------------------------------- _Print_
 ; PSEUDO-CODE

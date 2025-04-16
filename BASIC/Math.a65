@@ -71,7 +71,7 @@
 #define NUM_DIVC NUM_DIV+FPC
 
 
-;=================================================================== COMMON =========== 
+;=================================================================== COMMON ===========
 ; Common to all math modules
 ;*  NumInit              Initialise calculator (clear stack pointer)
 ;*  NumPopB              Pop Num_B from the calculator stack (S,X,A,B,C)
@@ -80,8 +80,7 @@
 ;*
 
 #if ($/256) = 1
-.list
-;----------------------------------------------- CSTK 
+;----------------------------------------------- CSTK
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
 ; 16 x 5 => 80 bytes
 CSTK
@@ -94,11 +93,11 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; S16 uses A,B
 ; F32 uses X,A,B,C
 ; Str uses S,X,A,B	SX=Len AB=Ptr
- 		;-- 
+ 		;--
 ; Constants:
 ; NUMSZ 2	size of a numeric format in internal for - S16 is 2 bytes
 ; NUMUSZ 5	size of numeric value once 'unpacked' for calcualtions
-;----------------------------------------------- Numeric common vars 
+;----------------------------------------------- Numeric common vars
 ; Var(NUM_A,NUMUSZ) 	; Number parsed / Primary accumulator
 ; Var(NUM_TMP,NUMUSZ) 	; Temp number
 ; Var(NUM_B,NUMUSZ) 	; Secondary accumulator
@@ -112,22 +111,22 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 .echo $200 - $
 .echo "\tAvailable\n"
 
-#endif
+#endif		; end page1
 
 #if ($/256) > $80
 _Math 		= $
-
+.list
 #ifdef hide
 .NOLIST
 #endif
 
-;----------------------------------------------- NumInit 
+;----------------------------------------------- NumInit
 NumInit: ; Initialise calculator (clear stack pointer)
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
-;----------------------------------------------- NumPushA 
+;----------------------------------------------- NumPushA
 NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C)
  		ldx 	NUM_SP
  		;-- sign
@@ -149,7 +148,7 @@ NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C)
  		and 	#CSTKMSK
  		sta 	NUM_SP
  		rts
-;----------------------------------------------- NumPopB 
+;----------------------------------------------- NumPopB
 NumPopB: ; Pop Num_B from the calculator stack (S,X,A,B,C)
  		;-- sp
  		dec 	NUM_SP
@@ -170,10 +169,10 @@ NumPopB: ; Pop Num_B from the calculator stack (S,X,A,B,C)
  		sta 	NUM_BB
  		lda 	CSTKC,X
  		sta 	NUM_BC
- 		;-- 
+ 		;--
  		rts
 
-;----------------------------------------------- NumSwap 
+;----------------------------------------------- NumSwap
 NumSwap: ; Swap NUM_A <-> NUM_B  (S,X,A,B,C)
  		ldx 	#NUMUSZ
 NumSwapL 	lda 	NUM_A,X
@@ -186,23 +185,25 @@ NumSwapL 	lda 	NUM_A,X
  		bpl 	NumSwapL
  		rts
 
-#endif
-.list 					;"Math"
+#endif	; end page > $80
 
-;=================================================================== MATH MODULE ====== 
+.nolist
+
+;=================================================================== MATH MODULE ======
 #if 1
 #include "Math_S16.a65"
+.nolist
 #else
 
-;----------------------------------------------- Dummy{ 
+;----------------------------------------------- Dummy{
 #if $>$400
-.list
 .echo "\n"
 .echo "====================================\n"
 .echo " WARNING - Maths module is excluded \n"
 .echo "====================================\n"
 .echo "\n"
 
+.nolist
 ;  --------- Usages --------------
 NumInit 	; Tok.RunLn - when running a line of code
 NumParse 	; Tok.P_Number : parse literal number -> NUM_A (follow by NumWr)
@@ -241,7 +242,7 @@ NumToInt 	; Return integer value in AX (lo,hi) - sets NUM_FLG
 NumFromInt 	; Set NUMA to int value in AX (lo,hi)
 
 #endif
-;----------------------------------------------- }Dummy 
+;----------------------------------------------- }Dummy
 
 #endif
 .list

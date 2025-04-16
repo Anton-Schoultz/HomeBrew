@@ -12,6 +12,8 @@
 #ifdef hide
 .NOLIST
 #endif
+.nolist
+
 #ifndef _Irq
 #define _Irq
 

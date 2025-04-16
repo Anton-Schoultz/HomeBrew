@@ -2,7 +2,10 @@
 #ifdef hide
 .NOLIST
 #endif
+
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+.list
+
 ;=================================================================== PRINT ===========
 ;*  DB_Print             Debug Print values
 ;*  X_Print              PRINT ( <expr>|<str>| |, )*
@@ -50,6 +53,9 @@ X_PrStr 	;-- STRING expression
  		jsr 	EvString 	; Evaluate
  		jsr 	StrOut 		; Print
  		DONL() 			; NL on
+
+;	jsr DB_Print
+
  		RTN_T() 		; OK
 
 X_PrNum 	;-- NUMERIC expresion
@@ -69,12 +75,9 @@ X_PrNum 	;-- NUMERIC expresion
 DB_Print: ; Debug Print values
  		PUSHALL()
  		jsr 	PrNL
- 		PRINTLN("STP  LIM  ADR  IX SP")
- 		HEX_INT(FOR_STP)
- 		HEX_INT(FOR_LIM)
- 		HEX_INT(FOR_ADR)
- 		HEX_SHORT(FOR_NDX)
- 		HEX_SHORT(FOR_SP)
+ 		PRINTLN("ZRd  Gt  ")
+ 		HEX_INT(ZRd)
+ 		HEX_SHORT(CHRGOT)
  		jsr 	PrNL
  		PULLALL()
  		PAUSE()

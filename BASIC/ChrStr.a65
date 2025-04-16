@@ -1,3 +1,7 @@
+#ifdef hide
+.NOLIST
+#endif
+
 ;=================================================================== CHRSTR ===========
 ;*  ChrCopy              Output characters from input (mem/device) to output(Mem/device)
 ;*  ChrIn                Read character from input device (KBD,COM..) -> CHRGOT
@@ -36,9 +40,6 @@
 ;*m PR_ZSUP_OFF()        Leading zeros stay
 ;*m PR_ZSUP_ON()         Suppress leading zeroes
 ;*
-#ifdef hide
-.NOLIST
-#endif
 ; ZPrFlg = Flag controls
  		;-- 0		1
 ; Bit7 PutChr	ChrOut 	IO	ChrWr MEM

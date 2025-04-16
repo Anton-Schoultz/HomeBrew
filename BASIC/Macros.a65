@@ -1,3 +1,7 @@
+#ifdef hide
+.NOLIST
+#endif
+
 ;=================================================================== MACROS ===========
 ;*m BR_AEQ(n,tgt)        if(A==n) branch -> tgt
 ;*m BR_AGE(n,tgt)        if(A>=n) branch -> tgt
@@ -44,9 +48,6 @@
 ;*m ZSUB(r,n)            r = r-n
 ;*m ZSUB3(r,n)           r = r-n
 ;*
-#ifdef hide
-.NOLIST
-#endif
 
 ; 00=BRK x, 02=NOP x
 

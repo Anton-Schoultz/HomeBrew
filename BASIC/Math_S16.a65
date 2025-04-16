@@ -1,6 +1,7 @@
 #ifdef hide
 .NOLIST
 #endif
+.nolist
 
 ;=================================================================== MATH_S16 =========
 ; calculator stack depth & mask
