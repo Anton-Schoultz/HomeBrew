@@ -1,0 +1,35 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== Clear ==============
+;*  X_Clear                Clear
+;*
+_Clear 		= $
+
+;----------------------------------------------- X_Clear
+X_Clear: ; Clear
+ 		jmp 	EdtClear
+
+
+.echo "  _CLEAR\t"
+.echo $-_Clear
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Clear 		.DB 	"CLEA",'R'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Clear 		= LOW($)+$80
+.DW 	X_Clear
+.nolist
+ 		;-- .export T_Clear
+#endif
+.list 					; end of Clear

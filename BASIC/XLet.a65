@@ -4,6 +4,7 @@
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LET ==============
 ;*  X_Let                LET <var> = <expr>
+;*  X_LetEQ              Get variable index into .A and check for '='
 ;*
 _Let 		= $
 
@@ -13,29 +14,50 @@ _Let 		= $
 ;----------------------------------------------- X_Let
 X_Let: ; LET <var> = <expr>
  		jsr 	ChrRd 		; consume LET
-; 		sta 	TOKNO 		; save variable token
 
-X_LetDo 	CASE(T_NumVar,X_Let10)
+X_LetDo 	CASE(T_NumVar,X_LetNum)
+ 		CASE(T_StrVar,X_LetStr)
  		ERROR(ERR_VAR) 		; "Expected Variable"
-X_Let10 	;- assign integer variable (not-ary)
+
+;----------------------------------------------- X_LetNum
+X_LetNum 	;- assign integer variable (not-ary)
+ 		jsr 	X_LetEQ 	; get index, skip '='
+ 		pha 			; save index
+ 		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
+ 		pla 			; recall index
+ 		sta 	VARID 		; save the Var index
+ 		jsr 	NumSet 		; fetch & store
+ 		RTN_T() 		; done
+
+;----------------------------------------------- X_LetStr
+X_LetStr 	;- assign string variable (not-ary)
+ 		jsr 	X_LetEQ 	; get index, skip '='
+ 		pha 			; save index
+ 		jsr 	EvString	; evaluate expression
+ 		pla 			; recall index
+ 		sta 	VARID 		; save the Var index
+ 		; .A = var index
+ 		; ZPtr -> temp result (to be coppied up to var space)
+ 		jsr 	StrSet 		; fetch & store
+ 		RTN_T() 		; done
+
+;----------------------------------------------- X_LetEQ
+X_LetEQ: ; Get variable index into .A and check for '='
  		jsr 	ChrRd 		; get first char of variable name
- 		bpl 	X_Let90 	; long var name
+ 		bpl 	X_LetBadVar 	; long var name
  		;-- short name, character is used as index
  		and 	#$1F
  		pha 			; push the index
  		jsr 	ChrRd 		; move to after the var name (should be '=')
  		lda 	#T_EQ 		; '=' TOKEN
  		jsr 	Match 		; check for and skip over '='
-
- 		;-- evaluate the expression
- 		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
- 		;-- recal the index, math module multiplies for size
+ 		;-- init string eval
+ 		jsr	StrInit
  		pla
- 		sta 	VARID 		; save the Var index
- 		jsr 	NumSet 		; fetch & store
- 		RTN_T() 		; done
+ 		rts
 
-X_Let90 	ERROR(ERR_BADVAR)
+X_LetBadVar 	ERROR(ERR_BADVAR)
+
 
 
 .echo "  _LET\t\t"

@@ -1,0 +1,75 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== DIM ==============
+;*  X_Dim                DIM  a$(n) [, b$(n)]*
+;*
+_Dim 		= $
+
+; ERR_REDIM
+;  T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
+;  T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
+
+; A$(20)	FB C1   FC 14 00   29
+;                  |
+;  VARID-----------+
+; 76543210
+; ...aaaaa	bottom 5 bits of first char (0-31 0=@,1=A,...)
+; 1.......	This is the last character of the variable Name
+; .#......	Variable is an array
+
+;----------------------------------------------- X_Dim
+X_Dim: ; DIM  a$(n) [, b$(n)]*
+ 		jsr 	ChrRd 		; consume Dim
+ 		;-- Check for and skip over T_StrAry
+ 		lda 	#T_StrAry
+ 		jsr 	Match 		; match character CHRGOT vs .A and move on, error if no match
+ 		;-- get variable index
+ 		bpl 	X_DimBadVar 	; must be last char (single char varnames only)
+ 		;-- varid -> index
+ 		and 	#$1F
+ 		asl 	a
+ 		pha 			; save index to var
+ 		;-- move on (consume varid)
+ 		jsr 	ChrRd
+ 		;-- get size value
+ 		jsr 	EvNumeric
+ 		;-- check & skip the )
+ 		lda 	#')'
+ 		jsr 	Match
+ 		;-- do the allocation
+ 		jsr 	NumToInt 	; Value in AX lo/hi
+ 		sta 	ZCnt
+ 		stx 	ZCnt+1
+ 		;--
+ 		jsr 	EdtAlloc 	; make space, set ZPtr
+
+ 		;-- save the pointer in VARSTR[n]
+ 		ply
+ 		sta 	VARSTR,y
+ 		txa
+ 		sta 	VARSTR+1,y
+ 		rts
+
+X_DimBadVar 	ERROR(ERR_BADVAR)
+
+.echo "  _DIM\t\t"
+.echo $-_Dim
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Dim 		.DB 	"DI",'M'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Dim 		= LOW($)+$80
+.DW 	X_Dim
+#endif
+.list 					; end of Dim

@@ -100,7 +100,10 @@ Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
 
+Short(EVFLG)	; flag for evaluation 0=no expr, +:Num, -:Str
+
 Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
+
 
 ;----------------------------------------------- String
 ; (Z) ->    LenL|LenH|Characters.....|00|
@@ -177,7 +180,7 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 .echo $
 .echo " (first 255 cleared by CLEAR/EdtClear)\n"
 
-.export FOR_DATA, VARNUM
+.export FOR_DATA, VARNUM, VARSTR,
 
 .LIST
 

@@ -16,7 +16,8 @@ X_If: ; IF <expression> THEN <Statment>
  		bne 	IfTrue
  		rts 			; false return to do next line
 IfTrue 		;-- result is true
- 		CHECK(T_THEN)
+		lda #T_THEN
+		jsr Check
  		;-- will ChrRd to get first token of statement
  		jmp 	RunStmnt
 

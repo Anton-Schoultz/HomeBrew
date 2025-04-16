@@ -1,6 +1,5 @@
 ;=================================================================== UTIL =============
 ;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
-;*  DivA10               Divide .A by 10
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump              hex dump memory (ZPtr) to output io/mem
 ;*  IntAXx10             AX * 10 -> AX (uses TMP)
@@ -35,6 +34,7 @@
 .NOLIST
 #endif
 
+#if _DBUG
 ; HEX_DUMP(adr) Print hex dump to IO/Mem [Zptr++]
 #define HEX_DUMP(adr) ZSET(ZPtr,adr) \ jsr HexDump
 ; PRINT(str) echo str to output
@@ -47,6 +47,8 @@
 #define HEX_INT(adr)  GETAX(adr) \ jsr _PrHexInt
 ; HEX_SHORT(adr) print hex value
 #define HEX_SHORT(adr)  lda adr \ jsr _PrHexShort
+
+#endif
 
 #define CRLF() jsr PrNL
 
@@ -229,6 +231,8 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		rts
 
 ;=================================================================== UTIL_PRINT =======
+
+#if _DBUG
 ;----------------------------------------------- _Print_
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
@@ -275,9 +279,23 @@ _Print_X 	tya 			; y is offset to the null
  		adc 	ZDPtr 		; + Len
  		sta 	ZDPtr 		; -> lo
  		lda 	#0
- 		adc	ZDPtr+1
+ 		ADC 	ZDPtr+1
  		sta 	ZDPtr+1
-_PrintFPX 	jmp 	(ZDPtr) 		; jump to code after the in-line string
+_PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
+
+;----------------------------------------------- _PrHexShort
+_PrHexShort: ; print int .A.X as hex value with space
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jmp 	PutChr
+
+;----------------------------------------------- _PrHexInt
+_PrHexInt: ; print int .A.X as hex value with space
+ 		jsr 	PrAXHex
+ 		lda 	#' '
+ 		jmp 	PutChr
+
+#endif
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io
@@ -291,18 +309,6 @@ Nib2HexTbl
 ;    ____ BCD:0______===== BCD:1 ====
 .db "0123456789ABCDEF0123456789+-e.E "
 ;   "0123456789ABCDEF0123456789abcdef"
-
-;----------------------------------------------- _PrHexShort
-_PrHexShort: ; print int .A.X as hex value with space
- 		jsr 	PrAHex
- 		lda 	#' '
- 		jmp 	PutChr
-
-;----------------------------------------------- _PrHexInt
-_PrHexInt: ; print int .A.X as hex value with space
- 		jsr 	PrAXHex
- 		lda 	#' '
- 		jmp 	PutChr
 
 ;----------------------------------------------- PrAXHex
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
@@ -453,23 +459,23 @@ Bin2BCD3
  		cld 			; clear decimal mode
  		rts
 
-;----------------------------------------------- DivA10
-DivA10: ;Divide .A by 10
- 		;-- 17 bytes, 30 cycles
- 		lsr 	a
- 		sta 	ZTmp
- 		lsr 	a
- 		adc 	ZTmp
- 		ror 	a
- 		lsr 	a
- 		lsr 	a
- 		adc 	ZTmp
- 		ror 	a
- 		adc 	ZTmp
- 		ror 	a
- 		lsr 	a
- 		lsr 	a
- 		rts
+; ;----------------------------------------------- DivA10
+; DivA10: ;Divide .A by 10
+;  		;-- 17 bytes, 30 cycles
+;  		lsr 	a
+;  		sta 	ZTmp
+;  		lsr 	a
+;  		adc 	ZTmp
+;  		ror 	a
+;  		lsr 	a
+;  		lsr 	a
+;  		adc 	ZTmp
+;  		ror 	a
+;  		adc 	ZTmp
+;  		ror 	a
+;  		lsr 	a
+;  		lsr 	a
+;  		rts
 
 
 

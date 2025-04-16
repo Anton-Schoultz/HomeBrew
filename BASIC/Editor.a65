@@ -1,11 +1,14 @@
 ;=================================================================== EDITOR ===========
+;*  DB_EdtLine           Debug editor line - NUM  ADR  NXT  LEN  FND
+;*  DB_EdtMem            Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
+;*  DB_EdtMove           Debug memory moves - ZPtr ZCnt ZSrc ZTgt
 ;*  EdtAdd               Append TOKBUF line to end of program
-;*  EdtNew             Allocate high memory block - payload size in ZCnt, Returns pointer in ZPtr
+;*  EdtAlloc             TODO Allocate space - reuse old space otherwiser create new space
 ;*  EdtClear             Clear variables and arrays
 ;*  EdtCpy               Copy from TOKBUF->(ZTgt)
-;*  EdtDBug              debug editor values
 ;*  EdtDel               Delete line and fall through to Insert
 ;*  EdtDwn               Move bytes down (Delete)
+;*  EdtFresh             Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr,AX
 ;*  EdtIns               Insert line, provided it is not an 'empty' line (length <5)
 ;*  EdtNew               NEW = clear program, variables etc.
 ;*  EdtOpn               Move memory up
@@ -67,7 +70,7 @@ EdtClear: ; Clear variables and arrays
  		lda 	#0
  		sta 	(ARYBEG)
 
-		;- clear vartable (nums, strings, stacks)
+ 		;-- clear vartable (nums, strings, stacks)
  		tay
 EdtWipe 	sta 	VARTAB,y
  		iny
@@ -130,23 +133,31 @@ EdtCpyL 	lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
  		bpl 	EdtCpyL
+ 		ZCPY(VAREND,BASEND) 	; track end of code in VAREND
  		rts
 
 ;=================================================================== MEM-ALLOC ========
 
-;-- EdtAlloc
-EdtAlloc:; TODO Allocate space - reuse old space otherwiser create new space
+;----------------------------------------------- EdtAlloc
+EdtAlloc: ; TODO Allocate space - reuse old space otherwiser create new space
 ; payload size in ZCnt, Returns pointer in ZPtr
 
-;-- EdtFresh
-EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
-; payload size in ZCnt, Returns pointer in ZPtr (points to the length bytes)
+;----------------------------------------------- EdtFresh
+EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr,AX
+; payload size in ZCnt, Returns pointer in ZPtr & AX (points to the length bytes)
 ; Move ARYBEG down
  		ZCPY(ZPtr,ZCnt) 	; data size
- 		ZINC(ZPtr) 		; add space for the block size
- 		ZINC(ZPtr)
+ 		;-- add space for the block size & null
+ 		clc
+ 		lda 	#3 		; 2:Len, 1:Null
+ 		adc 	ZPtr
+ 		sta 	ZPtr
+ 		lda 	#0
+ 		adc 	ZPtr+1
+ 		sta 	ZPtr+1
  		;--
  		ZSUB(ARYBEG,ZPtr) 	; reduce ARYBEG
+ 		;-- TODO check out-of-memory, throw if error
  		ZCPY(ZPtr,ARYBEG) 	; place in ZPtr
  		;-- copy the block size
  		ldy 	#0
@@ -155,12 +166,17 @@ EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
  		sta 	(ZPtr),y
  		iny
  		lda 	ZCnt+1
- 		STA 	(ZPtr),y
+ 		sta 	(ZPtr),y
  		lda 	#0
 EdtFreshClr 	iny
  		sta 	(ZPtr),y
  		dex
  		bpl 	EdtFreshClr
+
+ 		lda 	ZPtr
+ 		ldx 	ZPtr+1
+
+
  		rts
 
 
@@ -262,23 +278,11 @@ EdtOpn3 	dey
  		rts
 
 
-#if _DBUG
+#if _DB_EDT
 ;=================================================================== DBUG =============
-;----------------------------------------------- EdtDBug
-EdtDBug: ; debug editor values
- 		php
- 		pha
- 		phx
- 		phy
-
- 		PRINTLN("ZSrc ZTgt ZCnt END  TLEN")
- 		HEX_INT(ZSrc)
- 		HEX_INT(ZTgt)
- 		HEX_INT(ZCnt)
- 		HEX_INT(BASEND)
- 		HEX_INT(TOK_LEN)
- 		CRLF()
-
+;----------------------------------------------- DB_EdtLine
+DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
+ 		PUSHALL()
  		PRINTLN("NUM  ADR  NXT  LEN  FND")
  		HEX_INT(LN_NUM)
  		HEX_INT(LN_ADR)
@@ -286,29 +290,16 @@ EdtDBug: ; debug editor values
  		HEX_INT(LN_LEN)
  		HEX_INT(LN_FND)
  		CRLF()
-
- 		;-- PAUSE()
-
- 		ply
- 		plx
- 		pla
- 		plp
-
+ 		PAUSE()
+ 		PULLALL()
  		rts
 
-;----------------------------------------------- EdtDBug
-EdtDBugMem: ; debug memory values
+;----------------------------------------------- DB_EdtMem
+DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ; RAMBEG
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
-
-.export ARYBEG
-
- 		php
- 		pha
- 		phx
- 		phy
-
+ 		PUSHALL()
  		PRINTLN("BBeg BEnd VEnd SEnd ABeg")
  		HEX_INT(BASBEG)
  		HEX_INT(BASEND)
@@ -316,22 +307,21 @@ EdtDBugMem: ; debug memory values
  		HEX_INT(STR_END)
  		HEX_INT(ARYBEG)
  		CRLF()
-
+ 		PAUSE()
+ 		PULLALL()
+ 		rts
+;----------------------------------------------- DB_EdtMove
+DB_EdtMove: ; Debug memory moves - ZPtr ZCnt ZSrc ZTgt
+ 		PUSHALL()
  		PRINTLN("ZPtr ZCnt ZSrc ZTgt")
  		HEX_INT(ZPtr)
  		HEX_INT(ZCnt)
  		HEX_INT(ZSrc)
  		HEX_INT(ZTgt)
  		CRLF()
-
-   PAUSE()
- 		ply
- 		plx
- 		pla
- 		plp
-
+ 		PAUSE()
+ 		PULLALL()
  		rts
-
 
 #endif
 

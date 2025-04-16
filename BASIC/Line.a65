@@ -2,9 +2,10 @@
 #ifdef hide
 .NOLIST
 #endif
-;=================================================================== LINE =============
+;=================================================================== LINE ============= 
+;*  DB_Line              Debug Line vars - NUM  ADR  NXT  LEN  FND
+;*  DB_LineComp          Debug results of LnComp - step through
 ;*  LnComp               Compare line number to LN_FND, (NUM-FND)
-;*  LnDump               dump line info
 ;*  LnGo                 seek line for GOTO/GOSUB
 ;*  LnNext               Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ;*  LnNextRd             fetch the line info - set NUM,LEN,NXT
@@ -22,11 +23,11 @@ _Ln 		= $
 
 ; $003C  Int(LN_FND)   ; Line number to look for
 
-;----------------------------------------------- LnTop
+;----------------------------------------------- LnTop 
 LnTop: ; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
  		ZCPY(LN_NXT,BASBEG)
 
-;----------------------------------------------- LnNext
+;----------------------------------------------- LnNext 
 LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ; LN_NXT -> ZRd -> LN_ADR
 ; Process the T_LineNo, sets LN_ADR,LN_NUM,LN_LEN and LN_NXT
@@ -65,7 +66,7 @@ LnNextRd: ; fetch the line info - set NUM,LEN,NXT
  		lda 	CHRGOT
  		rts
 
-;----------------------------------------------- LnComp
+;----------------------------------------------- LnComp 
 LnComp: ; Compare line number to LN_FND, (NUM-FND)
 ; returns with difference in A (and saved in LN_FLG)
 ; N:1 Z:0 C:0  MI => NUM<FIND
@@ -82,18 +83,18 @@ LnComp: ; Compare line number to LN_FND, (NUM-FND)
 LnCompX 	sta 	LN_FLG 		; save result
  		rts
 
-;----------------------------------------------- LnGo
+;----------------------------------------------- LnGo 
 LnGo: ; seek line for GOTO/GOSUB
  		jsr 	LnComp
  		bmi 	LnSeekNxt
  		;-- fall through to seek from top
 
-;----------------------------------------------- LnSeekTop
+;----------------------------------------------- LnSeekTop 
 LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnTop
  		beq 	LnSeekEOF
  		;-- fall through to Seek
-;----------------------------------------------- LnSeek
+;----------------------------------------------- LnSeek 
 LnSeek: ; Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnComp 		; mi=Cont, eq=Match ne=ins
  		bpl 	LnSeekX 	; num>=find
@@ -105,10 +106,10 @@ LnSeekEOF 	lda 	#$FF 		; sets Minus for EOF/Error
 LnSeekX 	rts
 
 
-#if _DBUG
-;=================================================================== TEST =============
+#if _DB_LINE
+;=================================================================== TEST ============= 
 
-LnDump: ; dump line info
+DB_Line: ; Debug Line vars - NUM  ADR  NXT  LEN  FND
  		PRINTLN("NUM  ADR  NXT  LEN  FND")
  		HEX_INT(LN_NUM)
  		HEX_INT(LN_ADR)
@@ -117,7 +118,7 @@ LnDump: ; dump line info
  		HEX_INT(LN_FND)
  		jmp 	PrNL
 
-LnComp_Test 	; Test line compare
+DB_LineComp: ; Debug results of LnComp - step through
  		ZSET(LN_FND,100)
  		;-- NUM<FIND
  		ZSET(LN_NUM,90)

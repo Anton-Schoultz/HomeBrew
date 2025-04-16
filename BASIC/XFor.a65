@@ -3,7 +3,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== FOR ============== 
-;*  ForDump              Debug For values
+;*  DB_For               Debug For values - STP  LIM  ADR  IX SP
 ;*  ForPop               Pop for info from stack to inner vars
 ;*  ForPush              Push FOR structure onto the stack
 ;*  X_For                FOR <var>=<expr> TO <expr> [STEP <expr>]
@@ -29,7 +29,7 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		jsr 	ChrRd 		; consume token
  		jsr 	X_LetDo 	; returns index in X
  		;-- store var index
- 		LDA 	VARID
+ 		lda 	VARID
  		sta 	FOR_NDX 	; save index
  		;-- save return address
  		ZCPY(FOR_ADR,LN_NXT)
@@ -38,20 +38,20 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		jsr 	Match 		; check for and skip over 'TO'
  		;-- limit
  		jsr 	EvNumeric
- 		JSR 	NumToInt 	; num as AX l/h
- 		STA 	FOR_LIM
- 		STX 	FOR_LIM+1
+ 		jsr 	NumToInt 	; num as AX l/h
+ 		sta 	FOR_LIM
+ 		stx 	FOR_LIM+1
  		;-- STEP?
  		ZSET(FOR_STP,1) 	; default step is 1
  		lda 	CHRGOT
- 		BEQ 	X_ForX 		; STEP ommitted -> done
+ 		beq 	X_ForX 		; STEP ommitted -> done
  		;-- evaluate step size & save it
  		lda 	#T_STEP 	; STEP
  		jsr 	Match 		; check for and skip over 'TO'
  		jsr 	EvNumeric
- 		JSR 	NumToInt 	; num as AX l/h
- 		STA 	FOR_STP
- 		STX 	FOR_STP+1
+ 		jsr 	NumToInt 	; num as AX l/h
+ 		sta 	FOR_STP
+ 		stx 	FOR_STP+1
 X_ForX
  		rts
 
@@ -103,9 +103,9 @@ ForPopL 	lda 	FORSTK,y
  		bne 	ForPopL
  		rts
 
-#if _DBUG
+#if _DB_FOR
 ;=================================================================== DBUG ============= 
-ForDump: ; Debug For values
+DB_For: ; Debug For values - STP  LIM  ADR  IX SP
  		PUSHALL()
  		jsr 	PrNL
  		PRINTLN("STP  LIM  ADR  IX SP")

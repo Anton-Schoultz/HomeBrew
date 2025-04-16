@@ -2,12 +2,23 @@
 
 ; E000-FFFF = 8k
 #define _ROM $E000
-
-_DBUG 		= 0
+;			; Aprox.Size
+_DB_STR		= 0	; 290
+_DB_MAIN	= 0	;  92
+_DB_EDT		= 0	; 395
+_DB_EVAL	= 0	; 143
+_DB_LINE	= 0	; 188
+_DB_NUM		= 0	; 114
+_DB_FOR		= 0	; 150
+_DB_LIST	= 0	; 147
+; _DBUG			 (162)
+_DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST
 
 ; .echo "ROM at $F000-$FFFF (4k)\r"
 .echo "ROM at $E000-$FFFF (8k)\r"
 ; .echo "ROM at $C000-$FFFF (16k)\r"
+
+
 
 #include "Constants.a65"
 
@@ -58,7 +69,9 @@ Reset: ;Reset (Cold start)
 ;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
  		LDAX($800)
  		SETAX(RAMBEG)
- 		LDAX($8000) 		; end of 32K RAM
+
+ 		;LDAX($8000) 		; end of 32K RAM
+ 		LDAX($0A00)
  		SETAX(RAMEND)
 
  		jsr 	ChrInit 	; Set up ZPage Code & vectors
@@ -70,6 +83,7 @@ Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
+ 		jsr	StrInit		; init string stack etc
  		;-- Gosub/Rtn, Forn/Next
  		lda 	#0
  		sta	RTNSP
@@ -78,16 +92,6 @@ Main: ;Warm Start entry point
  		sta 	FOR_ADR+1
 
  		PR_WR_IO()
-
-#if _DBUG
-		ZSET(ZCnt,100)
-		jsr 	EdtFresh
-
-		;jsr	StrTest
-
- 		HALT()
-#endif
-
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop
@@ -98,9 +102,16 @@ MainLoop: ; Main Loop
  		jsr 	PrNL
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
-;	jsr MainTokBuf
+#if _DB_MAIN
+	jsr MainTokBuf
+ 	ZSET(ZRd,TOKBUF+3) 	; where to run from
+ 	jsr ChrRd
+ 	jsr RunInit 		; set I/O, Zero suppress etc
+ 	jsr EvNumeric
+ 	jsr DB_EvStr
 ;	jsr MainList
-;	jmp MainLoop
+	jmp MainLoop
+#endif
 
  		;-- immediate command ? (No line number)
  		lda 	TOKBUF

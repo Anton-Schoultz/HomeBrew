@@ -2,8 +2,8 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ==============
-;*  ListDBug             debug values
+;=================================================================== LIST ============== 
+;*  DB_List              Debug LIST values - BEG  END  NUM  FLG  FND"
 ;*  ListLn               List line (LnNext called before this)
 ;*  X_List               LIST [from] [- [to]]
 ;*
@@ -12,7 +12,7 @@ _List 		= $
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-;----------------------------------------------- X_List
+;----------------------------------------------- X_List 
 X_List: ; LIST [from] [- [to]]
  		jsr 	ChrRd 		; consume LIST
  		;-- CLS()
@@ -27,14 +27,14 @@ X_List: ; LIST [from] [- [to]]
  		dec 	a
  		sta 	LST_END
  		sta 	LST_END+1
- 		;--
+ 		;-- 
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	ChrRd 		; read char after the num
  		;-- set start & end to number
- 		jsr	NumToInt	; num as AX l/h
+ 		JSR 	NumToInt 	; num as AX l/h
  		sta 	LST_BEG
  		sta 	LST_END
  		stx 	LST_BEG+1
@@ -52,9 +52,9 @@ X_List_0 	;- check for a '-'
  		;-- check for ending number
  		BR_ANE(T_NumLit,X_List_1)
  		jsr 	NumRd 		; read value into NUM_A
- 		jsr	NumToInt	; num as AX l/h
-		sta	LST_END
-		stx	LST_END+1
+ 		JSR 	NumToInt 	; num as AX l/h
+ 		STA 	LST_END
+ 		STX 	LST_END+1
 
 X_List_1 	;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
@@ -73,7 +73,7 @@ X_List1 	jsr 	ListLn 		; list the line
  		bne 	X_List_L 	; non-zero, so loop
 X_List_X 	rts
 
-;----------------------------------------------- ListLn
+;----------------------------------------------- ListLn 
 ListLn: ; List line (LnNext called before this)
 ; line token already processed
  		jsr 	ChrRd
@@ -91,7 +91,7 @@ ListLn: ; List line (LnNext called before this)
 ListLnL 	;-- check for end of line null
  		lda 	CHRGOT
  		beq 	ListLnX 	; null = dend of line
- 		bpl	ListChr		; $00-7F => character
+ 		BPL 	ListChr 	; $00-7F => character
 
  		;-- have a token $80-FF
  		jsr 	ListTok
@@ -101,10 +101,10 @@ ListLnL 	;-- check for end of line null
 ListLnX 	;-- end of the line, CRLF and done
  		jmp 	PrNL
 
-ListChr		; non-token
-		jsr 	PutChr
-		jsr 	ChrRd
-		bra	ListLnL
+ListChr 	; non-token
+ 		jsr 	PutChr
+ 		jsr 	ChrRd
+ 		BRA 	ListLnL
 
 
 ;  list a part of the line (token & its data)
@@ -134,7 +134,7 @@ ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
  		jsr 	PutChr
 ListTokR3 	bra 	ListTokX
- 		;--
+ 		;-- 
  		;-- Token ?
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
@@ -147,11 +147,10 @@ ListTok1 	ldx 	TOKNO
 ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
-#if _DBUG
-;=================================================================== DBUG =============
-ListDBug: ; debug values
- 		php \ pha \ phx \ phy
-
+#if _DB_LIST
+;=================================================================== DBUG ============= 
+DB_List: ; Debug LIST values - BEG  END  NUM  FLG  FND"
+ 		PUSHALL()
  		PRINTLN("BEG  END  NUM  FLG  FND")
  		HEX_INT(LST_BEG)
  		HEX_INT(LST_END)
@@ -159,11 +158,8 @@ ListDBug: ; debug values
  		HEX_INT(LN_FLG)
  		HEX_INT(LN_FND)
  		CRLF()
-
  		PAUSE()
-
- 		ply \ plx \ pla \ plp
-
+ 		PULLALL()
  		rts
 #endif
 
@@ -174,13 +170,13 @@ ListDBug: ; debug values
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)+$80

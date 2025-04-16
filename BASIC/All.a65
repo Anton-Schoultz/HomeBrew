@@ -16,6 +16,7 @@
 #include "XFor.a65"
 #include "XNext.a65"
 #include "XStop.a65"
+#include "XDim.a65"
 
 ; Secondary keywords
 #include "KeyWords.a65"
