@@ -37,6 +37,11 @@ W_Sgn		.DB 	"SGN",'('+$80
 #endif
 ;----------------------------------------------- run
 #if ($/256) = PG_RUN
+#ifndef _T_FNUM_
+#define _T_FNUM_
+T_FNUM = LOW($)+$80
+#endif
+
 .list
 T_Sgn		= LOW($)+$80
 .DW 	X_Sgn

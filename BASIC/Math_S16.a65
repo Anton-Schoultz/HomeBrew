@@ -366,9 +366,9 @@ NumPrint: ; Convert number to string & output (via PutChr mem/io)
  		jsr 	NumCvt 		; NUM_A to string in NUM_BUF
  		jsr 	NumFmt
  		LDAX(NUM_BUF)
- 		jsr 	PrStrAX
- 		lda 	#' '
- 		jmp 	PutChr
+ 		jmp 	PrStrAX
+; 		lda 	#' '
+; 		jmp 	PutChr
 
 ;----------------------------------------------- NumFlag
 NumFlag: ; set flags bassed on unpacked result

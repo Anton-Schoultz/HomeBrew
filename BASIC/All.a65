@@ -26,3 +26,6 @@
 #include "XFSqr.a65"
 #include "XFAbs.a65"
 #include "XFSgn.a65"
+
+;- String functions
+#include "XFUpper.a65"

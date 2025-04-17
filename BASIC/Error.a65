@@ -21,8 +21,12 @@ _Err 		= $
 ;----------------------------------------------- X_Err
 Error: ; Hanlde error[X] resetting to warm start
  		pha
+ 		phx
+ 		phy
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
  		jsr 	PrNL
+ 		ply
+ 		plx
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
@@ -72,12 +76,12 @@ Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
  		tax 			; index in table
- 		cpx 	#0
+; 		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
  		;--
-MsgNxt 		cpx 	#0 		; no more
- 		beq 	MsgX
+;MsgNxt 		cpx 	#0 		; no more
+; 		beq 	MsgX
  		;-- move to next word
 MsgNxtL 	iny
  		lda 	(ZTokPtr),y
@@ -112,13 +116,13 @@ MsgX 		;jsr ChrRd
 MsgInvalid 	; not found
  		RTN_F() 		; return false
 MsgAC 		lda 	ZRegA 		; '@' A as char
- 		jsr 	PutChr
+ 		jsr 	MsgChr
  		bra 	MsgL
 MsgAH 		lda 	ZRegA 		; '!' A as hex
  		bra 	MsgHex
 
 MsgYC 		lda 	ZRegY 		; '#' Y as char
- 		jsr 	PutChr
+ 		jsr 	MsgChr
  		bra 	MsgL
 MsgYH 		lda 	ZRegY 		; '$' Y as hex
 MsgHex 		pha
@@ -129,6 +133,16 @@ MsgHex 		pha
  		bra 	MsgL
 MsgYD 		lda 	ZRegY
 MsgDec 		jmp 	PrADec3
+
+
+MsgChr:; print char in .A if it is ascii, otherwise a '?'
+		cmp	#$7E
+		bpl	MsgChrNo
+		cmp 	#$21
+		bpl	MsgChrX
+MsgChrNo	lda #'?'
+MsgChrX		jsr	PutChr
+		rts
 
 #define DOT '.'+$80
 ; @	A as character
@@ -152,12 +166,12 @@ MsgDec 		jmp 	PrADec3
 
 ErrTbl
 .DB "OK",DOT 				; 0=ERR_OK
-.DB "Expected ! but got $",DOT 		; 2=ERR_EXPECTED
+.DB "Expected '@':! but got '#':$",DOT 	; 2=ERR_EXPECTED
 .DB "Expected constant",DOT 		; 4=ERR_CONST
 .DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
 .DB "FOR/NEXT",DOT 			; 8=ERR_FOR
 .DB "Expected variable",DOT 		;10=ERR_VAR
-.DB "Invalid variable",DOT 		;12=ERR_BADVAR
+.DB "Invalid variable !",DOT 		;12=ERR_BADVAR
 .DB "Divide by zero",DOT 		;14=ERR_DIV0
 .DB "Redimension",DOT	 		;16=ERR_REDIM
 

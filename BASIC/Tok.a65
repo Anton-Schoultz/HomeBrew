@@ -227,11 +227,10 @@ IsFunction: ; Return T/F if CHRGOT is a function and token in A
 ; () is also treated as a functionj
  		lda 	CHRGOT
  		BR_AEQ('(',IsFnTrue)	; Brace treated as null function
- 		cmp 	#_FNBEG
- 		;beq	IsFnTrue
+ 		cmp 	#T_FNUM		; firt numeric function
  		bmi 	IsFnFalse
- 		;RTN_F()
-
+ 		cmp	#T_FSTR
+ 		bpl	IsFnFalse
 IsFnTrue 	RTN_T()
 
 IsFnFalse	RTN_F()

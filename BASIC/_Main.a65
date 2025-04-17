@@ -12,17 +12,18 @@ _DB_NUM		= 0	; 114
 _DB_FOR		= 0	; 150
 _DB_LIST	= 0	; 147
 _DB_PRINT	= 0
-;_DBUG		= 1
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
 
-; .echo "ROM at $F000-$FFFF (4k)\r"
-.echo "ROM at $E000-$FFFF (8k)\r"
-; .echo "ROM at $C000-$FFFF (16k)\r"
+#if _DBUG
+.echo "\t+--------------+\n"
+.echo "\t| DEBUG Active |\n"
+.echo "\t+--------------+\n\n"
+#endif
 
-
+.echo "\tROM at $E000-$FFFF (8k)\r"
+; .echo "\t\tROM at $C000-$FFFF (16k)\r"
 
 #include "Constants.a65"
-
 #include "Macros.a65"
 #include "_Vars.a65"
 
@@ -43,9 +44,6 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 ; 		START OF ROM
  		jmp 	Reset
 
-.db DATE
-.db TIME
-
 #include "ConSim.a65" 			; Console Implementation
 #include "ChrStr.a65" 			; Base IO (incl macros)
 #include "Util.a65" 			; utilities for general use
@@ -55,7 +53,8 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 #include "Math.a65" 			; Number code
 #include "Eval.a65" 			; Evaluator
-#include "Line.a65"
+
+#include "Line.a65"			; Line control
 
 
 
@@ -175,6 +174,9 @@ ROMEND 		= $
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
+.echo "\tWords\t"
+.echo $-TblKeyword
+.echo "/256\n"
 
 ;----------------------------------------------- TblRun
 ; Include for the jump/run table
@@ -182,9 +184,12 @@ ROMEND 		= $
 .nolist
 #include "All.a65"
 T_Max 		= LOW($)+$80
-.echo "Tokens "
+.echo "\tTokens\t"
 .echo (T_Max-$80)/2
-.echo "/64"
+.echo "/64 \t("
+.echo $-TblRun
+.echo "/256)\n"
+
 #if T_Max > $F0
 .echo " Too many tokens"
 #endif
@@ -210,5 +215,6 @@ T_Max 		= LOW($)+$80
 .echo ($FF00 - ROMEND)
 .echo " bytes remaining.\n\n"
 
+.export T_FNUM,T_FSTR
 
 .end

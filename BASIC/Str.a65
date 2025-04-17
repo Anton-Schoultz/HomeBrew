@@ -3,6 +3,7 @@
 ;
 ;*  DB_Str               Debug String values - PtrA LenA PtrB LenB
 ;*  EvIsStr              Return EQ if A is T_StrLit,T_StrVar
+;*  EvStrItem            get a single item T_StrLit |T_StrVar| StrFn
 ;*  EvString             Evuate a string expression -> STRBUF
 ;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
 ;*  StrAppend            Append top two strings
@@ -66,18 +67,54 @@ _Str 		= $
  		;--
 ; ZPtr must point to the memory block
 
+;----------------------------------------------- EvString
+EvString: ; Evuate a string expression -> STRBUF
+; return T=OK, F otherwise
+ 		jsr 	StrPush 	; create a temp space
+
+ 		;-- term counter, dec with each term
+ 		lda 	#0
+ 		sta 	EVFLG
+ 		;-- for now, just handle one item
+
+
+ 		jsr 	EvStrItem
+ 		RTN_IFF()
+
+EvStrL 		;-- while '+'
+ 		lda 	CHRGOT
+ 		cmp 	#'+'
+ 		bne 	EvStrX
+ 		;-- {
+ 		jsr 	ChrRd 		; consume the '+'
+ 		jsr 	StrPush 	; push working string
+ 		jsr 	EvStrItem 	; get next part
+ 		RTN_IFF() 		; missing term !
+ 		jsr 	StrAppend 	; append it
+ 		bra 	EvStrL 		; loop around
+ 		;-- }
+
+EvStrX 		RTN_T()
+
+;----------------------------------------------- EvStrItem
+EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
+ 		lda 	CHRGOT
+ 		;-- string Value ?
+ 		CASE(T_StrLit,StrLit)
+ 		CASE(T_StrVar,StrVar)
+ 		;-- BR_AEQ(T_StrAry,RtnTrue)
+ 		RTN_F()
+
 ;----------------------------------------------- StrVar
 StrVar: ; recall a String variable T_StrVar ID
- 		jsr 	ChrRd 		; consume T_StrVar
- 		bpl 	StrVar1
- 		ERROR(ERR_BADVAR) 	; invalid varname
+ 		jsr 	ChrRd 		; consume T_StrVar, get ID
+; 		bpl 	StrVar1
+; 		ERROR(ERR_BADVAR) 	; invalid varname
 StrVar1 	;-- recall the variable
  		and 	#$1F 		; mask off index
-
-; 		pha
-; 		jsr	ChrRd		; consume ID
-; 		pla
-
+ 		pha
+ 		jsr 	ChrRd 		; consume ID, move on to '+'/end
+ 		pla
  		;-- drop through to recall
 ;----------------------------------------------- StrGet
 StrGet: ; get string at index A  A$..Z$ 1..26
@@ -89,10 +126,11 @@ StrGet: ; get string at index A  A$..Z$ 1..26
  		ora 	ZPtr
  		bne 	StrLoad 	; string exists
  		;-- no string data yet
- 		rts
-StrLoad 	jsr 	StrPoint 	; point and length in ZCnt
+ 		RTN_F()
+StrLoad 	jsr 	StrPoint 	; ZTgt=point ZCnt=Length
  		ZCPY(ZSrc,ZTgt) 	; from hi-mem
  		ZCPY(ZTgt,S_PTR_A)
+
  		ldy 	#0
  		;-- copy upto and including the null (not whole block)
 StrLoadL 	lda 	(ZSrc),y
@@ -105,7 +143,27 @@ StrLoadL 	lda 	(ZSrc),y
  		;-- fall through to save index
 StrLoadX 	sty 	S_LEN_A
  		ZCPY(STR_LEN,S_LEN_A)
- 		rts
+ 		RTN_T()
+
+;----------------------------------------------- StrLit
+StrLit: ; Recall a string literal
+; CHRGOT is T_StrLit, ChrRd will get the first character
+ 		ldy 	#0
+ 		sty 	S_LEN_A+1 	; clear high
+StrLitL 	jsr 	ChrRd 		; read literal from code
+ 		sta 	(S_PTR_A),Y
+ 		beq 	StrLitX 	; ending null
+ 		iny
+ 		bne 	StrLitL 	; max out at 255
+ 		;-- overflow, so back up and null
+ 		jsr 	StrOvr
+ 		;-- fall through to save index
+StrLitX 	sty 	S_LEN_A
+ 		ZCPY(STR_LEN,S_LEN_A)
+ 		dec 	EVFLG 		; note that we got something
+ 		;-- move on to next byte in code
+ 		jsr 	ChrRd
+ 		RTN_T()
 
 ;----------------------------------------------- StrSet
 StrSet: ; Store string at index A  A$..Z$ 1..26
@@ -143,34 +201,6 @@ StrPoint: ; (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
  		ZINC(ZTgt)
  		rts
 
-;-----------------------------------------------
-EvString: ; Evuate a string expression -> STRBUF
-; return T=OK, F otherwise
-; 		jsr 	StrClr 		; clear the result
- 		;-- term counter, dec with each term
- 		lda 	#0
- 		sta 	EVFLG
- 		;-- for now, just handle one item
-EvStrL 		jsr 	EvStrItem
- 		RTN_IFF()
- 		;--
- 		lda 	CHRGOT
- 		cmp 	#'+'
- 		bne 	EvStrX
- 		jsr 	ChrRd 		; consume the '+'
- 		bra 	EvStrL
-
-
-EvStrX 		RTN_T()
-
-
-EvStrItem 	; check the token
- 		lda 	CHRGOT
- 		;-- string Value ?
- 		BR_AEQ(T_StrLit,StrLit)
- 		BR_AEQ(T_StrVar,StrVar)
- 		;-- BR_AEQ(T_StrAry,RtnTrue)
- 		RTN_F()
 
 
 EvStrNxt 	;-- next token
@@ -182,7 +212,7 @@ EvStrNxt 	;-- next token
 EvIsStr: ; Return EQ if A is T_StrLit,T_StrVar
  		BR_AEQ(T_StrLit,EvIsStrX)
  		BR_AEQ(T_StrVar,EvIsStrX)
- 		;-- BR_AEQ(T_StrAry,EvIsStrX)
+ 		BR_AEQ(T_StrAry,EvIsStrX)
 EvIsStrX 	rts
 
 ;======================================================================================
@@ -215,28 +245,6 @@ StrOvr: ; Overflow - truncate
 StrEnd 		sty 	S_LEN_A
  		rts
 
-;----------------------------------------------- StrLit
-StrLit: ; Recall a string literal
-; CHRGOT is T_StrLit, ChrRd will get the first character
- 		jsr 	StrPush 	; create a temp space
- 		ldy 	#0
- 		sty 	S_LEN_A+1 	; clear high
-StrLitL 	jsr 	ChrRd 		; read literal from code
- 		sta 	(S_PTR_A),Y
- 		beq 	StrLitX 	; ending null
- 		iny
- 		bne 	StrLitL 	; max out at 255
- 		;-- overflow, so back up and null
- 		jsr 	StrOvr
- 		;-- fall through to save index
-StrLitX 	sty 	S_LEN_A
- 		ZCPY(STR_LEN,S_LEN_A)
- 		dec 	EVFLG 		; note that we got something
-#if _DB_STR
- 		PRINTLN("StrLitX")
- 		jsr 	DB_Str
-#endif
- 		rts
 
 
 ;----------------------------------------------- StrAppend
@@ -280,7 +288,7 @@ StrUpper1 	iny
  		and 	#$DF
  		sta 	(S_PTR_A),Y
  		bra 	StrUpper1
-StrUpperX 	rts
+StrUpperX 	RTN_T()
 
 ;----------------------------------------------- StrLower
 StrLower: ; convert to LOWER case
@@ -293,7 +301,7 @@ StrLower1 	iny
  		ora 	#$20
  		sta 	(S_PTR_A),Y
  		bra 	StrLower1
-StrLowerX 	rts
+StrLowerX 	RTN_T()
 
 
 ;======================================================================================
