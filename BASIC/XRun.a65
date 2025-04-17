@@ -59,6 +59,7 @@ RunX 		rts
 
 ;----------------------------------------------- RunLn
 RunStmnt: ; Run a statement
+ 		jsr 	NumInit 	; initialise evaluator
  		jsr 	ChrRd 		; (++ZRd)->A->CHRGOT
  		sta 	TOKNO
  		beq 	RunLnX 		; null = End-of-statement

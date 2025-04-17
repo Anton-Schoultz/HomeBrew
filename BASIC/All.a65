@@ -30,3 +30,6 @@
 ;- String functions
 #include "XFUpper.a65"
 #include "XFLower.a65"
+#include "XFLTrim.a65"
+#include "XFRTrim.a65"
+#include "XFTrim.a65"

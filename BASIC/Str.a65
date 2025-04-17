@@ -236,8 +236,6 @@ StrIsFn: ; Return T/F if .A is a string function (A preserved)
 StrNo		RTN_F()
 StrTrue 	RTN_T()
 
-;======================================================================================
-
 ;----------------------------------------------- StrInit
 StrInit: ;Initialise string buffer
  		ZCPY(STR_END,VAREND) 	; point to open area
@@ -324,6 +322,52 @@ StrLower1 	iny
  		bra 	StrLower1
 StrLowerX 	RTN_T()
 
+;----------------------------------------------- StrLTrim
+StrLTrim: ; trim leading blanks
+		; tgt is in place at S_PTR_A
+		ZCPY(ZTgt,S_PTR_A)
+		; find first non blank
+ 		ldy 	#$FF
+StrLTrim1 	iny
+ 		lda 	(S_PTR_A),Y
+ 		beq 	StrLTrimX 	; null -> done
+ 		cmp 	#' '
+ 		beq 	StrLTrim1 	; blank -> loop
+		; non blank
+StrLTrim2 	clc
+		tya
+		adc	S_PTR_A
+		sta	ZSrc
+		lda 	#0
+		adc	S_PTR_A+1
+		sta	ZSrc+1
+		ldy	#$FF
+
+StrLTrim3	; copy string down
+		iny
+		lda	(ZSrc),y
+		sta	(ZTgt),y
+		bne	StrLTrim3	; loop until null
+		;sta	S_LEN_A		; note new size
+StrLTrimX 	RTN_T()
+
+;----------------------------------------------- StrRTrim
+StrRTrim: ; trim trailing blanks
+		; get the end of the string ,Y->Null
+		jsr	StrLen
+		;- empty string?
+		cpy 	#0
+		beq	StrRTrimX	; yes -> done
+StrRTrim1 	dey
+ 		lda 	(S_PTR_A),Y
+ 		cmp 	#' '
+ 		beq 	StrRTrim1 	; blank -> loop
+		; non blank
+StrRTrim2 	iny
+		lda 	#0
+		sta	(S_PTR_A),Y	; place new null
+		;sta	S_LEN_A		; note new size
+StrRTrimX 	RTN_T()
 
 ;======================================================================================
 
@@ -492,31 +536,6 @@ StrTest
 ; 		sty 	ZStrLen
  		;-- StrHeadX 	rts
  		;--
- 		;-- ;----------------------------------------------- StrTrim
- 		;-- StrTrim: ; trim leading and trailing blanks
-; 		ldy 	#$FF
-; 		ldx 	#0
- 		;-- StrTrim1 	iny
-; 		lda 	STRBUF,Y
-; 		beq 	StrTrimX 	; null -> done
-; 		cmp 	#' '
-; 		beq 	StrTrim1 	; blank -> loop
- 		;-- StrTrim2 	sta 	STRBUF,X 	; save char
-; 		iny
-; 		inx
-; 		lda 	STRBUF,Y
-; 		bne 	StrTrim2 	; copy up to null
-; 		sta 	STRBUF,X 	; write the null
-; 		dex
- 		;-- StrTrim3 	;-- now trim trailing ' '
-; 		lda 	STRBUF,X
-; 		cmp 	#' '
-; 		bne 	StrTrimX 	; non-space -> exit
-; 		lda 	#0 		; null the space
-; 		sta 	STRBUF,x
-; 		dex
-; 		bne 	StrTrim3
- 		;-- StrTrimX 	rts
  		;--
  		;--
  		;--

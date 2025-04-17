@@ -9,7 +9,7 @@ _Lower 		= $
 
 ;----------------------------------------------- X_Lower
 X_Lower: ; Convert string to Lower case
-; num should already have sign extracted, so just make it positive
+; string arg already set up
  		jmp 	StrLower
 
 .echo "  _LOWER$(\t"
