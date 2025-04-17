@@ -33,3 +33,4 @@
 #include "XFLTrim.a65"
 #include "XFRTrim.a65"
 #include "XFTrim.a65"
+#include "XFLeft.a65"
