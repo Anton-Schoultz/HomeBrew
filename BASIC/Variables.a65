@@ -3,10 +3,10 @@
 ;*  VarParse             Parse variable spec from source
 ;*
 ;
-#ifdef hide
+#ifdef hide	;Variables
 .NOLIST
 #endif
-
+.list
 ;                 1111111111111111
 ; 0123456789ABCDEF0123456789ABCDEF
 ; @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_

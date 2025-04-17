@@ -58,7 +58,7 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 #include "Line.a65"			; Line control
 
 
-
+Greet .db _FF,"Anton's basic",CR,LF,0
 
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
@@ -77,10 +77,21 @@ Reset: ;Reset (Cold start)
 
  		jsr 	ChrInit 	; Set up ZPage Code & vectors
  		jsr 	EdtNew 		; NEW
- 		CLS() 			; CLS
+
+ 		LDAX(Greet)
+ 		jsr	PrStrAX
+
+
 
 ;----------------------------------------------- Main
 Main: ;Warm Start entry point
+		;-- reset the stack
+ 		sei 			; Halt IRQs
+ 		ldx 	#$ff 		; Set Stack pointer
+ 		txs
+ 		cld 			; Binary mode
+ 		cli
+
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
@@ -103,8 +114,11 @@ MainLoop: ; Main Loop
  		jsr 	PrNL
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
-#if _DB_MAIN
+#if _DBUG
 	jsr MainTokBuf
+#endif
+
+#if _DB_MAIN
  	ZSET(ZRd,TOKBUF+3) 	; where to run from
  	jsr ChrRd
  	jsr RunInit 		; set I/O, Zero suppress etc

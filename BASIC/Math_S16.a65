@@ -1,4 +1,4 @@
-#ifdef hide
+#ifdef hide	; Math_S16
 .NOLIST
 #endif
 .nolist

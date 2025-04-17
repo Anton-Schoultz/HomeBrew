@@ -1,14 +1,13 @@
-#ifdef hide
+#ifdef hide 	; Error
 .NOLIST
 #endif
-.nolist
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============ 
+;=================================================================== ERROR ============
 ; NOTE: Message nos go up in 2s
 ;
 ;*  Error                Hanlde error[X] resetting to warm start
@@ -19,7 +18,7 @@
 ;*
 _Err 		= $
 
-;----------------------------------------------- X_Err 
+;----------------------------------------------- X_Err
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
@@ -57,14 +56,14 @@ ErrorX 		jmp 	Main
 ; * 	Address where error was called from
 
 
-;----------------------------------------------- RegLoad 
+;----------------------------------------------- RegLoad
 RegLoad: ; Load registers from ZReg~
  		lda 	ZRegA 		; load .A
  		ldy 	ZRegY 		; load .Y
  		ldx 	ZRegX 		; load .X
  		rts
 
-;----------------------------------------------- RegSave 
+;----------------------------------------------- RegSave
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
@@ -72,7 +71,7 @@ RegSave: ; Save registers into ZReg~
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg 
+;----------------------------------------------- Msg
 Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		jsr 	RegSave 	; save regs
  		ldy 	#0 		; in case X=0
@@ -83,7 +82,7 @@ Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
 ; 		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
- 		;-- 
+ 		;--
  		;-- MsgNxt 		cpx 	#0 		; no more
 ; 		beq 	MsgX
  		;-- move to next word
@@ -104,8 +103,8 @@ MsgL0 		;-- output the word
  		BR_AEQ('!',MsgAH) 	; ZRegA as hex
  		BR_AEQ('#',MsgYC) 	; ZRegY as character
  		BR_AEQ('&',MsgYH) 	; ZRegY as hex
- 		BR_AEQ('%',MsgYD) 	; ZRegY as hex
- 		BR_AEQ('*',MsgErrAdr) 	; caller address
+ 		BR_AEQ('%',MsgYD) 	; ZRegY as dec
+ 		BR_AEQ('*',MsgErrAdr) 	; caller address stack
  		jsr 	PutChr 		; echo
  		bra 	MsgL 		; loop next char
 
@@ -139,14 +138,42 @@ MsgHex 		pha
 MsgYD 		lda 	ZRegY
 MsgDec 		jmp 	PrADec3
 
-MsgErrAdr 	;-- caller address
- 		lda 	#'~'
- 		jsr 	PutChr
- 		lda 	ERR_ADR+1
- 		jsr 	PrAHex
- 		lda 	ERR_ADR
- 		jsr 	PrAHex
- 		bra 	MsgL
+MsgErrAdr 	;-- display stack trace
+		jsr 	PrNL
+		;- drop the call from error
+		pla
+		pla
+		lda 	ZRd
+		sta	ZTmp
+		lda 	ZRd+1
+		sta	ZTmp+1
+		;-- trace to depth of 8
+		ldx 	#5
+		bra	MsgStkL1
+MsgStkL		;-- display stack trace
+		lda 	#'<'
+		jsr 	PutChr
+		lda 	#'~'
+		jsr 	PutChr
+		;-- pop Hi,Lo and decr to match the jsr address
+		pla
+		sta	ZTmp
+		pla
+		sta	ZTmp+1
+		ZDEC(ZTmp)
+		ZDEC(ZTmp)
+		;-- print address in hex
+MsgStkL1	lda	ZTmp+1
+		jsr 	PrAHex
+		lda	ZTmp
+		jsr 	PrAHex
+		;-- loop
+		dex
+		bne	MsgStkL
+		;-- done, so warm start
+ 		jsr 	PrNL
+		jmp 	Main
+
 
 MsgChr: ; print char in .A if it is ascii, otherwise a '?'
  		cmp 	#$7E

@@ -15,7 +15,7 @@
 ;*  EdtUpd               Update program with line in TOKBUF
 ;*
 .LIST
-#ifdef hide
+#ifdef hide	; Editor
 .NOLIST
 #endif
 .nolist

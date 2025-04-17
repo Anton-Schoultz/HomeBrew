@@ -21,7 +21,7 @@
 ;*  StrVar               recall a String variable T_StrVar ID
 ;*m STROFF()             covert index in .A to an offset in .X based on size of pointer
 ;*
-#ifdef hide
+#ifdef hide	; Str
 .NOLIST
 #endif
 
@@ -231,11 +231,11 @@ EvIsStr: ; Return EQ if A is a string value/function
  		BR_AEQ(T_StrAry,StrTrue)
 ;----------------------------------------------- StrIsFn
 StrIsFn: ; Return T/F if .A is a string function (A preserved)
-; 		lda 	CHRGOT
- 		cmp	#T_FSTR		; 1st string function
- 		beq	StrTrue
- 		bpl 	StrTrue
-		RTN_F()
+; T_FSTR < A < T_LineNo
+ 		lda 	CHRGOT
+ 		BR_AGE(T_LineNo,StrNo)	; Special token $Fx
+ 		BR_AGE(T_FSTR,StrTrue)
+StrNo		RTN_F()
 StrTrue 	RTN_T()
 
 ;======================================================================================

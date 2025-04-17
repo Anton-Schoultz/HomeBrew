@@ -18,7 +18,7 @@
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokFind              try to find a matching token
 ;*
-#ifdef hide
+#ifdef hide	; Tok
 .NOLIST
 #endif
 

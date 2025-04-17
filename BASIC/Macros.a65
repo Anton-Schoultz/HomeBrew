@@ -156,17 +156,6 @@
 ; GETAX(p)	Fetch 16 bit value from address into AX (p)->A, (p+1)->X
 #DEFINE GETAX(p) lda p \ ldx p+1
 
-;----------------------------------------------- ASCII Control Codes
-#DEFINE NULL	0
-#DEFINE BS 	8
-#DEFINE HT 	9
-#DEFINE LF 	10
-#DEFINE	VT	11
-#DEFINE _FF	12
-#DEFINE CR 	13
-#DEFINE ESC	27
-#DEFINE SPC	32
-#DEFINE QT	34
 
 ;----------------------------------------------- Number format bytes
 
@@ -202,6 +191,21 @@
 ; BR_AGT(n,tgt) if(A>n) branch -> tgt
 #define BR_AGT(n,tgt) cmp #n \ beq $+4\ bcs tgt
 
+; BR_T(tgt) branch to tgt if OK (Carry=1)
+#define BR_T(tgt) bcs tgt
+; BR_F(tgt) branch to tgt if ERROR (Carry=0)
+#define BR_F(tgt) bcc tgt
+
+; RTN_T() return OK (Carry=1)
+#define RTN_T() sec \ rts
+; RTN_F() return ERROR (Carry=0)
+#define RTN_F() clc \ rts
+
+; RTN_IFF() return if false (C=0)
+#define RTN_IFF() bcs $+3\ rts
+
+; RTN_IFT() return if true (C=1)
+#define RTN_IFT() bcc $+3\ rts
 
 ;----------------------------------------------- PSEUDO-CODE
 ;; PRINT(str) echo str to output
@@ -224,22 +228,8 @@
 
 
 
-; RTN_T() return OK (Carry=1)
-#define RTN_T() sec \ rts
-; RTN_F() return ERROR (Carry=0)
-#define RTN_F() clc \ rts
-
-; RTN_IFF() return if false (C=0)
-#define RTN_IFF() bcs $+3\ rts
-
-; RTN_IFT() return if true (C=1)
-#define RTN_IFT() bcc $+3\ rts
 
 
-; BR_T(tgt) branch to tgt if OK (Carry=1)
-#define BR_T(tgt) bcs tgt
-; BR_F(tgt) branch to tgt if ERROR (Carry=0)
-#define BR_F(tgt) bcc tgt
 
 
 ; CASE(v,tgt) if .A==v then jump to tgt

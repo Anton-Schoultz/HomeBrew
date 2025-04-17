@@ -1,4 +1,4 @@
-#ifdef hide
+#ifdef hide	; ChrStr
 .NOLIST
 #endif
 
