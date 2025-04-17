@@ -78,7 +78,7 @@ EvString: ; Evuate a string expression -> STRBUF
  		;-- for now, just handle one item
 
 
- 		jsr 	EvStrItem
+EvStrPart	jsr 	EvStrItem
  		RTN_IFF()
 
 EvStrL 		;-- while '+'
@@ -103,7 +103,22 @@ EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
  		CASE(T_StrLit,StrLit)
  		CASE(T_StrVar,StrVar)
  		;-- BR_AEQ(T_StrAry,RtnTrue)
+ 		jsr	StrIsFn
+		BR_T(EvStrFn)		; yes, perform function
  		RTN_F()
+EvStrFn:; evaluate string function FN$($ [,~]* )
+		pha			; save the FnToken
+		jsr	ChrRd		; move on (consume token)
+		jsr	EvStrPart	; eval strexpr
+		pla			; pop token
+		jsr	StrFnDo		; execute function
+		;- back here to check for ')'
+ 		lda 	#')'
+ 		jsr 	Match
+		RTN_T()
+; RunJump returns to where this was called from
+StrFnDo		jmp 	RunJump		; dispatch to function to process
+
 
 ;----------------------------------------------- StrVar
 StrVar: ; recall a String variable T_StrVar ID
@@ -209,11 +224,19 @@ EvStrNxt 	;-- next token
  		rts
 
 ;----------------------------------------------- EvIsStr
-EvIsStr: ; Return EQ if A is T_StrLit,T_StrVar
- 		BR_AEQ(T_StrLit,EvIsStrX)
- 		BR_AEQ(T_StrVar,EvIsStrX)
- 		BR_AEQ(T_StrAry,EvIsStrX)
-EvIsStrX 	rts
+; used by print, which then calls EvString
+EvIsStr: ; Return EQ if A is a string value/function
+ 		BR_AEQ(T_StrLit,StrTrue)
+ 		BR_AEQ(T_StrVar,StrTrue)
+ 		BR_AEQ(T_StrAry,StrTrue)
+;----------------------------------------------- StrIsFn
+StrIsFn: ; Return T/F if .A is a string function (A preserved)
+; 		lda 	CHRGOT
+ 		cmp	#T_FSTR		; 1st string function
+ 		beq	StrTrue
+ 		bpl 	StrTrue
+		RTN_F()
+StrTrue 	RTN_T()
 
 ;======================================================================================
 
@@ -248,7 +271,7 @@ StrEnd 		sty 	S_LEN_A
 
 
 ;----------------------------------------------- StrAppend
-StrAppend: ; Append top two strings
+StrAppend: ; Append top two strings (PopB, append)
 ; StrPush sets it up so that the second string is already in the right place
 ; so just swap data and adjust initial length to add second's length
  		jsr 	NumPopB
@@ -335,10 +358,11 @@ DB_Str: ; Debug String values - PtrA LenA PtrB LenB
  		HEX_INT(S_PTR_B)
  		HEX_INT(S_LEN_B)
  		CRLF()
- 		PRINTLN("VEND SEND SLEN")
+ 		PRINTLN("VEND SEND SLEN Zrd")
  		HEX_INT(VAREND)
  		HEX_INT(STR_END)
  		HEX_INT(STR_LEN)
+ 		HEX_INT(ZRd)
  		CRLF()
  		PAUSE()
  		PULLALL()

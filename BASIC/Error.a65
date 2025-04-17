@@ -8,17 +8,18 @@
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============
+;=================================================================== ERROR ============ 
 ; NOTE: Message nos go up in 2s
 ;
 ;*  Error                Hanlde error[X] resetting to warm start
-;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/$ Char/hex
+;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
+;*  MsgChr               print char in .A if it is ascii, otherwise a '?'
 ;*  RegLoad              Load registers from ZReg~
 ;*  RegSave              Save registers into ZReg~
 ;*
 _Err 		= $
 
-;----------------------------------------------- X_Err
+;----------------------------------------------- X_Err 
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
@@ -30,37 +31,40 @@ Error: ; Hanlde error[X] resetting to warm start
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
- 		jsr	PrNL
-		;-- check if command line
-		lda	LN_NUM
-		ora	LN_NUM+1
-		beq	ErrorX
-		;-- from program, so set up the offending line
-		clc
-		lda	#3
-		adc	LN_ADR
-		sta	ZRd
-		lda	#0
-		adc	LN_ADR+1
-		sta 	ZRd+1
-		;-- and list it
-		jsr	ListLn
+ 		jsr 	PrNL
+ 		;-- check if command line
+ 		lda 	LN_NUM
+ 		ora 	LN_NUM+1
+ 		beq 	ErrorX
+ 		;-- from program, so set up the offending line
+ 		clc
+ 		lda 	#3
+ 		adc 	LN_ADR
+ 		sta 	ZRd
+ 		lda 	#0
+ 		adc 	LN_ADR+1
+ 		sta 	ZRd+1
+ 		;-- and list it
+ 		jsr 	ListLn
 ErrorX 		jmp 	Main
 
+; == Special characters == DO NOT USE $ as it is part of String Keywords
 ; @	A as character
 ; !	A as hex
 ; #	Y as char
-; $	Y as hex
+; &	Y as hex
 ; % 	Y as decimal
+; * 	Address where error was called from
 
-;----------------------------------------------- RegLoad
+
+;----------------------------------------------- RegLoad 
 RegLoad: ; Load registers from ZReg~
  		lda 	ZRegA 		; load .A
  		ldy 	ZRegY 		; load .Y
  		ldx 	ZRegX 		; load .X
  		rts
 
-;----------------------------------------------- RegSave
+;----------------------------------------------- RegSave 
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
@@ -68,10 +72,10 @@ RegSave: ; Save registers into ZReg~
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg
-Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
+;----------------------------------------------- Msg 
+Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		jsr 	RegSave 	; save regs
- 		ldy 	#0		; in case X=0
+ 		ldy 	#0 		; in case X=0
  		txa
  		and 	#$7F
  		lsr 	a 		; A = TokNo / 2
@@ -79,8 +83,8 @@ Msg: ; Display Message (ZPtr)[X] A:@/! Y:#/$ Char/hex
 ; 		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
- 		;--
-;MsgNxt 		cpx 	#0 		; no more
+ 		;-- 
+ 		;-- MsgNxt 		cpx 	#0 		; no more
 ; 		beq 	MsgX
  		;-- move to next word
 MsgNxtL 	iny
@@ -99,8 +103,9 @@ MsgL0 		;-- output the word
  		BR_AEQ('@',MsgAC) 	; ZRegA as character
  		BR_AEQ('!',MsgAH) 	; ZRegA as hex
  		BR_AEQ('#',MsgYC) 	; ZRegY as character
- 		BR_AEQ('$',MsgYH) 	; ZRegY as hex
+ 		BR_AEQ('&',MsgYH) 	; ZRegY as hex
  		BR_AEQ('%',MsgYD) 	; ZRegY as hex
+ 		BR_AEQ('*',MsgErrAdr) 	; caller address
  		jsr 	PutChr 		; echo
  		bra 	MsgL 		; loop next char
 
@@ -134,15 +139,23 @@ MsgHex 		pha
 MsgYD 		lda 	ZRegY
 MsgDec 		jmp 	PrADec3
 
+MsgErrAdr 	;-- caller address
+ 		lda 	#'~'
+ 		jsr 	PutChr
+ 		lda 	ERR_ADR+1
+ 		jsr 	PrAHex
+ 		lda 	ERR_ADR
+ 		jsr 	PrAHex
+ 		bra 	MsgL
 
-MsgChr:; print char in .A if it is ascii, otherwise a '?'
-		cmp	#$7E
-		bpl	MsgChrNo
-		cmp 	#$21
-		bpl	MsgChrX
-MsgChrNo	lda #'?'
-MsgChrX		jsr	PutChr
-		rts
+MsgChr: ; print char in .A if it is ascii, otherwise a '?'
+ 		cmp 	#$7E
+ 		bpl 	MsgChrNo
+ 		cmp 	#$21
+ 		bpl 	MsgChrX
+MsgChrNo 	lda 	#'?'
+MsgChrX 	jsr 	PutChr
+ 		rts
 
 #define DOT '.'+$80
 ; @	A as character
@@ -162,18 +175,21 @@ MsgChrX		jsr	PutChr
 #define ERR_BADVAR 	12
 #define ERR_DIV0 	14
 #define ERR_REDIM 	16
+#define ERR_MEMORY 	18
 
 
 ErrTbl
 .DB "OK",DOT 				; 0=ERR_OK
-.DB "Expected '@':! but got '#':$",DOT 	; 2=ERR_EXPECTED
+.DB "Expected '@':! but got '#':& *",DOT ; 2=ERR_EXPECTED
 .DB "Expected constant",DOT 		; 4=ERR_CONST
 .DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
 .DB "FOR/NEXT",DOT 			; 8=ERR_FOR
 .DB "Expected variable",DOT 		;10=ERR_VAR
 .DB "Invalid variable !",DOT 		;12=ERR_BADVAR
 .DB "Divide by zero",DOT 		;14=ERR_DIV0
-.DB "Redimension",DOT	 		;16=ERR_REDIM
+.DB "Redimension",DOT 			;16=ERR_REDIM
+.DB "Out of memory",DOT 		;18=ERR_MEMORY
+
 
 .DB 0
 

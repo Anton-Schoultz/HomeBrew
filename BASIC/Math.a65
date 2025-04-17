@@ -142,20 +142,24 @@ NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C)
  		sta 	CSTKB,X
  		lda 	NUM_AC
  		sta 	CSTKC,X
- 		;-- sp
+ 		;-- incr and check stack pointer
  		inx
  		txa
- 		and 	#CSTKMSK
+ 		cmp 	#CSTKSZ
+ 		beq	NumStackErr
+ 		;-- OK, store it
  		sta 	NUM_SP
  		rts
+NumStackErr:; 'out-of-memory'
+		ERROR(ERR_MEMORY)
+
 ;----------------------------------------------- NumPopB
 NumPopB: ; Pop Num_B from the calculator stack (S,X,A,B,C)
- 		;-- sp
+ 		;-- try decr stak pointer check if <0
  		dec 	NUM_SP
- 		lda 	NUM_SP
- 		and 	#CSTKMSK
- 		sta 	NUM_SP
- 		tax
+ 		bmi	NumStackErr
+ 		;-- get it into X
+ 		ldx 	NUM_SP
  		;-- sign
  		lda 	CSTKS,X
  		sta 	NUM_BS

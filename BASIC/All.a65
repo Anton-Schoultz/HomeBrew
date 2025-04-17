@@ -29,3 +29,4 @@
 
 ;- String functions
 #include "XFUpper.a65"
+#include "XFLower.a65"

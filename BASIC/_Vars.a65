@@ -55,6 +55,7 @@ Int(ZDPtr)
 Int(ZBuf) 	; ZBuf pointer to a buffer
 Int(ZPtr) 	; ZPtr general pointer
 
+Int(ERR_ADR)	; Address where error was detected
 
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details

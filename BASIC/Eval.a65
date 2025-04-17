@@ -245,15 +245,14 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
  		CASE(T_NumLit,ENumLit) 	; Literal value
- 		lda 	CHRGOT
- 		jsr 	IsFunction
+; 		lda 	CHRGOT
+ 		jsr 	IsNumFn
  		BR_T(Function)
  		RTN_F()
 
 Function 	;-- process a function
- 		lda 	CHRGOT
+; 		lda 	CHRGOT
  		pha			; save the '(' / T_Fn
-
  		jsr 	ChrRd 		; consume T_fn
  		jsr 	BoolTerm	; evaluate
  		;-- check for ')'
@@ -311,6 +310,12 @@ Match: ; match character CHRGOT vs .A and move on, error if no match
  		bne 	MatchFail
  		jmp 	ChrRd 		; next token and return
 MatchFail 	; expected in A
+		;- save caller's return address
+		ply
+		sty	ERR_ADR
+		ply
+		sty	ERR_ADR+1
+		;
  		ldy 	CHRGOT 		; got in Y
  		ldx 	#ERR_EXPECTED
  		jmp 	Error

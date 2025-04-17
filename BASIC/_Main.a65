@@ -3,7 +3,7 @@
 ; E000-FFFF = 8k
 #define _ROM $E000
 ;			; Aprox.Size
-_DB_STR		= 0	; 290
+_DB_STR		= 0	; 144
 _DB_MAIN	= 0	;  92
 _DB_EDT		= 0	; 395
 _DB_EVAL	= 0	; 143
@@ -13,6 +13,7 @@ _DB_FOR		= 0	; 150
 _DB_LIST	= 0	; 147
 _DB_PRINT	= 0
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
+; _DBUG ~ 146
 
 #if _DBUG
 .echo "\t+--------------+\n"

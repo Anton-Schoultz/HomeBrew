@@ -46,7 +46,7 @@ X_PrPart 	;-- PART = ';' | ',' | string | numeric
  		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
  		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
  		jsr 	EvIsStr 	; EQ if A is T_StrLit,T_StrVar
- 		bne 	X_PrNum 	; no, treat as numeric to string
+ 		BR_F(X_PrNum)	 	; no, treat as numeric to string
 
 X_PrStr 	;-- STRING expression
 		jsr	StrInit

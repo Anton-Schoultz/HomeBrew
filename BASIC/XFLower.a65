@@ -2,18 +2,18 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== UPPER =============
-;*  X_Upper              Convert string to upper case
+;=================================================================== LOWER =============
+;*  X_Lower              Convert string to Lower case
 ;*
-_Upper 		= $
+_Lower 		= $
 
-;----------------------------------------------- X_Upper
-X_Upper: ; Convert string to upper case
+;----------------------------------------------- X_Lower
+X_Lower: ; Convert string to Lower case
 ; num should already have sign extracted, so just make it positive
- 		jmp 	StrUpper
+ 		jmp 	StrLower
 
-.echo "  _UPPER$(\t"
-.echo $-_Upper
+.echo "  _LOWER$(\t"
+.echo $-_Lower
 .echo "\n"
 .nolist
 #endif
@@ -21,7 +21,7 @@ X_Upper: ; Convert string to upper case
 ;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
-W_Upper 	.DB 	"UPPER$",'('+$80
+W_Lower 	.DB 	"LOWER$",'('+$80
 .nolist
 #endif
 ;----------------------------------------------- run
@@ -32,10 +32,10 @@ T_FSTR = LOW($)+$80
 #endif
 
 .list
-T_Upper 	= LOW($)+$80
-.DW 	X_Upper
+T_Lower 	= LOW($)+$80
+.DW 	X_Lower
 .nolist
-.export T_Upper
+.export T_Lower
 #endif
 
-.list 					; end of Upper
+.list 					; end of Lower
