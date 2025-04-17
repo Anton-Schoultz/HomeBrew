@@ -1,4 +1,4 @@
-#define hide
+#define xhide
 
 ; E000-FFFF = 8k
 #define _ROM $E000
@@ -13,7 +13,7 @@ _DB_FOR		= 0	; 150
 _DB_LIST	= 0	; 147
 _DB_PRINT	= 0
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
-; _DBUG ~ 146
+;_DBUG = 154	; 6077-5923
 
 #if _DBUG
 .echo "\t+--------------+\n"
@@ -150,9 +150,11 @@ MainCmd 	;-- Run command line
 ;=================================================================== DBUG =============
 MainTokBuf: ; Dump TOKBUF
  		PR_WR_IO()
+ 		CLS()
+ 		jsr 	MainList
   		HEX_DUMP(TOKBUF) 	; dump 8
   		jsr 	HexDump 	; dump next 8
-  		jsr 	HexDump 	; dump next 8
+;   		jsr 	HexDump 	; dump next 8
   		jmp 	PrNL
 
 MainList:; list TOKBUF

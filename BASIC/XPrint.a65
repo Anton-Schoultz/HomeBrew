@@ -4,10 +4,10 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-.list
 
 ;=================================================================== PRINT ===========
 ;*  DB_Print             Debug Print values
+;*  X_PrPart             ' ' | ',' | string | numeric
 ;*  X_Print              PRINT ( <expr>|<str>| |, )*
 ;*
 
@@ -24,40 +24,45 @@ X_Print: ; PRINT ( <expr>|<str>|;|, )*
  		DONL() 			; default end with CRLF
 X_PrintL 	lda 	CHRGOT
  		beq 	X_PrEnd 	; null = done
-
  		jsr 	X_PrPart 	; (*1) Expand
  		BR_T(X_PrintL)
-
 X_PrEnd 	;-- end off with Cr LF if needed
  		BR_NNL(X_PrX) 		; no cr,lf -> exit
  		jsr 	PrNL 		; output CR,LF and exit
 X_PrX 		rts
 
-X_PrComma 	;-- COMMA
- 		lda 	#HT 		; tab
- 		jsr 	ChrOut 		; output the tab
-X_PrSemi 	;-- SEMICOLON
- 		NONL()
- 		jsr 	ChrRd 		; comsume ,/;
- 		rts
 
-X_PrPart 	;-- PART = ';' | ',' | string | numeric
+;----------------------------------------------- X_PrPart
+X_PrPart: ; ';' | ',' | string | numeric
  		;-- first check for comma / semi-colon
  		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
  		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
- 		; check if A is T_StrLit,T_StrVar or StrFunction
+ 		;-- check if A is T_StrLit,T_StrVar or StrFunction
  		jsr 	EvIsStr
- 		BR_F(X_PrNum)	 	; no, treat as numeric to string
+ 		BR_F(X_PrNum) 		; no, treat as numeric to string
+ 		jmp 	X_PrStr
 
-X_PrStr 	;-- STRING expression
-		jsr	StrInit
+;----------------------------------------------- X_PrComma
+X_PrComma 	; COMMA
+ 		lda 	#HT 		; tab
+ 		jsr 	ChrOut 		; output the tab
+ 		; fall through
+;----------------------------------------------- X_PrSemi
+X_PrSemi 	; SEMICOLON
+ 		NONL()
+ 		jsr 	ChrRd 		; comsume ',' ';'
+ 		rts
+
+;----------------------------------------------- X_PrStr
+X_PrStr 	; STRING expression
+ 		jsr 	StrInit
  		jsr 	EvString 	; Evaluate
  		jsr 	StrOut 		; Print
  		DONL() 			; NL on
  		RTN_T() 		; OK
-
+;----------------------------------------------- X_PrNum
 X_PrNum 	;-- NUMERIC expresion
-		jsr	NumInit
+ 		jsr 	NumInit
  		jsr 	EvNumeric 	; evaluate
  		jsr 	NumCvt 		; convert to string
  		jsr 	NumFmt 		; handle leading zeroes

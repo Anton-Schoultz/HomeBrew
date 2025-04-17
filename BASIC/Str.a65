@@ -216,12 +216,10 @@ StrPoint: ; (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
  		ZINC(ZTgt)
  		rts
 
-
-
-EvStrNxt 	;-- next token
- 		jsr 	ChrRd
- 		bne 	EvStrL
- 		rts
+; EvStrNxt 	;-- next token
+;  		jsr 	ChrRd
+;  		bne 	EvStrL
+;  		rts
 
 ;----------------------------------------------- EvIsStr
 ; used by print, which then calls EvString
