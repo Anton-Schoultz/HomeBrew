@@ -5,6 +5,7 @@
 ;=================================================================== LET ==============
 ;*  X_Let                LET <var> = <expr>
 ;*  X_LetEQ              Get variable index into .A and check for '='
+;*  X_LetStrAry          Assign to subscripted String
 ;*
 _Let 		= $
 
@@ -17,6 +18,7 @@ X_Let: ; LET <var> = <expr>
 
 X_LetDo 	CASE(T_NumVar,X_LetNum)
  		CASE(T_StrVar,X_LetStr)
+ 		CASE(T_StrAry,X_LetStrAry)
  		ERROR(ERR_VAR) 		; "Expected Variable"
 
 ;----------------------------------------------- X_LetNum
@@ -33,11 +35,11 @@ X_LetNum 	;- assign integer variable (not-ary)
 X_LetStr 	;- assign string variable (not-ary)
  		jsr 	X_LetEQ 	; get index, skip '='
  		pha 			; save index
- 		jsr 	EvString	; evaluate expression
- 		pla 			; recall index
+ 		jsr 	EvString 	; evaluate expression
+X_LetStr1 	pla 			; recall index
  		sta 	VARID 		; save the Var index
- 		; .A = var index
- 		; ZPtr -> temp result (to be coppied up to var space)
+ 		;-- .A = var index
+ 		;-- ZPtr -> temp result (to be coppied up to var space)
  		jsr 	StrSet 		; fetch & store
  		RTN_T() 		; done
 
@@ -52,11 +54,53 @@ X_LetEQ: ; Get variable index into .A and check for '='
  		lda 	#T_EQ 		; '=' TOKEN
  		jsr 	Match 		; check for and skip over '='
  		;-- init string eval
- 		jsr	StrInit
+ 		jsr 	StrInit
  		pla
  		rts
 
 X_LetBadVar 	ERROR(ERR_BADVAR)
+
+;----------------------------------------------- X_LetStrAry
+X_LetStrAry: ; Assign to subscripted String
+ 		jsr 	StrVar 		; eat token, get id, get var
+ 		; save the index for where the result must go back to
+ 		lda 	VARID
+ 		pha 			; {0} LHS
+ 		jsr 	StrPush 	; push the LHS value
+ 		jsr 	EvInt 		; calc subscript as int AX
+ 		pha 			; push offset on cpu stack {1}
+ 		;-- check for and skip over ')'
+ 		lda 	#')'
+ 		jsr 	Match
+ 		;-- check for and skip over '='
+ 		lda 	#T_EQ
+ 		jsr 	Match
+ 		;-- evaluate RHS
+ 		jsr 	EvString 	; replacement in 'A'
+; 		jsr 	NumPopB 	; original in 'B'
+; 		jsr 	NumSwap 	; A <-> B
+ 		jsr	StrPop		; pop & swap
+ 		;-- now copy from B to A(n)
+ 		pla 			; recall n {1}
+ 		dec 	a 		; BASE 1
+ 		clc
+ 		adc 	S_PTR_A
+ 		sta 	ZTgt
+ 		lda 	#0
+ 		adc 	S_PTR_A+1
+ 		sta 	ZTgt+1
+ 		;--
+ 		ZCPY(ZSrc,S_PTR_B)
+ 		ZCPY(ZCnt,S_LEN_B)
+ 		jsr 	EdtDwn
+ 		;-- kill second arg
+ 		ldy 	#0
+ 		tya
+ 		sta 	(S_PTR_B),y
+ 		;-- length
+ 		jsr 	StrLen 		; get new length
+ 		jmp 	X_LetStr1 	; recall index {0} and store
+
 
 
 

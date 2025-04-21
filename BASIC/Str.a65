@@ -74,7 +74,7 @@ _Str 		= $
 ; ZPtr must point to the memory block
 
 ;----------------------------------------------- EvString
-EvString: ; Evuate a string expression -> STRBUF
+EvString: ; Evaluate a string expression -> STRBUF
 ; return T=OK, F otherwise
  		jsr 	StrClear 	; create a temp space
 
@@ -126,6 +126,7 @@ StrFnDo 	jmp 	RunJump 	; dispatch to function to process
 
 ;----------------------------------------------- StrVar
 StrVar: ; recall a String variable T_StrVar ID
+		jsr 	StrClear	;AAA
  		jsr 	ChrRd 		; consume T_StrVar, get ID
 ; 		bpl 	StrVar1
 ; 		ERROR(ERR_BADVAR) 	; invalid varname
@@ -137,6 +138,7 @@ StrVar1 	;-- recall the variable
  		;-- drop through to recall
 ;----------------------------------------------- StrGet
 StrGet: ; get string at index A  A$..Z$ 1..26
+		sta	VARID
  		STROFF()
  		lda 	VARSTR,X
  		sta 	ZPtr
@@ -146,10 +148,9 @@ StrGet: ; get string at index A  A$..Z$ 1..26
  		bne 	StrLoad 	; string exists
  		;-- no string data yet
  		RTN_F()
-StrLoad 	jsr 	StrPoint 	; ZTgt=point ZCnt=Length
+StrLoad 	jsr 	StrPoint 	; ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		ZCPY(ZSrc,ZTgt) 	; from hi-mem
  		ZCPY(ZTgt,S_PTR_A)
-
  		ldy 	#0
  		;-- copy upto and including the null (not whole block)
 StrLoadL 	lda 	(ZSrc),y
@@ -166,7 +167,10 @@ StrLoadX 	sty 	S_LEN_A
 
 ;----------------------------------------------- StrLit
 StrLit: ; Recall a string literal
+		jsr 	StrClear	;AAA
+
 ; CHRGOT is T_StrLit, ChrRd will get the first character
+
  		ldy 	#0
  		sty 	S_LEN_A+1 	; clear high
 StrLitL 	jsr 	ChrRd 		; read literal from code
@@ -207,7 +211,7 @@ StrSave 	;- ZPtr points to the string space
  		rts
 
 ;----------------------------------------------- StrPoint
-StrPoint: ; (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
+StrPoint: ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		ldy 	#0
  		lda 	(ZPtr),y
  		sta 	ZCnt
@@ -380,27 +384,28 @@ StrFunct: ;prepare for string manipulation
  		lda 	#',' 		; check & skip ','
  		jsr 	Match
  		jsr 	EvInt 		; Eval expr to int in AX lo/hi
- 		jsr 	NumPopB
+StrPop:; PopB and swap
+		jsr 	NumPopB
  		jmp 	NumSwap
 
 ;======================================================================================
 
-;----------------------------------------------- StrAddNum
-StrAddNum: ; Append the converted numeric (in NUM_BUF) to the string
- 		jsr 	StrPush 	; create a temp space
- 		ldy 	#0
- 		sty 	S_LEN_A+1 	; clear high
-StrAddNumL 	lda 	NUM_BUF,Y
- 		sta 	(S_PTR_A),y
- 		beq 	StrAddNumX
- 		iny
- 		bne 	StrAddNumL
- 		;-- overflow, so back up and null
- 		jmp 	StrOvr
- 		;-- fall through to save index
-StrAddNumX 	sty 	S_LEN_A
- 		ZCPY(STR_LEN,S_LEN_A)
- 		rts
+; ;----------------------------------------------- StrAddNum
+; StrAddNum: ; Append the converted numeric (in NUM_BUF) to the string
+;  		jsr 	StrPush 	; create a temp space
+;  		ldy 	#0
+;  		sty 	S_LEN_A+1 	; clear high
+; StrAddNumL 	lda 	NUM_BUF,Y
+;  		sta 	(S_PTR_A),y
+;  		beq 	StrAddNumX
+;  		iny
+;  		bne 	StrAddNumL
+;  		;-- overflow, so back up and null
+;  		jmp 	StrOvr
+;  		;-- fall through to save index
+; StrAddNumX 	sty 	S_LEN_A
+;  		ZCPY(STR_LEN,S_LEN_A)
+;  		rts
 
 
 .nolist
@@ -443,117 +448,9 @@ StrTest
  		jsr 	StrAppend
  		jsr 	StrOut
  		rts
-#endif
+#endif 					;_TEST
 
-#endif
-
- 		;-- ;----------------------------------------------- StrSet
- 		;-- StrSet: ; Copy String to the variable at (ZPtr)
-; 		ldy 	#0
- 		;-- StrSetL 	lda 	(ZStr),y
-; 		sta 	(ZPtr),y
-; 		beq 	StrSetX 	; null -> done
-; 		iny
- 		;--
-; 		;-- need to check DIM size
- 		;--
-; 		bne 	StrSetL
-; 		lda 	#0
-; 		sta 	(ZStr),y
- 		;-- StrSetX 	rts
- 		;--
-
- 		;-- ;----------------------------------------------- StrAppend
- 		;-- StrAppend: ; Append string (ZStr) to STRBUF (Recall)
-; 		ldy 	#0
-; 		ldx 	ZStrLen
- 		;-- StrAddL 	lda 	(ZStr),y
-; 		sta 	STRBUF,X
-; 		beq 	StrEnd 		; ending null
-; 		;--
-; 		iny
-; 		inx
-; 		cpx 	#STRSZ
-; 		bne 	StrAddL 	; in size
-
-
- 		;-- ;----------------------------------------------- StrClr
- 		;-- StrClr: ; Clear STRBUF
-; 		ldy 	#0
-; 		tya
-; 		sta 	ZStrLen
- 		;-- StrClrL 	sta 	STRBUF,y
-; 		iny
-; 		cpy 	#STRSZ
-; 		bne 	StrClrL
- 		;-- StrRtn 		rts
-
- 		;-- ;----------------------------------------------- StrAddChr
- 		;-- StrAddChr: ; Add character .A to STRBUF
-; 		ldx 	ZStrLen
-; 		sta 	STRBUF,x
-; 		inx
-; 		lda 	#0
-; 		sta 	STRBUF,x
-; 		cpx 	#STRSZ
-; 		bmi 	StrAddChrX
-; 		;-- overflow, so back up and null
-; 		;-- jmp 	StrOvr
- 		;-- StrAddChrX 	stx 	ZStrLen
-; 		rts
-
- 		;-- ;----------------------------------------------- PrStrBuf
- 		;-- PrStrBuf: ; Print STRBUF -> PutChr -> Mem/IO
-; 		LDAX(STRBUF)
-; 		jmp 	PrStrAX
-
-
-
- 		;-- ;----------------------------------------------- StrTail
- 		;-- StrTail: ; Keep from Y onwards
-; 		;-- index is outof range so result is empty
-; 		cpy 	#STRSZ
-; 		bpl 	StrSubMT 	; could jmp to StrClr
-; 		;-- index beyond end so result is empty
-; 		cpy 	ZStrLen
-; 		bpl 	StrSubMT 	; could jmp to StrClr
-; 		;--
-; 		ldx 	#0
- 		;-- StrSubL 	lda 	STRBUF,y
-; 		sta 	STRBUF,x
-; 		beq 	StrEnd 		; save len & exit
-; 		iny
-; 		inx
-; 		cpx 	#STRSZ
-; 		bne 	StrSubL
-; 		bra 	StrOvr 		; force stop at max
- 		;--
- 		;-- ;----------------------------------------------- StrSubMT
- 		;-- StrSubMT: ;Make string empty
-; 		lda 	#0
-; 		sta 	STRBUF
-; 		sta 	ZStrLen
-; 		rts
- 		;--
- 		;-- ;----------------------------------------------- StrHead
- 		;-- StrHead: ; Truncate STRBUF at Y
-; 		;-- index is out of range - keep all
-; 		cpy 	#STRSZ
-; 		bpl 	StrHeadX 	; keep all
-; 		;-- index beyond end - keep all
-; 		cpy 	ZStrLen
-; 		bpl 	StrHeadX 	; keep all
-; 		;-- place the nul
-; 		lda 	#0
-; 		sta 	STRBUF,Y
-; 		;-- save new index
-; 		sty 	ZStrLen
- 		;-- StrHeadX 	rts
- 		;--
- 		;--
- 		;--
- 		;--
-
+#endif 					;_DB_STR
 .echo "  _Str\t\t"
 .echo $-_Str
 .echo "\n"
