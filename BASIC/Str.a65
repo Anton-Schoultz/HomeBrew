@@ -5,10 +5,10 @@
 ;*  EvIsStr              Return EQ if A is a string value/function
 ;*  EvStrFn              evaluate string function FN$($ [,~]* )
 ;*  EvStrItem            get a single item T_StrLit |T_StrVar| StrFn
-;*  EvString             Evuate a string expression -> STRBUF
-;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
+;*  EvString             Evaluate a string expression -> STRBUF
 ;*  StrAppend            Append top two strings (PopB, append)
 ;*  StrClear             Clear string 'accumulator' ready for  a new string
+;*  StrFind              find string .A
 ;*  StrFunct             prepare for string manipulation
 ;*  StrGet               get string at index A  A$..Z$ 1..26
 ;*  StrInit              Initialise string buffer
@@ -19,7 +19,8 @@
 ;*  StrLower             convert to LOWER case
 ;*  StrOut               Output the resulting string (cut at 255)
 ;*  StrOvr               Overflow - truncate
-;*  StrPoint             (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
+;*  StrPoint             (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
+;*  StrPop               PopB and swap
 ;*  StrPush              Push temp string sets up S_PTR_A,S_LEN_A
 ;*  StrRTrim             trim trailing blanks
 ;*  StrSet               Store string at index A  A$..Z$ 1..26
@@ -126,7 +127,7 @@ StrFnDo 	jmp 	RunJump 	; dispatch to function to process
 
 ;----------------------------------------------- StrVar
 StrVar: ; recall a String variable T_StrVar ID
-		jsr 	StrClear	;AAA
+ 		jsr 	StrClear 	;AAA
  		jsr 	ChrRd 		; consume T_StrVar, get ID
 ; 		bpl 	StrVar1
 ; 		ERROR(ERR_BADVAR) 	; invalid varname
@@ -138,17 +139,12 @@ StrVar1 	;-- recall the variable
  		;-- drop through to recall
 ;----------------------------------------------- StrGet
 StrGet: ; get string at index A  A$..Z$ 1..26
-		sta	VARID
- 		STROFF()
- 		lda 	VARSTR,X
- 		sta 	ZPtr
- 		lda 	VARSTR+1,X
- 		sta 	ZPtr+1
- 		ora 	ZPtr
+ 		jsr 	StrFind
  		bne 	StrLoad 	; string exists
  		;-- no string data yet
  		RTN_F()
 StrLoad 	jsr 	StrPoint 	; ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
+
  		ZCPY(ZSrc,ZTgt) 	; from hi-mem
  		ZCPY(ZTgt,S_PTR_A)
  		ldy 	#0
@@ -167,7 +163,7 @@ StrLoadX 	sty 	S_LEN_A
 
 ;----------------------------------------------- StrLit
 StrLit: ; Recall a string literal
-		jsr 	StrClear	;AAA
+ 		jsr 	StrClear 	;AAA
 
 ; CHRGOT is T_StrLit, ChrRd will get the first character
 
@@ -190,12 +186,7 @@ StrLitX 	sty 	S_LEN_A
 
 ;----------------------------------------------- StrSet
 StrSet: ; Store string at index A  A$..Z$ 1..26
- 		STROFF()
- 		lda 	VARSTR,X
- 		sta 	ZPtr
- 		lda 	VARSTR+1,X
- 		sta 	ZPtr+1
- 		ora 	ZPtr
+ 		jsr 	StrFind
  		bne 	StrSave 	; string already exists
 
  		;-- no string yet, calc size to next 16
@@ -208,6 +199,17 @@ StrSave 	;- ZPtr points to the string space
  		ZCPY(ZSrc,S_PTR_A)
  		;-- copy bytes
  		jsr 	EdtDwn
+ 		rts
+
+;----------------------------------------------- StrFind
+StrFind: ; find string .A
+ 		STA 	VARID
+ 		STROFF()
+ 		lda 	VARSTR,X
+ 		sta 	ZPtr
+ 		lda 	VARSTR+1,X
+ 		sta 	ZPtr+1
+ 		ora 	ZPtr
  		rts
 
 ;----------------------------------------------- StrPoint
@@ -224,10 +226,6 @@ StrPoint: ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		ZINC(ZTgt)
  		rts
 
-; EvStrNxt 	;-- next token
-;  		jsr 	ChrRd
-;  		bne 	EvStrL
-;  		rts
 
 ;----------------------------------------------- EvIsStr
 ; used by print, which then calls EvString
@@ -384,8 +382,8 @@ StrFunct: ;prepare for string manipulation
  		lda 	#',' 		; check & skip ','
  		jsr 	Match
  		jsr 	EvInt 		; Eval expr to int in AX lo/hi
-StrPop:; PopB and swap
-		jsr 	NumPopB
+StrPop: ; PopB and swap
+ 		jsr 	NumPopB
  		jmp 	NumSwap
 
 ;======================================================================================
