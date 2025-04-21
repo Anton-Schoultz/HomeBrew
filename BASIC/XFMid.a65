@@ -1,0 +1,68 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== MID =============
+;*  X_Mid                MID$($,From,Len)
+;*
+_Mid 		= $
+
+;----------------------------------------------- X_Mid
+X_Mid: ; MID$($,From,Len)
+		jsr 	StrPush 	; push the string
+ 		lda 	#',' 		; check & skip ','
+ 		jsr 	Match
+ 		jsr 	EvNumeric 	; Evaluate n
+ 		jsr 	NumToInt 	; n in AX lo/hi
+ 		jsr 	NumPopB
+ 		jsr 	NumSwap
+
+ 		;-- range check (int is now in B)
+ 		ldy	#0
+ 		lda 	NUM_BB
+ 		bne 	X_MidNull 	; > 256 empty
+ 		;-- calc start
+ 		ldy	NUM_BA		; From.L -> Y
+ 		jsr 	StrLTrim2 	; copy down
+		;-- then trunc at Len
+		jsr 	StrPush 	; push the string
+ 		lda 	#',' 		; check & skip ','
+ 		jsr 	Match
+ 		jsr 	EvNumeric 	; Evaluate n
+ 		jsr 	NumToInt 	; n in AX lo/hi
+ 		jsr 	NumPopB
+ 		jsr 	NumSwap
+ 		;
+		ldy	NUM_BA
+X_MidNull	lda 	#0 		; trunc with null
+ 		sta 	(S_PTR_A),Y
+X_MidX 		jmp 	StrLen 		; find new length
+
+
+.echo "  _MID$(\t"
+.echo $-_Mid
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Mid 		.DB 	"MID$",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+#ifndef _T_FSTR_
+#define _T_FSTR_
+T_FSTR 		= LOW($)+$80
+#endif
+
+.list
+T_Mid 		= LOW($)+$80
+.DW 	X_Mid
+.nolist
+.export T_Mid
+#endif
+
+.list 					; end of Mid

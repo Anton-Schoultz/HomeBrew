@@ -2,8 +2,8 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LEFT =============
-;*  X_Left               Left$(n) keep left most chars (trunc at n)
+;=================================================================== LEFT ============= 
+;*  X_Left               LEFT$($,n) keep left most chars [Head]
 ;*
 _Left 		= $
 ; To return a string that comprises the left-most n characters of x$.
@@ -14,8 +14,8 @@ _Left 		= $
 ; If n is greater than LEN(x$), the entire string (x$) will be returned.
 ; If n equals zero, the null string (length zero) is returned
 
-;----------------------------------------------- X_Left
-X_Left: ; Left$(n) keep left most chars (trunc at n)
+;----------------------------------------------- X_Left 
+X_Left: ; LEFT$($,n) keep left most chars [Head]
  		jsr 	StrPush 	; push the string
  		;-- check & skip ','
  		lda 	#','
@@ -40,13 +40,13 @@ X_LeftX 	jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Left 		.DB 	"LEFT$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_

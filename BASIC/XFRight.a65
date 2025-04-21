@@ -2,8 +2,8 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== RIGHT =============
-;*  X_Right               Right$(n) keep Right most chars (trunc at n)
+;=================================================================== RIGHT ============= 
+;*  X_Right              RIGHT$($,n) keep right most n chars [Tail]
 ;*
 _Right 		= $
 ; To return a string that comprises the Right-most n characters of x$.
@@ -12,26 +12,26 @@ _Right 		= $
 
 ; n must be within the range of 0 to 255.
 
-;----------------------------------------------- X_Right
-X_Right: ; Right$(n) keep Right most chars (trunc at n)
+;----------------------------------------------- X_Right 
+X_Right: ; RIGHT$($,n) keep right most n chars [Tail]
  		jsr 	StrPush 	; push the string
- 		lda 	#','		; check & skip ','
+ 		lda 	#',' 		; check & skip ','
  		jsr 	Match
- 		jsr 	EvNumeric	; Evaluate n
- 		jsr 	NumToInt	; n in AX lo/hi
- 		; work out start index (len - n)
+ 		jsr 	EvNumeric 	; Evaluate n
+ 		jsr 	NumToInt 	; n in AX lo/hi
+ 		;-- work out start index (len - n)
  		jsr 	NumPopB
  		jsr 	NumSwap
-		; range check (int is now in B)
-		lda	NUM_BB
-		bne	X_RightX	; > 256 keep all
-		; calc start
-		sec
-		lda	S_LEN_A
-		sbc	NUM_BA
-		bcc	X_RightX	; <= 0 so keep all
-		tay
-		jsr	StrLTrim2	; copy donw
+ 		;-- range check (int is now in B)
+ 		lda 	NUM_BB
+ 		bne 	X_RightX 	; > 256 keep all
+ 		;-- calc start
+ 		sec
+ 		lda 	S_LEN_A
+ 		sbc 	NUM_BA
+ 		bcc 	X_RightX 	; <= 0 so keep all
+ 		tay
+ 		jsr 	StrLTrim2 	; copy donw
 X_RightX 	jmp 	StrLen 		; find new length
 
 .echo "  _RIGHT$(\t"
@@ -40,13 +40,13 @@ X_RightX 	jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
-W_Right 		.DB 	"RIGHT$",'('+$80
+W_Right 	.DB 	"RIGHT$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -54,7 +54,7 @@ T_FSTR 		= LOW($)+$80
 #endif
 
 .list
-T_Right 		= LOW($)+$80
+T_Right 	= LOW($)+$80
 .DW 	X_Right
 .nolist
 .export T_Right

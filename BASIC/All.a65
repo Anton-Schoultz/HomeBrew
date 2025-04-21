@@ -35,3 +35,4 @@
 #include "XFTrim.a65"
 #include "XFLeft.a65"
 #include "XFRight.a65"
+#include "XFMid.a65"
