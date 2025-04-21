@@ -1,0 +1,51 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== CHR =============
+;*  X_Chr                Chr$($,From,Len)
+;*
+_Chr 		= $
+
+;----------------------------------------------- X_Chr
+X_Chr: ; CHR$(ascii) - return string with character given the ascii value
+		jsr	EvNumeric	; get the code
+		jsr	NumToInt	; as an Int in AX
+		pha			; save char code
+		jsr	StrClear	; prep a string entry
+		pla
+		ldy	#0
+		sta	(S_PTR_A),y	; set the char
+		tya
+		iny
+		sta	(S_PTR_A),y	; terminate the string
+X_ChrX 		jmp 	StrLen 		; find new length
+
+
+.echo "  _CHR$(\t"
+.echo $-_Chr
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Chr 		.DB 	"CHR$",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+#ifndef _T_FSTR_
+#define _T_FSTR_
+T_FSTR 		= LOW($)+$80
+#endif
+
+.list
+T_Chr 		= LOW($)+$80
+.DW 	X_Chr
+.nolist
+.export T_Chr
+#endif
+
+.list 					; end of Chr

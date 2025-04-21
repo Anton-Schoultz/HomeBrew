@@ -2,29 +2,22 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== MID =============
+;=================================================================== MID ============= 
 ;*  X_Mid                MID$($,From,Len)
 ;*
 _Mid 		= $
 
-;----------------------------------------------- X_Mid
+;----------------------------------------------- X_Mid 
 X_Mid: ; MID$($,From,Len)
-		jsr 	StrFunct
-
- 		;-- range check (int is now in B)
- 		ldy	#0
+ 		jsr 	StrFunct
+ 		ldy 	#0
  		lda 	NUM_BB
  		bne 	X_MidNull 	; > 256 empty
- 		;-- calc start
- 		ldy	NUM_BA		; From.L -> Y
+ 		ldy 	NUM_BA 		; From.L -> Y
  		jsr 	StrLTrim2 	; copy down
-		;-- then trunc at Len
-
-		jsr 	StrFunct
-
- 		;
-		ldy	NUM_BA
-X_MidNull	lda 	#0 		; trunc with null
+ 		jsr 	StrFunct
+ 		ldy 	NUM_BA
+X_MidNull 	lda 	#0 		; trunc with null
  		sta 	(S_PTR_A),Y
 X_MidX 		jmp 	StrLen 		; find new length
 
@@ -35,13 +28,13 @@ X_MidX 		jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Mid 		.DB 	"MID$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_

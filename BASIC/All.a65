@@ -36,3 +36,4 @@
 #include "XFLeft.a65"
 #include "XFRight.a65"
 #include "XFMid.a65"
+#include "XFChr.a65"
