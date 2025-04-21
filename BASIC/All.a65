@@ -34,3 +34,4 @@
 #include "XFRTrim.a65"
 #include "XFTrim.a65"
 #include "XFLeft.a65"
+#include "XFRight.a65"

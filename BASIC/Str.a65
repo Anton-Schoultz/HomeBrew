@@ -106,15 +106,15 @@ EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
  		CASE(T_StrLit,StrLit)
  		CASE(T_StrVar,StrVar)
  		;-- BR_AEQ(T_StrAry,RtnTrue)
- 		JSR 	StrIsFn
+ 		jsr 	StrIsFn
  		BR_T(EvStrFn) 		; yes, perform function
  		RTN_F()
 EvStrFn: ; evaluate string function FN$($ [,~]* )
  		pha 			; save the FnToken
- 		JSR 	ChrRd 		; move on (consume token)
- 		JSR 	EvStrPart 	; eval strexpr
+ 		jsr 	ChrRd 		; move on (consume token)
+ 		jsr 	EvStrPart 	; eval strexpr
  		pla 			; pop token
- 		JSR 	StrFnDo 	; execute function
+ 		jsr 	StrFnDo 	; execute function
  		;-- back here to check for ')'
  		lda 	#')'
  		jsr 	Match
@@ -326,8 +326,6 @@ StrLowerX 	RTN_T()
 
 ;----------------------------------------------- StrLTrim
 StrLTrim: ; trim leading blanks
- 		;-- tgt is in place at S_PTR_A
- 		ZCPY(ZTgt,S_PTR_A)
  		;-- find first non blank
  		ldy 	#$FF
 StrLTrim1 	iny
@@ -336,30 +334,34 @@ StrLTrim1 	iny
  		cmp 	#' '
  		beq 	StrLTrim1 	; blank -> loop
  		;-- non blank
-StrLTrim2 	clc
+StrLTrim2;- Copy down from Yth char (Delete first Y chars)
+ 		;-- tgt is in place at S_PTR_A
+ 		ZCPY(ZTgt,S_PTR_A)
+		; ZSrc = S_PTR_A + .Y
+		clc
  		tya
- 		ADC 	S_PTR_A
- 		STA 	ZSrc
+ 		adc 	S_PTR_A
+ 		sta 	ZSrc
  		lda 	#0
- 		ADC 	S_PTR_A+1
- 		STA 	ZSrc+1
- 		LDY 	#$FF
-
+ 		adc 	S_PTR_A+1
+ 		sta 	ZSrc+1
+ 		;
+ 		ldy 	#$FF
 StrLTrim3 	; copy string down
  		iny
- 		LDA 	(ZSrc),y
- 		STA 	(ZTgt),y
- 		BNE 	StrLTrim3 	; loop until null
+ 		lda 	(ZSrc),y
+ 		sta 	(ZTgt),y
+ 		bne 	StrLTrim3 	; loop until null
  		;-- sta	S_LEN_A		; note new size
 StrLTrimX 	RTN_T()
 
 ;----------------------------------------------- StrRTrim
 StrRTrim: ; trim trailing blanks
  		;-- get the end of the string ,Y->Null
- 		JSR 	StrLen
+ 		jsr 	StrLen
  		;-- empty string?
  		cpy 	#0
- 		BEQ 	StrRTrimX 	; yes -> done
+ 		beq 	StrRTrimX 	; yes -> done
 StrRTrim1 	dey
  		lda 	(S_PTR_A),Y
  		cmp 	#' '
@@ -367,7 +369,7 @@ StrRTrim1 	dey
  		;-- non blank
 StrRTrim2 	iny
  		lda 	#0
- 		STA 	(S_PTR_A),Y 	; place new null
+ 		sta 	(S_PTR_A),Y 	; place new null
  		;-- sta	S_LEN_A		; note new size
 StrRTrimX 	RTN_T()
 

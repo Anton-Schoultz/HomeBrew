@@ -1,4 +1,4 @@
-#ifdef hide	; Math_S16
+#ifdef hide 				; Math_S16
 .NOLIST
 #endif
 .nolist
@@ -51,7 +51,7 @@ Short(ZDIV) 	; short divisor 10/100
 ;*  NumSet               Pack and Store simple VARNUM[A]..
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
-;*  NumToInt             Return integer value in AX (lo,hi) - sets NUM_FLG
+;*  NumToInt             Return int value NUM_AA,B in AX (lo,hi) - sets NUM_FLG
 ;*  NumTrue              Place TRUE in NUM_A
 ;*  NumUnSign            Move sign from mantissa to SGN byte (for Mul/Div)
 ;*  NumUnpack            Unpack memory format into calculation format
@@ -125,7 +125,7 @@ NumPack: ; Pack NUM_A into memory format for storing
  		bra 	NumSign
 
 ;----------------------------------------------- NumToInt
-NumToInt: ;Return integer value in AX (lo,hi) - sets NUM_FLG
+NumToInt: ;Return int value NUM_AA,B in AX (lo,hi) - sets NUM_FLG
  		jsr 	NumFlag 	; set flags >,=,<
  		jsr 	NumPack
  		lda 	NUM_AA 		; lo->.A
@@ -693,6 +693,8 @@ NumRndX 	;-- get as a number
 #if _DB_NUM
 ;=================================================================== DBUG =============
 DB_Math: ; Debug Math Registers NUMA, NUMB
+ 		PUSHALL()
+
  		PRINT("NUMA:")
  		HEX_SHORT(NUM_AS)
  		HEX_INT(NUM_AA)
@@ -702,6 +704,10 @@ DB_Math: ; Debug Math Registers NUMA, NUMB
  		HEX_SHORT(NUM_BS)
  		HEX_INT(NUM_BA)
  		jsr 	PrNL
+
+ 		PULLALL()
+ 		PAUSE()
+ 		rts
 #endif
 
 .echo "  _Math\t\t"
