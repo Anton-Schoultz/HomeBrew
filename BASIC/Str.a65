@@ -2,13 +2,17 @@
 ; String functions
 ;
 ;*  DB_Str               Debug String values - PtrA LenA PtrB LenB
-;*  EvIsStr              Return EQ if A is T_StrLit,T_StrVar
+;*  EvIsStr              Return EQ if A is a string value/function
+;*  EvStrFn              evaluate string function FN$($ [,~]* )
 ;*  EvStrItem            get a single item T_StrLit |T_StrVar| StrFn
 ;*  EvString             Evuate a string expression -> STRBUF
 ;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
-;*  StrAppend            Append top two strings
+;*  StrAppend            Append top two strings (PopB, append)
+;*  StrClear             Clear string 'accumulator' ready for  a new string
 ;*  StrGet               get string at index A  A$..Z$ 1..26
 ;*  StrInit              Initialise string buffer
+;*  StrIsFn              Return T/F if .A is a string function (A preserved)
+;*  StrLTrim             trim leading blanks
 ;*  StrLen               check length of Str_A, set in S_LEN_A
 ;*  StrLit               Recall a string literal
 ;*  StrLower             convert to LOWER case
@@ -16,12 +20,13 @@
 ;*  StrOvr               Overflow - truncate
 ;*  StrPoint             (ZPtr)->Object, Exits (ZTgt)->data and ZCnt=Size
 ;*  StrPush              Push temp string sets up S_PTR_A,S_LEN_A
+;*  StrRTrim             trim trailing blanks
 ;*  StrSet               Store string at index A  A$..Z$ 1..26
 ;*  StrUpper             convert to UPPER case
 ;*  StrVar               recall a String variable T_StrVar ID
 ;*m STROFF()             covert index in .A to an offset in .X based on size of pointer
 ;*
-#ifdef hide	; Str
+#ifdef hide 				; Str
 .NOLIST
 #endif
 
@@ -70,15 +75,13 @@ _Str 		= $
 ;----------------------------------------------- EvString
 EvString: ; Evuate a string expression -> STRBUF
 ; return T=OK, F otherwise
- 		jsr 	StrPush 	; create a temp space
+ 		jsr 	StrClear 	; create a temp space
 
  		;-- term counter, dec with each term
  		lda 	#0
  		sta 	EVFLG
- 		;-- for now, just handle one item
 
-
-EvStrPart	jsr 	EvStrItem
+EvStrPart 	jsr 	EvStrItem
  		RTN_IFF()
 
 EvStrL 		;-- while '+'
@@ -103,21 +106,21 @@ EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
  		CASE(T_StrLit,StrLit)
  		CASE(T_StrVar,StrVar)
  		;-- BR_AEQ(T_StrAry,RtnTrue)
- 		jsr	StrIsFn
-		BR_T(EvStrFn)		; yes, perform function
+ 		JSR 	StrIsFn
+ 		BR_T(EvStrFn) 		; yes, perform function
  		RTN_F()
-EvStrFn:; evaluate string function FN$($ [,~]* )
-		pha			; save the FnToken
-		jsr	ChrRd		; move on (consume token)
-		jsr	EvStrPart	; eval strexpr
-		pla			; pop token
-		jsr	StrFnDo		; execute function
-		;- back here to check for ')'
+EvStrFn: ; evaluate string function FN$($ [,~]* )
+ 		pha 			; save the FnToken
+ 		JSR 	ChrRd 		; move on (consume token)
+ 		JSR 	EvStrPart 	; eval strexpr
+ 		pla 			; pop token
+ 		JSR 	StrFnDo 	; execute function
+ 		;-- back here to check for ')'
  		lda 	#')'
  		jsr 	Match
-		RTN_T()
+ 		RTN_T()
 ; RunJump returns to where this was called from
-StrFnDo		jmp 	RunJump		; dispatch to function to process
+StrFnDo 	jmp 	RunJump 	; dispatch to function to process
 
 
 ;----------------------------------------------- StrVar
@@ -231,9 +234,9 @@ EvIsStr: ; Return EQ if A is a string value/function
 StrIsFn: ; Return T/F if .A is a string function (A preserved)
 ; T_FSTR < A < T_LineNo
  		lda 	CHRGOT
- 		BR_AGE(T_LineNo,StrNo)	; Special token $Fx
+ 		BR_AGE(T_LineNo,StrNo) 	; Special token $Fx
  		BR_AGE(T_FSTR,StrTrue)
-StrNo		RTN_F()
+StrNo 		RTN_F()
 StrTrue 	RTN_T()
 
 ;----------------------------------------------- StrInit
@@ -247,13 +250,12 @@ StrPush: ;Push temp string sets up S_PTR_A,S_LEN_A
  		jsr 	NumPushA
  		;--
  		ZADD(STR_END,STR_LEN)
+ 		;-- fall through to clear new string
+;----------------------------------------------- StrClear
+StrClear: ; Clear string 'accumulator' ready for  a new string
  		ZCPY(S_PTR_A,STR_END) 	; set pointer
  		ZSET(STR_LEN,0) 	; set length as zero
  		ZSET(S_LEN_A,0) 	; zero length
-#if _DB_STR
- 		PRINTLN("StrPushX")
- 		jsr 	DB_Str
-#endif
  		rts
 
 ;----------------------------------------------- StrOvr
@@ -324,49 +326,49 @@ StrLowerX 	RTN_T()
 
 ;----------------------------------------------- StrLTrim
 StrLTrim: ; trim leading blanks
-		; tgt is in place at S_PTR_A
-		ZCPY(ZTgt,S_PTR_A)
-		; find first non blank
+ 		;-- tgt is in place at S_PTR_A
+ 		ZCPY(ZTgt,S_PTR_A)
+ 		;-- find first non blank
  		ldy 	#$FF
 StrLTrim1 	iny
  		lda 	(S_PTR_A),Y
  		beq 	StrLTrimX 	; null -> done
  		cmp 	#' '
  		beq 	StrLTrim1 	; blank -> loop
-		; non blank
+ 		;-- non blank
 StrLTrim2 	clc
-		tya
-		adc	S_PTR_A
-		sta	ZSrc
-		lda 	#0
-		adc	S_PTR_A+1
-		sta	ZSrc+1
-		ldy	#$FF
+ 		tya
+ 		ADC 	S_PTR_A
+ 		STA 	ZSrc
+ 		lda 	#0
+ 		ADC 	S_PTR_A+1
+ 		STA 	ZSrc+1
+ 		LDY 	#$FF
 
-StrLTrim3	; copy string down
-		iny
-		lda	(ZSrc),y
-		sta	(ZTgt),y
-		bne	StrLTrim3	; loop until null
-		;sta	S_LEN_A		; note new size
+StrLTrim3 	; copy string down
+ 		iny
+ 		LDA 	(ZSrc),y
+ 		STA 	(ZTgt),y
+ 		BNE 	StrLTrim3 	; loop until null
+ 		;-- sta	S_LEN_A		; note new size
 StrLTrimX 	RTN_T()
 
 ;----------------------------------------------- StrRTrim
 StrRTrim: ; trim trailing blanks
-		; get the end of the string ,Y->Null
-		jsr	StrLen
-		;- empty string?
-		cpy 	#0
-		beq	StrRTrimX	; yes -> done
+ 		;-- get the end of the string ,Y->Null
+ 		JSR 	StrLen
+ 		;-- empty string?
+ 		cpy 	#0
+ 		BEQ 	StrRTrimX 	; yes -> done
 StrRTrim1 	dey
  		lda 	(S_PTR_A),Y
  		cmp 	#' '
  		beq 	StrRTrim1 	; blank -> loop
-		; non blank
+ 		;-- non blank
 StrRTrim2 	iny
-		lda 	#0
-		sta	(S_PTR_A),Y	; place new null
-		;sta	S_LEN_A		; note new size
+ 		lda 	#0
+ 		STA 	(S_PTR_A),Y 	; place new null
+ 		;-- sta	S_LEN_A		; note new size
 StrRTrimX 	RTN_T()
 
 ;======================================================================================
