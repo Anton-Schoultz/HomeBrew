@@ -9,13 +9,7 @@ _Mid 		= $
 
 ;----------------------------------------------- X_Mid
 X_Mid: ; MID$($,From,Len)
-		jsr 	StrPush 	; push the string
- 		lda 	#',' 		; check & skip ','
- 		jsr 	Match
- 		jsr 	EvNumeric 	; Evaluate n
- 		jsr 	NumToInt 	; n in AX lo/hi
- 		jsr 	NumPopB
- 		jsr 	NumSwap
+		jsr 	StrFunct
 
  		;-- range check (int is now in B)
  		ldy	#0
@@ -25,13 +19,9 @@ X_Mid: ; MID$($,From,Len)
  		ldy	NUM_BA		; From.L -> Y
  		jsr 	StrLTrim2 	; copy down
 		;-- then trunc at Len
-		jsr 	StrPush 	; push the string
- 		lda 	#',' 		; check & skip ','
- 		jsr 	Match
- 		jsr 	EvNumeric 	; Evaluate n
- 		jsr 	NumToInt 	; n in AX lo/hi
- 		jsr 	NumPopB
- 		jsr 	NumSwap
+
+		jsr 	StrFunct
+
  		;
 		ldy	NUM_BA
 X_MidNull	lda 	#0 		; trunc with null

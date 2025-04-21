@@ -9,6 +9,7 @@
 ;*  StrAddNum            Append the converted numeric (in NUM_BUF) to the string
 ;*  StrAppend            Append top two strings (PopB, append)
 ;*  StrClear             Clear string 'accumulator' ready for  a new string
+;*  StrFunct             prepare for string manipulation
 ;*  StrGet               get string at index A  A$..Z$ 1..26
 ;*  StrInit              Initialise string buffer
 ;*  StrIsFn              Return T/F if .A is a string function (A preserved)
@@ -334,18 +335,18 @@ StrLTrim1 	iny
  		cmp 	#' '
  		beq 	StrLTrim1 	; blank -> loop
  		;-- non blank
-StrLTrim2;- Copy down from Yth char (Delete first Y chars)
+StrLTrim2 	;- Copy down from Yth char (Delete first Y chars)
  		;-- tgt is in place at S_PTR_A
  		ZCPY(ZTgt,S_PTR_A)
-		; ZSrc = S_PTR_A + .Y
-		clc
+ 		;-- ZSrc = S_PTR_A + .Y
+ 		clc
  		tya
  		adc 	S_PTR_A
  		sta 	ZSrc
  		lda 	#0
  		adc 	S_PTR_A+1
  		sta 	ZSrc+1
- 		;
+ 		;--
  		ldy 	#$FF
 StrLTrim3 	; copy string down
  		iny
@@ -372,6 +373,16 @@ StrRTrim2 	iny
  		sta 	(S_PTR_A),Y 	; place new null
  		;-- sta	S_LEN_A		; note new size
 StrRTrimX 	RTN_T()
+
+;----------------------------------------------- StrFunct
+StrFunct: ;prepare for string manipulation
+ 		jsr 	StrPush 	; push the string
+ 		lda 	#',' 		; check & skip ','
+ 		jsr 	Match
+ 		jsr 	EvNumeric 	; Evaluate n
+ 		jsr 	NumToInt 	; n in AX lo/hi
+ 		jsr 	NumPopB
+ 		jmp 	NumSwap
 
 ;======================================================================================
 
