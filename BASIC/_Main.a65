@@ -8,6 +8,9 @@
 ; LOAD
 ; SAVE
 ;
+; ON <expr> GOTO/GOSUB LinNum,... 	?
+;
+;
 ; Change parsing of numbers to use (ZPtr),y
 ; add routine to adjust ZPtr by adding the ending value of Y to it
 ;
@@ -15,9 +18,9 @@
 
 ; E000-FFFF = 8k
 #define _ROM $E000
+
 #define _RAM_BAS_BEG	$0800
 #define _RAM_BAS_END	$1000
-
 
  		;-- ; Aprox.Size
 _DB_STR 	= 0 			; 144
@@ -63,20 +66,18 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 ; 		START OF ROM
  		jmp 	Reset
 
+Greet 		.DB 	_FF,"Anton's basic",CR,LF,0
+
 #include "ConSim.a65" 			; Console Implementation
+
 #include "ChrStr.a65" 			; Base IO (incl macros)
 #include "Util.a65" 			; utilities for general use
 #include "Error.a65" 			; Error/token expansion
-
 #include "Str.a65" 			; String code
-
 #include "Math.a65" 			; Number code
 #include "Eval.a65" 			; Evaluator
-
 #include "Line.a65" 			; Line control
 
-
-Greet 		.DB 	_FF,"Anton's basic",CR,LF,0
 
 ;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
