@@ -238,6 +238,7 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
 ;----------------------------------------------- _Print_
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
+		jsr 	RegSave		; save registers
  		;-- pop the return address from the jsr call
  		pla
  		plx
@@ -283,6 +284,8 @@ _Print_X 	tya 			; y is offset to the null
  		lda 	#0
  		ADC 	ZDPtr+1
  		sta 	ZDPtr+1
+ 		;- restore registers
+ 		jsr	RegLoad
 _PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
 
 ;----------------------------------------------- _PrHexShort

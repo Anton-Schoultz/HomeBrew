@@ -63,9 +63,10 @@ Short(ZTmp) 	; Temp byte
 Short(ZRegA) 	; Save register A (used in Msg)
 Short(ZRegX) 	; Save register X (used in Msg)
 Short(ZRegY) 	; Save register Y (used in Msg)
+Short(ZRegP) 	; Save register P (used in Msg)
 
 ;----------------------------------------------- Code Lines
-;  PARAGRAPH()
+PARAGRAPH()
 Int(LN_NUM) 	; Current Line number
 Int(LN_ADR) 	; Current Line address
 Int(LN_NXT) 	; Adress of next line

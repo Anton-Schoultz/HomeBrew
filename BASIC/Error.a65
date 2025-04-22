@@ -64,9 +64,12 @@ ErrList1	clc
 
 ;----------------------------------------------- RegLoad
 RegLoad: ; Load registers from ZReg~
+		lda	ZRegP
+		pha
  		lda 	ZRegA 		; load .A
  		ldy 	ZRegY 		; load .Y
  		ldx 	ZRegX 		; load .X
+ 		plp
  		rts
 
 ;----------------------------------------------- RegSave
@@ -74,6 +77,10 @@ RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
  		stx 	ZRegX 		; save .X
+ 		; status register
+ 		php
+ 		pla
+ 		sta	ZRegP
  		rts
 
 #define ZTokPtr ZPtr

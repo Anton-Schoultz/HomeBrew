@@ -123,6 +123,8 @@ Main: ;Warm Start entry point
  		sta 	FOR_ADR 	; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 
+ 		sta 	HLTFLG
+
  		;-- character output to I/O device -> ChrOut
  		PR_WR_IO()
  		cli 			; enable IRQ's
@@ -138,7 +140,7 @@ MainLoop: ; Main Loop
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
 #if _DBUG
- 		jsr 	MainTokBuf
+; 		jsr 	MainTokBuf
 #endif
 
 #if _DB_MAIN

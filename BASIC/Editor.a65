@@ -85,16 +85,17 @@ EdtUpd: ; Update program with line in TOKBUF
 ; TOK_LEN is length of the line in tokbuf
 ;  Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnSeekTop 	; seek from top of program
- 		bmi 	EdtAdd 		; EOF/Error -> Append
+ 		bcc 	EdtAdd 		; EOF/Error -> Append
  		beq 	EdtDel 		; Update = Del then Ins
  		bra 	EdtIns
-
 EdtAdd: ; Append TOKBUF line to end of program
+;	lda #'+' \ jsr ChrOut
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
  		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		jmp 	EdtCpy
 
 EdtDel: ; Delete line and fall through to Insert
+;	lda #'-' \ jsr ChrOut
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
  		ZCPY(ZCnt,BASEND)
@@ -104,9 +105,11 @@ EdtDel: ; Delete line and fall through to Insert
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
+;	lda #'^' \ jsr ChrOut
  		lda 	#5
  		cmp 	TOK_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
+;	lda #'!' \ jsr ChrOut
  		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
  		;-- ZTgt=LN_ADR+TOK_LEN
@@ -118,15 +121,15 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		;-- copy up to make space
  		jsr 	EdtOpn
-
  		;-- copy line from TOKBUF to program
  		ZCPY(ZTgt,LN_ADR)
  		jmp 	EdtCpy
-
 EdtInsX 	rts 			; Done
 
 ;----------------------------------------------- EdtCpy
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
+;	lda #'=' \ jsr ChrOut \ jsr PrNL
+;	jsr	DB_EdtMove
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
  		ZCPY(ZCnt,TOK_LEN)
  		ldy 	ZCnt
@@ -174,11 +177,8 @@ EdtFreshClr 	iny
  		sta 	(ZPtr),y
  		dex
  		bpl 	EdtFreshClr
-
  		lda 	ZPtr
  		ldx 	ZPtr+1
-
-
  		rts
 
 
@@ -292,7 +292,7 @@ DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
  		HEX_INT(LN_LEN)
  		HEX_INT(LN_FND)
  		CRLF()
- 		PAUSE()
+; 		PAUSE()
  		PULLALL()
  		rts
 
@@ -309,7 +309,7 @@ DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
  		HEX_INT(STR_END)
  		HEX_INT(ARYBEG)
  		CRLF()
- 		PAUSE()
+; 		PAUSE()
  		PULLALL()
  		rts
 ;----------------------------------------------- DB_EdtMove
@@ -321,7 +321,7 @@ DB_EdtMove: ; Debug memory moves - ZPtr ZCnt ZSrc ZTgt
  		HEX_INT(ZSrc)
  		HEX_INT(ZTgt)
  		CRLF()
- 		PAUSE()
+; 		PAUSE()
  		PULLALL()
  		rts
 

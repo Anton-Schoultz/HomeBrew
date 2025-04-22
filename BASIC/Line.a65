@@ -2,7 +2,7 @@
 #ifdef hide
 .NOLIST
 #endif
-.nolist
+
 ;=================================================================== LINE =============
 ;*  DB_Line              Debug Line vars - NUM  ADR  NXT  LEN  FND
 ;*  DB_LineComp          Debug results of LnComp - step through
@@ -17,6 +17,8 @@
 
 _Ln 		= $
 
+.export LN_NUM,LN_ADR,LN_NXT,LN_LEN,LN_FND
+
 ; $0034  Int(LN_NUM) 	; Current Line number
 ; $0036  Int(LN_ADR) 	; Current Line address
 ; $0038  Int(LN_NXT) 	; Adress of next line
@@ -27,6 +29,7 @@ _Ln 		= $
 ;----------------------------------------------- LnTop
 LnTop: ; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
  		ZCPY(LN_NXT,BASBEG)
+ 		jsr	LnZero		; Zero line number and length
 
 ;----------------------------------------------- LnNext
 LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
@@ -44,6 +47,7 @@ LnEOF 		;-- zero length and number
  		lda 	#0
  		sta 	LN_LEN
  		sta 	LN_LEN+1
+LnZero 		lda 	#0
  		sta 	LN_NUM
  		sta 	LN_NUM+1
  		rts 			; return EQ=1
@@ -70,7 +74,7 @@ LnNextRd: ; fetch the line info - set NUM,LEN,NXT
 ;----------------------------------------------- LnComp
 LnComp: ; Compare line number to LN_FND, (NUM-FND)
 ; returns with difference in A (and saved in LN_FLG)
-; N:1 Z:0 C:0  MI => NUM<FIND
+; N:1 Z:0 C:0  CC/MI => NUM<FIND
 ; N:0 Z:1 C:1  EQ => NUM=FIND Match
 ; N:0 Z:0 C:1  NE => NUM>FIND
  		sec
@@ -97,13 +101,17 @@ LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
  		;-- fall through to Seek
 ;----------------------------------------------- LnSeek
 LnSeek: ; Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
- 		jsr 	LnComp 		; mi=Cont, eq=Match ne=ins
- 		bpl 	LnSeekX 	; num>=find
+ 		jsr 	LnComp 		; cc/mi=Cont, eq=Match ne=ins
+ 		;bpl 	LnSeekX 	; num>=find
+ 		bcc	LnSeekNxt
+ 		bra	LnSeekX
+
  		;-- Not there yet, next line
 LnSeekNxt 	jsr 	LnNext 		; move to next line
  		bne 	LnSeek
  		;-- EOF or not T_LineNo
-LnSeekEOF 	lda 	#$FF 		; sets Minus for EOF/Error
+LnSeekEOF 	;lda 	#$FF 		; sets Minus for EOF/Error
+		clc
 LnSeekX 	rts
 
 
@@ -134,7 +142,7 @@ DB_LineComp: ; Debug results of LnComp - step through
  		jsr 	LnComp 		; N:0 Z:0 C:1
  		PAUSE()
  		rts
-; N:1 Z:0 C:0  MI => NUM<FIND
+; N:1 Z:0 C:0  CC/MI => NUM<FIND
 ; N:0 Z:1 C:1  EQ => NUM=FIND Match
 ; N:0 Z:0 C:1  NE => NUM>FIND
 

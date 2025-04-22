@@ -247,9 +247,9 @@ InputIO: ; Input INBUF from IO
 Input: ; Read from Mem/IO and place in INBUF, until CR
  		ldx 	#0
  		txa
+ 		sta	ZTmp		; quote flag
  		sta 	INBUF,x
 InputL:  	jsr 	GetChr 		; get char from mem/io
-; 		LDA 	CHRGOT
  		beq 	InputL
  		;-- ignore LF
  		cmp 	#LF
@@ -267,8 +267,19 @@ InputL:  	jsr 	GetChr 		; get char from mem/io
  		sta 	INBUF,x 	; place in buf
  		bra 	InputL
 
-Input1 		jsr 	ToUpper
- 		sta 	INBUF,x 	; place in buf
+Input1 		cmp	#$22		; is it a quote?
+		bne	Input2		; no, skip
+		; yes,  toggle the quote flag in ZTmp 00 <-> $22
+		pha
+		eor	ZTmp
+		sta 	ZTmp
+		pla
+		;
+Input2		ldy 	ZTmp
+		bne	Input3		; quote mode is on
+		; not in quote mode, so convert to upper case
+		jsr 	ToUpper
+Input3 		sta 	INBUF,x 	; place in buf
  		;-- check buffer full
  		cpx 	#BUFSZ
  		bpl 	InputX 		; full -> exit

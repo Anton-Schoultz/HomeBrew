@@ -104,7 +104,8 @@ Nmi: ; Non-Maskable interrupt service handler
  		;-- Save registers
  		PUSHAXY() 		; Push axy
 
- 		lda 	#0
+ 		lda 	HLTFLG
+ 		EOR	#$ff
  		sta 	HLTFLG
 
 NmiRtn 		;-- Restore registers and return
