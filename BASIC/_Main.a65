@@ -1,19 +1,25 @@
 #define xhide
 
+;=================================================================== TODO ============= 
+; Rework <= < = <> >= > to use keywords instead of special code,
+; Will have to redo conditional compare etc too
+;======================================================================================
+
+
 ; E000-FFFF = 8k
 #define _ROM $E000
-;			; Aprox.Size
-_DB_STR		= 0	; 144
-_DB_MAIN	= 0	;  92
-_DB_EDT		= 0	; 395
-_DB_EVAL	= 0	; 143
-_DB_LINE	= 0	; 188
-_DB_NUM		= 0	; 114
-_DB_FOR		= 0	; 150
-_DB_LIST	= 0	; 147
-_DB_PRINT	= 0
+ 		;-- ; Aprox.Size
+_DB_STR 	= 0 			; 144
+_DB_MAIN 	= 0 			;  92
+_DB_EDT 	= 0 			; 395
+_DB_EVAL 	= 0 			; 143
+_DB_LINE 	= 0 			; 188
+_DB_NUM 	= 0 			; 114
+_DB_FOR 	= 0 			; 150
+_DB_LIST 	= 0 			; 147
+_DB_PRINT 	= 0
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
-;_DBUG = 154	; 6077-5923
+ 		;-- _DBUG = 154	; 6077-5923
 
 #if _DBUG
 .echo "\t+--------------+\n"
@@ -28,8 +34,9 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN =============
+;=================================================================== MAIN ============= 
 ;*  Main                 Warm Start entry point
+;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
 ;*  MainProg             Dump start of Program space
 ;*  MainTokBuf           Dump TOKBUF
@@ -41,7 +48,7 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 .org _ROM
 .LIST
-;----------------------------------------------- START OF ROM
+;----------------------------------------------- START OF ROM 
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -55,12 +62,12 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 #include "Math.a65" 			; Number code
 #include "Eval.a65" 			; Evaluator
 
-#include "Line.a65"			; Line control
+#include "Line.a65" 			; Line control
 
 
-Greet .db _FF,"Anton's basic",CR,LF,0
+Greet 		.DB 	_FF,"Anton's basic",CR,LF,0
 
-;----------------------------------------------- Reset
+;----------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -71,7 +78,7 @@ Reset: ;Reset (Cold start)
  		LDAX($800)
  		SETAX(RAMBEG)
 
- 		;LDAX($8000) 		; end of 32K RAM
+ 		;-- LDAX($8000) 		; end of 32K RAM
  		LDAX($0A00)
  		SETAX(RAMEND)
 
@@ -79,13 +86,13 @@ Reset: ;Reset (Cold start)
  		jsr 	EdtNew 		; NEW
 
  		LDAX(Greet)
- 		jsr	PrStrAX
+ 		jsr 	PrStrAX
 
 
 
-;----------------------------------------------- Main
+;----------------------------------------------- Main 
 Main: ;Warm Start entry point
-		;-- reset the stack
+ 		;-- reset the stack
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
  		txs
@@ -95,17 +102,17 @@ Main: ;Warm Start entry point
  		;-- Copy ZPage Code
  		jsr 	ChrInit 	; set up mem rd
  		jsr 	NumInit 	; init calc stack pointer
- 		jsr	StrInit		; init string stack etc
+ 		jsr 	StrInit 	; init string stack etc
  		;-- Gosub/Rtn, Forn/Next
  		lda 	#0
- 		sta	RTNSP
- 		sta	FOR_SP
- 		sta	FOR_ADR		; mark end of for next stack with zero address
+ 		sta 	RTNSP
+ 		sta 	FOR_SP
+ 		sta 	FOR_ADR 	; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 
  		PR_WR_IO()
 
-;----------------------------------------------- MainLoop
+;----------------------------------------------- MainLoop 
 MainLoop: ; Main Loop
  		PR_WR_IO()
  		lda 	#'>'
@@ -115,17 +122,17 @@ MainLoop: ; Main Loop
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
 #if _DBUG
-	jsr MainTokBuf
+ 		jsr 	MainTokBuf
 #endif
 
 #if _DB_MAIN
- 	ZSET(ZRd,TOKBUF+3) 	; where to run from
- 	jsr ChrRd
- 	jsr RunInit 		; set I/O, Zero suppress etc
- 	jsr EvNumeric
- 	jsr DB_EvStr
-;	jsr MainList
-	jmp MainLoop
+ 		ZSET(ZRd,TOKBUF+3) 	; where to run from
+ 		jsr 	ChrRd
+ 		jsr 	RunInit 	; set I/O, Zero suppress etc
+ 		jsr 	EvNumeric
+ 		jsr 	DB_EvStr
+ 		;-- jsr MainList
+ 		jmp 	MainLoop
 #endif
 
  		;-- immediate command ? (No line number)
@@ -137,7 +144,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;----------------------------------------------- MainCmd
+;----------------------------------------------- MainCmd 
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -147,21 +154,21 @@ MainCmd 	;-- Run command line
 .nolist
 #if _DBUG
 .list
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 MainTokBuf: ; Dump TOKBUF
  		PR_WR_IO()
  		CLS()
  		jsr 	MainList
-  		HEX_DUMP(TOKBUF) 	; dump 8
-  		jsr 	HexDump 	; dump next 8
+ 		HEX_DUMP(TOKBUF) 	; dump 8
+ 		jsr 	HexDump 	; dump next 8
 ;   		jsr 	HexDump 	; dump next 8
-  		jmp 	PrNL
+ 		jmp 	PrNL
 
-MainList:; list TOKBUF
-		ZSET(ZRd,TOKBUF)
-		lda (ZRd)
-		sta CHRGOT
-		jmp ListLnL
+MainList: ; list TOKBUF
+ 		ZSET(ZRd,TOKBUF)
+ 		lda 	(ZRd)
+ 		sta 	CHRGOT
+ 		jmp 	ListLnL
 
 
 
@@ -187,7 +194,7 @@ MainProg: ; Dump start of Program space
 ROMEND 		= $
 
 
-;----------------------------------------------- TblKeyword
+;----------------------------------------------- TblKeyword 
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -195,7 +202,7 @@ ROMEND 		= $
 .echo $-TblKeyword
 .echo "/256\n"
 
-;----------------------------------------------- TblRun
+;----------------------------------------------- TblRun 
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -215,7 +222,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;----------------------------------------------- hardware vectors
+;----------------------------------------------- hardware vectors 
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
