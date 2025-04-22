@@ -1,7 +1,6 @@
-#ifdef hide	; Util
+#ifdef hide 				; Util
 .NOLIST
 #endif
-
 ;=================================================================== UTIL =============
 ;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
@@ -153,7 +152,6 @@ IntParseX 	lda 	TMP
  		ldx 	TMP+1
  		rts
 
-
 ;----------------------------------------------- IntAXx10
 IntAXx10: ; AX * 10 -> AX (uses TMP)
  		sta 	TMP
@@ -190,8 +188,6 @@ IntTmpMT: ; TMP = TMP * 10 (preserves AXY)
  		plx
  		rts
 
-
-
 ;----------------------------------------------- IntDT_AX
 IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
  		sta 	TMP
@@ -215,7 +211,7 @@ IntDT_AX2 	dex
 ;=================================================================== UTIL_PTR =========
 ;----------------------------------------------- PtrX
 PtrX: ; Set ZPtr from ZPg[.X]
- 		;-- get base pointer into ZPtr	(extract to subrtn)
+ 		;-- get base pointer into ZPtr
  		lda 	0,X
  		sta 	ZPtr
  		lda 	1,X
@@ -230,77 +226,6 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		sta 	ZPtr
  		stx 	ZPtr+1
  		rts
-
-;=================================================================== UTIL_PRINT =======
-
-.nolist
-#if _DBUG
-;----------------------------------------------- _Print_
-; PSEUDO-CODE
-_Print_: ;Print in-line string
-		jsr 	RegSave		; save registers
- 		;-- pop the return address from the jsr call
- 		pla
- 		plx
- 		;-- set up to print from there (ZPtr)
- 		SETAX(ZDPtr) 		; [0] is part of call [1] is data
- 		ldy 	#0
-_Print_L 	iny 			; next char
- 		lda 	(ZDPtr),y
- 		beq 	_Print_X 	; zero -> exit
- 		bmi 	_Print_HX
- 		jsr 	PutChr 		; print character
- 		bra 	_Print_L 	; loop back (no more than 255 chars)
-_Print_HX 	; print hex data
- 		iny
- 		lda 	(ZDPtr),y 	; lo
- 		sta 	ZDBug
- 		iny
- 		lda 	(ZDPtr),y 	; lo
- 		sta 	ZDBug+1
- 		iny
- 		phy
- 		;--
- 		lda 	#'='
- 		jsr 	PutChr
- 		lda 	#'$'
- 		jsr 	PutChr
- 		;--
- 		ldy 	#1
- 		lda 	(ZDBug),y 	; hi data
- 		jsr 	PrAHex
- 		dey
- 		lda 	(ZDBug),y 	; lo data
- 		jsr 	PrAHex
- 		jsr 	PrNL
- 		;--
- 		ply
- 		;--
- 		;-- Calculate the return address
-_Print_X 	tya 			; y is offset to the null
- 		sec 			; adjust one more
- 		adc 	ZDPtr 		; + Len
- 		sta 	ZDPtr 		; -> lo
- 		lda 	#0
- 		ADC 	ZDPtr+1
- 		sta 	ZDPtr+1
- 		;- restore registers
- 		jsr	RegLoad
-_PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
-
-;----------------------------------------------- _PrHexShort
-_PrHexShort: ; print int .A.X as hex value with space
- 		jsr 	PrAHex
- 		lda 	#' '
- 		jmp 	PutChr
-
-;----------------------------------------------- _PrHexInt
-_PrHexInt: ; print int .A.X as hex value with space
- 		jsr 	PrAXHex
- 		lda 	#' '
- 		jmp 	PutChr
-
-#endif
 
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io
@@ -357,6 +282,74 @@ Hex2Nib9 	sec 			; set carry flag to indicate valid
 Hex2NibFPX 	and 	#$0F
  		rts 			; carry clear if invalid char
 
+
+#if _DBUG
+;=================================================================== UTIL-DBUG ========
+;----------------------------------------------- _Print_
+; PSEUDO-CODE
+_Print_: ;Print in-line string
+ 		jsr 	RegSave 	; save registers
+ 		;-- pop the return address from the jsr call
+ 		pla
+ 		plx
+ 		;-- set up to print from there (ZPtr)
+ 		SETAX(ZDPtr) 		; [0] is part of call [1] is data
+ 		ldy 	#0
+_Print_L 	iny 			; next char
+ 		lda 	(ZDPtr),y
+ 		beq 	_Print_X 	; zero -> exit
+ 		bmi 	_Print_HX
+ 		jsr 	PutChr 		; print character
+ 		bra 	_Print_L 	; loop back (no more than 255 chars)
+_Print_HX 	; print hex data
+ 		iny
+ 		lda 	(ZDPtr),y 	; lo
+ 		sta 	ZDBug
+ 		iny
+ 		lda 	(ZDPtr),y 	; lo
+ 		sta 	ZDBug+1
+ 		iny
+ 		phy
+ 		;--
+ 		lda 	#'='
+ 		jsr 	PutChr
+ 		lda 	#'$'
+ 		jsr 	PutChr
+ 		;--
+ 		ldy 	#1
+ 		lda 	(ZDBug),y 	; hi data
+ 		jsr 	PrAHex
+ 		dey
+ 		lda 	(ZDBug),y 	; lo data
+ 		jsr 	PrAHex
+ 		jsr 	PrNL
+ 		;--
+ 		ply
+ 		;--
+ 		;-- Calculate the return address
+_Print_X 	tya 			; y is offset to the null
+ 		sec 			; adjust one more
+ 		adc 	ZDPtr 		; + Len
+ 		sta 	ZDPtr 		; -> lo
+ 		lda 	#0
+ 		adc 	ZDPtr+1
+ 		sta 	ZDPtr+1
+ 		;-- restore registers
+ 		JSR 	RegLoad
+_PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
+
+;----------------------------------------------- _PrHexShort
+_PrHexShort: ; print int .A.X as hex value with space
+ 		jsr 	PrAHex
+ 		lda 	#' '
+ 		jmp 	PutChr
+
+;----------------------------------------------- _PrHexInt
+_PrHexInt: ; print int .A.X as hex value with space
+ 		jsr 	PrAXHex
+ 		lda 	#' '
+ 		jmp 	PutChr
+
 ;----------------------------------------------- HexDump
 HexDump: ; hex dump memory (ZPtr) to output io/mem
  		lda 	ZPtr+1
@@ -396,6 +389,7 @@ HexDump2 	iny
  		bcc 	HexDumpX
  		inc 	ZPtr+1
 HexDumpX 	rts
+#endif
 
 PARAGRAPH()
 ;=================================================================== UTIL_BCD =========

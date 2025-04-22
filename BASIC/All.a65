@@ -1,39 +1,39 @@
 ; All
 
-;- Key words
-#include "XCls.a65"
-#include "XGoto.a65"
-#include "XGosub.a65"
-#include "XIf.a65"
-#include "XLet.a65"
-#include "XList.a65"
-#include "XNew.a65"
-#include "XClear.a65"
-#include "XPrint.a65"
-#include "XRem.a65"
-#include "XReturn.a65"
-#include "XRun.a65"
-#include "XFor.a65"
-#include "XNext.a65"
-#include "XStop.a65"
-#include "XDim.a65"
+;----------------------------------------------- Key words
+#include "XCls.a65" 			; CLS 	Clear screen
+#include "XGoto.a65" 			; GOTO <LitNum>
+#include "XGosub.a65" 			; GOSUB <LitNum>
+#include "XIf.a65" 			; IF <expr> THEN <Statement>
+#include "XLet.a65" 			; LET <var> = <expr>
+#include "XList.a65" 			; LIST [From] [- [To]]
+#include "XNew.a65" 			; NEW
+#include "XClear.a65" 			; CLEAR 	Clears variables
+#include "XPrint.a65" 			; PRINT [;|,|<StrExpr>|<NumExpr]*
+#include "XRem.a65" 			; REM remark
+#include "XReturn.a65" 			; RETURN from subroutine
+#include "XRun.a65" 			; RUN	Execute the program
+#include "XFor.a65" 			; FOR <Var> = <From-expr> TO <To-Expr> [STEP <Step-Expr>
+#include "XNext.a65" 			; Next <Var>
+#include "XStop.a65" 			; STOP	Stop program execution
+#include "XDim.a65" 			; DIM <StrVar>( size )
 
 ; Secondary keywords
-#include "KeyWords.a65"
+#include "KeyWords.a65"			; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;- Functions
-#include "XFRnd.a65"
-#include "XFSqr.a65"
-#include "XFAbs.a65"
-#include "XFSgn.a65"
+;----------------------------------------------- Functions
+#include "XFRnd.a65" 			; RND(<expr>) random number (mod n)
+#include "XFSqr.a65" 			; SQR(<expr>) Square of n
+#include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
+#include "XFSgn.a65" 			; SGN(<expr>) Signum -1,0,1
 
-;- String functions
-#include "XFUpper.a65"
-#include "XFLower.a65"
-#include "XFLTrim.a65"
-#include "XFRTrim.a65"
-#include "XFTrim.a65"
-#include "XFLeft.a65"
-#include "XFRight.a65"
-#include "XFMid.a65"
-#include "XFChr.a65"
+;----------------------------------------------- String functions
+#include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
+#include "XFLower.a65" 			; LOWER$(<StrExpr>) convert to lower case
+#include "XFLTrim.a65" 			; LTRIM$(<StrExpr>) Trim leadiong spaces
+#include "XFRTrim.a65" 			; RTRIM$(<StrExpr>) Trim trailing spaces
+#include "XFTrim.a65" 			; TRIM$(<StrExpr>) Trim leading and trailing spaces
+#include "XFLeft.a65" 			; LEFT$(<StrExpr>,<expr>) Return leftmost n characters
+#include "XFRight.a65" 			; RIGHT$(<StrExpr>,<expr>) Return right most n characters
+#include "XFMid.a65" 			; MID$(<StrExpr>,<From-expr>,<Length-expr>) Return substring
+#include "XFChr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code
