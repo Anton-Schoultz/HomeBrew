@@ -23,6 +23,9 @@ Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
  		phy
+
+ 		jsr ErrorLn
+
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
  		jsr 	PrNL
  		ply
@@ -31,6 +34,10 @@ Error: ; Hanlde error[X] resetting to warm start
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
  		jsr 	PrNL
+
+ErrorX 		jmp 	Main
+
+ErrorLn:; List offending line (if available)
  		;-- check if command line
  		lda 	LN_NUM
  		ora 	LN_NUM+1
@@ -44,8 +51,8 @@ Error: ; Hanlde error[X] resetting to warm start
  		adc 	LN_ADR+1
  		sta 	ZRd+1
  		;-- and list it
- 		jsr 	ListLn
-ErrorX 		jmp 	Main
+ 		jmp 	ListLn
+
 
 ; == Special characters == DO NOT USE $ as it is part of String Keywords
 ; @	A as character
