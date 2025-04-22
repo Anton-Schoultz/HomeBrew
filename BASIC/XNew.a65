@@ -9,7 +9,7 @@ _New 		= $
 
 ;----------------------------------------------- X_New
 X_New: ; NEW
- 		jmp 	EdtNew
+ 		jmp 	Reset		; EdtNew
 
 
 .echo "  _NEW\t\t"

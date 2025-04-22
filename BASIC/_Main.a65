@@ -1,11 +1,5 @@
 #define xhide
 
-;=================================================================== TODO ============= 
-; Rework <= < = <> >= > to use keywords instead of special code,
-; Will have to redo conditional compare etc too
-;======================================================================================
-
-
 ; E000-FFFF = 8k
 #define _ROM $E000
  		;-- ; Aprox.Size
@@ -34,7 +28,7 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN ============= 
+;=================================================================== MAIN =============
 ;*  Main                 Warm Start entry point
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
@@ -48,7 +42,7 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 .org _ROM
 .LIST
-;----------------------------------------------- START OF ROM 
+;----------------------------------------------- START OF ROM
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -67,7 +61,7 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 Greet 		.DB 	_FF,"Anton's basic",CR,LF,0
 
-;----------------------------------------------- Reset 
+;----------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
@@ -82,37 +76,36 @@ Reset: ;Reset (Cold start)
  		LDAX($0A00)
  		SETAX(RAMEND)
 
- 		jsr 	ChrInit 	; Set up ZPage Code & vectors
+ 		;jsr 	ChrInit 	; Set up ZPage Code & vectors
  		jsr 	EdtNew 		; NEW
 
- 		LDAX(Greet)
- 		jsr 	PrStrAX
-
-
-
-;----------------------------------------------- Main 
+;----------------------------------------------- Main
 Main: ;Warm Start entry point
- 		;-- reset the stack
+ 		;-- reset the stack and binary mode
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer
  		txs
  		cld 			; Binary mode
- 		cli
-
- 		;-- Copy ZPage Code
- 		jsr 	ChrInit 	; set up mem rd
+ 		;-- Initialise
+ 		jsr 	ChrInit 	; Copy code to ZPpg for ChrRd
  		jsr 	NumInit 	; init calc stack pointer
  		jsr 	StrInit 	; init string stack etc
- 		;-- Gosub/Rtn, Forn/Next
+ 		;-- Gosub/Rtn, For/Next
  		lda 	#0
  		sta 	RTNSP
  		sta 	FOR_SP
  		sta 	FOR_ADR 	; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 
+		;-- character output to I/O device -> ChrOut
  		PR_WR_IO()
+ 		cli 			; enable IRQ's
 
-;----------------------------------------------- MainLoop 
+		;-- Greeting
+ 		LDAX(Greet)
+ 		jsr 	PrStrAX
+
+;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop
  		PR_WR_IO()
  		lda 	#'>'
@@ -144,7 +137,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;----------------------------------------------- MainCmd 
+;----------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -154,7 +147,7 @@ MainCmd 	;-- Run command line
 .nolist
 #if _DBUG
 .list
-;=================================================================== DBUG ============= 
+;=================================================================== DBUG =============
 MainTokBuf: ; Dump TOKBUF
  		PR_WR_IO()
  		CLS()
@@ -194,7 +187,7 @@ MainProg: ; Dump start of Program space
 ROMEND 		= $
 
 
-;----------------------------------------------- TblKeyword 
+;----------------------------------------------- TblKeyword
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -202,7 +195,7 @@ ROMEND 		= $
 .echo $-TblKeyword
 .echo "/256\n"
 
-;----------------------------------------------- TblRun 
+;----------------------------------------------- TblRun
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -222,7 +215,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;----------------------------------------------- hardware vectors 
+;----------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ

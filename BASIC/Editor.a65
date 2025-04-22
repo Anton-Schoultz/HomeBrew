@@ -18,7 +18,6 @@
 #ifdef hide	; Editor
 .NOLIST
 #endif
-.nolist
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
