@@ -127,7 +127,7 @@ NumInit: ; Initialise calculator (clear stack pointer)
  		rts
 
 ;----------------------------------------------- NumPushA
-NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C)
+NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		ldx 	NUM_SP
  		;-- sign
  		lda 	NUM_AS
@@ -154,7 +154,7 @@ NumStackErr:; 'out-of-memory'
 		ERROR(ERR_MEMORY)
 
 ;----------------------------------------------- NumPopB
-NumPopB: ; Pop Num_B from the calculator stack (S,X,A,B,C)
+NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		;-- try decr stak pointer check if <0
  		dec 	NUM_SP
  		bmi	NumStackErr

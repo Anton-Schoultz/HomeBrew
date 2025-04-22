@@ -1,7 +1,6 @@
 #ifdef hide 				; Math_S16
 .NOLIST
 #endif
-.nolist
 
 ;=================================================================== MATH_S16 =========
 ; calculator stack depth & mask
@@ -47,7 +46,7 @@ Short(ZDIV) 	; short divisor 10/100
 ;*  NumParse             Parse a number from source into NUM_A
 ;*  NumPrint             Convert number to string & output (via PutChr mem/io)
 ;*  NumRd                Read from memory (ChrRd) & unpack
-;*  NumRnd               Random number 0-32767  (kept in var[0])
+;*  NumRnd               Random number 0-32767  -> NUM_AA,B
 ;*  NumSet               Pack and Store simple VARNUM[A]..
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
@@ -61,7 +60,7 @@ Short(ZDIV) 	; short divisor 10/100
 ;*m MATHOFF()            covert index in .A to an offset in .X based on size of numbers
 ;*
 
-
+.list
 #ifdef hide
 .NOLIST
 #endif
@@ -513,8 +512,8 @@ NumDiv: ; NumA = NumB / NumA
  		;-- place divisor in NUM_DIV
  		ZCPY4(NUM_DIV,NUM_A)
  		;-- check divide by zero
- 		lda 	NUM_DIV
- 		ora 	NUM_DIV+1
+ 		lda 	NUM_DIV+FPA
+ 		ora 	NUM_DIV+FPB
  		beq 	NumDivZero
  		;-- zero result (6 bytes)
  		jsr 	NumZeroA
@@ -654,7 +653,7 @@ NumPreSet 	sta 	FPA,X
 
 
 ;----------------------------------------------- NumRnd
-NumRnd: ; Random number 0-32767  (kept in var[0])
+NumRnd: ; Random number 0-32767  -> NUM_AA,B
 ; for 16 bit version randomise in memory, then fetch it
 ; https://codebase64.org/doku.php?id=base:small_fast_16-bit_prng
 ; 2048 'magic' numbers, I'm using $ca65
@@ -692,7 +691,7 @@ NumRndX 	;-- get as a number
 
 #if _DB_NUM
 ;=================================================================== DBUG =============
-DB_Math: ; Debug Math Registers NUMA, NUMB
+DB_Num: ; Debug Math Registers NUMA, NUMB
  		PUSHALL()
 
  		PRINT("NUMA:")

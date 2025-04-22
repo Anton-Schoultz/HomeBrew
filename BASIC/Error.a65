@@ -23,9 +23,7 @@ Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
  		phy
-
- 		jsr ErrorLn
-
+ 		jsr ErrList
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
  		jsr 	PrNL
  		ply
@@ -37,13 +35,14 @@ Error: ; Hanlde error[X] resetting to warm start
 
 ErrorX 		jmp 	Main
 
-ErrorLn:; List offending line (if available)
+ErrList:; List offending line (if available)
  		;-- check if command line
  		lda 	LN_NUM
  		ora 	LN_NUM+1
- 		beq 	ErrorX
+ 		bne 	ErrList1
+ 		rts
  		;-- from program, so set up the offending line
- 		clc
+ErrList1	clc
  		lda 	#3
  		adc 	LN_ADR
  		sta 	ZRd
@@ -210,7 +209,7 @@ MsgChrX 	jsr 	PutChr
 #define ERR_DIV0 	14
 #define ERR_REDIM 	16
 #define ERR_MEMORY 	18
-
+#define ERR_TOKEN 	20
 
 ErrTbl
 .DB "OK",DOT 				; 0=ERR_OK
@@ -223,6 +222,7 @@ ErrTbl
 .DB "Divide by zero",DOT 		;14=ERR_DIV0
 .DB "Redimension",DOT 			;16=ERR_REDIM
 .DB "Out of memory",DOT 		;18=ERR_MEMORY
+.DB "Invalid token !",DOT 		;20=ERR_TOKEN
 
 
 .DB 0

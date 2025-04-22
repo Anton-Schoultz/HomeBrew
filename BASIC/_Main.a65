@@ -1,5 +1,7 @@
 #define xhide
 
+; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
+
 ; E000-FFFF = 8k
 #define _ROM $E000
 #define _RAM_BAS_BEG	$0800
@@ -16,7 +18,7 @@ _DB_NUM 	= 0 			; 114
 _DB_FOR 	= 0 			; 150
 _DB_LIST 	= 0 			; 147
 _DB_PRINT 	= 0
-_DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
+_DBUG = _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
  		;-- _DBUG = 154	; 6077-5923
 
 #if _DBUG
@@ -73,6 +75,11 @@ Reset: ;Reset (Cold start)
  		cld 			; Binary mode
 
  		lda 	#0
+		; zero the timer
+ 		sta	TIMER
+ 		sta	TIMER+1
+ 		sta	TIMER+2
+
  		tay
 RstClr 		sta 	$0000,y 	; clear z-page
  		sta 	$0100,y 	; clear stack area
@@ -91,8 +98,12 @@ RstClr 		sta 	$0000,y 	; clear z-page
  		SETAX(RAMEND)
 
  		jsr 	ChrInit 	; Set up ZPage Code & vectors
- 		; clear VARTAB, Gosub,For/Next and 1st page of BASIC
+ 		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 		; NEW
+
+ 		;-- Greeting
+ 		LDAX(Greet)
+ 		jsr 	PrStrAX
 
 ;----------------------------------------------- Main
 Main: ;Warm Start entry point
@@ -116,9 +127,6 @@ Main: ;Warm Start entry point
  		PR_WR_IO()
  		cli 			; enable IRQ's
 
- 		;-- Greeting
- 		LDAX(Greet)
- 		jsr 	PrStrAX
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop

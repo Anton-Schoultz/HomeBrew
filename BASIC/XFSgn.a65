@@ -2,26 +2,26 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== SGN ==============
-;*  X_Sgn               Function Sgn
+;=================================================================== SGN ============== 
+;*  X_Sgn                Function Sgn
 ;*
-_Sgn		= $
+_Sgn 		= $
 
-;----------------------------------------------- X_Sgn
+;----------------------------------------------- X_Sgn 
 X_Sgn: ; Function Sgn
-		jsr	NumFlag	; .2> .1= .0<
-		beq	SgnZero
-		bmi	SgnNeg
-		lda 	#0
-		bra	SgnOne
-SgnNeg		lda 	#$FF
-SgnOne		sta	NUM_AS		; save sign 00/FF
-		lda 	#1
-		sta 	NUM_AA
-		lda	#0
-		sta	NUM_AB
-		rts
-SgnZero		jmp	NumZeroA
+ 		jsr 	NumFlag 	; .2> .1= .0<
+ 		beq 	SgnZero
+ 		bmi 	SgnNeg
+ 		lda 	#0
+ 		bra 	SgnOne
+SgnNeg 		lda 	#$FF
+SgnOne 		sta 	NUM_AS 		; save sign 00/FF
+ 		lda 	#1
+ 		sta 	NUM_AA
+ 		lda 	#0
+ 		sta 	NUM_AB
+ 		rts
+SgnZero 	jmp 	NumZeroA
 
 .echo "  _SGN(\t\t"
 .echo $-_Sgn
@@ -29,24 +29,24 @@ SgnZero		jmp	NumZeroA
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
-W_Sgn		.DB 	"SGN",'('+$80
+W_Sgn 		.DB 	"SGN",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_
-T_FNUM = LOW($)+$80
+T_FNUM 		= LOW($)+$80
 #endif
 
 .list
-T_Sgn		= LOW($)+$80
+T_Sgn 		= LOW($)+$80
 .DW 	X_Sgn
 .nolist
-;.export T_Sgn
+ 		;-- .export T_Sgn
 #endif
 
-.list	; end of Sgn
+.list 					; end of Sgn

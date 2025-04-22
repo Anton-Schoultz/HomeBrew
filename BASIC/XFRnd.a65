@@ -16,6 +16,12 @@ X_Rnd: ; Function Rnd
  		jsr 	NumMod 		; rand % v
  		RTN_T()
 
+
+; NumPushA 	Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
+; NumRnd	Random number 0-32767  -> NUM_AA,B
+; NumPopB	Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
+; NumSwap	Swap NUM_A <-> NUM_B  (S,X,A,B,C)
+
 .echo "  _RND(\t\t"
 .echo $-_Rnd
 .echo "\n"
@@ -32,7 +38,7 @@ W_Rnd 		.DB 	"RND",'('+$80
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_
-T_FNUM = LOW($)+$80
+T_FNUM 		= LOW($)+$80
 #endif
 
 

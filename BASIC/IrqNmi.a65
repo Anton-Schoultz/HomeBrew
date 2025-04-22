@@ -32,6 +32,14 @@ Irq: ; Interrupt Request service routine
  		bne 	IrqBrk 		; Stop -> IrqBrk
 
  		;-- jsr 	IrqDo
+ 		;-- update the timer
+
+ 		inc	TIMER
+ 		bne	IrqRtn
+ 		inc	TIMER+1
+ 		bne	IrqRtn
+ 		inc	TIMER+2
+
 
 ;----------------------------------------------- IrqRtn
 IrqRtn: ; Restore registers and return from IRQ

@@ -59,8 +59,8 @@ RunX 		rts
 
 ;----------------------------------------------- RunLn
 RunStmnt: ; Run a statement
- 		jsr 	NumInit 	; initialise evaluator
- 		jsr	StrInit
+ 		jsr 	NumInit 	; Initialise calculator (clear stack pointer)
+ 		jsr	StrInit		; VAREND->STR_END, 0->STR_LEN
  		jsr 	ChrRd 		; (++ZRd)->A->CHRGOT
  		sta 	TOKNO
  		beq 	RunLnX 		; null = End-of-statement
@@ -78,13 +78,7 @@ RunLnX 		rts 			; done, return
 
 ;----------------------------------------------- RunTokErr
 RunTokErr: ; display invalid token as [xx]
- 		lda 	#'['
- 		jsr 	PutChr
- 		lda 	TOKNO
- 		jsr 	PrAHex
- 		lda 	#']'
- 		jsr 	PutChr
- 		rts
+ 		ERROR(ERR_TOKEN)
 
 
 .echo "  _RUN\t\t"

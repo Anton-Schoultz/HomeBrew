@@ -103,6 +103,8 @@ Short(NUM_SGN) 	; sign
 
 Short(EVFLG)	; flag for evaluation 0=no expr, +:Num, -:Str
 
+Var(TIMER,3)	; timer value
+
 Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
 
 

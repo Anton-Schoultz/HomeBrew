@@ -243,7 +243,7 @@ StrNo 		RTN_F()
 StrTrue 	RTN_T()
 
 ;----------------------------------------------- StrInit
-StrInit: ;Initialise string buffer
+StrInit: ;VAREND->STR_END, 0->STR_LEN
  		ZCPY(STR_END,VAREND) 	; point to open area
  		ZSET(STR_LEN,0) 	; set length as zero
  		rts
