@@ -73,7 +73,8 @@ EdtClear: ; Clear variables and arrays
 
  		;-- clear vartable (nums, strings, stacks)
  		tay
-EdtWipe 	sta 	VARTAB,y
+EdtWipe 	sta 	VARTAB,y	; clear VARTAB, Gosub,For/Next
+		sta	(BASBEG),y	; clear fiorst page of program space
  		iny
  		bne 	EdtWipe
  		RTN_T()

@@ -2,6 +2,10 @@
 
 ; E000-FFFF = 8k
 #define _ROM $E000
+#define _RAM_BAS_BEG	$0800
+#define _RAM_BAS_END	$1000
+
+
  		;-- ; Aprox.Size
 _DB_STR 	= 0 			; 144
 _DB_MAIN 	= 0 			;  92
@@ -67,16 +71,27 @@ Reset: ;Reset (Cold start)
  		ldx 	#$ff 		; Set Stack pointer
  		txs
  		cld 			; Binary mode
+
+ 		lda 	#0
+ 		tay
+RstClr 		sta 	$0000,y 	; clear z-page
+ 		sta 	$0100,y 	; clear stack area
+ 		sta 	$0200,y 	; clear system var area
+ 		;-- $300 is I/O
+ 		iny
+ 		bne 	RstClr
+
 ; RAMBEG    BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
- 		LDAX($800)
+ 		LDAX(_RAM_BAS_BEG)
  		SETAX(RAMBEG)
 
  		;-- LDAX($8000) 		; end of 32K RAM
- 		LDAX($0A00)
+ 		LDAX(_RAM_BAS_END)
  		SETAX(RAMEND)
 
- 		;jsr 	ChrInit 	; Set up ZPage Code & vectors
+ 		jsr 	ChrInit 	; Set up ZPage Code & vectors
+ 		; clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 		; NEW
 
 ;----------------------------------------------- Main
@@ -97,11 +112,11 @@ Main: ;Warm Start entry point
  		sta 	FOR_ADR 	; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 
-		;-- character output to I/O device -> ChrOut
+ 		;-- character output to I/O device -> ChrOut
  		PR_WR_IO()
  		cli 			; enable IRQ's
 
-		;-- Greeting
+ 		;-- Greeting
  		LDAX(Greet)
  		jsr 	PrStrAX
 
