@@ -9,7 +9,6 @@ _Str 		= $
 
 ;----------------------------------------------- X_Str
 X_Str: ; Str$(NumValue) - Return string representation of numeric value
-
  		jsr 	EvInt 		; get the code as an Int in AX
  		jsr	NumCvt		; convert to string in NUMBUF
  		jsr	NumFmt		; format leading zeroes
