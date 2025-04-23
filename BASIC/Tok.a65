@@ -312,9 +312,7 @@ P_Number: ; Parse a number into token & value
  		jsr 	ChrWr
  		;-- Parse number value
  		jsr 	NumParse 	; read source -> NUM_A
- 		jsr 	NumWr 		; write number value via ChrWr
- 		;--
- 		rts
+ 		jmp 	NumWr 		; write number value and rts
 
 ;----------------------------------------------- L_Number
 L_Number: ; List number
@@ -337,8 +335,7 @@ P_StrL 		jsr 	ChrRd
  		jsr 	ChrWr 		; copy to TOKBUF
  		bra 	P_StrL 		; loop back for more
 P_StrX 		lda 	#0
- 		jsr 	ChrWr 		; place temrinating null and return
- 		rts
+ 		jmp 	ChrWr 		; place temrinating null and return
 
 ;----------------------------------------------- L_String
 L_String: ; list out string text
@@ -347,8 +344,7 @@ L_String: ; list out string text
  		jsr 	ChrCopy
  		lda 	#'"'
  		jsr 	PutChr
- 		jsr 	ChrRd
- 		rts
+ 		jmp 	ChrRd		; close quote and rts
 
 ;=================================================================== LINE_NO ==========
 
@@ -365,8 +361,7 @@ P_LineNo: ; Parse line number and place int TOKBUF
  		txa
  		jsr 	ChrWr		; write hi
  		;-- place holder for the length
- 		jsr 	ChrWr
- 		rts
+ 		jmp 	ChrWr		; place holder and RTS
 
 .echo "  _Tok\t\t"
 .echo $-_Tok
