@@ -1,4 +1,4 @@
-#ifdef hide	; ChrStr
+#ifdef hide 				; ChrStr
 .NOLIST
 #endif
 
@@ -7,15 +7,15 @@
 ;*  ChrIn                Read character from input device (KBD,COM..) -> CHRGOT
 ;*  ChrInit              Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
 ;*  ChrOut               Send character to output device (SCR,COM..)
-;*  ChrRd_               Read character from memory (ZPg routine)
+;*  ChrRd_               Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
 ;*  ChrWr                Write Character to memory  A -> (ZWr++) , 00->(ZWr)
 ;*  GetChr               Input character from Mem/IO -> A, CHRGOT
 ;*  Input                Read from Mem/IO and place in INBUF, until CR
 ;*  InputIO              Input INBUF from IO
 ;*  InputIOEcho          Input INBUF from IO, echo chars to IO
+;*  InputText            Input text from console to INBUF, prompt char is in A
 ;*  PrStr                Print string pointed to by ZPtr [A], last Y->ZTmp
 ;*  PrStrAX              Print string at AX [A] -> PutChr -> Mem/IO
-;*  PrStrBuf             Print STRBUF -> PutChr -> Mem/IO
 ;*  PutChr               Print character to Mem/IO
 ;*  PutNull              write terminating null to Mem/IO
 ;*m BR_NBCD(tgt)         Branch to tgt if BCD=0
@@ -139,7 +139,7 @@ CHRGOT 		= $0C 			; most recently fetched character
 HLTFLG 		= $0D 			; halt flag 00=run (error code)
 ZWr 		= $0E 			; address for ChrWr to write to
 
-ChrReRd		= $06			; ReRead (ZRd)->A->CHRGOT
+ChrReRd 	= $06 			; ReRead (ZRd)->A->CHRGOT
 
 _ChrStr 	= $
 ;----------------------------------------------- ChrNext
@@ -236,6 +236,13 @@ ChrCopy2 	jsr 	PutChr 		; put Mem / IO
  		bra 	ChrCopy 	; loop
 ChrCopyX 	rts
 
+
+;----------------------------------------------- InputText
+InputText: ; Input text from console to INBUF, prompt char is in A
+ 		jsr 	ConOut
+ 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+ 		jmp 	PrNL
+
 ;----------------------------------------------- InputIOEcho
 InputIOEcho: ; Input INBUF from IO, echo chars to IO
  		PR_WR_IO()
@@ -247,7 +254,7 @@ InputIO: ; Input INBUF from IO
 Input: ; Read from Mem/IO and place in INBUF, until CR
  		ldx 	#0
  		txa
- 		sta	ZTmp		; quote flag
+ 		STA 	ZTmp 		; quote flag
  		sta 	INBUF,x
 InputL:  	jsr 	GetChr 		; get char from mem/io
  		beq 	InputL
@@ -267,18 +274,18 @@ InputL:  	jsr 	GetChr 		; get char from mem/io
  		sta 	INBUF,x 	; place in buf
  		bra 	InputL
 
-Input1 		cmp	#$22		; is it a quote?
-		bne	Input2		; no, skip
-		; yes,  toggle the quote flag in ZTmp 00 <-> $22
-		pha
-		eor	ZTmp
-		sta 	ZTmp
-		pla
-		;
-Input2		ldy 	ZTmp
-		bne	Input3		; quote mode is on
-		; not in quote mode, so convert to upper case
-		jsr 	ToUpper
+Input1 		CMP 	#$22 		; is it a quote?
+ 		BNE 	Input2 		; no, skip
+ 		;-- yes,  toggle the quote flag in ZTmp 00 <-> $22
+ 		pha
+ 		EOR 	ZTmp
+ 		sta 	ZTmp
+ 		pla
+ 		;--
+Input2 		ldy 	ZTmp
+ 		BNE 	Input3 		; quote mode is on
+ 		;-- not in quote mode, so convert to upper case
+ 		jsr 	ToUpper
 Input3 		sta 	INBUF,x 	; place in buf
  		;-- check buffer full
  		cpx 	#BUFSZ
@@ -292,9 +299,9 @@ InputX 		lda 	#0 		; terminate with a null
  		rts
 
 ToUpper 	cmp 	#'a'
- 		BMI 	ToUpperX 	; <'a'
+ 		bmi 	ToUpperX 	; <'a'
  		cmp 	#'{'
- 		BPL 	ToUpperX
+ 		bpl 	ToUpperX
  		;--
  		eor 	#$20
 ToUpperX 	rts

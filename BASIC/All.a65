@@ -18,6 +18,8 @@
 #include "XStop.a65" 			; STOP	Stop program execution
 #include "XDim.a65" 			; DIM <StrVar>( size )
 
+#include "Xinput.a65" 			; INPUT ["prompt",] NumVar|StrVar
+
 ; Secondary keywords
 #include "KeyWords.a65"			; THEN, TO, STEP, AND, OR, XOR, NOT
 

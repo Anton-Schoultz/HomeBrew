@@ -217,6 +217,7 @@ MsgChrX 	jsr 	PutChr
 #define ERR_REDIM 	16
 #define ERR_MEMORY 	18
 #define ERR_TOKEN 	20
+#define ERR_SYNTAX 	22
 
 ErrTbl
 .DB "OK",DOT 				; 0=ERR_OK
@@ -230,6 +231,7 @@ ErrTbl
 .DB "Redimension",DOT 			;16=ERR_REDIM
 .DB "Out of memory",DOT 		;18=ERR_MEMORY
 .DB "Invalid token !",DOT 		;20=ERR_TOKEN
+.DB "Syntax",DOT	 		;22=ERR_SYNTAX
 
 
 .DB 0

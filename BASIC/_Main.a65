@@ -23,7 +23,7 @@
 #define _RAM_BAS_END	$1000
 
  		;-- ; Aprox.Size
-_DB_STR 	= 0 			; 144
+_DB_STR 	= 1 			; 144
 _DB_MAIN 	= 0 			;  92
 _DB_EDT 	= 0 			; 395
 _DB_EVAL 	= 0 			; 143
@@ -146,9 +146,7 @@ Main: ;Warm Start entry point
 MainLoop: ; Main Loop
  		PR_WR_IO()
  		lda 	#'>'
- 		jsr 	ConOut
- 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
- 		jsr 	PrNL
+ 		jsr	InputText
  		jsr 	Parse 		; Parse INBUF into TOKBUF
 
 #if _DBUG

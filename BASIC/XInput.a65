@@ -1,0 +1,84 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== INPUT ============== 
+;*  X_InFetch            Get VarID, fetch input, return VarID in A
+;*  X_InNum              Input a numeric value and store it
+;*  X_InStr              Input a String value and save it
+;*  X_Input              INPUT ( "prompt" | , | NumVar | StrVar )*
+;*
+_Input 		= $
+
+;----------------------------------------------- X_Input 
+X_Input: ; INPUT ( "prompt" | , | NumVar | StrVar )*
+ 		jsr 	ChrRd
+ 		beq 	X_InputX
+ 		jsr 	X_InItem
+ 		bra 	X_Input
+
+X_InItem 	;-- ',' | "prompt" | x$ | n
+ 		CASE(T_StrLit,X_PrStr)
+ 		CASE(T_StrVar,X_InStr)
+ 		CASE(T_NumVar,X_InNum)
+ 		BR_AEQ($2c,X_InNxt) 	; ','
+ 		ERROR(ERR_SYNTAX)
+X_InNxt 	rts
+
+X_InputX 	RTN_T()
+
+;----------------------------------------------- X_InNum 
+X_InNum: ; Input a numeric value and store it
+ 		ldx 	#'#'
+ 		jsr 	X_InFetch
+ 		pha 			; save index
+ 		;-- convert text to numeric value
+ 		ZSET(ZParse,INBUF)
+ 		jsr 	NumParsePtr 	; parse it into NUM_A
+ 		;-- store the value
+ 		pla 			; recall index
+ 		jmp 	NumSet 		; fetch & store
+
+;----------------------------------------------- X_InStr 
+X_InStr: ; Input a String value and save it
+ 		ldx 	#'$'
+ 		jsr 	X_InFetch
+ 		pha
+ 		;-- 
+ 		ZSET(S_PTR_A,INBUF)
+ 		jsr 	StrLen
+ 		;-- 
+ 		pla
+ 		jmp 	StrSet
+
+;----------------------------------------------- X_InFetch 
+X_InFetch: ; Get VarID, fetch input, return VarID in A
+ 		jsr 	ChrRd 		; consume T_XxxVar & get var id
+ 		pha 			; save varid
+ 		txa 			; get prompt char '#'/'$'
+ 		jsr 	InputText 	; input string into INBUF
+ 		pla 			; recall varid
+ 		and 	#$1F 		; mask it off
+ 		rts
+
+
+.echo "  _INPUT\t"
+.echo $-_Input
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword 
+#if ($/256) = PG_KEY
+.list
+W_Input 	.DB 	"INPU",'T'+$80
+.nolist
+#endif
+;----------------------------------------------- run 
+#if ($/256) = PG_RUN
+.list
+T_Input 	= LOW($)+$80
+.DW 	X_Input
+.nolist
+#endif
+.list 					; end of Input

@@ -57,6 +57,14 @@ EdtNew: ; NEW = clear program, variables etc.
  		;-- jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
 
+ 		;-- wipe program
+ 		lda #0
+ 		tay
+EdtNewL		sta	(BASBEG),y	; clear first page of program space
+ 		iny
+ 		bne	EdtNewL
+
+
 EdtClear: ; Clear variables and arrays
  		ZCPY(ZWr,BASEND) 	; end of code
  		;-- clear variables
@@ -74,7 +82,7 @@ EdtClear: ; Clear variables and arrays
  		;-- clear vartable (nums, strings, stacks)
  		tay
 EdtWipe 	sta 	VARTAB,y	; clear VARTAB, Gosub,For/Next
-		sta	(BASBEG),y	; clear fiorst page of program space
+		;sta	(BASBEG),y	; clear first page of program space
  		iny
  		bne 	EdtWipe
  		RTN_T()
