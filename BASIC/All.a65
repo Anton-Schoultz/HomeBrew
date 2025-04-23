@@ -40,3 +40,4 @@
 #include "XFRight.a65" 			; RIGHT$(<StrExpr>,<expr>) Return right most n characters
 #include "XFMid.a65" 			; MID$(<StrExpr>,<From-expr>,<Length-expr>) Return substring
 #include "XFChr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code
+#include "XFStr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code

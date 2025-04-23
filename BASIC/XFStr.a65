@@ -1,0 +1,48 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== STR =============
+;*  X_Str                Str$(NumValue) - Return string representation of numeric value
+;*
+_Str 		= $
+
+;----------------------------------------------- X_Str
+X_Str: ; Str$(NumValue) - Return string representation of numeric value
+
+ 		jsr 	EvInt 		; get the code as an Int in AX
+ 		jsr	NumCvt		; convert to string in NUMBUF
+ 		jsr	NumFmt		; format leading zeroes
+ 		; S_PTR_A <- NUMBUF
+		LDAX(NUM_BUF)
+		SETAX(S_PTR_A)
+X_StrX 		jmp 	StrLen 		; find new length
+
+
+.echo "  _STR$(\t"
+.echo $-_Str
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Str 		.DB 	"STR$",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+#ifndef _T_FSTR_
+#define _T_FSTR_
+T_FSTR 		= LOW($)+$80
+#endif
+
+.list
+T_Str 		= LOW($)+$80
+.DW 	X_Str
+.nolist
+.export T_Str
+#endif
+
+.list 					; end of Str
