@@ -128,73 +128,23 @@ IntDH_AX2 	dex
  		bne 	IntDH_AX1
  		rts
 
-;----------------------------------------------- IntParse
-IntParse: ; Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
-; DO NOT PARSE '-'
- 		lda 	#0
- 		sta 	TMP
- 		sta 	TMP+1
- 		sta 	NUM_SGN
-IntParseL 	lda 	CHRGOT 		; term null
- 		beq 	IntParseX
-IntParse1 	jsr 	IsDigit 	; messes with A
- 		BR_F(IntParseX) 	; no more digits
- 		and 	#$0F 		; convert digit to value
- 		jsr 	IntTmpMT 	; TMP *= 10
- 		clc 			; and add to TMP
- 		adc 	TMP
- 		sta 	TMP
- 		bcc 	IntParseAX
- 		inc 	TMP+1
-IntParseAX 	jsr 	GetChr 		; next character
- 		bra 	IntParseL
-IntParseX 	lda 	TMP
- 		ldx 	TMP+1
- 		rts
-
-;----------------------------------------------- IntAXx10
-IntAXx10: ; AX * 10 -> AX (uses TMP)
- 		sta 	TMP
- 		stx 	TMP+1
- 		jsr 	IntTmpMT
- 		lda 	TMP
- 		ldx 	TMP+1
- 		rts
-
-;----------------------------------------------- IntTmpMT
-IntTmpMT: ; TMP = TMP * 10 (preserves AXY)
- 		phx
- 		pha
- 		;--
- 		lda 	TMP 		; AX <= n
- 		ldx 	TMP+1
- 		;--
- 		asl 	TMP
- 		rol 	TMP+1 		; 2n
- 		asl 	TMP
- 		rol 	TMP+1 		; 4n
- 		;-- TMP + AX => TMP (5n)
- 		clc
- 		adc 	TMP
- 		sta 	TMP
- 		txa
- 		adc 	TMP+1
- 		sta 	TMP+1
- 		;-- x2 = 10n
- 		asl 	TMP
- 		rol 	TMP+1
- 		;--
- 		pla
- 		plx
- 		rts
+;;----------------------------------------------- IntAXx10
+;IntAXx10: ; AX * 10 -> AX (uses TMP)
+; 		sta 	TMP
+; 		stx 	TMP+1
+; 		jsr 	IntTmpMT
+; 		lda 	TMP
+; 		ldx 	TMP+1
+; 		rts
 
 ;----------------------------------------------- IntDT_AX
-IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
- 		sta 	TMP
- 		stx 	TMP+1
+;IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
+; 		sta 	TMP
+; 		stx 	TMP+1
  		;-- fall through
 ;----------------------------------------------- IntDT
 IntDT: ; Divide TMP by 10, remainder in A
+; used by IntPrint
  		ldx 	#16
  		lda 	#0
 IntDT_AX1 	asl 	TMP

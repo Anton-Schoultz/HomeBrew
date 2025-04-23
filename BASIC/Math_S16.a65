@@ -177,13 +177,58 @@ NumNegXX 	RTN_T()
 
 ;----------------------------------------------- NumParse
 NumParse: ;  Parse a number from source into NUM_A
-; for S16 use IntParse = Parse Integer from source to TMP (returns value in AX)
- 		jsr 	IntParse
+; for S16 use NumParse = Parse Integer from source to NUM_AA (returns value in AX)
+		lda 	#0
+		sta	NUM_AS
+		lda	CHRGOT
+		cmp 	#'-'
+		bne	NumParse0
+		dec	NUM_AS		; make it $FF
+		jsr	GetChr		; read over the '-'
+		;-- parse number from input
+NumParse0	lda 	#0
  		sta 	NUM_AA
- 		stx 	NUM_AB
- 		lda 	NUM_SGN 	; get sign from IntParse
- 		sta 	NUM_AS
- 		rts
+ 		sta 	NUM_AB
+NumParseL 	lda 	CHRGOT 		; term null
+ 		beq 	NumParseX
+NumParse1 	jsr 	IsDigit 	; messes with A
+ 		BR_F(NumParseX) 	; no more digits
+ 		and 	#$0F 		; convert digit to value
+ 		;-- NUM_AA = NUM_AA * 10 (preserves AXY)
+ 		phx
+ 		pha
+ 		;--
+ 		lda 	NUM_AA 		; AX <= n
+ 		ldx 	NUM_AB
+ 		;--
+ 		asl 	NUM_AA
+ 		rol 	NUM_AB 		; 2n
+ 		asl 	NUM_AA
+ 		rol 	NUM_AB 		; 4n
+ 		;-- NUM_AA + AX => NUM_AA (5n)
+ 		clc
+ 		adc 	NUM_AA
+ 		sta 	NUM_AA
+ 		txa
+ 		adc 	NUM_AB
+ 		sta 	NUM_AB
+ 		;-- x2 = 10n
+ 		asl 	NUM_AA
+ 		rol 	NUM_AB
+ 		;--
+ 		pla
+ 		plx
+		;-- now add the digit value
+ 		clc 			; and add to NUM_AA
+ 		adc 	NUM_AA
+ 		sta 	NUM_AA
+ 		bcc 	NumParseAX
+ 		inc 	NUM_AB
+NumParseAX 	jsr 	GetChr 		; next character
+ 		bra 	NumParseL
+NumParseX 	lda 	NUM_AA		; get the value into AX
+ 		ldx 	NUM_AB
+		rts
 
 ; ----------------------------------------------- NumCvt
 ; -- NumCvt: ; Convert NUM_A to digits in NUM_BUF

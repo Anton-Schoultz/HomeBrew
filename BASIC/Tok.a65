@@ -357,14 +357,14 @@ P_LineNo: ; Parse line number and place int TOKBUF
  		;-- Write LineNo token
  		lda 	#T_LineNo
  		jsr 	ChrWr
- 		jsr 	IntParse 	; Parse int TMP from input
+		; parse an integer from input
+ 		jsr	NumParse
+ 		jsr	NumToInt	; to int in AX lo,Hi
  		;-- write int number to memory via ChrWr
- 		lda 	TMP
- 		jsr 	ChrWr
- 		lda 	TMP+1
- 		jsr 	ChrWr
+ 		jsr 	ChrWr		; write low
+ 		txa
+ 		jsr 	ChrWr		; write hi
  		;-- place holder for the length
- 		lda 	#$AA
  		jsr 	ChrWr
  		rts
 
