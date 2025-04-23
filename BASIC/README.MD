@@ -1,6 +1,7 @@
 <html><head><title>BASIC</title></head>
 <body>
 <h1>BASIC Keywords</h1>
+<dl>
 <dt>ABS({expr})<dd>Return absolute value of expr
 <dt>CLEAR<dd>Clear variables
 <dt>DIM  a$(n) [, b$(n)]*<dd>Dimension struing variable
@@ -27,5 +28,6 @@
 <dt>STOP<dd>Stop executing the program
 <dt>TRIM$({StrExp})<dd>Trim leading and trailing spaces
 <dt>UPPER$({strExpr})<dd>Convert string to upper case
+</dl>
 </body>
 </html>
