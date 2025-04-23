@@ -2,7 +2,7 @@
 ;*  IsAlpha              returns T/F if .A is a Alpha A-Z
 ;*  IsAlphaNumeric       returns true if .A is 0-9,A-Z
 ;*  IsDigit              returns T/F if .A is a digit 0..9
-;*  IsNumFn           Return T/F if CHRGOT is a function and token in A
+;*  IsNumFn              Return T/F if CHRGOT is a numeric function and token in A
 ;*  IsNumValue           return T if token is a numeric value
 ;*  IsRelOpChr           returns T/F if CHRGOT is a relational opperator <>=
 ;*  IsStrValue           return T if token is a string value
@@ -18,7 +18,7 @@
 ;*  TokExpand            Expand the token .X to key word
 ;*  TokFind              try to find a matching token
 ;*
-#ifdef hide	; Tok
+#ifdef hide 				; Tok
 .NOLIST
 #endif
 
@@ -226,14 +226,14 @@ IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
 IsNumFn: ; Return T/F if CHRGOT is a numeric function and token in A
 ; () is also treated as a function
  		lda 	CHRGOT
- 		BR_AEQ('(',IsFnTrue)	; Brace treated as null function
- 		cmp 	#T_FNUM		; firt numeric function
+ 		BR_AEQ('(',IsFnTrue) 	; Brace treated as null function
+ 		cmp 	#T_FNUM 	; firt numeric function
  		bmi 	IsFnFalse
- 		cmp	#T_FSTR
- 		bpl	IsFnFalse
+ 		cmp 	#T_FSTR
+ 		bpl 	IsFnFalse
 IsFnTrue 	RTN_T()
 
-IsFnFalse	RTN_F()
+IsFnFalse 	RTN_F()
 
 
 ;----------------------------------------------- P_IsToken
@@ -344,7 +344,7 @@ L_String: ; list out string text
  		jsr 	ChrCopy
  		lda 	#'"'
  		jsr 	PutChr
- 		jmp 	ChrRd		; close quote and rts
+ 		jmp 	ChrRd 		; close quote and rts
 
 ;=================================================================== LINE_NO ==========
 
@@ -353,15 +353,15 @@ P_LineNo: ; Parse line number and place int TOKBUF
  		;-- Write LineNo token
  		lda 	#T_LineNo
  		jsr 	ChrWr
-		; parse an integer from input
- 		jsr	NumParse
- 		jsr	NumToInt	; to int in AX lo,Hi
+ 		;-- parse numeric value as INT
+ 		jsr 	NumParse	; parse numeric value
+ 		jsr 	NumToInt 	; to Int in AX lo,Hi
  		;-- write int number to memory via ChrWr
- 		jsr 	ChrWr		; write low
+ 		jsr 	ChrWr 		; write low
  		txa
- 		jsr 	ChrWr		; write hi
+ 		jsr 	ChrWr 		; write hi
  		;-- place holder for the length
- 		jmp 	ChrWr		; place holder and RTS
+ 		jmp 	ChrWr 		; place holder and RTS
 
 .echo "  _Tok\t\t"
 .echo $-_Tok

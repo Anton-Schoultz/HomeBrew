@@ -126,6 +126,20 @@ NumInit: ; Initialise calculator (clear stack pointer)
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
+;----------------------------------------------- NumParse
+NumParse: ; Parse number from (ZRd) and move ZRd
+ 		ZCPY(ZParse,ZRd)
+ 		jsr 	NumParsePtr 	; parse from (ZParse)
+ 		;-- update ZRd to after the number
+ 		tya
+ 		clc
+ 		adc 	ZRd
+ 		sta 	ZRd
+ 		lda 	#0
+ 		adc 	ZParse+1
+ 		sta 	ZRd+1
+ 		rts
+
 ;----------------------------------------------- NumPushA
 NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		ldx 	NUM_SP

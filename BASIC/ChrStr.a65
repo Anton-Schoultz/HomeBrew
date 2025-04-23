@@ -144,7 +144,7 @@ ChrReRd		= $06			; ReRead (ZRd)->A->CHRGOT
 _ChrStr 	= $
 ;----------------------------------------------- ChrNext
 ; increment the ZRd pointer (inside the lda) and then fetch the character
-ChrRd_: ; Read character from memory (ZPg routine)
+ChrRd_: ; Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
  		ZINC(ZRd) 		; 0001 0203 0405
  		lda 	$1234 		; 060708
  		sta 	CHRGOT 		; 090A
