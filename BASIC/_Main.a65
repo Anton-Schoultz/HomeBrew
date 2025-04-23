@@ -2,7 +2,6 @@
 
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
 
-
 ;=================================================================== TODO =============
 ; INPUT ["Prompt"] NumVar|StrVar
 ; LOAD
@@ -10,6 +9,7 @@
 ;
 ; ON <expr> GOTO/GOSUB LinNum,... 	?
 ;
+; Timer as variable '@' (move RND after 'Z') ?
 ;
 ; Change parsing of numbers to use (ZPtr),y
 ; add routine to adjust ZPtr by adding the ending value of Y to it
