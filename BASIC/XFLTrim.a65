@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LTRIM ============= 
-;*  X_LTrim              LeftTrim - Trim leading spaces
+;*  X_LTrim              LTRIM	Trim leading spaces
 ;*
 _LTrim 		= $
 
 ;----------------------------------------------- X_LTrim 
-X_LTrim: ; LeftTrim - Trim leading spaces
+X_LTrim: ; LTRIM	Trim leading spaces
 ; string arg already set up
  		jmp 	StrLTrim
 

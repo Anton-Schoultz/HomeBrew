@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== DIM ==============
+;=================================================================== DIM ============== 
 ;*  X_Dim                DIM  a$(n) [, b$(n)]*
 ;*
 _Dim 		= $
@@ -19,7 +19,7 @@ _Dim 		= $
 ; 1.......	This is the last character of the variable Name
 ; .#......	Variable is an array
 
-;----------------------------------------------- X_Dim
+;----------------------------------------------- X_Dim 
 X_Dim: ; DIM  a$(n) [, b$(n)]*
  		jsr 	ChrRd 		; consume Dim
  		;-- Check for and skip over T_StrAry
@@ -42,7 +42,7 @@ X_Dim: ; DIM  a$(n) [, b$(n)]*
  		jsr 	NumToInt 	; Value in AX lo/hi
  		sta 	ZCnt
  		stx 	ZCnt+1
- 		;--
+ 		;-- 
  		jsr 	EdtAlloc 	; make space, set ZPtr
 
  		;-- save the pointer in VARSTR[n]
@@ -60,13 +60,13 @@ X_DimBadVar 	ERROR(ERR_BADVAR)
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Dim 		.DB 	"DI",'M'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Dim 		= LOW($)+$80

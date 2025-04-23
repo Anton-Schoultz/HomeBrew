@@ -2,16 +2,16 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== ABS =============
-;*  X_Abs                Function Abs
+;=================================================================== ABS ============= 
+;*  X_Abs                ABS(<expr>)	Return absolute value of expr
 ;*
 _Abs 		= $
 
-;----------------------------------------------- X_Abs
-X_Abs: ; Function Abs
+;----------------------------------------------- X_Abs 
+X_Abs: ; ABS(<expr>)	Return absolute value of expr
 ; num should already have sign extracted, so just make it positive
  		lda 	#0
- 		STA 	NUM_AS
+ 		sta 	NUM_AS
  		rts
 
 .echo "  _ABS(\t\t"
@@ -20,13 +20,13 @@ X_Abs: ; Function Abs
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Abs 		.DB 	"ABS",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Abs 		= LOW($)+$80

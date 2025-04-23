@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== NEW ============== 
-;*  X_New                NEW
+;*  X_New                NEW	Clear program and data
 ;*
 _New 		= $
 
 ;----------------------------------------------- X_New 
-X_New: ; NEW
+X_New: ; NEW	Clear program and data
  		;-- jmp 	Reset		; EdtNew
  		jmp 	EdtNew
 

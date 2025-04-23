@@ -6,17 +6,19 @@
 ;=================================================================== RUN ==============
 ;*  RunCmd               Run Cmd from TOKBUF
 ;*  RunInit              prepare to run by setting flags
+;*  RunJump              Jump via table for token in A (mask & jump)
 ;*  RunStmnt             Run a statement
-;*  RunTokErr               display invalid token as [xx]
+;*  RunTokErr            display invalid token as [xx]
 ;*  X_Run                Execute Run
 ;*
 _Run 		= $
 
+;----------------------------------------------- RunInit
 RunInit: ; prepare to run by setting flags
  		PR_RD_MEM() 		; read from memory (code space)
  		PR_WR_IO() 		; output to I/O
  		PR_ZSUP_ON()
-		PR_ZSPC_OFF()
+ 		PR_ZSPC_OFF()
  		;-- init
  		jsr 	NumInit 	; initialise evaluator
  		;-- default line no zero
@@ -24,16 +26,16 @@ RunInit: ; prepare to run by setting flags
  		sta 	LN_FND
  		sta 	LN_FND+1
  		;-- random seed
- 		lda	BASEND
- 		ora	#1
- 		sta	VARNUM		; low byte of var[0]=Seed
+ 		lda 	BASEND
+ 		ora 	#1
+ 		STA 	VARNUM 		; low byte of var[0]=Seed
  		rts
 
 ;----------------------------------------------- RunCmd
 RunCmd: ; Run Cmd from TOKBUF
-		lda	#0
-		sta	LN_NUM
-		sta	LN_NUM+1
+ 		lda 	#0
+ 		sta 	LN_NUM
+ 		sta 	LN_NUM+1
  		ZSET(ZRd,TOKBUF-1) 	; where to run from
  		jsr 	RunInit 	; set I/O, Zero suppress etc
  		jmp 	RunStmnt
@@ -58,20 +60,21 @@ RunNxt 		jsr 	LnNext 		; Next line LN_NXT->ZRd->LN_ADR
 RunX 		rts
 
 ;----------------------------------------------- RunLn
-RunStmnt: ; Run a statement
+RunStmnt: ; Run a statement (used by GOSUB and RETURN too)
  		jsr 	NumInit 	; Initialise calculator (clear stack pointer)
- 		jsr	StrInit		; VAREND->STR_END, 0->STR_LEN
+ 		jsr 	StrInit 	; VAREND->STR_END, 0->STR_LEN
  		jsr 	ChrRd 		; (++ZRd)->A->CHRGOT
  		sta 	TOKNO
  		beq 	RunLnX 		; null = End-of-statement
  		;-- remark ?
  		BR_AEQ(T_REM,RunLnX) 	; remark skip rest
  		;-- token
- 		BR_AGT(T_Max,RunTokErr) 	; >max = invalid token
+ 		BR_AGT(T_Max,RunTokErr) ; >max = invalid token
  		BR_ALT($80,RunTokErr) 	; <$80 = invalid token
  		;-- jump to X_xxxx, rts to run loop
-RunJump:; Jump via table for token in A (mask & jump)
-		and 	#$7F
+;----------------------------------------------- RunJump
+RunJump: ; Jump via table for token in A (mask & jump)
+ 		and 	#$7F
  		tax
  		jmp 	(TblRun,X)
 RunLnX 		rts 			; done, return

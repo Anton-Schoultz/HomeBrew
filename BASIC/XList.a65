@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ==============
+;=================================================================== LIST ============== 
 ;*  DB_List              Debug LIST values - BEG  END  NUM  FLG  FND"
 ;*  ListLn               List line (LnNext called before this)
 ;*  X_List               LIST [from] [- [to]]
@@ -12,7 +12,7 @@ _List 		= $
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-;----------------------------------------------- X_List
+;----------------------------------------------- X_List 
 X_List: ; LIST [from] [- [to]]
  		jsr 	ChrRd 		; consume LIST
  		CLS()
@@ -27,7 +27,7 @@ X_List: ; LIST [from] [- [to]]
  		dec 	a
  		sta 	LST_END
  		sta 	LST_END+1
- 		;--
+ 		;-- 
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
@@ -73,7 +73,7 @@ X_List1 	jsr 	ListLn 		; list the line
  		bne 	X_List_L 	; non-zero, so loop
 X_List_X 	rts
 
-;----------------------------------------------- ListLn
+;----------------------------------------------- ListLn 
 ListLn: ; List line (LnNext called before this)
 ; line token already processed
  		jsr 	ChrRd
@@ -134,7 +134,7 @@ ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
  		jsr 	PutChr
 ListTokR3 	bra 	ListTokX
- 		;--
+ 		;-- 
  		;-- Token ?
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
@@ -148,7 +148,7 @@ ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
 #if _DB_LIST
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 DB_List: ; Debug LIST values - BEG  END  NUM  FLG  FND"
  		PUSHALL()
  		PRINTLN("BEG  END  NUM  FLG  FND")
@@ -170,13 +170,13 @@ DB_List: ; Debug LIST values - BEG  END  NUM  FLG  FND"
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)+$80

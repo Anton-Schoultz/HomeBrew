@@ -201,8 +201,7 @@ StrSet: ; Store string at index A  A$..Z$ 1..26
 StrSave 	;- ZPtr points to the string space
  		jsr 	StrPoint
  		ZCPY(ZSrc,S_PTR_A) 	; Src = S_PTR_A
- 		jsr 	EdtDwn 		; copy bytes
- 		rts
+ 		jmp 	EdtDwn 		; copy bytes
 
 ;----------------------------------------------- StrFind 
 StrFind: ; find string .A in table, place it's address in ZPtr
@@ -390,24 +389,6 @@ StrPop: ; PopB and swap
  		jmp 	NumSwap
 
 ;======================================================================================
-
-; ;----------------------------------------------- StrAddNum
-; StrAddNum: ; Append the converted numeric (in NUM_BUF) to the string
-;  		jsr 	StrPush 	; create a temp space
-;  		ldy 	#0
-;  		sty 	S_LEN_A+1 	; clear high
-; StrAddNumL 	lda 	NUM_BUF,Y
-;  		sta 	(S_PTR_A),y
-;  		beq 	StrAddNumX
-;  		iny
-;  		bne 	StrAddNumL
-;  		;-- overflow, so back up and null
-;  		jmp 	StrOvr
-;  		;-- fall through to save index
-; StrAddNumX 	sty 	S_LEN_A
-;  		ZCPY(STR_LEN,S_LEN_A)
-;  		rts
-
 
 .nolist
 #if _DB_STR

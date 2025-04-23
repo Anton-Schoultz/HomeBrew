@@ -18,10 +18,10 @@ _Left 		= $
 X_Left: ; LEFT$($,n) keep left most chars [Head]
  		jsr 	StrFunct
  		;-- check high byte
- 		LDA 	NUM_BB
+ 		lda 	NUM_BB
  		cmp 	#0
  		bne 	X_LeftX 	; high -> exit
- 		LDY 	NUM_BA
+ 		ldy 	NUM_BA
  		sta 	(S_PTR_A),Y
 X_LeftX 	jmp 	StrLen 		; find new length
 

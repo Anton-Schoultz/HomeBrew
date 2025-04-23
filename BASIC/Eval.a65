@@ -38,11 +38,8 @@ EvNumeric: ; Evaluate numeric expression, return T if valid (and CHRGOT is next 
  		lda 	#0
  		sta 	EVFLG
  		jsr 	BoolTerm
-
  		BR_T(EvNumL)
- 		;-- no terms found - not numeric expression
  		rts
-
 EvNumL 		jsr 	IsOrOp
  		bne 	EvNumX
  		;-- 
@@ -57,7 +54,7 @@ EvNumX 		php
 
 ;----------------------------------------------- EvInt 
 EvInt: ; Evaluate expression as integer value AX Lo,Hi
- 		JSR 	EvNumeric
+ 		jsr 	EvNumeric
  		jmp 	NumToInt
 
 ;----------------------------------------------- DoOrOp 
@@ -273,8 +270,7 @@ Function 	;-- process a function
  		beq 	FunctionX 	; yes - done ok
  		;-- jump to perform the function
  		jsr 	RunJump
-FunctionX
- 		RTN_T()
+FunctionX 	RTN_T()
 
 ;----------------------------------------------- ENumLit 
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
@@ -319,12 +315,6 @@ Match: ; match character CHRGOT vs .A and move on, error if no match
  		bne 	MatchFail
  		jmp 	ChrRd 		; next token and return
 MatchFail 	; expected in A
- 		;-- ;- save caller's return address
- 		;-- ply
- 		;-- sty	ERR_ADR
- 		;-- ply
- 		;-- sty	ERR_ADR+1
- 		;-- 
  		ldy 	CHRGOT 		; got in Y
  		ldx 	#ERR_EXPECTED
  		jmp 	Error

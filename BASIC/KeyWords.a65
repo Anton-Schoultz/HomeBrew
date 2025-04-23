@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== KEYWORDS =========
+;=================================================================== KEYWORDS ========= 
 ;*  X_Nop                NO Op
 ;*
 _KeyWords 	= $
 
-;----------------------------------------------- X_KeyWords
+;----------------------------------------------- X_KeyWords 
 X_Nop: ; NO Op
  		rts
 
@@ -17,7 +17,7 @@ X_Nop: ; NO Op
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 
@@ -27,13 +27,13 @@ W_OR 		.DB 	"O",'R'+$80
 W_XOR 		.DB 	"XO",'R'+$80
 W_NOT 		.DB 	"NO",'T'+$80
 
-W_THEN		.DB 	"THE",'N'+$80
-W_TO		.DB 	"T",'O'+$80
-W_STEP		.DB 	"STE",'P'+$80
+W_THEN 		.DB 	"THE",'N'+$80
+W_TO 		.DB 	"T",'O'+$80
+W_STEP 		.DB 	"STE",'P'+$80
 
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 
@@ -46,16 +46,16 @@ T_OR 		= LOW($)+$80
 T_XOR 		= LOW($)+$80
 .DW 	X_Nop
 
-T_NOT		= LOW($)+$80
+T_NOT 		= LOW($)+$80
 .DW 	X_Nop
 
-T_THEN		= LOW($)+$80
+T_THEN 		= LOW($)+$80
 .dw	X_Nop
 
-T_TO		= LOW($)+$80
+T_TO 		= LOW($)+$80
 .dw	X_Nop
 
-T_STEP		= LOW($)+$80
+T_STEP 		= LOW($)+$80
 .dw	X_Nop
 
 .nolist

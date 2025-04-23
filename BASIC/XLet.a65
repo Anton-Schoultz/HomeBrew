@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LET ==============
+;=================================================================== LET ============== 
 ;*  X_Let                LET <var> = <expr>
 ;*  X_LetEQ              Get variable index into .A and check for '='
 ;*  X_LetStrAry          Assign to subscripted String
@@ -10,9 +10,9 @@
 _Let 		= $
 
 ; for now, simple vars are stored in VARNUM (fixed in memory)
- 		;--
+ 		;-- 
 
-;----------------------------------------------- X_Let
+;----------------------------------------------- X_Let 
 X_Let: ; LET <var> = <expr>
  		jsr 	ChrRd 		; consume LET
 
@@ -21,7 +21,7 @@ X_LetDo 	CASE(T_NumVar,X_LetNum)
  		CASE(T_StrAry,X_LetStrAry)
  		ERROR(ERR_VAR) 		; "Expected Variable"
 
-;----------------------------------------------- X_LetNum
+;----------------------------------------------- X_LetNum 
 X_LetNum 	;- assign integer variable (not-ary)
  		jsr 	X_LetEQ 	; get index, skip '='
  		pha 			; save index
@@ -31,7 +31,7 @@ X_LetNum 	;- assign integer variable (not-ary)
  		jsr 	NumSet 		; fetch & store
  		RTN_T() 		; done
 
-;----------------------------------------------- X_LetStr
+;----------------------------------------------- X_LetStr 
 X_LetStr 	;- assign string variable (not-ary)
  		jsr 	X_LetEQ 	; get index, skip '='
  		pha 			; save index
@@ -43,7 +43,7 @@ X_LetStr1 	pla 			; recall index
  		jsr 	StrSet 		; fetch & store
  		RTN_T() 		; done
 
-;----------------------------------------------- X_LetEQ
+;----------------------------------------------- X_LetEQ 
 X_LetEQ: ; Get variable index into .A and check for '='
  		jsr 	ChrRd 		; get first char of variable name
  		bpl 	X_LetBadVar 	; long var name
@@ -60,10 +60,10 @@ X_LetEQ: ; Get variable index into .A and check for '='
 
 X_LetBadVar 	ERROR(ERR_BADVAR)
 
-;----------------------------------------------- X_LetStrAry
+;----------------------------------------------- X_LetStrAry 
 X_LetStrAry: ; Assign to subscripted String
  		jsr 	StrVar 		; eat token, get id, get var
- 		; save the index for where the result must go back to
+ 		;-- save the index for where the result must go back to
  		lda 	VARID
  		pha 			; {0} LHS
  		jsr 	StrPush 	; push the LHS value
@@ -79,7 +79,7 @@ X_LetStrAry: ; Assign to subscripted String
  		jsr 	EvString 	; replacement in 'A'
 ; 		jsr 	NumPopB 	; original in 'B'
 ; 		jsr 	NumSwap 	; A <-> B
- 		jsr	StrPop		; pop & swap
+ 		JSR 	StrPop 		; pop & swap
  		;-- now copy from B to A(n)
  		pla 			; recall n {1}
  		dec 	a 		; BASE 1
@@ -89,7 +89,7 @@ X_LetStrAry: ; Assign to subscripted String
  		lda 	#0
  		adc 	S_PTR_A+1
  		sta 	ZTgt+1
- 		;--
+ 		;-- 
  		ZCPY(ZSrc,S_PTR_B)
  		ZCPY(ZCnt,S_LEN_B)
  		jsr 	EdtDwn
@@ -110,13 +110,13 @@ X_LetStrAry: ; Assign to subscripted String
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Let 		.DB 	"LE",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Let 		= LOW($)+$80

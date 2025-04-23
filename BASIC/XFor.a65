@@ -52,8 +52,7 @@ X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
  		jsr 	NumToInt 	; num as AX l/h
  		sta 	FOR_STP
  		stx 	FOR_STP+1
-X_ForX
- 		rts
+X_ForX 		rts
 
 ;----------------------------------------------- ForPush 
 ForPush: ; Push FOR structure onto the stack

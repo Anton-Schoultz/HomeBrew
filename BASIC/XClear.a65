@@ -2,13 +2,13 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== Clear ==============
-;*  X_Clear                Clear
+;=================================================================== CLEAR ============== 
+;*  X_Clear              CLEAR	Clear variables
 ;*
 _Clear 		= $
 
-;----------------------------------------------- X_Clear
-X_Clear: ; Clear
+;----------------------------------------------- X_Clear 
+X_Clear: ; CLEAR	Clear variables
  		jmp 	EdtClear
 
 
@@ -18,16 +18,16 @@ X_Clear: ; Clear
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
-W_Clear 		.DB 	"CLEA",'R'+$80
+W_Clear 	.DB 	"CLEA",'R'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
-T_Clear 		= LOW($)+$80
+T_Clear 	= LOW($)+$80
 .DW 	X_Clear
 .nolist
  		;-- .export T_Clear

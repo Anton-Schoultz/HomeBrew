@@ -1,8 +1,11 @@
-;=================================================================== CONSTANTS ========
-SCRN_COLS = 40
-SCRN_LINES = 16
+;=================================================================== CONSTANTS ======== 
+SCRN_COLS 	= 40
+SCRN_LINES 	= 16
 
-;----------------------------------------------- ASCII Control Codes
+PG_SYSVAR 	= 3
+PG_SYSIO 	= 2
+
+;----------------------------------------------- ASCII Control Codes 
 #DEFINE NULL	0
 #DEFINE BS 	8
 #DEFINE HT 	9
@@ -66,9 +69,9 @@ T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 T_LineNo 	= $F0 			; header includes line number
 
 
-PG_ROM = $E0			; main code
-PG_KEY = $FE			; key word table
-PG_RUN = $FF			; main jump table
+PG_ROM 		= $E0 			; main code
+PG_KEY 		= $FE 			; key word table
+PG_RUN 		= $FF 			; main jump table
 
 TblKeyword 	= (PG_KEY<<8)
 TblRun 		= (PG_RUN<<8)

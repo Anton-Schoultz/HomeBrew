@@ -3,21 +3,15 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== STOP ============
-;*  X_Stop               Code to execute Stop (Error 0=OK)
+;=================================================================== STOP ============ 
+;*  X_Stop               STOP	Stop executing the program
 ;*
 
 _Stop 		= $
 
-;----------------------------------------------- X_Stop
-X_Stop: ; Code to execute Stop (Error 0=OK)
- 		;-- reset after an error condition
- 		sei 			; Halt IRQs
- 		ldx 	#$ff 		; Set Stack pointer
- 		txs
- 		cld 			; Binary mode
- 		cli 			; Enable irqs
- 		jmp 	Main
+;----------------------------------------------- X_Stop 
+X_Stop: ; STOP	Stop executing the program
+ 		jmp 	Main 		; resets stack etc
 
 .echo "  _STOP\t\t"
 .echo $-_Stop
@@ -25,7 +19,7 @@ X_Stop: ; Code to execute Stop (Error 0=OK)
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 
 .list
@@ -33,7 +27,7 @@ W_Stop 		.DB 	"STO",'P'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Stop 		= LOW($)+$80

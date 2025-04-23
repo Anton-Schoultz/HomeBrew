@@ -10,10 +10,8 @@ _Cls 		= $
 ;----------------------------------------------- X_Cls
 X_Cls: ; CLS	Clear Screen
  		jsr 	ChrRd 		; consume CLS
- 		;--
  		lda 	#_FF
- 		jsr 	ConOut
- 		rts
+ 		jmp 	ConOut
 
 
 .echo "  _CLS\t\t"

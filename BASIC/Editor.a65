@@ -1,9 +1,9 @@
-;=================================================================== EDITOR ===========
+;=================================================================== EDITOR =========== 
 ;*  DB_EdtLine           Debug editor line - NUM  ADR  NXT  LEN  FND
 ;*  DB_EdtMem            Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ;*  DB_EdtMove           Debug memory moves - ZPtr ZCnt ZSrc ZTgt
 ;*  EdtAdd               Append TOKBUF line to end of program
-;*  EdtAlloc             TODO Allocate space - reuse old space otherwiser create new space
+;*  EdtAlloc             TODO Allocate space - reuse old space otherwise create new space
 ;*  EdtClear             Clear variables and arrays
 ;*  EdtCpy               Copy from TOKBUF->(ZTgt)
 ;*  EdtDel               Delete line and fall through to Insert
@@ -15,14 +15,14 @@
 ;*  EdtUpd               Update program with line in TOKBUF
 ;*
 .LIST
-#ifdef hide	; Editor
+#ifdef hide 				; Editor
 .NOLIST
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
 ; $0400	VARNUM	32 x 4 for A-Z vars
- 		;--
+ 		;-- 
 
 ;  Int(RAMBEG)	; Start of user ram area (set with cold start)	$0800
 ;  Int(RAMEND)	; End of user ram area (set at cold start)	$8000
@@ -46,7 +46,7 @@
 
 _Edt 		= $
 
-;----------------------------------------------- EdtNew
+;----------------------------------------------- EdtNew 
 EdtNew: ; NEW = clear program, variables etc.
  		;-- Start Basic at start of RAM
  		ZCPY(BASBEG,RAMBEG)
@@ -58,12 +58,11 @@ EdtNew: ; NEW = clear program, variables etc.
  		ZCPY(BASEND,ZWr) 	; Set BASEND
 
  		;-- wipe program
- 		lda #0
+ 		lda 	#0
  		tay
-EdtNewL		sta	(BASBEG),y	; clear first page of program space
+EdtNewL 	STA 	(BASBEG),y 	; clear first page of program space
  		iny
- 		bne	EdtNewL
-
+ 		BNE 	EdtNewL
 
 EdtClear: ; Clear variables and arrays
  		ZCPY(ZWr,BASEND) 	; end of code
@@ -81,13 +80,13 @@ EdtClear: ; Clear variables and arrays
 
  		;-- clear vartable (nums, strings, stacks)
  		tay
-EdtWipe 	sta 	VARTAB,y	; clear VARTAB, Gosub,For/Next
-		;sta	(BASBEG),y	; clear first page of program space
+EdtWipe 	sta 	VARTAB,y 	; clear VARTAB, Gosub,For/Next
+ 		;-- sta	(BASBEG),y	; clear first page of program space
  		iny
  		bne 	EdtWipe
  		RTN_T()
 
-;----------------------------------------------- EdtUpdate
+;----------------------------------------------- EdtUpdate 
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FND has line no from tokbuf
 ; TOK_LEN is length of the line in tokbuf
@@ -97,13 +96,11 @@ EdtUpd: ; Update program with line in TOKBUF
  		beq 	EdtDel 		; Update = Del then Ins
  		bra 	EdtIns
 EdtAdd: ; Append TOKBUF line to end of program
-;	lda #'+' \ jsr ChrOut
  		ZCPY(ZTgt,ZRd) 		; where we read the terminating null
  		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		jmp 	EdtCpy
 
 EdtDel: ; Delete line and fall through to Insert
-;	lda #'-' \ jsr ChrOut
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
  		ZCPY(ZCnt,BASEND)
@@ -113,11 +110,9 @@ EdtDel: ; Delete line and fall through to Insert
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
-;	lda #'^' \ jsr ChrOut
  		lda 	#5
  		cmp 	TOK_LEN
  		bpl 	EdtInsX 	; Empty Line -> exit
-;	lda #'!' \ jsr ChrOut
  		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
  		;-- ZTgt=LN_ADR+TOK_LEN
@@ -134,10 +129,8 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		jmp 	EdtCpy
 EdtInsX 	rts 			; Done
 
-;----------------------------------------------- EdtCpy
+;----------------------------------------------- EdtCpy 
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
-;	lda #'=' \ jsr ChrOut \ jsr PrNL
-;	jsr	DB_EdtMove
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
  		ZCPY(ZCnt,TOK_LEN)
  		ldy 	ZCnt
@@ -149,13 +142,13 @@ EdtCpyL 	lda 	(ZSrc),y
  		ZCPY(VAREND,BASEND) 	; track end of code in VAREND
  		rts
 
-;=================================================================== MEM-ALLOC ========
+;=================================================================== MEM-ALLOC ======== 
 
-;----------------------------------------------- EdtAlloc
-EdtAlloc: ; TODO Allocate space - reuse old space otherwiser create new space
+;----------------------------------------------- EdtAlloc 
+EdtAlloc: ; TODO Allocate space - reuse old space otherwise create new space
 ; payload size in ZCnt, Returns pointer in ZPtr
 
-;----------------------------------------------- EdtFresh
+;----------------------------------------------- EdtFresh 
 EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr,AX
 ; payload size in ZCnt, Returns pointer in ZPtr & AX (points to the length bytes)
 ; Move ARYBEG down
@@ -168,7 +161,7 @@ EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
  		lda 	#0
  		adc 	ZPtr+1
  		sta 	ZPtr+1
- 		;--
+ 		;-- 
  		ZSUB(ARYBEG,ZPtr) 	; reduce ARYBEG
  		;-- TODO check out-of-memory, throw if error
  		ZCPY(ZPtr,ARYBEG) 	; place in ZPtr
@@ -189,11 +182,9 @@ EdtFreshClr 	iny
  		ldx 	ZPtr+1
  		rts
 
+;=================================================================== INS/DEL ========== 
 
-
-;=================================================================== INS/DEL ==========
-
-;----------------------------------------------- EdtDwn
+;----------------------------------------------- EdtDwn 
 ; Move bytes down (Delete)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
@@ -219,41 +210,7 @@ EdtDwn3 	lda 	(ZSrc),Y 	; move the remaining bytes
  		bne 	EdtDwn3
 EdtDwn4 	rts
 
- 		;-- ;----------------------------------------------- EdtUp
- 		;-- ; Move bytes up (Insert)
- 		;-- ; ZSrc = source end address		Changed
- 		;-- ; ZTgt = destination end address	Changed
- 		;-- ; ZCnt = number of bytes to move 	Preserved
- 		;-- EdtUp: ; Move bytes up (Insert)
-; 		ZINC(ZSrc) 		; adjust source and target
-; 		ZINC(ZTgt)
-; 		;--
-; 		ldy 	#$FF
-; 		ldx 	ZCnt+1
-; 		beq 	EdtUp3
- 		;-- EdtUp1 		dec 	ZSrc+1
-; 		dec 	ZTgt+1
- 		;-- EdtUp2 		lda 	(ZSrc),Y 	; move a page at a time
-; 		sta 	(ZTgt),Y
-; 		dey
-; 		bne 	EdtUp2
-; 		lda 	(ZSrc),Y 	; handle Y = 0 separately
-; 		sta 	(ZTgt),Y
-; 		dey
-; 		dex
-; 		bne 	EdtUp1
- 		;-- EdtUp3 		ldx 	ZCnt
-; 		beq 	EdtUp5
-; 		dec 	ZSrc+1
-; 		dec 	ZTgt+1
- 		;-- EdtUp4 		lda 	(ZSrc),Y 	; move the remaining bytes
-; 		sta 	(ZTgt),Y
-; 		dey
-; 		dex
-; 		bne 	EdtUp4
- 		;-- EdtUp5 		rts
-
-;----------------------------------------------- EdtOpn
+;----------------------------------------------- EdtOpn 
 ; Move memory up (open up a space)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
@@ -289,8 +246,8 @@ EdtOpn3 	dey
 
 
 #if _DB_EDT
-;=================================================================== DBUG =============
-;----------------------------------------------- DB_EdtLine
+;=================================================================== DBUG ============= 
+;----------------------------------------------- DB_EdtLine 
 DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
  		PUSHALL()
  		PRINTLN("NUM  ADR  NXT  LEN  FND")
@@ -304,7 +261,7 @@ DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
  		PULLALL()
  		rts
 
-;----------------------------------------------- DB_EdtMem
+;----------------------------------------------- DB_EdtMem 
 DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ; RAMBEG
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
@@ -320,7 +277,7 @@ DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ; 		PAUSE()
  		PULLALL()
  		rts
-;----------------------------------------------- DB_EdtMove
+;----------------------------------------------- DB_EdtMove 
 DB_EdtMove: ; Debug memory moves - ZPtr ZCnt ZSrc ZTgt
  		PUSHALL()
  		PRINTLN("ZPtr ZCnt ZSrc ZTgt")

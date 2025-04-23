@@ -2,13 +2,13 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== UPPER =============
-;*  X_Upper              Convert string to upper case
+;=================================================================== UPPER ============= 
+;*  X_Upper              UPPER$(<strExpr>)	Convert string to upper case
 ;*
 _Upper 		= $
 
-;----------------------------------------------- X_Upper
-X_Upper: ; Convert string to upper case
+;----------------------------------------------- X_Upper 
+X_Upper: ; UPPER$(<strExpr>)	Convert string to upper case
 ; num should already have sign extracted, so just make it positive
  		jmp 	StrUpper
 
@@ -18,17 +18,17 @@ X_Upper: ; Convert string to upper case
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Upper 	.DB 	"UPPER$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
-T_FSTR = LOW($)+$80
+T_FSTR 		= LOW($)+$80
 #endif
 
 .list

@@ -1,4 +1,4 @@
-#ifdef hide 	; Error
+#ifdef hide 				; Error
 .NOLIST
 #endif
 
@@ -7,9 +7,10 @@
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============
+;=================================================================== ERROR ============ 
 ; NOTE: Message nos go up in 2s
 ;
+;*  ErrList              List offending line (if available)
 ;*  Error                Hanlde error[X] resetting to warm start
 ;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
 ;*  MsgChr               print char in .A if it is ascii, otherwise a '?'
@@ -18,12 +19,52 @@
 ;*
 _Err 		= $
 
-;----------------------------------------------- X_Err
+; NOTE: Message nos go up in 2s
+#define ERR_OK 		0
+#define ERR_EXPECTED 	2
+#define ERR_CONST 	4
+#define ERR_GOSUB 	6
+#define ERR_FOR 	8
+#define ERR_VAR 	10
+#define ERR_BADVAR 	12
+#define ERR_DIV0 	14
+#define ERR_REDIM 	16
+#define ERR_MEMORY 	18
+#define ERR_TOKEN 	20
+#define ERR_SYNTAX 	22
+
+
+#define DOT '.'+$80
+
+; @	A as character
+; !	A as hex
+; #	Y as char
+; $	Y as hex
+; % 	Y as decimal
+
+ErrTbl
+.DB "OK",DOT 				; 0=ERR_OK
+.DB "Expected '@':! but got '#':& *",DOT ; 2=ERR_EXPECTED
+.DB "Expected constant",DOT 		; 4=ERR_CONST
+.DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
+.DB "FOR/NEXT",DOT 			; 8=ERR_FOR
+.DB "Expected variable",DOT 		;10=ERR_VAR
+.DB "Invalid variable !",DOT 		;12=ERR_BADVAR
+.DB "Divide by zero",DOT 		;14=ERR_DIV0
+.DB "Redimension",DOT 			;16=ERR_REDIM
+.DB "Out of memory",DOT 		;18=ERR_MEMORY
+.DB "Invalid token !",DOT 		;20=ERR_TOKEN
+.DB "Syntax",DOT 			;22=ERR_SYNTAX
+.DB 0
+
+
+
+;----------------------------------------------- X_Err 
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
  		phy
- 		jsr ErrList
+ 		jsr 	ErrList
  		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
  		jsr 	PrNL
  		ply
@@ -35,14 +76,14 @@ Error: ; Hanlde error[X] resetting to warm start
 
 ErrorX 		jmp 	Main
 
-ErrList:; List offending line (if available)
+ErrList: ; List offending line (if available)
  		;-- check if command line
  		lda 	LN_NUM
  		ora 	LN_NUM+1
  		bne 	ErrList1
  		rts
  		;-- from program, so set up the offending line
-ErrList1	clc
+ErrList1 	clc
  		lda 	#3
  		adc 	LN_ADR
  		sta 	ZRd
@@ -62,29 +103,29 @@ ErrList1	clc
 ; * 	Address where error was called from
 
 
-;----------------------------------------------- RegLoad
+;----------------------------------------------- RegLoad 
 RegLoad: ; Load registers from ZReg~
-		lda	ZRegP
-		pha
+ 		LDA 	ZRegP
+ 		pha
  		lda 	ZRegA 		; load .A
  		ldy 	ZRegY 		; load .Y
  		ldx 	ZRegX 		; load .X
  		plp
  		rts
 
-;----------------------------------------------- RegSave
+;----------------------------------------------- RegSave 
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
  		stx 	ZRegX 		; save .X
- 		; status register
+ 		;-- status register
  		php
  		pla
- 		sta	ZRegP
+ 		STA 	ZRegP
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg
+;----------------------------------------------- Msg 
 Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		jsr 	RegSave 	; save regs
  		ldy 	#0 		; in case X=0
@@ -95,7 +136,7 @@ Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
 ; 		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
- 		;--
+ 		;-- 
  		;-- MsgNxt 		cpx 	#0 		; no more
 ; 		beq 	MsgX
  		;-- move to next word
@@ -152,41 +193,40 @@ MsgYD 		lda 	ZRegY
 MsgDec 		jmp 	PrADec3
 
 MsgErrAdr 	;-- display stack trace
-		jsr 	PrNL
-		;- drop the call from error
-		pla
-		pla
-		lda 	ZRd
-		sta	ZTmp
-		lda 	ZRd+1
-		sta	ZTmp+1
-		;-- trace to depth of 8
-		ldx 	#5
-		bra	MsgStkL1
-MsgStkL		;-- display stack trace
-		lda 	#'<'
-		jsr 	PutChr
-		lda 	#'~'
-		jsr 	PutChr
-		;-- pop Hi,Lo and decr to match the jsr address
-		pla
-		sta	ZTmp
-		pla
-		sta	ZTmp+1
-		ZDEC(ZTmp)
-		ZDEC(ZTmp)
-		;-- print address in hex
-MsgStkL1	lda	ZTmp+1
-		jsr 	PrAHex
-		lda	ZTmp
-		jsr 	PrAHex
-		;-- loop
-		dex
-		bne	MsgStkL
-		;-- done, so warm start
  		jsr 	PrNL
-		jmp 	Main
-
+ 		;-- drop the call from error
+ 		pla
+ 		pla
+ 		lda 	ZRd
+ 		STA 	ZTmp
+ 		lda 	ZRd+1
+ 		STA 	ZTmp+1
+ 		;-- trace to depth of 8
+ 		ldx 	#5
+ 		BRA 	MsgStkL1
+MsgStkL 	;-- display stack trace
+ 		lda 	#'<'
+ 		jsr 	PutChr
+ 		lda 	#'~'
+ 		jsr 	PutChr
+ 		;-- pop Hi,Lo and decr to match the jsr address
+ 		pla
+ 		STA 	ZTmp
+ 		pla
+ 		STA 	ZTmp+1
+ 		ZDEC(ZTmp)
+ 		ZDEC(ZTmp)
+ 		;-- print address in hex
+MsgStkL1 	LDA 	ZTmp+1
+ 		jsr 	PrAHex
+ 		LDA 	ZTmp
+ 		jsr 	PrAHex
+ 		;-- loop
+ 		dex
+ 		BNE 	MsgStkL
+ 		;-- done, so warm start
+ 		jsr 	PrNL
+ 		jmp 	Main
 
 MsgChr: ; print char in .A if it is ascii, otherwise a '?'
  		cmp 	#$7E
@@ -194,47 +234,7 @@ MsgChr: ; print char in .A if it is ascii, otherwise a '?'
  		cmp 	#$21
  		bpl 	MsgChrX
 MsgChrNo 	lda 	#'?'
-MsgChrX 	jsr 	PutChr
- 		rts
-
-#define DOT '.'+$80
-; @	A as character
-; !	A as hex
-; #	Y as char
-; $	Y as hex
-; % 	Y as decimal
-
-
-; NOTE: Message nos go up in 2s
-#define ERR_OK 		0
-#define ERR_EXPECTED 	2
-#define ERR_CONST 	4
-#define ERR_GOSUB 	6
-#define ERR_FOR 	8
-#define ERR_VAR 	10
-#define ERR_BADVAR 	12
-#define ERR_DIV0 	14
-#define ERR_REDIM 	16
-#define ERR_MEMORY 	18
-#define ERR_TOKEN 	20
-#define ERR_SYNTAX 	22
-
-ErrTbl
-.DB "OK",DOT 				; 0=ERR_OK
-.DB "Expected '@':! but got '#':& *",DOT ; 2=ERR_EXPECTED
-.DB "Expected constant",DOT 		; 4=ERR_CONST
-.DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
-.DB "FOR/NEXT",DOT 			; 8=ERR_FOR
-.DB "Expected variable",DOT 		;10=ERR_VAR
-.DB "Invalid variable !",DOT 		;12=ERR_BADVAR
-.DB "Divide by zero",DOT 		;14=ERR_DIV0
-.DB "Redimension",DOT 			;16=ERR_REDIM
-.DB "Out of memory",DOT 		;18=ERR_MEMORY
-.DB "Invalid token !",DOT 		;20=ERR_TOKEN
-.DB "Syntax",DOT	 		;22=ERR_SYNTAX
-
-
-.DB 0
+MsgChrX 	jmp 	PutChr
 
 
 

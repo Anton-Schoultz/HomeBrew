@@ -2,16 +2,16 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== TRIM =============
-;*  X_Trim              Right Trim - Trim trailing spaces
+;=================================================================== TRIM ============= 
+;*  X_Trim               TRIM$(<StrExp>)	Trim leading and trailing spaces
 ;*
 _Trim 		= $
 
-;----------------------------------------------- X_Trim
-X_Trim: ; Trim - Trim leading and trailing spaces
+;----------------------------------------------- X_Trim 
+X_Trim: ; TRIM$(<StrExp>)	Trim leading and trailing spaces
 ; string arg already set up
-		jsr	StrLTrim	; trim left
- 		jmp 	StrRTrim	; and then right
+ 		jsr 	StrLTrim 	; trim left
+ 		jmp 	StrRTrim 	; and then right
 
 .echo "  _TRIM$(\t"
 .echo $-_Trim
@@ -19,21 +19,21 @@ X_Trim: ; Trim - Trim leading and trailing spaces
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
-W_Trim 	.DB 	"TRIM$",'('+$80
+W_Trim 		.DB 	"TRIM$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
-T_FSTR = LOW($)+$80
+T_FSTR 		= LOW($)+$80
 #endif
 
 .list
-T_Trim 	= LOW($)+$80
+T_Trim 		= LOW($)+$80
 .DW 	X_Trim
 .nolist
 .export T_Trim

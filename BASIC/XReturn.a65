@@ -3,21 +3,21 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== RETURN ===========
-;*  X_Return             code to execute the Return
+;=================================================================== RETURN =========== 
+;*  X_Return             RETURN	Return control to after the GOSUB
 ;*
 _Return 	= $
 
-;----------------------------------------------- X_Return
-X_Return: ; code to execute the Return
+;----------------------------------------------- X_Return 
+X_Return: ; RETURN	Return control to after the GOSUB
  		jsr 	ChrRd 		; consume token
  		;-- pop return
- 		LDX 	RTNSP
+ 		ldx 	RTNSP
  		dex
  		bmi 	RtnOver
- 		LDA 	RTNSTK_L
- 		STA 	LN_NXT
- 		LDA 	RTNSTK_H
+ 		lda 	RTNSTK_L
+ 		sta 	LN_NXT
+ 		lda 	RTNSTK_H
  		sta 	LN_NXT+1
  		rts
 RtnOver 	ERROR(ERR_GOSUB)
@@ -30,13 +30,13 @@ RtnOver 	ERROR(ERR_GOSUB)
 #endif
 
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Return 	= LOW($)+$80

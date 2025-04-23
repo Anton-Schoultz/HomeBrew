@@ -2,16 +2,14 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== GOTO ==============
-;*  X_Goto               GOTO NumLit
-;*  X_GotoNum            GOTO Num
+;=================================================================== GOTO ============== 
+;*  X_Goto               GOTO <NumLit>	Goto line number given
 ;*
 _Goto 		= $
 
-;----------------------------------------------- X_Goto
-X_Goto: ;  GOTO <NumLit>
+;----------------------------------------------- X_Goto 
+X_Goto: ;  GOTO <NumLit>	Goto line number given
  		jsr 	ChrRd 		; consume token
-X_GotoNum: ; GOTO Num
  		BR_AEQ(T_NumLit,Goto)
  		;-- Expected constant
  		ERROR(ERR_CONST)
@@ -31,13 +29,13 @@ Goto 		;- find the line and transfer
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Goto 		.DB 	"GOT",'O'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Goto 		= LOW($)+$80

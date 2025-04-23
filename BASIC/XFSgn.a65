@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== SGN ============== 
-;*  X_Sgn                Function Sgn
+;*  X_Sgn                SGN(<expr>)	Return sign of expr as  -1,0,1
 ;*
 _Sgn 		= $
 
 ;----------------------------------------------- X_Sgn 
-X_Sgn: ; Function Sgn
+X_Sgn: ; SGN(<expr>)	Return sign of expr as  -1,0,1
  		jsr 	NumFlag 	; .2> .1= .0<
  		beq 	SgnZero
  		bmi 	SgnNeg

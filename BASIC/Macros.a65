@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 
-;=================================================================== MACROS ===========
+;=================================================================== MACROS =========== 
 ;*m BR_AEQ(n,tgt)        if(A==n) branch -> tgt
 ;*m BR_AGE(n,tgt)        if(A>=n) branch -> tgt
 ;*m BR_AGT(n,tgt)        if(A>n) branch -> tgt
@@ -63,7 +63,7 @@
 
 #DEFINE THROW(n)  .db $DB
 
-;----------------------------------------------- Alignment
+;----------------------------------------------- Alignment 
 ; align to next n (power of 2)
 #DEFINE ALIGN(n) .org (($/n + 1) * n)
 ; align to start of new page
@@ -72,14 +72,14 @@
 #DEFINE PARAGRAPH() ALIGN(16) 		;.org (($+16) & $FFF0)
 
 
-;----------------------------------------------- Instructions
+;----------------------------------------------- Instructions 
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
 
 ; ZZERO(z)	Zero a z-pg z
 #define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
-;----------------------------------------------- LOW,HIGH,UPPER
+;----------------------------------------------- LOW,HIGH,UPPER 
 
 ; LOW(m)	Low byte	0
 #DEFINE LOW(m)  (m & $FF)
@@ -89,7 +89,7 @@
 
 ; UPPER(m)	Upper byte	2
 #DEFINE UPPER(m) m>>16
-;----------------------------------------------- VarDef
+;----------------------------------------------- VarDef 
 ; Var(name,sz)	Reserve sz bytes for variable name (uses .block)
 #define Var(name,sz) name .block sz
 ; Short(name)	Reserve 1 byte for variable name
@@ -98,7 +98,7 @@
 #define Int(name) name .block 2
 ; Long(name)	Reserve 4 bytes for variable name
 #define Long(name) name .block 4
-;----------------------------------------------- Stack
+;----------------------------------------------- Stack 
 ; PUSHAXY()	Pushes A,X,Y
 #DEFINE PUSHAXY() pha \ phx \ phy
 ; PULLAXY()	Pulls Y,X,A
@@ -107,7 +107,7 @@
 #define PUSHALL() php \ pha \ phx \ phy
 #define PULLALL() ply \ plx \ pla \ plp
 
-;----------------------------------------------- ZPg
+;----------------------------------------------- ZPg 
 ; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
 #DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 ; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
@@ -148,7 +148,7 @@
 #define ZSUB3(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1\ lda r+2\ sbc n+2\ sta r+2
 
 
-;----------------------------------------------- 16 bit AX
+;----------------------------------------------- 16 bit AX 
 ; LDAX(m) 	Loads AX with 16 bit value, low->A, high->X
 #DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
 ; SETAX(p)	Stores 16 bit value (AX) into address A->(p), X->(p+1)
@@ -157,7 +157,7 @@
 #DEFINE GETAX(p) lda p \ ldx p+1
 
 
-;----------------------------------------------- Number format bytes
+;----------------------------------------------- Number format bytes 
 
 
 ; 	LDA #2	; N Z C
@@ -207,7 +207,7 @@
 ; RTN_IFT() return if true (C=1)
 #define RTN_IFT() bcc $+3\ rts
 
-;----------------------------------------------- PSEUDO-CODE
+;----------------------------------------------- PSEUDO-CODE 
 ;; PRINT(str) echo str to output
 ;#define PRINT(str) jsr _Print_ \ .db str,0
 ;; PRINT(str) echo str to output, with CR,LF

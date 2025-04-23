@@ -71,16 +71,18 @@
 #define NUM_DIVC NUM_DIV+FPC
 
 
-;=================================================================== COMMON ===========
+;=================================================================== COMMON =========== 
 ; Common to all math modules
 ;*  NumInit              Initialise calculator (clear stack pointer)
-;*  NumPopB              Pop Num_B from the calculator stack (S,X,A,B,C)
-;*  NumPushA             Push Num_A onto calculator stack (S,X,A,B,C)
+;*  NumParse             Parse number from (ZRd) and move ZRd
+;*  NumPopB              Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
+;*  NumPushA             Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
+;*  NumStackErr          'out-of-memory'
 ;*  NumSwap              Swap NUM_A <-> NUM_B  (S,X,A,B,C)
 ;*
 
 #if ($/256) = 1
-;----------------------------------------------- CSTK
+;----------------------------------------------- CSTK 
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
 ; 16 x 5 => 80 bytes
 CSTK
@@ -93,11 +95,11 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; S16 uses A,B
 ; F32 uses X,A,B,C
 ; Str uses S,X,A,B	SX=Len AB=Ptr
- 		;--
+ 		;-- 
 ; Constants:
 ; NUMSZ 2	size of a numeric format in internal for - S16 is 2 bytes
 ; NUMUSZ 5	size of numeric value once 'unpacked' for calcualtions
-;----------------------------------------------- Numeric common vars
+;----------------------------------------------- Numeric common vars 
 ; Var(NUM_A,NUMUSZ) 	; Number parsed / Primary accumulator
 ; Var(NUM_TMP,NUMUSZ) 	; Temp number
 ; Var(NUM_B,NUMUSZ) 	; Secondary accumulator
@@ -111,7 +113,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 .echo $200 - $
 .echo "\tAvailable\n"
 
-#endif		; end page1
+#endif 					; end page1
 
 #if ($/256) > $80
 _Math 		= $
@@ -120,13 +122,13 @@ _Math 		= $
 .NOLIST
 #endif
 
-;----------------------------------------------- NumInit
+;----------------------------------------------- NumInit 
 NumInit: ; Initialise calculator (clear stack pointer)
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
-;----------------------------------------------- NumParse
+;----------------------------------------------- NumParse 
 NumParse: ; Parse number from (ZRd) and move ZRd
  		ZCPY(ZParse,ZRd)
  		jsr 	NumParsePtr 	; parse from (ZParse)
@@ -140,7 +142,7 @@ NumParse: ; Parse number from (ZRd) and move ZRd
  		sta 	ZRd+1
  		rts
 
-;----------------------------------------------- NumPushA
+;----------------------------------------------- NumPushA 
 NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		ldx 	NUM_SP
  		;-- sign
@@ -160,18 +162,18 @@ NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		inx
  		txa
  		cmp 	#CSTKSZ
- 		beq	NumStackErr
+ 		BEQ 	NumStackErr
  		;-- OK, store it
  		sta 	NUM_SP
  		rts
-NumStackErr:; 'out-of-memory'
-		ERROR(ERR_MEMORY)
+NumStackErr: ; 'out-of-memory'
+ 		ERROR(ERR_MEMORY)
 
-;----------------------------------------------- NumPopB
+;----------------------------------------------- NumPopB 
 NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		;-- try decr stak pointer check if <0
  		dec 	NUM_SP
- 		bmi	NumStackErr
+ 		BMI 	NumStackErr
  		;-- get it into X
  		ldx 	NUM_SP
  		;-- sign
@@ -187,10 +189,10 @@ NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		sta 	NUM_BB
  		lda 	CSTKC,X
  		sta 	NUM_BC
- 		;--
+ 		;-- 
  		rts
 
-;----------------------------------------------- NumSwap
+;----------------------------------------------- NumSwap 
 NumSwap: ; Swap NUM_A <-> NUM_B  (S,X,A,B,C)
  		ldx 	#NUMUSZ
 NumSwapL 	lda 	NUM_A,X
@@ -203,17 +205,17 @@ NumSwapL 	lda 	NUM_A,X
  		bpl 	NumSwapL
  		rts
 
-#endif	; end page > $80
+#endif 					; end page > $80
 
 .nolist
 
-;=================================================================== MATH MODULE ======
+;=================================================================== MATH MODULE ====== 
 #if 1
 #include "Math_S16.a65"
 .nolist
 #else
 
-;----------------------------------------------- Dummy{
+;----------------------------------------------- Dummy{ 
 #if $>$400
 .echo "\n"
 .echo "====================================\n"
@@ -260,7 +262,7 @@ NumToInt 	; Return integer value in AX (lo,hi) - sets NUM_FLG
 NumFromInt 	; Set NUMA to int value in AX (lo,hi)
 
 #endif
-;----------------------------------------------- }Dummy
+;----------------------------------------------- }Dummy 
 
 #endif
 .list

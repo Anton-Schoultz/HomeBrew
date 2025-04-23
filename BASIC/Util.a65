@@ -1,19 +1,15 @@
 #ifdef hide 				; Util
 .NOLIST
 #endif
-;=================================================================== UTIL =============
+;=================================================================== UTIL ============= 
 ;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump              hex dump memory (ZPtr) to output io/mem
-;*  IntAXx10             AX * 10 -> AX (uses TMP)
 ;*  IntDH                Divide ZTMP by 10, remainder in A (trash X)
 ;*  IntDH_AX             Divide AX by 10, result in ZTMP, remainder in A
 ;*  IntDT                Divide TMP by 10, remainder in A
-;*  IntDT_AX             Divide AX by 10, result in TMP, remainder in A
-;*  IntParse             Parse Integer from source (GetChr) to TMP  (returns U16 in AX)
 ;*  IntPrint             Print integer (U16) AX to mem/io via PutChr
 ;*  IntPrintZX           copy ZPg[x] to TMP and print it
-;*  IntTmpMT             TMP = TMP * 10 (preserves AXY)
 ;*  PrADec2              Print A as decimal digits 00-99
 ;*  PrADec3              Print A as decimal digits 000-255
 ;*  PrAHex               Print A as Hex digits (send/write) [A]
@@ -55,7 +51,7 @@
 
 _Util 		= $
 
-;=================================================================== UTIL_INT =========
+;=================================================================== UTIL_INT ========= 
 
 ; === This method is faster, but works with pairs of digits so suppression is a bit funny
 ;  ;----------------------------------------------- IntPrint
@@ -79,7 +75,7 @@ _Util 		= $
 ;   		bra 	IntPrint2
 ;  IntPrintX 	rts
 
-;----------------------------------------------- IntPrintX
+;----------------------------------------------- IntPrintX 
 IntPrintZX: ; copy ZPg[x] to TMP and print it
  		lda 	0,X
  		sta 	TMP
@@ -87,7 +83,7 @@ IntPrintZX: ; copy ZPg[x] to TMP and print it
  		sta 	TMP+1
  		bra 	IntPrintTMP
 
-;----------------------------------------------- IntPrint
+;----------------------------------------------- IntPrint 
 IntPrint: ; Print integer (U16) AX to mem/io via PutChr
 ; 65535:2276c, 10000:2246, 1000:1781 - div 10 method
  		sta 	TMP
@@ -100,7 +96,7 @@ IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
  		lda 	TMP 		; done?
  		ora 	TMP+1
  		bne 	IntPrint1 	; no- loop
- 		;--
+ 		;-- 
 IntPrint2 	;- now pop & print the digits
  		pla
  		bmi 	IntPrintX 	; found the marker so exit
@@ -108,12 +104,12 @@ IntPrint2 	;- now pop & print the digits
  		bra 	IntPrint2
 IntPrintX 	rts
 
-;----------------------------------------------- IntDH_AX
+;----------------------------------------------- IntDH_AX 
 IntDH_AX: ; Divide AX by 10, result in ZTMP, remainder in A
  		sta 	TMP
  		stx 	TMP+1
  		;-- fall through
-;----------------------------------------------- IntDH
+;----------------------------------------------- IntDH 
 IntDH: ; Divide ZTMP by 10, remainder in A (trash X)
  		ldx 	#16
  		lda 	#0
@@ -128,8 +124,8 @@ IntDH_AX2 	dex
  		bne 	IntDH_AX1
  		rts
 
-;;----------------------------------------------- IntAXx10
-;IntAXx10: ; AX * 10 -> AX (uses TMP)
+ 		;-- ;----------------------------------------------- IntAXx10
+ 		;-- IntAXx10: ; AX * 10 -> AX (uses TMP)
 ; 		sta 	TMP
 ; 		stx 	TMP+1
 ; 		jsr 	IntTmpMT
@@ -137,12 +133,12 @@ IntDH_AX2 	dex
 ; 		ldx 	TMP+1
 ; 		rts
 
-;----------------------------------------------- IntDT_AX
+;----------------------------------------------- IntDT_AX 
 ;IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
 ; 		sta 	TMP
 ; 		stx 	TMP+1
  		;-- fall through
-;----------------------------------------------- IntDT
+;----------------------------------------------- IntDT 
 IntDT: ; Divide TMP by 10, remainder in A
 ; used by IntPrint
  		ldx 	#16
@@ -158,8 +154,8 @@ IntDT_AX2 	dex
  		bne 	IntDT_AX1
  		rts
 
-;=================================================================== UTIL_PTR =========
-;----------------------------------------------- PtrX
+;=================================================================== UTIL_PTR ========= 
+;----------------------------------------------- PtrX 
 PtrX: ; Set ZPtr from ZPg[.X]
  		;-- get base pointer into ZPtr
  		lda 	0,X
@@ -168,36 +164,36 @@ PtrX: ; Set ZPtr from ZPg[.X]
  		sta 	ZPtr+1
  		rts
 
-;----------------------------------------------- PtrAXY
+;----------------------------------------------- PtrAXY 
 PtrAXY: ; set ZPtr to AX (lo,hi) and set Y to zero
  		ldy 	#0
-;----------------------------------------------- PtrAX
+;----------------------------------------------- PtrAX 
 PtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		sta 	ZPtr
  		stx 	ZPtr+1
  		rts
 
-;----------------------------------------------- PrNL
+;----------------------------------------------- PrNL 
 PrNL: ; print CR,LF to PutChr -> mem/io
  		lda 	#CR
  		jsr 	PutChr
  		lda 	#LF
  		jmp 	PutChr
 
-;=================================================================== UTIL_HEX =========
+;=================================================================== UTIL_HEX ========= 
 Nib2HexTbl
 ;    ____ BCD:0______===== BCD:1 ====
 .db "0123456789ABCDEF0123456789+-e.E "
 ;   "0123456789ABCDEF0123456789abcdef"
 
-;----------------------------------------------- PrAXHex
+;----------------------------------------------- PrAXHex 
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
  		pha 			; save ZTmp
  		txa 			; get high
  		jsr 	PrAHex 		; print hi as hex digits
  		pla 			; restore ZTmp
  		;-- fall through to print ZTmp as hex digits
-;----------------------------------------------- PrAHex
+;----------------------------------------------- PrAHex 
 PrAHex: ; Print A as Hex digits (send/write) [A]
  		pha 			;Save A for LSD
  		lsr 	a
@@ -207,7 +203,7 @@ PrAHex: ; Print A as Hex digits (send/write) [A]
  		jsr 	PrNib 		; Output hex digit
  		pla 			; Restore A and then
  		;-- fall through to print hex routine
-;----------------------------------------------- PrNib
+;----------------------------------------------- PrNib 
 PrNib: ; Convert hex nibble and Print it (preserves XY)
  		phx 			; save X
  		and 	#$0F 		; Mask LSD for hex print
@@ -220,7 +216,7 @@ PrNibX 		tax
  		plx
  		jmp 	PutChr 		; Write/Send
 
-;----------------------------------------------- Hex2Nib
+;----------------------------------------------- Hex2Nib 
 Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
  		eor 	#'0' 		; Map digits to 0-9
  		cmp 	#9+1 		; Is it a decimal digit?
@@ -234,8 +230,8 @@ Hex2NibFPX 	and 	#$0F
 
 
 #if _DBUG
-;=================================================================== UTIL-DBUG ========
-;----------------------------------------------- _Print_
+;=================================================================== UTIL-DBUG ======== 
+;----------------------------------------------- _Print_ 
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
  		jsr 	RegSave 	; save registers
@@ -260,12 +256,12 @@ _Print_HX 	; print hex data
  		sta 	ZDBug+1
  		iny
  		phy
- 		;--
+ 		;-- 
  		lda 	#'='
  		jsr 	PutChr
  		lda 	#'$'
  		jsr 	PutChr
- 		;--
+ 		;-- 
  		ldy 	#1
  		lda 	(ZDBug),y 	; hi data
  		jsr 	PrAHex
@@ -273,9 +269,9 @@ _Print_HX 	; print hex data
  		lda 	(ZDBug),y 	; lo data
  		jsr 	PrAHex
  		jsr 	PrNL
- 		;--
+ 		;-- 
  		ply
- 		;--
+ 		;-- 
  		;-- Calculate the return address
 _Print_X 	tya 			; y is offset to the null
  		sec 			; adjust one more
@@ -285,22 +281,22 @@ _Print_X 	tya 			; y is offset to the null
  		adc 	ZDPtr+1
  		sta 	ZDPtr+1
  		;-- restore registers
- 		JSR 	RegLoad
+ 		jsr 	RegLoad
 _PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
 
-;----------------------------------------------- _PrHexShort
+;----------------------------------------------- _PrHexShort 
 _PrHexShort: ; print int .A.X as hex value with space
  		jsr 	PrAHex
  		lda 	#' '
  		jmp 	PutChr
 
-;----------------------------------------------- _PrHexInt
+;----------------------------------------------- _PrHexInt 
 _PrHexInt: ; print int .A.X as hex value with space
  		jsr 	PrAXHex
  		lda 	#' '
  		jmp 	PutChr
 
-;----------------------------------------------- HexDump
+;----------------------------------------------- HexDump 
 HexDump: ; hex dump memory (ZPtr) to output io/mem
  		lda 	ZPtr+1
  		jsr 	PrAHex
@@ -342,7 +338,7 @@ HexDumpX 	rts
 #endif
 
 PARAGRAPH()
-;=================================================================== UTIL_BCD =========
+;=================================================================== UTIL_BCD ========= 
 BinTbl
 .db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
 .db $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
@@ -359,7 +355,7 @@ BinTbl
 Bin2BCDTbl
 .byte	$63,$31,$15,$07,$03,$01,$00
 
-;----------------------------------------------- PrADec2
+;----------------------------------------------- PrADec2 
 PrADec2: ; Print A as decimal digits 00-99
  		phx
  		tax
@@ -368,7 +364,7 @@ PrADec2: ; Print A as decimal digits 00-99
  		plx
  		rts
 
-;----------------------------------------------- PrADec2
+;----------------------------------------------- PrADec2 
 PrADec3: ; Print A as decimal digits 000-255
  		jsr 	Bin2BCD
  		pha
@@ -377,7 +373,7 @@ PrADec3: ; Print A as decimal digits 000-255
  		pla
  		jmp 	PrAHex 		; Tens,Unit
 
-;----------------------------------------------- Bin2BCD
+;----------------------------------------------- Bin2BCD 
 Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
  		sed 			; all adds in decimal mode
  		sta 	ZTmp 		; save A
