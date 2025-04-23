@@ -3,9 +3,6 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== INPUT ============== 
-;*  X_InFetch            Get VarID, fetch input, return VarID in A
-;*  X_InNum              Input a numeric value and store it
-;*  X_InStr              Input a String value and save it
 ;*  X_Input              INPUT ( "prompt" | , | NumVar | StrVar )*
 ;*
 _Input 		= $
@@ -28,7 +25,7 @@ X_InNxt 	rts
 X_InputX 	RTN_T()
 
 ;----------------------------------------------- X_InNum 
-X_InNum: ; Input a numeric value and store it
+X_InNum 	; Input a numeric value and store it
  		ldx 	#'#'
  		jsr 	X_InFetch
  		pha 			; save index
@@ -40,7 +37,7 @@ X_InNum: ; Input a numeric value and store it
  		jmp 	NumSet 		; fetch & store
 
 ;----------------------------------------------- X_InStr 
-X_InStr: ; Input a String value and save it
+X_InStr 	; Input a String value and save it
  		ldx 	#'$'
  		jsr 	X_InFetch
  		pha
@@ -52,7 +49,7 @@ X_InStr: ; Input a String value and save it
  		jmp 	StrSet
 
 ;----------------------------------------------- X_InFetch 
-X_InFetch: ; Get VarID, fetch input, return VarID in A
+X_InFetch 	; Get VarID, fetch input, return VarID in A
  		jsr 	ChrRd 		; consume T_XxxVar & get var id
  		pha 			; save varid
  		txa 			; get prompt char '#'/'$'

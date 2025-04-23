@@ -4,13 +4,13 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== REM ============== 
-;*  X_Rem                REM remark line
+;*  X_Rem                REM	Remark line
 ;*
 
 _Rem 		= $
 
 ;----------------------------------------------- X_Rem 
-X_Rem: ; REM remark line
+X_Rem: ; REM	Remark line
  		;-- code to jump to the next line (no processing)
  		lda 	LN_NXT 		; LN_NXT is set up by line no token
  		sta 	ZRd

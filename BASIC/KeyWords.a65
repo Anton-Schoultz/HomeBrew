@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== KEYWORDS ========= 
-;*  X_Nop                NO Op
+;*  X_Nop                No opperation - dummy
 ;*
 _KeyWords 	= $
 
 ;----------------------------------------------- X_KeyWords 
-X_Nop: ; NO Op
+X_Nop: ; No opperation - dummy
  		rts
 
 .echo "  _KeyWords\t"

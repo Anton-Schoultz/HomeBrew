@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== SQR ============== 
-;*  X_Sqr                SQR(<expr>) Return Square of <expr> value
+;*  X_Sqr                SQR(<expr>)	Return Square of <expr> value
 ;*
 _Sqr 		= $
 
 ;----------------------------------------------- X_Sqr 
-X_Sqr: ; SQR(<expr>) Return Square of <expr> value
+X_Sqr: ; SQR(<expr>)	Return Square of <expr> value
  		jsr 	NumPushA
  		jsr 	NumPopB
  		jsr 	NumMul
