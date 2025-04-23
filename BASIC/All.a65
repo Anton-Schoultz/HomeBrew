@@ -1,6 +1,6 @@
 ; All
 
-;----------------------------------------------- Key words 
+;----------------------------------------------- Key words
 #include "XCls.a65" 			; CLS 	Clear screen
 #include "XGoto.a65" 			; GOTO <LitNum>
 #include "XGosub.a65" 			; GOSUB <LitNum>
@@ -23,13 +23,14 @@
 ; Secondary keywords
 #include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;----------------------------------------------- Functions 
+;----------------------------------------------- Functions
 #include "XFRnd.a65" 			; RND(<expr>) random number (mod n)
 #include "XFSqr.a65" 			; SQR(<expr>) Square of n
 #include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
 #include "XFSgn.a65" 			; SGN(<expr>) Signum -1,0,1
+#include "XFAsc.a65"			; ASC(<StrExpr>) Return code of first character in the String
 
-;----------------------------------------------- String functions 
+;----------------------------------------------- String functions
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
 #include "XFLower.a65" 			; LOWER$(<StrExpr>) convert to lower case
 #include "XFLTrim.a65" 			; LTRIM$(<StrExpr>) Trim leadiong spaces

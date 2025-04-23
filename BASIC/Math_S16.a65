@@ -137,6 +137,7 @@ NumFromInt: ;Set NUMA to int value in AX (lo,hi)
  		stx 	NUM_AB
  		lda 	#0 		; assume +v
  		sta 	NUM_AS
+ 		sta	NUM_AX
  		bra 	NumUnpack
 
 ;----------------------------------------------- NumSign

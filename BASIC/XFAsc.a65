@@ -1,0 +1,51 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== ASC =============
+;*  X_Asc                ASC(<StrExpr>)	Return numeric value of the first character of Str
+;*
+_Asc 		= $
+
+;----------------------------------------------- X_Asc
+X_Asc: ;ASC(<StrExpr>)	Return numeric value of the first character of Str
+		jsr	ChrRd		; consume the ASC( token
+		jsr	EvString	; eval string value
+		;- closing )
+		lda #')'
+		jsr Match
+		;- create numeric value from 1st character
+ 		ldy 	#0
+ 		lda	(S_PTR_A),Y
+ 		ldx 	#0
+ 		jsr 	NumFromInt
+ 		RTN_T()
+
+.echo "  _ASC(\t\t"
+.echo $-_Asc
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Asc 		.DB 	"ASC",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+
+#ifndef _T_FNUM_
+#define _T_FNUM_
+T_FNUM 		= LOW($)+$80
+#endif
+
+.list
+T_Asc		= LOW($)+$80
+.DW 	X_Asc
+.nolist
+.export T_Asc
+#endif
+
+.list 					; end of Asc
