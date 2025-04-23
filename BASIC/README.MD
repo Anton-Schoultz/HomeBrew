@@ -2,8 +2,9 @@
 <h1>BASIC Keywords</h1>
 <dl compact>
 <dt>ABS({NumExpr},)<dd>Return absolute value of expr
+<dt>CHR$({NumExpr})<dd>Return string with a character for the given value
 <dt>CLEAR<dd>Clear variables
-<dt>DIM  a$(n) [, b$(n)]*<dd>Dimension string variables
+<dt>DIM a$(n) [, b$(n)]*<dd>Dimension string variables
 <dt>FOR {var}={NumExpr} TO {NumExpr} [STEP {NumExpr},]<dd>Start of a for/next loop
 <dt>GOSUB {NumLit}<dd>Call subroutine at line number given
 <dt>GOTO {NumLit}<dd>Goto line number given
@@ -25,6 +26,7 @@
 <dt>SGN({NumExpr})<dd>Return sign of expr as  -1,0,1
 <dt>SQR({NumExpr})<dd>Return Square of {NumExpr}, value
 <dt>STOP<dd>Stop executing the program
+<dt>STR$({NumExpr})<dd>Return string representation of numeric expression
 <dt>TRIM$({StrExp})<dd>Trim leading and trailing spaces
 <dt>UPPER$({strExpr})<dd>Convert string to upper case
 </dl>

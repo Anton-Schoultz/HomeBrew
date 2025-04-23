@@ -2,19 +2,19 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== STR =============
-;*  X_Str                Str$(NumValue) - Return string representation of numeric value
+;=================================================================== STR ============= 
+;*  X_Str                STR$(NumValue) - Return string representation of numeric expression
 ;*
 _Str 		= $
 
-;----------------------------------------------- X_Str
-X_Str: ; Str$(NumValue) - Return string representation of numeric value
+;----------------------------------------------- X_Str 
+X_Str: ; STR$(NumValue) - Return string representation of numeric expression
  		jsr 	EvInt 		; get the code as an Int in AX
- 		jsr	NumCvt		; convert to string in NUMBUF
- 		jsr	NumFmt		; format leading zeroes
- 		; S_PTR_A <- NUMBUF
-		LDAX(NUM_BUF)
-		SETAX(S_PTR_A)
+ 		jsr 	NumCvt 		; convert to string in NUMBUF
+ 		jsr 	NumFmt 		; format leading zeroes
+ 		;-- S_PTR_A <- NUMBUF
+ 		LDAX(NUM_BUF)
+ 		SETAX(S_PTR_A)
 X_StrX 		jmp 	StrLen 		; find new length
 
 
@@ -24,13 +24,13 @@ X_StrX 		jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Str 		.DB 	"STR$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_

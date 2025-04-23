@@ -5,7 +5,7 @@
 ;=================================================================== TODO =============
 ; -ASC($)	Return numeric value of the first character of Str
 ;
-; STR$(n)	Return string representation of numeric value
+; -STR$(n)	Return string representation of numeric value
 ; VAL($)	Evaluate the string and return it's numeric value
 ;
 ; LEN($)	Return numeric value of the length of the string
