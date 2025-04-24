@@ -1,0 +1,50 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== LEN =============
+;*  X_Len                Len($)	Return the length of the string expression
+;*
+_Len 		= $
+
+;----------------------------------------------- X_Len
+X_Len: ; Len($)	Return the length of the string expression
+ 		jsr 	ChrRd 		; consume the LEN( token
+ 		jsr 	EvString 	; evaluate string
+ 		;-- closing )
+ 		lda 	#')'
+ 		jsr 	Match
+ 		;-- parse the string for numeric Lenue
+ 		lda	S_LEN_A
+ 		ldx 	S_LEN_A+1
+ 		jsr 	NumFromInt
+ 		RTN_T()
+
+.echo "  _LEN(\t\t"
+.echo $-_Len
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Len 		.DB 	"LEN",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+
+#ifndef _T_FNUM_
+#define _T_FNUM_
+T_FNUM 		= LOW($)+$80
+#endif
+
+.list
+T_Len 		= LOW($)+$80
+.DW 	X_Len
+.nolist
+.export T_Len
+#endif
+
+.list 					; end of Len

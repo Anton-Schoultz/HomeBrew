@@ -30,6 +30,7 @@
 #include "XFSgn.a65" 			; SGN(<expr>) Signum -1,0,1
 #include "XFAsc.a65" 			; ASC(<StrExpr>) Return code of first character in the String
 #include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
+#include "XFLen.a65" 			; Len($) Return the length of the string expression
 
 ;----------------------------------------------- String functions
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case

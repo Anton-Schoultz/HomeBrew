@@ -5,7 +5,7 @@
 ;*  EvIsStr              Return EQ if A is a string value/function
 ;*  EvStrFn              evaluate string function FN$($ [,~]* )
 ;*  EvStrItem            get a single item T_StrLit |T_StrVar| StrFn
-;*  EvString             Evaluate a string expression -> STRBUF
+;*  EvString             Evaluate a string expression
 ;*  StrAppend            Append top two strings (PopB, append)
 ;*  StrClear             Clear string 'accumulator' ready for  a new string
 ;*  StrFind              find string .A in table, place it's address in ZPtr
@@ -75,7 +75,7 @@ _Str 		= $
 ; ZPtr must point to the memory block
 
 ;----------------------------------------------- EvString 
-EvString: ; Evaluate a string expression -> STRBUF
+EvString: ; Evaluate a string expression
 ; return T=OK, F otherwise
  		jsr 	StrClear 	; create a temp space
 
