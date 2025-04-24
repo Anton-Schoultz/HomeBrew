@@ -1,59 +1,10 @@
 ;=================================================================== MATH_DI ==========
 
 ; calculator stack depth & mask
-#define CSTKSZ 8
-#define CSTKMSK 7
-
-; SGN/EXP,  Low, High, Upper , ...
-#define FPX	0
-#define FPA	1
-#define FPB	2
-#define FPC	3
-#define FPD	4
-#define FPE	5
-#define FPF	6
-#define FPS	7
-
-#define NUM_AA NUM_A+FPA
-#define NUM_AB NUM_A+FPB
-#define NUM_AC NUM_A+FPC
-#define NUM_AD NUM_A+FPD
-#define NUM_AE NUM_A+FPE
-#define NUM_AF NUM_A+FPF
-#define NUM_AX NUM_A+FPX
-#define NUM_AS NUM_A+FPS
-
-#define NUM_BA NUM_B+FPA
-#define NUM_BB NUM_B+FPB
-#define NUM_BC NUM_B+FPC
-#define NUM_BD NUM_B+FPD
-#define NUM_BE NUM_B+FPE
-#define NUM_BF NUM_B+FPF
-#define NUM_BX NUM_B+FPX
-#define NUM_BS NUM_B+FPS
-
-#define NUM_TMPA NUM_TMP+FPA
-#define NUM_TMPB NUM_TMP+FPB
-#define NUM_TMPC NUM_TMP+FPC
-#define NUM_TMPD NUM_TMP+FPD
-#define NUM_TMPE NUM_TMP+FPE
-#define NUM_TMPF NUM_TMP+FPF
-#define NUM_TMPX NUM_TMP+FPX
-#define NUM_TMPS NUM_TMP+FPS
-
-#define NUM_DIVA NUM_DIV+FPA
-#define NUM_DIVB NUM_DIV+FPB
-#define NUM_DIVC NUM_DIV+FPC
-#define NUM_DIVD NUM_DIV+FPD
-#define NUM_DIVE NUM_DIV+FPE
-#define NUM_DIVF NUM_DIV+FPF
-#define NUM_DIVX NUM_DIV+FPX
-#define NUM_DIVS NUM_DIV+FPS
-
 
 #if ($/256) = 0
+#definr NUMSZ 4
 
-PARAGRAPH()
 ;----------------------------------------------- Numeric
 Var(NUM_A,8) 	; 30 Number parsed / Primary accumulator
 Var(NUM_TMP,8) 	; 38 Temp number

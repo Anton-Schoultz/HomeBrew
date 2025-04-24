@@ -3,12 +3,9 @@
 #endif
 
 ;=================================================================== MATH_S16 =========
-; calculator stack depth & mask
-#define CSTKSZ 16
-#define CSTKMSK CSTKSZ-1
-
 
 #if ($/256) = 0
+#define NUMSZ	2
 ;----------------------------------------------- Numeric
 Short(ZDIV) 	; short divisor 10/100
 

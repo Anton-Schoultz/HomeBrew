@@ -47,7 +47,8 @@ EvNumL 		jsr 	IsOrOp
  		jsr 	DoOrOp
  		bra 	EvNumL
  		;--
-EvNumX 		php
+EvNumX 		;-- TODO Does this really need to be packed as NumSet will pack?
+		php
  		jsr 	NumPack
  		plp
  		rts

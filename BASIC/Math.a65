@@ -1,36 +1,20 @@
 .nolist
+;=================================================================== COMMON ===========
+; Common to all math modules
+;*  NumInit              Initialise calculator (clear stack pointer)
+;*  NumParse             Parse number from (ZRd) and move ZRd
+;*  NumPopB              Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
+;*  NumPushA             Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
+;*  NumStackErr          'out-of-memory'
+;*  NumSwap              Swap NUM_A <-> NUM_B  (S,X,A,B,C)
+;*
+
+Use_Module = 1
+
+#define CSTKSZ 16
+
 ; this lets me select which maths implementation to use
 
-;-----------------------------------------------
-;       Subroutines Required
-;-----------------------------------------------
-
-;  NumInit              Initialise calculator
-
-;  NumParse             Parse a number from source into NUM_A
-;  NumCvt               Convert NUM_A(unpacked) to digits in NUM_BUF
-;  NumPrint             Convert number to string & output (via PutChr mem/io)
-
-
-;  NumAdd               NumA = NumB + NumA
-;  NumSub               NumA = NumB + NumA
-;  NumMul               NumA = NumB * NumA (in unpacked form)
-;  NumDiv               NumA = NumB / NumA
-
-;  NumPushA             Push Num_A onto calculator stack
-;  NumPopB              Pop Num_B from the calculator stack
-
-;  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-
-;  NumZeroA             Place zero into NUM_A
-
-;  NumSet               Set NUM_A to integer value in AX (lo,Hi)
-
-;  NumRd                Read number from memory using ChrRd & unpack to internal form
-;  NumWr                Wwrite number value to memory via ChrWr
-
-;  NumGet              Retrieve simple variable [X] and unpack to internal form
-;  NumSet              Pack and Store simple variable [X]
 
 ; SGN,  X:Exp, A:Low, B:High, C:Upper
 #define FPS	0
@@ -71,18 +55,9 @@
 #define NUM_DIVC NUM_DIV+FPC
 
 
-;=================================================================== COMMON =========== 
-; Common to all math modules
-;*  NumInit              Initialise calculator (clear stack pointer)
-;*  NumParse             Parse number from (ZRd) and move ZRd
-;*  NumPopB              Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
-;*  NumPushA             Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
-;*  NumStackErr          'out-of-memory'
-;*  NumSwap              Swap NUM_A <-> NUM_B  (S,X,A,B,C)
-;*
 
 #if ($/256) = 1
-;----------------------------------------------- CSTK 
+;----------------------------------------------- CSTK
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
 ; 16 x 5 => 80 bytes
 CSTK
@@ -92,14 +67,18 @@ Var(CSTKA,CSTKSZ) ; A:Low    | S16.L
 Var(CSTKB,CSTKSZ) ; B:High   | S16.H
 Var(CSTKC,CSTKSZ) ; C:Upper
 
-; S16 uses A,B
-; F32 uses X,A,B,C
 ; Str uses S,X,A,B	SX=Len AB=Ptr
- 		;-- 
+
+; S16 uses A,B
+; S24 uses A,B,C
+; D24 uses A,B,C
+
+; F32 uses X,A,B,C
+ 		;--
 ; Constants:
 ; NUMSZ 2	size of a numeric format in internal for - S16 is 2 bytes
 ; NUMUSZ 5	size of numeric value once 'unpacked' for calcualtions
-;----------------------------------------------- Numeric common vars 
+;----------------------------------------------- Numeric common vars
 ; Var(NUM_A,NUMUSZ) 	; Number parsed / Primary accumulator
 ; Var(NUM_TMP,NUMUSZ) 	; Temp number
 ; Var(NUM_B,NUMUSZ) 	; Secondary accumulator
@@ -111,7 +90,9 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 .nolist
 .echo "  CPU Stack\t"
 .echo $200 - $
-.echo "\tAvailable\n"
+.echo "\tAvailable StackDepth="
+.echo CSTKSZ
+.echo "\n"
 
 #endif 					; end page1
 
@@ -122,13 +103,13 @@ _Math 		= $
 .NOLIST
 #endif
 
-;----------------------------------------------- NumInit 
+;----------------------------------------------- NumInit
 NumInit: ; Initialise calculator (clear stack pointer)
  		lda 	#0
  		sta 	NUM_SP 		; zero the number stack pointer
  		rts
 
-;----------------------------------------------- NumParse 
+;----------------------------------------------- NumParse
 NumParse: ; Parse number from (ZRd) and move ZRd
  		ZCPY(ZParse,ZRd)
  		jsr 	NumParsePtr 	; parse from (ZParse)
@@ -142,7 +123,7 @@ NumParse: ; Parse number from (ZRd) and move ZRd
  		sta 	ZRd+1
  		rts
 
-;----------------------------------------------- NumPushA 
+;----------------------------------------------- NumPushA
 NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		ldx 	NUM_SP
  		;-- sign
@@ -162,18 +143,18 @@ NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		inx
  		txa
  		cmp 	#CSTKSZ
- 		BEQ 	NumStackErr
+ 		beq 	NumStackErr
  		;-- OK, store it
  		sta 	NUM_SP
  		rts
 NumStackErr: ; 'out-of-memory'
  		ERROR(ERR_MEMORY)
 
-;----------------------------------------------- NumPopB 
+;----------------------------------------------- NumPopB
 NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		;-- try decr stak pointer check if <0
  		dec 	NUM_SP
- 		BMI 	NumStackErr
+ 		bmi 	NumStackErr
  		;-- get it into X
  		ldx 	NUM_SP
  		;-- sign
@@ -189,10 +170,10 @@ NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		sta 	NUM_BB
  		lda 	CSTKC,X
  		sta 	NUM_BC
- 		;-- 
+ 		;--
  		rts
 
-;----------------------------------------------- NumSwap 
+;----------------------------------------------- NumSwap
 NumSwap: ; Swap NUM_A <-> NUM_B  (S,X,A,B,C)
  		ldx 	#NUMUSZ
 NumSwapL 	lda 	NUM_A,X
@@ -209,13 +190,13 @@ NumSwapL 	lda 	NUM_A,X
 
 .nolist
 
-;=================================================================== MATH MODULE ====== 
-#if 1
+;=================================================================== MATH MODULE ======
+#if Use_Module
 #include "Math_S16.a65"
 .nolist
 #else
 
-;----------------------------------------------- Dummy{ 
+;----------------------------------------------- Dummy{
 #if $>$400
 .echo "\n"
 .echo "====================================\n"
@@ -224,9 +205,10 @@ NumSwapL 	lda 	NUM_A,X
 .echo "\n"
 
 .nolist
-;  --------- Usages --------------
-NumInit 	; Tok.RunLn - when running a line of code
-NumParse 	; Tok.P_Number : parse literal number -> NUM_A (follow by NumWr)
+
+;  -------- Module must define these ----------
+
+NumParsePtr	; Parse a number from (ZParse) into NUM_A
 
 NumCvt 		; X_PrNum to display value
 NumPrint 	; L_Number to list number (from P_Number)
@@ -245,24 +227,27 @@ NumFlag 	; Eval   set flags bassed on result
 NumTrue 	; Eval   Place TRUE in NUM_A
 NumFalse 	; Eval   Place FALSE in NUM_A
 
-NumPushA 	; Eval push
-NumPopB 	; Eval pop
-
 NumFmt 		; X_PrNum (also uses NumCvt)
 
 NumZeroA 	; Eval
 
+NumRnd		; Random number 0-32767  -> NUM_AA,B
+
 NumRd 		; Eval for literal values
 NumWr 		; Tok.P_Number to create a literal
 
-NumGet 		; Eval to retrieve A-Z variable [X] X is 1..26
-NumSet 		; Eval to store a A-Z variable  [X]
+NumGet 		; Eval to retrieve from A-Z variable [X] and unpack
+NumSet 		; Pack and store into A-Z variable  [X]
 
 NumToInt 	; Return integer value in AX (lo,hi) - sets NUM_FLG
 NumFromInt 	; Set NUMA to int value in AX (lo,hi)
 
+; TODO is this really needed?
+NumPack		; Pack NUM_A into memory format for storing
+
+
 #endif
-;----------------------------------------------- }Dummy 
+;----------------------------------------------- }Dummy
 
 #endif
 .list
