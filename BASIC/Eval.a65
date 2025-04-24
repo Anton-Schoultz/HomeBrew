@@ -253,6 +253,7 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
  		CASE(T_NumLit,ENumLit) 	; Literal value
 		;-- convert string to value is special case
  		CASE(T_Asc,X_Asc)	; ASC($)-> code
+ 		CASE(T_Val,X_Val)	; Val($)-> numeric value
 		;-- Fn({NumExpr}) ?
  		lda 	CHRGOT
  		jsr 	IsNumFn

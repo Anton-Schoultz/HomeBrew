@@ -28,7 +28,8 @@
 #include "XFSqr.a65" 			; SQR(<expr>) Square of n
 #include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
 #include "XFSgn.a65" 			; SGN(<expr>) Signum -1,0,1
-#include "XFAsc.a65"			; ASC(<StrExpr>) Return code of first character in the String
+#include "XFAsc.a65" 			; ASC(<StrExpr>) Return code of first character in the String
+#include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
 
 ;----------------------------------------------- String functions
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
