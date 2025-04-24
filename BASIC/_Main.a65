@@ -3,15 +3,13 @@
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
 
 ;=================================================================== TODO =============
-; FRE(#)	Return number of bytes available in free memory
-;
 ; GET v		Stores KeyPress value into var v
 ;
 ; LOAD		Load a program
 ; SAVE		Save a program
 ;
 ; PEEK(n)	Return contents of memory at address n
-; POKE(adr,val)	Set memory location
+; POKE adr,val	Set memory location
 ;
 ; POS(#)	Return column no of screen cursor
 ; TAB(n)	Set screen column number

@@ -1,0 +1,54 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== PEEK ==============
+;*  X_Peek               PEEK({NumExpr})	Return the contents of memory byte at address
+;*
+_Peek 		= $
+
+;----------------------------------------------- X_Peek
+X_Peek: ; PEEK({NumExpr})	Return the contents of memory byte at address
+; expression is already evaluated and in NUM_A (expanded form)
+ 		jsr 	NumToInt 	; convert to int in NUM_AA,_AB
+ 		lda 	(NUM_AA) 	; get the byte from memory
+ 		ldx 	#0 		; clear high byte
+ 		jsr 	NumFromInt
+ 		RTN_T()
+
+
+; NumPushA 	Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
+; NumPeek	Random number 0-32767  -> NUM_AA,B
+; NumPopB	Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
+; NumSwap	Swap NUM_A <-> NUM_B  (S,X,A,B,C)
+
+.echo "  _PEEK(\t"
+.echo $-_Peek
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Peek 		.DB 	"PEEK",'('+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+#ifndef _T_FNUM_
+#define _T_FNUM_
+T_FNUM 		= LOW($)+$80
+#endif
+
+
+.list
+T_Peek 		= LOW($)+$80
+.DW 	X_Peek
+.nolist
+.export T_Peek
+#endif
+
+
+
+.list 					; end of Peek

@@ -32,6 +32,8 @@
 #include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
 #include "XFLen.a65" 			; Len($) Return the length of the string expression
 #include "XFFre.a65" 			; FRE(#) Return number of bytes available in free memory
+#include "XFPeek.a65" 			; PEEK({NumExpr}) Return the contents of memory byte at address
+#include "XFDeek.a65" 			; DEEK({NumExpr}) Return the contents of memory word at address
 
 ;----------------------------------------------- String functions & Num->Str
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
