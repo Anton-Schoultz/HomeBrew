@@ -8,7 +8,6 @@
 ; LOAD		Load a program
 ; SAVE		Save a program
 ;
-; PEEK(n)	Return contents of memory at address n
 ; POKE adr,val	Set memory location
 ;
 ; POS(#)	Return column no of screen cursor

@@ -1,0 +1,40 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== DOKE ==============
+;*  X_Doke               DOKE {AddressExpr},{NumExpr}	Poke word of data to the address
+;*
+_Doke 		= $
+
+;----------------------------------------------- X_Doke
+X_Doke: ;  DOKE {AddressExpr},{NumExpr}	Doke word of data to the address
+ 		JSR 	X_Poke
+ 		LDY 	#1
+ 		LDA 	NUM_AB 		; lo data
+ 		STA 	(NUM_BA),Y 	; Doke the value
+ 		rts
+
+
+.echo "  _DOKE\t\t"
+.echo $-_Doke
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Doke 		.DB 	"DOK",'E'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Doke 		= LOW($)+$80
+.DW 	X_Doke
+.nolist
+ 		;-- .export T_Doke
+#endif
+
+.list 					; end of Doke

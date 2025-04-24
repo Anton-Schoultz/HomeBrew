@@ -1,6 +1,6 @@
 ; All
 
-;----------------------------------------------- Key words
+;----------------------------------------------- Key words 
 #include "XCls.a65" 			; CLS 	Clear screen
 #include "XGoto.a65" 			; GOTO <LitNum>
 #include "XGosub.a65" 			; GOSUB <LitNum>
@@ -17,13 +17,15 @@
 #include "XNext.a65" 			; Next <Var>
 #include "XStop.a65" 			; STOP	Stop program execution
 #include "XDim.a65" 			; DIM <StrVar>( size )
+#include "XInput.a65" 			; INPUT ["prompt",] NumVar|StrVar
 
-#include "Xinput.a65" 			; INPUT ["prompt",] NumVar|StrVar
+#include "XPoke.a65" 			; POKE {AddressExpr},{NumExpr} Poke byte of data to the address
+#include "XDoke.a65" 			; DOKE {AddressExpr},{NumExpr} Poke word of data to the address
 
 ; Secondary keywords
 #include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;----------------------------------------------- Numeric Functions  & Str->Num
+;----------------------------------------------- Numeric Functions  & Str->Num 
 #include "XFRnd.a65" 			; RND(<expr>) random number (mod n)
 #include "XFSqr.a65" 			; SQR(<expr>) Square of n
 #include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
@@ -35,7 +37,7 @@
 #include "XFPeek.a65" 			; PEEK({NumExpr}) Return the contents of memory byte at address
 #include "XFDeek.a65" 			; DEEK({NumExpr}) Return the contents of memory word at address
 
-;----------------------------------------------- String functions & Num->Str
+;----------------------------------------------- String functions & Num->Str 
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
 #include "XFLower.a65" 			; LOWER$(<StrExpr>) convert to lower case
 #include "XFLTrim.a65" 			; LTRIM$(<StrExpr>) Trim leadiong spaces

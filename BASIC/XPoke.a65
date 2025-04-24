@@ -1,0 +1,51 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== POKE ==============
+;*  X_Poke               POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
+;*
+_Poke 		= $
+
+;----------------------------------------------- X_Poke
+X_Poke: ;  POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
+ 		jsr 	ChrRd 		; consume token
+ 		;-- evaluate address, convert to int, and push it
+ 		jsr 	EvNumeric
+ 		jsr 	NumToInt
+		jsr	NumPushA
+ 		;-- check for & skip ','
+ 		lda #','
+ 		jsr Match
+ 		;-- evaluate data and convert to int
+ 		jsr 	EvNumeric
+ 		jsr 	NumToInt
+ 		;-- do the POKE
+ 		jsr	NumPopB
+ 		lda	NUM_AA		; lo data
+ 		sta	(NUM_BA)	; poke the value
+ 		rts
+
+
+.echo "  _POKE\t\t"
+.echo $-_Poke
+.echo "\n"
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Poke 		.DB 	"POK",'E'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Poke 		= LOW($)+$80
+.DW 	X_Poke
+.nolist
+ 		;-- .export T_Poke
+#endif
+
+.list 					; end of Poke
