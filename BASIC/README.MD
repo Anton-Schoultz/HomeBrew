@@ -42,8 +42,8 @@
 <dt>VAL($$)<dd>Evaluate the string and return it's numeric value
 </dl>
 <br>$$=String Expression
-<br>\#\#=Numeric Expression
-<br>\#=Numeric literal
+<br>##=Numeric Expression
+<br>#=Numeric literal
 <br>$=String literal (Quoted string)
 <br>??=Relational/Conditional expression
 </body>
