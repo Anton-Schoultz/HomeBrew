@@ -23,7 +23,7 @@
 ; Secondary keywords
 #include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;----------------------------------------------- Functions
+;----------------------------------------------- Numeric Functions  & Str->Num
 #include "XFRnd.a65" 			; RND(<expr>) random number (mod n)
 #include "XFSqr.a65" 			; SQR(<expr>) Square of n
 #include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
@@ -31,8 +31,9 @@
 #include "XFAsc.a65" 			; ASC(<StrExpr>) Return code of first character in the String
 #include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
 #include "XFLen.a65" 			; Len($) Return the length of the string expression
+#include "XFFre.a65" 			; FRE(#) Return number of bytes available in free memory
 
-;----------------------------------------------- String functions
+;----------------------------------------------- String functions & Num->Str
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
 #include "XFLower.a65" 			; LOWER$(<StrExpr>) convert to lower case
 #include "XFLTrim.a65" 			; LTRIM$(<StrExpr>) Trim leadiong spaces
@@ -42,4 +43,4 @@
 #include "XFRight.a65" 			; RIGHT$(<StrExpr>,<expr>) Return right most n characters
 #include "XFMid.a65" 			; MID$(<StrExpr>,<From-expr>,<Length-expr>) Return substring
 #include "XFChr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code
-#include "XFStr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code
+#include "XFStr.a65" 			; STR$(NumValue) - Return string representation of numeric expression
