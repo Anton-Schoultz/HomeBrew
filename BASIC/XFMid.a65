@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== MID ============= 
+;=================================================================== MID =============
 ;*  X_Mid                MID$($$,##From,##Len)~Return substring of Len chars from position From
 ;*
 _Mid 		= $
 
-;----------------------------------------------- X_Mid 
+;----------------------------------------------- X_Mid
 X_Mid: ; MID$($$,##From,##Len)~Return substring of Len chars from position From
  		jsr 	StrFunct
  		ldy 	#0
@@ -29,13 +29,13 @@ X_MidX 		jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Mid 		.DB 	"MID$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -46,7 +46,6 @@ T_FSTR 		= LOW($)+$80
 T_Mid 		= LOW($)+$80
 .DW 	X_Mid
 .nolist
-.export T_Mid
 #endif
 
 .list 					; end of Mid

@@ -29,7 +29,6 @@ W_Tmp 		.DB 	"Tmp",'T'+$80
 T_Tmp 		= LOW($)+$80
 .DW 	X_Tmp
 .nolist
-;.export T_Tmp
 #endif
 
 .list	; end of Tmp

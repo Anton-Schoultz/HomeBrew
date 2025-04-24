@@ -2,11 +2,11 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== NEXT ============== 
+;=================================================================== NEXT ==============
 ;*  X_Next               NEXT {Var}~End of FOR/NEXT loop
 ;*
 _Next 		= $
-;----------------------------------------------- For/Next 
+;----------------------------------------------- For/Next
 ; FOR values are stored immediately after the A-Z, so access with index 27,28
 ; #define FOR_STP_X 27
 ; #define FOR_LIM_X 28
@@ -18,7 +18,7 @@ _Next 		= $
 ;  		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 ; Var(FORSTK,8*FORDEEP)
 
-;----------------------------------------------- X_Next 
+;----------------------------------------------- X_Next
 X_Next: ; NEXT {Var}~End of FOR/NEXT loop
  		jsr 	ChrRd 		; consume token
  		;-- loop var
@@ -80,19 +80,18 @@ X_NextLoop 	; loop by going back to the loop line
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Next 		.DB 	"NEX",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_NEXT 		= LOW($)+$80
 .DW 	X_Next
 .nolist
- 		;-- .export T_Next
 #endif
 
 .list 					; end of Next

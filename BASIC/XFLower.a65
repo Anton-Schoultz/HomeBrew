@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LOWER ============= 
+;=================================================================== LOWER =============
 ;*  X_Lower              LOWER($$)~Convert string to Lower case
 ;*
 _Lower 		= $
 
-;----------------------------------------------- X_Lower 
+;----------------------------------------------- X_Lower
 X_Lower: ; LOWER($$)~Convert string to Lower case
 ; string arg already set up
  		jmp 	StrLower
@@ -18,13 +18,13 @@ X_Lower: ; LOWER($$)~Convert string to Lower case
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Lower 	.DB 	"LOWER$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -35,7 +35,6 @@ T_FSTR 		= LOW($)+$80
 T_Lower 	= LOW($)+$80
 .DW 	X_Lower
 .nolist
-.export T_Lower
 #endif
 
 .list 					; end of Lower

@@ -8,7 +8,7 @@
 ;*  NumStackErr          'out-of-memory'
 ;*  NumSwap              Swap NUM_A <-> NUM_B  (S,X,A,B,C)
 ;*
-
+#if ($/256) = 0
 Use_Module = 1
 
 #define CSTKSZ 16
@@ -27,32 +27,30 @@ Use_Module = 1
 #define FPE	6
 #define FPF	7
 
-#define NUM_AS NUM_A+FPS
-#define NUM_AX NUM_A+FPX
-#define NUM_AA NUM_A+FPA
-#define NUM_AB NUM_A+FPB
-#define NUM_AC NUM_A+FPC
-#define NUM_AD NUM_A+FPD
+NUM_AS = NUM_A+FPS
+NUM_AX = NUM_A+FPX
+NUM_AA = NUM_A+FPA
+NUM_AB = NUM_A+FPB
+NUM_AC = NUM_A+FPC
+NUM_AD = NUM_A+FPD
 
-#define NUM_BS NUM_B+FPS
-#define NUM_BX NUM_B+FPX
-#define NUM_BA NUM_B+FPA
-#define NUM_BB NUM_B+FPB
-#define NUM_BC NUM_B+FPC
-#define NUM_BD NUM_B+FPD
+NUM_BS = NUM_B+FPS
+NUM_BX = NUM_B+FPX
+NUM_BA = NUM_B+FPA
+NUM_BB = NUM_B+FPB
+NUM_BC = NUM_B+FPC
 
-#define NUM_TMPS NUM_TMP+FPS
-#define NUM_TMPX NUM_TMP+FPX
-#define NUM_TMPA NUM_TMP+FPA
-#define NUM_TMPB NUM_TMP+FPB
-#define NUM_TMPC NUM_TMP+FPC
-#define NUM_TMPD NUM_TMP+FPD
+NUM_TMPS = NUM_TMP+FPS
+NUM_TMPX = NUM_TMP+FPX
+NUM_TMPA = NUM_TMP+FPA
+NUM_TMPB = NUM_TMP+FPB
+NUM_TMPC = NUM_TMP+FPC
 
-#define NUM_DIVS NUM_DIV+FPS
-#define NUM_DIVX NUM_DIV+FPX
-#define NUM_DIVA NUM_DIV+FPA
-#define NUM_DIVB NUM_DIV+FPB
-#define NUM_DIVC NUM_DIV+FPC
+NUM_DIVS = NUM_DIV+FPS
+NUM_DIVX = NUM_DIV+FPX
+NUM_DIVA = NUM_DIV+FPA
+NUM_DIVB = NUM_DIV+FPB
+#endif
 
 
 

@@ -2,13 +2,13 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== DOKE ============== 
-;*  X_Doke               DOKE ##Address,##word~Doke word of data to the address
+;=================================================================== DOKE ==============
+;*  X_Doke               DOKE ##Address,##word~Poke word of data to the address
 ;*
 _Doke 		= $
 
-;----------------------------------------------- X_Doke 
-X_Doke: ;  DOKE ##Address,##word~Doke word of data to the address
+;----------------------------------------------- X_Doke
+X_Doke: ;  DOKE ##Address,##word~Poke word of data to the address
  		jsr 	X_Poke
  		ldy 	#1
  		lda 	NUM_AB 		; lo data
@@ -22,19 +22,18 @@ X_Doke: ;  DOKE ##Address,##word~Doke word of data to the address
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Doke 		.DB 	"DOK",'E'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Doke 		= LOW($)+$80
 .DW 	X_Doke
 .nolist
- 		;-- .export T_Doke
 #endif
 
 .list 					; end of Doke

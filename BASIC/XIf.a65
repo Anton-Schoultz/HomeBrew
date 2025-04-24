@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== IF ============== 
+;=================================================================== IF ==============
 ;*  X_If                 IF ?? THEN {Statment}~Execute statement if condition ?? is true
 ;*
 _If 		= $
 
-;----------------------------------------------- X_If 
+;----------------------------------------------- X_If
 X_If: ; IF ?? THEN {Statment}~Execute statement if condition ?? is true
  		jsr 	ChrRd 		; consume token
  		;-- evaluate expression
@@ -27,19 +27,18 @@ IfTrue 		;-- result is true
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_If 		.DB 	"I",'F'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_If 		= LOW($)+$80
 .DW 	X_If
 .nolist
- 		;-- .export T_If
 #endif
 
 .list 					; end of If

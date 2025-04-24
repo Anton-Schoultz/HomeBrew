@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== GOTO ============== 
+;=================================================================== GOTO ==============
 ;*  X_Goto               GOTO #LineNo~Goto LineNo
 ;*
 _Goto 		= $
 
-;----------------------------------------------- X_Goto 
+;----------------------------------------------- X_Goto
 X_Goto: ;  GOTO #LineNo~Goto LineNo
  		jsr 	ChrRd 		; consume token
  		BR_AEQ(T_NumLit,Goto)
@@ -29,19 +29,18 @@ Goto 		;- find the line and transfer
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Goto 		.DB 	"GOT",'O'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Goto 		= LOW($)+$80
 .DW 	X_Goto
 .nolist
- 		;-- .export T_Goto
 #endif
 
 .list 					; end of Goto

@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== RTRIM ============= 
+;=================================================================== RTRIM =============
 ;*  X_RTrim              RTRIM$($$)~Trim trailing spaces from string
 ;*
 _RTrim 		= $
 
-;----------------------------------------------- X_RTrim 
+;----------------------------------------------- X_RTrim
 X_RTrim: ; RTRIM$($$)~Trim trailing spaces from string
 ; string arg already set up
  		jmp 	StrRTrim
@@ -18,13 +18,13 @@ X_RTrim: ; RTRIM$($$)~Trim trailing spaces from string
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_RTrim 	.DB 	"RTRIM$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -35,7 +35,6 @@ T_FSTR 		= LOW($)+$80
 T_RTrim 	= LOW($)+$80
 .DW 	X_RTrim
 .nolist
-.export T_RTrim
 #endif
 
 .list 					; end of RTrim

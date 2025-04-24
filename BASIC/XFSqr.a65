@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== SQR ============== 
+;=================================================================== SQR ==============
 ;*  X_Sqr                SQR(##Val)~Return the Square of Val
 ;*
 _Sqr 		= $
 
-;----------------------------------------------- X_Sqr 
+;----------------------------------------------- X_Sqr
 X_Sqr: ; SQR(##Val)~Return the Square of Val
  		jsr 	NumPushA
  		jsr 	NumPopB
@@ -21,13 +21,13 @@ X_Sqr: ; SQR(##Val)~Return the Square of Val
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Sqr 		.DB 	"SQR",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_
@@ -38,9 +38,6 @@ T_FNUM 		= LOW($)+$80
 T_Sqr 		= LOW($)+$80
 .DW 	X_Sqr
 .nolist
- 		;-- .export T_Sqr
 #endif
-
-.export T_Sqr
 
 .list 					; end of Sqr

@@ -186,7 +186,5 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 .echo $
 .echo " (first 255 cleared by CLEAR/EdtClear)\n"
 
-.export FOR_DATA, VARNUM, VARSTR,
-
 .LIST
 

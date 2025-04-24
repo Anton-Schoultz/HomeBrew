@@ -32,9 +32,6 @@ Var(CSTK5,CSTKSZ) ; E8
 Var(CSTK6,CSTKSZ) ; F0
 Var(CSTK7,CSTKSZ) ; F8-FF
 
-.export NUM_A,NUM_B,CSTK0,DBUGNUM
-
-
 #endif
 
 ; ROM AREA

@@ -3,13 +3,13 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== STOP ============ 
+;=================================================================== STOP ============
 ;*  X_Stop               STOP~Stop executing the program
 ;*
 
 _Stop 		= $
 
-;----------------------------------------------- X_Stop 
+;----------------------------------------------- X_Stop
 X_Stop: ; STOP~Stop executing the program
  		jmp 	Main 		; resets stack etc
 
@@ -19,7 +19,7 @@ X_Stop: ; STOP~Stop executing the program
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 
 .list
@@ -27,12 +27,11 @@ W_Stop 		.DB 	"STO",'P'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Stop 		= LOW($)+$80
 .DW 	X_Stop
 .nolist
- 		;-- .export T_Stop
 #endif
 .list 					; end of Stop

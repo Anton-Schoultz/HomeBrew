@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== SGN ============== 
+;=================================================================== SGN ==============
 ;*  X_Sgn                SGN(##Value)~Return sign of the value as  -1, 0 or 1
 ;*
 _Sgn 		= $
 
-;----------------------------------------------- X_Sgn 
+;----------------------------------------------- X_Sgn
 X_Sgn: ; SGN(##Value)~Return sign of the value as  -1, 0 or 1
  		jsr 	NumFlag 	; .2> .1= .0<
  		beq 	SgnZero
@@ -29,13 +29,13 @@ SgnZero 	jmp 	NumZeroA
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Sgn 		.DB 	"SGN",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_
@@ -46,7 +46,6 @@ T_FNUM 		= LOW($)+$80
 T_Sgn 		= LOW($)+$80
 .DW 	X_Sgn
 .nolist
- 		;-- .export T_Sgn
 #endif
 
 .list 					; end of Sgn

@@ -1,6 +1,7 @@
 #define xhide
 
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
+
 ;=================================================================== BASIC ============
 ;  ABS(##)~Return absolute value of numeric expression ##
 ;  ASC($$)~Return numeric value of the first character of String $$
@@ -9,7 +10,7 @@
 ;  CLS~Clear Screen
 ;  DEEK(##)~Return the contents of memory word at address
 ;  DIM  a$(##size) [,b$(##size)]*~Dimension Strings
-;  DOKE ##Address,##word~Doke word of data to the address
+;  DOKE ##Address,##word~Poke word of data to the address
 ;  FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
 ;  FRE(##)~Return number of bytes available in free memory
 ;  GOSUB #LineNo~Call subroutine at LineNo
@@ -26,8 +27,8 @@
 ;  NEW~Clear program and data
 ;  NEXT {Var}~End of FOR/NEXT loop
 ;  PEEK(##Address)~Return the byte at address
-;  POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
-;  PRINT (##|$$| |,)*~Print sequence of values
+;  POKE ##Address,##value~Poke byte of data to the address
+;  PRINT (##|$$|;|,)*~Print sequence of values
 ;  REM {comment}~Program remarks/comments
 ;  RETURN~Return control to after the GOSUB
 ;  RIGHT$($$,##N)~Keep right most N chars of string [Tail]
@@ -41,6 +42,7 @@
 ;  TRIM$($$)~Trim leading and trailing spaces from the string
 ;  UPPER$($$)~Convert string to upper case
 ;  VAL($$)~Evaluate the string and return it's numeric value
+
 ;=================================================================== TODO =============
 ; GET v		Stores KeyPress value into var v
 ;
@@ -63,6 +65,7 @@
 ; INT(v),
 ;
 ;======================================================================================
+
 
 ; E000-FFFF = 8k
 #define _ROM $E000
@@ -315,6 +318,5 @@ T_Max 		= LOW($)+$80
 .echo ($FF00 - ROMEND)
 .echo " bytes remaining.\n\n"
 
-.export T_FNUM,T_FSTR
 
 .end

@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== PEEK ============== 
+;=================================================================== PEEK ==============
 ;*  X_Peek               PEEK(##Address)~Return the byte at address
 ;*
 _Peek 		= $
 
-;----------------------------------------------- X_Peek 
+;----------------------------------------------- X_Peek
 X_Peek: ; PEEK(##Address)~Return the byte at address
 ; expression is already evaluated and in NUM_A (expanded form)
  		jsr 	NumToInt 	; convert to int in NUM_AA,_AB
@@ -28,13 +28,13 @@ X_Peek: ; PEEK(##Address)~Return the byte at address
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Peek 		.DB 	"PEEK",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_
@@ -46,7 +46,6 @@ T_FNUM 		= LOW($)+$80
 T_Peek 		= LOW($)+$80
 .DW 	X_Peek
 .nolist
-.export T_Peek
 #endif
 
 

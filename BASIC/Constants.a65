@@ -1,11 +1,11 @@
-;=================================================================== CONSTANTS ======== 
+;=================================================================== CONSTANTS ========
 SCRN_COLS 	= 40
 SCRN_LINES 	= 16
 
 PG_SYSVAR 	= 3
 PG_SYSIO 	= 2
 
-;----------------------------------------------- ASCII Control Codes 
+;----------------------------------------------- ASCII Control Codes
 #DEFINE NULL	0
 #DEFINE BS 	8
 #DEFINE HT 	9
@@ -17,12 +17,9 @@ PG_SYSIO 	= 2
 #DEFINE SPC	32
 #DEFINE QT	34
 
-; size of a numeric format in internal for - S16 is 2 bytes
-#define NUMSZ 2
-
-; size of numeric value once 'unpacked' for calcualtions
+; size of numeric value once 'unpacked' for calculations
+; [0]SGN,  [1]X:Exp, [2]A:Low, [3]B:High, [4]C:Upper
 #define NUMUSZ 5
-
 
 ; BUFSZ() Size for INBUF,TOKBUF
 #define BUFSZ() 64

@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== ABS ============= 
+;=================================================================== ABS =============
 ;*  X_Abs                ABS(##)~Return absolute value of numeric expression ##
 ;*
 _Abs 		= $
 
-;----------------------------------------------- X_Abs 
+;----------------------------------------------- X_Abs
 X_Abs: ; ABS(##)~Return absolute value of numeric expression ##
 ; num should already have sign extracted, so just make it positive
  		lda 	#0
@@ -20,19 +20,18 @@ X_Abs: ; ABS(##)~Return absolute value of numeric expression ##
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Abs 		.DB 	"ABS",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Abs 		= LOW($)+$80
 .DW 	X_Abs
 .nolist
-.export T_Abs
 #endif
 
 .list 					; end of Abs

@@ -5,7 +5,7 @@
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
-;=================================================================== PRINT =========== 
+;=================================================================== PRINT ===========
 ;*  DB_Print             Debug Print values
 ;*  X_Print              PRINT (##|$$| |,)*~Print sequence of values
 ;*
@@ -17,7 +17,7 @@ _Print 		= $
 #define BR_NNL(tgt) BBR2 ZPrFlg,tgt
 
 
-;----------------------------------------------- X_Print 
+;----------------------------------------------- X_Print
 X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
  		jsr 	ChrRd 		; consume PRINT
  		DONL() 			; default end with CRLF
@@ -31,7 +31,7 @@ X_PrEnd 	;-- end off with Cr LF if needed
 X_PrX 		rts
 
 
-;----------------------------------------------- X_PrPart 
+;----------------------------------------------- X_PrPart
 X_PrPart 	; ';' | ',' | string | numeric
  		;-- first check for comma / semi-colon
  		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
@@ -41,24 +41,24 @@ X_PrPart 	; ';' | ',' | string | numeric
  		BR_F(X_PrNum) 		; no, treat as numeric to string
  		jmp 	X_PrStr
 
-;----------------------------------------------- X_PrComma 
+;----------------------------------------------- X_PrComma
 X_PrComma 	; COMMA
  		lda 	#HT 		; tab
  		jsr 	ChrOut 		; output the tab
  		;-- fall through
-;----------------------------------------------- X_PrSemi 
+;----------------------------------------------- X_PrSemi
 X_PrSemi 	; SEMICOLON
  		NONL()
  		jmp 	ChrRd 		; comsume ',' ';'
 
-;----------------------------------------------- X_PrStr 
+;----------------------------------------------- X_PrStr
 X_PrStr 	; STRING expression
  		jsr 	StrInit
  		jsr 	EvString 	; Evaluate
  		jsr 	StrOut 		; Print
  		DONL() 			; NL on
  		RTN_T() 		; OK
-;----------------------------------------------- X_PrNum 
+;----------------------------------------------- X_PrNum
 X_PrNum 	;-- NUMERIC expresion
  		jsr 	NumInit
  		jsr 	EvNumeric 	; evaluate
@@ -70,7 +70,7 @@ X_PrNum 	;-- NUMERIC expresion
  		RTN_T() 		; OK
 
 #if _DB_PRINT
-;=================================================================== DBUG ============= 
+;=================================================================== DBUG =============
 DB_Print: ; Debug Print values
  		PUSHALL()
  		jsr 	PrNL
@@ -92,19 +92,18 @@ DB_Print: ; Debug Print values
 #endif
 
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Print 	= LOW($)+$80
 .DW 	X_Print
 .nolist
- 		;-- .export T_Print
 #endif
 .list 					; end of PRINT

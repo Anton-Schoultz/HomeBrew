@@ -41,7 +41,6 @@ T_FSTR 		= LOW($)+$80
 T_FStr 		= LOW($)+$80
 .DW 	X_FStr
 .nolist
-.export T_FStr
 #endif
 
 .list 					; end of Str

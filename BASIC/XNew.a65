@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== NEW ============== 
+;=================================================================== NEW ==============
 ;*  X_New                NEW~Clear program and data
 ;*
 _New 		= $
 
-;----------------------------------------------- X_New 
+;----------------------------------------------- X_New
 X_New: ; NEW~Clear program and data
  		;-- jmp 	Reset		; EdtNew
  		jmp 	EdtNew
@@ -19,18 +19,17 @@ X_New: ; NEW~Clear program and data
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_New 		.DB 	"NE",'W'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_New 		= LOW($)+$80
 .DW 	X_New
 .nolist
- 		;-- .export T_New
 #endif
 .list 					; end of NEW

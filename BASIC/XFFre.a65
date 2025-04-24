@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== FRE ============= 
+;=================================================================== FRE =============
 ;*  X_Fre                FRE(##)~Return number of bytes available in free memory
 ;*
 _Fre 		= $
@@ -10,7 +10,7 @@ _Fre 		= $
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
-;----------------------------------------------- X_Fre 
+;----------------------------------------------- X_Fre
 X_Fre: ; FRE(##)~Return number of bytes available in free memory
  		jsr 	NumZeroA 	; zero NUM_A
  		ZCPY(NUM_AA,ARYBEG)
@@ -23,19 +23,18 @@ X_Fre: ; FRE(##)~Return number of bytes available in free memory
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Fre 		.DB 	"FRE",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Fre 		= LOW($)+$80
 .DW 	X_Fre
 .nolist
-.export T_Fre
 #endif
 
 .list 					; end of Fre

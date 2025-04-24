@@ -328,7 +328,6 @@ MatchFail 	; expected in A
 
 #if _DB_EVAL
 ;=================================================================== DBUG =============
-.export NUM_A,NUM_B,NUM_BUF
 
 ;----------------------------------------------- DB_EvStr
 DB_EvStr: ; Debug Eval - ZRd  SnEx NumA Gt Fl  SnEx=S_LEN_A, NumA=S_PTR_A

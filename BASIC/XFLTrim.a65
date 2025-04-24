@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LTRIM ============= 
+;=================================================================== LTRIM =============
 ;*  X_LTrim              LTRIM($$)~Trim leading spaces from string
 ;*
 _LTrim 		= $
 
-;----------------------------------------------- X_LTrim 
+;----------------------------------------------- X_LTrim
 X_LTrim: ; LTRIM($$)~Trim leading spaces from string
 ; string arg already set up
  		jmp 	StrLTrim
@@ -18,13 +18,13 @@ X_LTrim: ; LTRIM($$)~Trim leading spaces from string
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_LTrim 	.DB 	"LTRIM$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -35,7 +35,6 @@ T_FSTR 		= LOW($)+$80
 T_LTrim 	= LOW($)+$80
 .DW 	X_LTrim
 .nolist
-.export T_LTrim
 #endif
 
 .list 					; end of LTrim
