@@ -6,7 +6,7 @@
 ;*  DB_For               Debug For values - STP  LIM  ADR  IX SP
 ;*  ForPop               Pop for info from stack to inner vars
 ;*  ForPush              Push FOR structure onto the stack
-;*  X_For                FOR <var>=<expr> TO <expr> [STEP <expr>]
+;*  X_For                FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
 ;*
 _For 		= $
 ;----------------------------------------------- For/Next 
@@ -22,7 +22,7 @@ _For 		= $
 ; Var(FORSTK,8*FORDEEP)
 
 ;----------------------------------------------- X_For 
-X_For: ; FOR <var>=<expr> TO <expr> [STEP <expr>]
+X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		;-- Push
  		jsr 	ForPush
  		;-- handle assignment

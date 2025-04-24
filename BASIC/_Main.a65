@@ -8,10 +8,9 @@
 ; LOAD		Load a program
 ; SAVE		Save a program
 ;
-; POKE adr,val	Set memory location
-;
 ; POS(#)	Return column no of screen cursor
 ; TAB(n)	Set screen column number
+;
 ; SPC(n)	Return string of n spaces
 ;
 ; SYS(adr)	Execute machine code at address

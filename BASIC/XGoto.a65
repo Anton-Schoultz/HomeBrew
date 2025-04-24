@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== GOTO ============== 
-;*  X_Goto               GOTO <NumLit>	Goto line number given
+;*  X_Goto               GOTO #LineNo~Goto LineNo
 ;*
 _Goto 		= $
 
 ;----------------------------------------------- X_Goto 
-X_Goto: ;  GOTO <NumLit>	Goto line number given
+X_Goto: ;  GOTO #LineNo~Goto LineNo
  		jsr 	ChrRd 		; consume token
  		BR_AEQ(T_NumLit,Goto)
  		;-- Expected constant

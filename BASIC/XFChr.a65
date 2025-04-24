@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== CHR ============= 
-;*  X_Chr                CHR$({NumExpr}) Return string with a character for the given value
+;*  X_Chr                CHR$(##)~Return string with a character for the given value
 ;*
 _Chr 		= $
 
 ;----------------------------------------------- X_Chr 
-X_Chr: ; CHR$({NumExpr}) Return string with a character for the given value
+X_Chr: ; CHR$(##)~Return string with a character for the given value
  		jsr 	EvInt 		; get the code as an Int in AX
  		pha 			; save char code
  		jsr 	StrClear 	; prep a string entry

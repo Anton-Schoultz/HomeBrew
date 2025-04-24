@@ -9,7 +9,7 @@
 ;*  RunJump              Jump via table for token in A (mask & jump)
 ;*  RunStmnt             Run a statement (used by GOSUB and RETURN too)
 ;*  RunTokErr            display invalid token as [xx]
-;*  X_Run                RUN [LineNo]	Execute the program, optionally from line number
+;*  X_Run                RUN [#LineNo]~Execute the program, optionally from line number
 ;*
 _Run 		= $
 
@@ -41,7 +41,7 @@ RunCmd: ; Run Cmd from TOKBUF
  		jmp 	RunStmnt
 
 ;----------------------------------------------- X_Run 
-X_Run: ; RUN [LineNo]	Execute the program, optionally from line number
+X_Run: ; RUN [#LineNo]~Execute the program, optionally from line number
  		jsr 	RunInit 	; set I/O, Zero suppress etc
  		jsr 	ChrRd 		; consume RUN
  		BR_ANE(T_NumLit,Run) 	; start at default line no 0

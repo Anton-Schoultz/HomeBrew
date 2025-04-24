@@ -2,21 +2,21 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== ASC =============
-;*  X_Asc                ASC(<StrExpr>)	Return numeric value of the first character of Str
+;=================================================================== ASC ============= 
+;*  X_Asc                ASC($$)~Return numeric value of the first character of String $$
 ;*
 _Asc 		= $
 
-;----------------------------------------------- X_Asc
-X_Asc: ;ASC(<StrExpr>)	Return numeric value of the first character of Str
-		jsr	ChrRd		; consume the ASC( token
-		jsr	EvString	; eval string value
-		;- closing )
-		lda #')'
-		jsr Match
-		;- create numeric value from 1st character
+;----------------------------------------------- X_Asc 
+X_Asc: ;ASC($$)~Return numeric value of the first character of String $$
+ 		jsr 	ChrRd 		; consume the ASC( token
+ 		jsr 	EvString 	; eval string value
+ 		;-- closing )
+ 		lda 	#')'
+ 		jsr 	Match
+ 		;-- create numeric value from 1st character
  		ldy 	#0
- 		lda	(S_PTR_A),Y
+ 		lda 	(S_PTR_A),Y
  		ldx 	#0
  		jsr 	NumFromInt
  		RTN_T()
@@ -27,13 +27,13 @@ X_Asc: ;ASC(<StrExpr>)	Return numeric value of the first character of Str
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Asc 		.DB 	"ASC",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 
 #ifndef _T_FNUM_
@@ -42,7 +42,7 @@ T_FNUM 		= LOW($)+$80
 #endif
 
 .list
-T_Asc		= LOW($)+$80
+T_Asc 		= LOW($)+$80
 .DW 	X_Asc
 .nolist
 .export T_Asc

@@ -5,7 +5,7 @@
 ;=================================================================== LIST ============== 
 ;*  DB_List              Debug LIST values - BEG  END  NUM  FLG  FND"
 ;*  ListLn               List line (LnNext called before this)
-;*  X_List               LIST [from] [- [to]]
+;*  X_List               LIST [##From] [- [##To]]~List program (optional range of lines)
 ;*
 _List 		= $
 
@@ -13,7 +13,7 @@ _List 		= $
 #define LST_END ZTgt
 
 ;----------------------------------------------- X_List 
-X_List: ; LIST [from] [- [to]]
+X_List: ; LIST [##From] [- [##To]]~List program (optional range of lines)
  		jsr 	ChrRd 		; consume LIST
  		CLS()
  		;-- Read memory, out to I/O

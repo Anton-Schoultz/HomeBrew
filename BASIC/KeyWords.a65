@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== KEYWORDS ========= 
-;*  X_Nop                No opperation - dummy
+;*  XNop                 No opperation - dummy
 ;*
 _KeyWords 	= $
 
 ;----------------------------------------------- X_KeyWords 
-X_Nop: ; No opperation - dummy
+XNop: ; No opperation - dummy
  		rts
 
 .echo "  _KeyWords\t"
@@ -38,25 +38,25 @@ W_STEP 		.DB 	"STE",'P'+$80
 .list
 
 T_And 		= LOW($)+$80
-.DW 	X_Nop
+.DW 	XNop
 
 T_OR 		= LOW($)+$80
-.DW 	X_Nop
+.DW 	XNop
 
 T_XOR 		= LOW($)+$80
-.DW 	X_Nop
+.DW 	XNop
 
 T_NOT 		= LOW($)+$80
-.DW 	X_Nop
+.DW 	XNop
 
 T_THEN 		= LOW($)+$80
-.dw	X_Nop
+.dw	XNop
 
 T_TO 		= LOW($)+$80
-.dw	X_Nop
+.dw	XNop
 
 T_STEP 		= LOW($)+$80
-.dw	X_Nop
+.dw	XNop
 
 .nolist
 #endif

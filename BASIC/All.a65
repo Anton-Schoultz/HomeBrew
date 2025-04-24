@@ -18,8 +18,8 @@
 #include "XStop.a65" 			; STOP	Stop program execution
 #include "XDim.a65" 			; DIM <StrVar>( size )
 #include "XInput.a65" 			; INPUT ["prompt",] NumVar|StrVar
-#include "XPoke.a65" 			; POKE {AddressExpr},{NumExpr} Poke byte of data to the address
-#include "XDoke.a65" 			; DOKE {AddressExpr},{NumExpr} Poke word of data to the address
+#include "XPoke.a65" 			; POKE {AddressExpr},## Poke byte of data to the address
+#include "XDoke.a65" 			; DOKE {AddressExpr},## Poke word of data to the address
 
 ; Secondary keywords
 #include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
@@ -33,8 +33,8 @@
 #include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
 #include "XFLen.a65" 			; Len($) Return the length of the string expression
 #include "XFFre.a65" 			; FRE(#) Return number of bytes available in free memory
-#include "XFPeek.a65" 			; PEEK({NumExpr}) Return the contents of memory byte at address
-#include "XFDeek.a65" 			; DEEK({NumExpr}) Return the contents of memory word at address
+#include "XFPeek.a65" 			; PEEK(##) Return the contents of memory byte at address
+#include "XFDeek.a65" 			; DEEK(##) Return the contents of memory word at address
 
 ;----------------------------------------------- String functions & Num->Str
 #include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case

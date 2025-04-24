@@ -7,7 +7,7 @@
 
 ;=================================================================== PRINT =========== 
 ;*  DB_Print             Debug Print values
-;*  X_Print              PRINT ( <expr>|<str>| |, )*
+;*  X_Print              PRINT (##|$$| |,)*~Print sequence of values
 ;*
 
 _Print 		= $
@@ -18,7 +18,7 @@ _Print 		= $
 
 
 ;----------------------------------------------- X_Print 
-X_Print: ; PRINT ( <expr>|<str>|;|, )*
+X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
  		jsr 	ChrRd 		; consume PRINT
  		DONL() 			; default end with CRLF
 X_PrintL 	lda 	CHRGOT

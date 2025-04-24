@@ -3,7 +3,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LEFT ============= 
-;*  X_Left               LEFT$($,n) keep left most chars [Head]
+;*  X_Left               LEFT$($$,##)~Keep left most chars of string [Head]
 ;*
 _Left 		= $
 ; To return a string that comprises the left-most n characters of x$.
@@ -15,7 +15,7 @@ _Left 		= $
 ; If n equals zero, the null string (length zero) is returned
 
 ;----------------------------------------------- X_Left 
-X_Left: ; LEFT$($,n) keep left most chars [Head]
+X_Left: ; LEFT$($$,##)~Keep left most chars of string [Head]
  		jsr 	StrFunct
  		;-- check high byte
  		lda 	NUM_BB

@@ -3,7 +3,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== NEXT ============== 
-;*  X_Next               NEXT <var>
+;*  X_Next               NEXT {Var}~End of FOR/NEXT loop
 ;*
 _Next 		= $
 ;----------------------------------------------- For/Next 
@@ -19,7 +19,7 @@ _Next 		= $
 ; Var(FORSTK,8*FORDEEP)
 
 ;----------------------------------------------- X_Next 
-X_Next: ; NEXT <var>
+X_Next: ; NEXT {Var}~End of FOR/NEXT loop
  		jsr 	ChrRd 		; consume token
  		;-- loop var
  		BR_AEQ(T_NumVar,X_Next1)
@@ -57,11 +57,11 @@ X_Next2 	; Retrieve step from VARNUM and unpack to internal form
  		jsr 	NumPopB
  		jsr 	NumSub 		; Limit-Value
  		jsr 	NumFlag 	; check < = >
- 		BEQ 	X_NextLoop 	; if equal then last iteration
+ 		beq 	X_NextLoop 	; if equal then last iteration
  		;-- account for direction
- 		EOR 	NUM_SGN
- 		AND 	#4 		; 4< 2= 1>
- 		BNE 	X_NextLoop
+ 		eor 	NUM_SGN
+ 		and 	#4 		; 4< 2= 1>
+ 		bne 	X_NextLoop
  		;-- loop is done so pop
  		jmp 	ForPop
 

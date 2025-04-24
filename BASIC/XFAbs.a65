@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== ABS ============= 
-;*  X_Abs                ABS(<expr>)	Return absolute value of expr
+;*  X_Abs                ABS(##)~Return absolute value of numeric expression ##
 ;*
 _Abs 		= $
 
 ;----------------------------------------------- X_Abs 
-X_Abs: ; ABS(<expr>)	Return absolute value of expr
+X_Abs: ; ABS(##)~Return absolute value of numeric expression ##
 ; num should already have sign extracted, so just make it positive
  		lda 	#0
  		sta 	NUM_AS

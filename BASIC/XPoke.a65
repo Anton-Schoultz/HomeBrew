@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== POKE ==============
-;*  X_Poke               POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
+;*  X_Poke               POKE {AddressExpr},##	Poke byte of data to the address
 ;*
 _Poke 		= $
 
 ;----------------------------------------------- X_Poke
-X_Poke: ;  POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
+X_Poke: ;  POKE {AddressExpr},##	Poke byte of data to the address
  		jsr 	ChrRd 		; consume token
  		;-- evaluate address, convert to int, and push it
  		jsr 	EvNumeric

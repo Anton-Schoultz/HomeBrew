@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LOWER ============= 
-;*  X_Lower              LOWER	Convert string to Lower case
+;*  X_Lower              LOWER($$)~Convert string to Lower case
 ;*
 _Lower 		= $
 
 ;----------------------------------------------- X_Lower 
-X_Lower: ; LOWER	Convert string to Lower case
+X_Lower: ; LOWER($$)~Convert string to Lower case
 ; string arg already set up
  		jmp 	StrLower
 

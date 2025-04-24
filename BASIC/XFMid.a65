@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== MID ============= 
-;*  X_Mid                MID$($,From,Len)	Retrun substring of Len chars from position From
+;*  X_Mid                MID$($$,##From,##Len)~Return substring of Len chars from position From
 ;*
 _Mid 		= $
 
 ;----------------------------------------------- X_Mid 
-X_Mid: ; MID$($,From,Len)	Retrun substring of Len chars from position From
+X_Mid: ; MID$($$,##From,##Len)~Return substring of Len chars from position From
  		jsr 	StrFunct
  		ldy 	#0
  		lda 	NUM_BB

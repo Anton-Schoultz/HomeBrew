@@ -2,22 +2,22 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== IF ==============
-;*  X_If                 IF <expression> THEN <Statment>
+;=================================================================== IF ============== 
+;*  X_If                 IF ?? THEN {Statment}~Execute statement if condition ?? is true
 ;*
 _If 		= $
 
-;----------------------------------------------- X_If
-X_If: ; IF <expression> THEN <Statment>
+;----------------------------------------------- X_If 
+X_If: ; IF ?? THEN {Statment}~Execute statement if condition ?? is true
  		jsr 	ChrRd 		; consume token
  		;-- evaluate expression
  		jsr 	EvNumeric 	; AX lo/hi
-		jsr	NumFlag		; Eq=>False
+ 		jsr 	NumFlag 	; Eq=>False
  		bne 	IfTrue
  		rts 			; false return to do next line
 IfTrue 		;-- result is true
-		lda #T_THEN
-		jsr Check
+ 		lda 	#T_THEN
+ 		jsr 	Check
  		;-- will ChrRd to get first token of statement
  		jmp 	RunStmnt
 
@@ -27,13 +27,13 @@ IfTrue 		;-- result is true
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_If 		.DB 	"I",'F'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_If 		= LOW($)+$80

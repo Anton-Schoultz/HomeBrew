@@ -3,7 +3,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== DIM ============== 
-;*  X_Dim                DIM  a$(n) [, b$(n)]*
+;*  X_Dim                DIM  a$(##size) [,b$(##size)]*~Dimension Strings
 ;*
 _Dim 		= $
 
@@ -20,7 +20,7 @@ _Dim 		= $
 ; .#......	Variable is an array
 
 ;----------------------------------------------- X_Dim 
-X_Dim: ; DIM  a$(n) [, b$(n)]*
+X_Dim: ; DIM  a$(##size) [,b$(##size)]*~Dimension Strings
  		jsr 	ChrRd 		; consume Dim
  		;-- Check for and skip over T_StrAry
  		lda 	#T_StrAry

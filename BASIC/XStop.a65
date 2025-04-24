@@ -4,13 +4,13 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== STOP ============ 
-;*  X_Stop               STOP	Stop executing the program
+;*  X_Stop               STOP~Stop executing the program
 ;*
 
 _Stop 		= $
 
 ;----------------------------------------------- X_Stop 
-X_Stop: ; STOP	Stop executing the program
+X_Stop: ; STOP~Stop executing the program
  		jmp 	Main 		; resets stack etc
 
 .echo "  _STOP\t\t"

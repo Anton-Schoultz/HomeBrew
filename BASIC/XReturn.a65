@@ -4,12 +4,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== RETURN =========== 
-;*  X_Return             RETURN	Return control to after the GOSUB
+;*  X_Return             RETURN~Return control to after the GOSUB
 ;*
 _Return 	= $
 
 ;----------------------------------------------- X_Return 
-X_Return: ; RETURN	Return control to after the GOSUB
+X_Return: ; RETURN~Return control to after the GOSUB
  		jsr 	ChrRd 		; consume token
  		;-- pop return
  		ldx 	RTNSP

@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== UPPER ============= 
-;*  X_Upper              UPPER$(<strExpr>)	Convert string to upper case
+;*  X_Upper              UPPER$($$)~Convert string to upper case
 ;*
 _Upper 		= $
 
 ;----------------------------------------------- X_Upper 
-X_Upper: ; UPPER$(<strExpr>)	Convert string to upper case
+X_Upper: ; UPPER$($$)~Convert string to upper case
 ; num should already have sign extracted, so just make it positive
  		jmp 	StrUpper
 

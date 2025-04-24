@@ -3,7 +3,7 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== LET ============== 
-;*  X_Let                LET <var> = <expr>
+;*  X_Let                LET {var}={expr}~Assign value to a variable
 ;*
 _Let 		= $
 
@@ -11,7 +11,7 @@ _Let 		= $
  		;-- 
 
 ;----------------------------------------------- X_Let 
-X_Let: ; LET <var> = <expr>
+X_Let: ; LET {var}={expr}~Assign value to a variable
  		jsr 	ChrRd 		; consume LET
 
 X_LetDo 	CASE(T_NumVar,X_LetNum)

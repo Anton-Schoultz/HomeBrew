@@ -1,34 +1,50 @@
 <html><body>
 <h1>BASIC Keywords</h1>
 <dl compact>
-<dt>ABS({NumExpr},)<dd>Return absolute value of expr
-<dt>CHR$({NumExpr})<dd>Return string with a character for the given value
+<dt>ABS(##)<dd>Return absolute value of numeric expression ##
+<dt>ASC($$)<dd>Return numeric value of the first character of String $$
+<dt>CHR$(##)<dd>Return string with a character for the given value
 <dt>CLEAR<dd>Clear variables
-<dt>DIM a$(n) [, b$(n)]*<dd>Dimension string variables
-<dt>FOR {var}={NumExpr} TO {NumExpr} [STEP {NumExpr},]<dd>Start of a for/next loop
-<dt>GOSUB {NumLit}<dd>Call subroutine at line number given
-<dt>GOTO {NumLit}<dd>Goto line number given
-<dt>INPUT ( "prompt" | , | NumVar | StrVar )*<dd>Input values
-<dt>LEFT$({StrExpr},{NumExpr})<dd>Keep left most chars [Head]
-<dt>LET {var} = {NumExpr}<dd>Assign variables
-<dt>LIST [from] [- [to]]<dd>List source lines
-<dt>LOWER<dd>Convert string to Lower case
-<dt>LTRIM<dd>Trim leading spaces
-<dt>MID$({StrExpr},{FromNumExpr},{LenNumExpr})<dd>Return substring of Len chars from position From
-<dt>NEW<dd>	Clear program and data
-<dt>NEXT {var}<dd>Continue for/next loop
-<dt>PRINT ( {NumExpr}|{StrExpr}|;|, )*<dd>Print strings, variables etc
-<dt>REM<dd>Remark line
+<dt>CLS<dd>Clear Screen
+<dt>DEEK(##)<dd>Return the contents of memory word at address
+<dt>DIM  a$(##size) [,b$(##size)]*<dd>Dimension Strings
+<dt>DOKE ##Address,##word<dd>Doke word of data to the address
+<dt>FOR #V = ##From TO ##Limit [STEP ##Step]<dd>Start of FOR/NEXT Loop
+<dt>FRE(##)<dd>Return number of bytes available in free memory
+<dt>GOSUB #LineNo<dd>Call subroutine at LineNo
+<dt>GOTO #LineNo<dd>Goto LineNo
+<dt>IF ?? THEN {Statment}<dd>Execute statement if condition ?? is true
+<dt>INPUT ("prompt"|,|NumVar|StrVar)*<dd>Input values with optional prompts
+<dt>LEFT$($$,##)<dd>Keep left most chars of string [Head]
+<dt>Len($$)<dd>Return the length of the string expression
+<dt>LET {var}={expr}<dd>Assign value to a variable
+<dt>LIST [##From] [- [##To]]<dd>List program (optional range of lines)
+<dt>LOWER($$)<dd>Convert string to Lower case
+<dt>LTRIM($$)<dd>Trim leading spaces from string
+<dt>MID$($$,##From,##Len)<dd>Return substring of Len chars from position From
+<dt>NEW<dd>Clear program and data
+<dt>NEXT {Var}<dd>End of FOR/NEXT loop
+<dt>PEEK(##Address)<dd>Return the byte at address
+<dt>POKE {AddressExpr},{NumExpr}	Poke byte of data to the address
+<dt>PRINT (##|$$| |,)*<dd>Print sequence of values
+<dt>REM {comment}<dd>Program remarks/comments
 <dt>RETURN<dd>Return control to after the GOSUB
-<dt>RIGHT$({StrExpr},{NumExpr})<dd>Keep right most n chars [Tail]
-<dt>RTRIM$({StrExpr})<dd>Trim trailing spaces
-<dt>RUN [LineNo]<dd>Execute the program, optionally from line number
-<dt>SGN({NumExpr})<dd>Return sign of expr as  -1,0,1
-<dt>SQR({NumExpr})<dd>Return Square of {NumExpr}, value
+<dt>RIGHT$($$,##N)<dd>Keep right most N chars of string [Tail]
+<dt>RND(##Max)<dd>Return random number 0..(##Max-)
+<dt>RTRIM$($$)<dd>Trim trailing spaces from string
+<dt>RUN [#LineNo]<dd>Execute the program, optionally from line number
+<dt>SGN(##Value)<dd>Return sign of the value as  -1, 0 or 1
+<dt>SQR(##Val)<dd>Return the Square of Val
 <dt>STOP<dd>Stop executing the program
-<dt>STR$({NumExpr})<dd>Return string representation of numeric expression
-<dt>TRIM$({StrExp})<dd>Trim leading and trailing spaces
-<dt>UPPER$({strExpr})<dd>Convert string to upper case
+<dt>STR$(##Value)<dd>Return string representation of the value
+<dt>TRIM$($$)<dd>Trim leading and trailing spaces from the string
+<dt>UPPER$($$)<dd>Convert string to upper case
+<dt>VAL($$)<dd>Evaluate the string and return it's numeric value
 </dl>
+$$=String Expression
+\#\#=Numeric Expression
+\#=Numeric literal
+$=String literal (Quoted string)
+??=Relational/Conditional expression
 </body>
 </html>

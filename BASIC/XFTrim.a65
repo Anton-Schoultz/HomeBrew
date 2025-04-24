@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== TRIM ============= 
-;*  X_Trim               TRIM$(<StrExp>)	Trim leading and trailing spaces
+;*  X_Trim               TRIM$($$)~Trim leading and trailing spaces from the string
 ;*
 _Trim 		= $
 
 ;----------------------------------------------- X_Trim 
-X_Trim: ; TRIM$(<StrExp>)	Trim leading and trailing spaces
+X_Trim: ; TRIM$($$)~Trim leading and trailing spaces from the string
 ; string arg already set up
  		jsr 	StrLTrim 	; trim left
  		jmp 	StrRTrim 	; and then right

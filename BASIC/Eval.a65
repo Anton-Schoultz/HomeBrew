@@ -255,7 +255,7 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
  		CASE(T_Asc,X_Asc)	; ASC($)-> code
  		CASE(T_Val,X_Val)	; VAL($)-> numeric value
  		CASE(T_Len,X_Len)	; LEN($)-> Length of StrExpr
-		;-- Fn({NumExpr}) ?
+		;-- Fn(##) ?
  		lda 	CHRGOT
  		jsr 	IsNumFn
  		BR_T(Function)

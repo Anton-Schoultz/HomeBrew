@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== GOSUB ============== 
-;*  X_Gosub              GOSUB <NumLit>	Call subroutine at line number given
+;*  X_Gosub              GOSUB #LineNo~Call subroutine at LineNo
 ;*
 _Gosub 		= $
 
 ;----------------------------------------------- X_Gosub 
-X_Gosub: ; GOSUB <NumLit>	Call subroutine at line number given
+X_Gosub: ; GOSUB #LineNo~Call subroutine at LineNo
  		jsr 	ChrRd 		; consume token
  		BR_AEQ(T_NumLit,Gosub)
  		;-- Expected constant

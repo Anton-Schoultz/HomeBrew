@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== INPUT ============== 
-;*  X_Input              INPUT ( "prompt" | , | NumVar | StrVar )*
+;*  X_Input              INPUT ("prompt"|,|NumVar|StrVar)*~Input values with optional prompts
 ;*
 _Input 		= $
 
 ;----------------------------------------------- X_Input 
-X_Input: ; INPUT ( "prompt" | , | NumVar | StrVar )*
+X_Input: ; INPUT ("prompt"|,|NumVar|StrVar)*~Input values with optional prompts
  		jsr 	ChrRd
  		beq 	X_InputX
  		jsr 	X_InItem

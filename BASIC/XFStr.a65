@@ -3,12 +3,12 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== STR ============= 
-;*  X_Str                STR$(NumValue) - Return string representation of numeric expression
+;*  X_Str                STR$(##Value)~Return string representation of the value
 ;*
 _Str 		= $
 
 ;----------------------------------------------- X_Str 
-X_Str: ; STR$(NumValue) - Return string representation of numeric expression
+X_Str: ; STR$(##Value)~Return string representation of the value
  		jsr 	EvInt 		; get the code as an Int in AX
  		jsr 	NumCvt 		; convert to string in NUMBUF
  		jsr 	NumFmt 		; format leading zeroes
