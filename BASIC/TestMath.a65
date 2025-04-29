@@ -1,0 +1,95 @@
+; Math Development
+_DB_NUM 	= 1
+_DBUG 		= 1
+;=================================================================== MATH TEST ========
+;*  Test                 test maths
+;*
+
+#include "Constants.a65"
+
+; MATH_MOD_NONE 0
+; MATH_MOD_S16 1
+; MATH_MOD_S24 2
+
+MathModule 	= MATH_MOD_S24
+
+#include "Macros.a65"
+#include "_Vars.a65"
+
+
+.org $E000
+ 		;-- init cpu stack and modes
+ 		sei 			; Halt IRQs
+ 		ldx 	#$ff 		; Set Stack pointer
+ 		txs
+ 		cld 			; Binary mode
+ 		;--
+ 		jsr 	ChrInit 	; Copy code to ZPpg for ChrRd
+ 		jsr 	NumInit 	; init calc stack pointer
+
+ 		;-- go do the test
+ 		jmp 	Test
+
+P_1234 		.DB 	"1234",0 	;00 00 04D2
+P_1234567 	.DB 	"1234567",0 	;00 12 D687
+
+P_Max 	.DB 	"8388607",0 	;00 7F FFFF
+
+
+N_1234 		.DB 	"-1234",0 	;FF 00 04D2
+N_1234567 	.DB 	"-1234567",0 	;FF 12 D687
+
+
+ListLn:  	rts
+Main:  		HALT()
+
+#include "ChrStr.a65"
+#include "ConSim.a65"
+#include "Util.a65"
+#include "Error.a65"
+
+#include "Math.a65"
+
+;----------------------------------------------- Test
+Test: ; test maths
+ 		jsr 	TestParse	; 1234567		12d687
+
+ 		jsr	NumCvt
+
+ 		LDAX(NUM_BUF)
+ 		jsr	PrStrAX
+
+.export NUM_BUF
+
+;		jsr	NumDH		; 12345 67		003039 r43
+; 		jsr 	DB_Num 		; display NUM_A
+;
+;		jsr	NumDH		; 123 45 		00007B r2D
+; 		jsr 	DB_Num 		; display NUM_A
+
+
+
+ 		HALT()
+
+TestParse:
+ 		ZSET(ZParse,P_Max)
+ 		jsr 	NumParsePtr
+ 		jsr 	NumPushA
+; 		ZSET(ZParse,P_1234)
+; 		jsr 	NumParsePtr
+; 		jsr 	NumPopB
+ 		jsr 	DB_Num 		; display NUM_A & B
+; 		ZSET(ZParse,N_1234)
+; 		jsr 	NumParsePtr
+; 		jsr 	NumPushA
+; 		ZSET(ZParse,N_1234567)
+; 		jsr 	NumParsePtr
+; 		jsr 	NumPopB
+; 		jsr 	DB_Num 		; display NUM_A & B
+ 		rts
+
+
+
+
+
+.end

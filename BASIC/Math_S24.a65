@@ -1,12 +1,15 @@
-#ifdef hide 				; Math_S16
+#ifdef hide 				; Math_S24
 .NOLIST
 #endif
 
-;=================================================================== MATH_S16 =========
+;=================================================================== MATH_S24 =========
+; 24 But signed integer math
 
 #if ($/256) = 0
-.echo "** Math Module S16 **\n"
-#define NUMSZ	2
+
+
+.echo "** Math Module S24 **\n"
+
 ;----------------------------------------------- Numeric
 Short(ZDIV) 	; short divisor 10/100
 
@@ -28,12 +31,13 @@ Short(ZDIV) 	; short divisor 10/100
 ;*  NumAnd               AND
 ;*  NumCvt               Convert NUM_A to digits in NUM_BUF
 ;*  NumDH                NUM_A = NUM_A / 100  remainder in A
+;*  NumDT                NUM_A = NUM_A / 10 (48Bit), remainder in A
 ;*  NumDiv               NumA = NumB / NumA
 ;*  NumDivZero           divide by zero error
 ;*  NumFalse             Place FALSE in NUM_A
 ;*  NumFlag              set flags bassed on unpacked result
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
-;*  NumFromInt           Set NUMA to int value in AX (lo,hi)
+;*  NumFromInt           Set NUMA to 16 bit Int value in AX (lo,hi)
 ;*  NumGet               Retrieve simple variable VARNUM[A].. and unpack to internal form
 ;*  NumMod               NumA = NumB % NumA
 ;*  NumMul               NumA = NumB * NumA (in unpacked form)
@@ -48,14 +52,14 @@ Short(ZDIV) 	; short divisor 10/100
 ;*  NumSet               Pack and Store simple VARNUM[A]..
 ;*  NumSign              Move sign from SGN to mantissa (for Add/Sub)
 ;*  NumSub               NumA = NumB - NumA
-;*  NumToInt             Return int value NUM_AA,B in AX (lo,hi) - sets NUM_FLG
+;*  NumToInt             Return 16 bit Int value of NUMA in AX (lo,hi) - sets NUM_FLG
 ;*  NumTrue              Place TRUE in NUM_A
 ;*  NumUnSign            Move sign from mantissa to SGN byte (for Mul/Div)
 ;*  NumUnpack            Unpack memory format into calculation format
 ;*  NumWr                Pack & write to Memory (ChrWr)
 ;*  NumXor               XOR
 ;*  NumZeroA             place zero into NUM_A
-;*m MATHOFF()            covert index in .A to an offset in .X based on size of numbers
+;*m MATHOFF()            convert index in .A to an offset in .X based on size of numbers
 ;*
 
 .list
@@ -69,8 +73,8 @@ Short(ZDIV) 	; short divisor 10/100
 ; NUM_TMP
 ; NUM_BUF
 
-; MATHOFF()  covert index in .A to an offset in .X based on size of numbers
-#define MATHOFF() asl a\ tax
+; MATHOFF()  convert index in .A to an offset in .X based on size of numbers
+#define MATHOFF() asl a\ asl a\ tax
 
 
 ;----------------------------------------------- NumGet
@@ -88,6 +92,9 @@ NumGet: ; Retrieve simple variable VARNUM[A].. and unpack to internal form
  		lda 	VARNUM+1,X
  		sta 	NUM_AB
  		;--
+ 		lda 	VARNUM+2,X
+ 		sta 	NUM_AC
+ 		;--
  		jsr 	NumUnpack 	; pad NUMA with zero, extract SGN & 2s exp
  		lda 	NUM_AS 		; 0:+ve
  		rts
@@ -104,9 +111,12 @@ NumSet: ; Pack and Store simple VARNUM[A]..
  		lda 	NUM_AA
  		sta 	VARNUM,X
  		;--
- 		inx
  		lda 	NUM_AB
- 		sta 	VARNUM,X
+ 		sta 	VARNUM+1,X
+ 		;--
+ 		lda 	NUM_AC
+ 		sta 	VARNUM+2,X
+ 		;--
  		rts
 
 ;----------------------------------------------- NumUnpack
@@ -122,7 +132,7 @@ NumPack: ; Pack NUM_A into memory format for storing
  		bra 	NumSign
 
 ;----------------------------------------------- NumToInt
-NumToInt: ;Return int value of NUMA in AX (lo,hi) - sets NUM_FLG
+NumToInt: ;Return 16 bit Int value of NUMA in AX (lo,hi) - sets NUM_FLG
  		jsr 	NumFlag 	; set flags >,=,<
  		jsr 	NumPack
  		lda 	NUM_AA 		; lo->.A
@@ -130,12 +140,12 @@ NumToInt: ;Return int value of NUMA in AX (lo,hi) - sets NUM_FLG
  		rts
 
 ;----------------------------------------------- NumFromInt
-NumFromInt: ;Set NUMA to int value in AX (lo,hi)
+NumFromInt: ;Set NUMA to 16 bit Int value in AX (lo,hi)
  		sta 	NUM_AA
  		stx 	NUM_AB
- 		lda 	#0 		; assume +v
- 		sta 	NUM_AS
- 		sta	NUM_AX
+ 		lda 	#0
+ 		sta 	NUM_AS 		; assume +v
+ 		sta 	NUM_AC 		; clear upper byte
  		bra 	NumUnpack
 
 ;----------------------------------------------- NumSign
@@ -151,7 +161,7 @@ NumUnSign: ; Move sign from mantissa to SGN byte (for Mul/Div)
  		lda 	FPS,X 		; get sign
  		bmi 	NumNegXX 	; already -ve so leave it alone
  		;--
- 		lda 	FPB,X 		; get high bit B.7
+ 		lda 	FPC,X 		; get high bit C.7		<== 16/24
  		bpl 	NumNegXX 	; positive -> leave it
  		;--
  		lda 	#$FF
@@ -166,11 +176,15 @@ NumNegX: ; 	; 2's compliment the mantissa at X (All 6 bytes)
  		lda 	#$FF
  		eor 	FPB,X
  		sta 	FPB,X
+ 		lda 	#$FF
+ 		eor 	FPC,X
+ 		sta 	FPC,X
  		;-- increment
  		inc 	FPA,X
  		bne 	NumNegXX
  		inc 	FPB,X
  		bne 	NumNegXX
+ 		inc 	FPC,X
  		;--
 NumNegXX 	RTN_T()
 
@@ -191,6 +205,8 @@ NumParsePtr: ;  Parse a number from (ZParse) into NUM_A
 NumParse0 	lda 	#0
  		sta 	NUM_AA
  		sta 	NUM_AB
+ 		sta 	NUM_AC
+ 		STA 	NUM_AD
 NumParseL 	;- term NULL ?
  		lda 	(ZParse),Y
  		beq 	NumParseX 	; yes -> done
@@ -198,25 +214,49 @@ NumParse1 	jsr 	IsDigit 	; A is preserved
  		BR_F(NumParseX) 	; no more digits
  		and 	#$0F 		; convert digit to value
  		;-- NUM_AA = NUM_AA * 10 (preserves AXY)
+ 		;-- store AXY
  		phx
+ 		phy
  		pha
- 		lda 	NUM_AA 		; AX <= n
- 		ldx 	NUM_AB
- 		asl 	NUM_AA
- 		rol 	NUM_AB 		; 2n
- 		asl 	NUM_AA
- 		rol 	NUM_AB 		; 4n
- 		;-- NUM_AA + AX => NUM_AA (5n)
- 		clc
- 		adc 	NUM_AA
- 		sta 	NUM_AA
- 		txa
- 		adc 	NUM_AB
- 		sta 	NUM_AB
- 		;-- x2 = 10n
+ 		;--
+ 		;-- ==== NUM_A = NUM_A * 10
+ 		;-- TMP = A
+ 		lda 	NUM_AA
+ 		sta 	NUM_TMPA
+ 		lda 	NUM_AB
+ 		sta 	NUM_TMPB
+ 		lda 	NUM_AC
+ 		sta 	NUM_TMPC
+ 		;-- A<<1 (2n)
  		asl 	NUM_AA
  		rol 	NUM_AB
+ 		rol 	NUM_AC
+ 		;-- A<<1 (4n)
+ 		asl 	NUM_AA
+ 		rol 	NUM_AB
+ 		rol 	NUM_AC
+ 		;-- add TMP (5n)
+ 		clc
+ 		lda 	NUM_AA
+ 		adc 	NUM_TMPA
+ 		sta 	NUM_AA
+ 		;--
+ 		lda 	NUM_AB
+ 		adc 	NUM_TMPB
+ 		sta 	NUM_AB
+ 		;--
+ 		lda 	NUM_AC
+ 		adc 	NUM_TMPC
+ 		sta 	NUM_AC
+ 		;-- A<<1 (10n)
+ 		asl 	NUM_AA
+ 		rol 	NUM_AB
+ 		rol 	NUM_AC
+ 		;-- =====
+ 		;--
+ 		;-- restore AXY
  		pla
+ 		ply
  		plx
  		;-- now add the digit value
  		clc 			; and add to NUM_AA
@@ -224,6 +264,8 @@ NumParse1 	jsr 	IsDigit 	; A is preserved
  		sta 	NUM_AA
  		bcc 	NumParseAX
  		inc 	NUM_AB
+ 		bcc 	NumParseAX
+ 		inc 	NUM_AC
 NumParseAX 	;- next character
  		iny
  		lda 	(ZParse),Y
@@ -231,74 +273,55 @@ NumParseAX 	;- next character
  		bra 	NumParseL
 NumParseX 	rts
 
-; ----------------------------------------------- NumCvt
-; -- NumCvt: ; Convert NUM_A to digits in NUM_BUF
-; $3412 => 13330 in 2726 cycles   (5028 bytes)
-;  		ldx 	#NUM_A
-;  		jsr 	NumUnSign 	; extract sign
-;  		;-- fill buffer with zeroes
-;  		ldx 	#CVTSZ-1
-;  		lda 	#0
-;  		sta 	NUM_BUF,x
-;  		dex
-;  		sta 	NUM_BUF,x
-;  		dex
- 		;-- NumCvtL 	;- num/10 remainder .A as digit
-; 		jsr 	NumDT 		; div NUM_TMP by 10, remainder in A
-; 		ora 	#'0' 		; convert remainder to a digit
-; 		sta 	NUM_BUF,X 	; store the digit
-; 		dex 			; back-up one pos to the left
-; 		bpl 	NumCvtL 	; loop until done
- 		;-- NumCvtS 	;-- Place sign in NR[0] based on SGN
-;  		lda 	#'0' 		; leading zero
-;  		sta 	NUM_BUF
-;  		;-- check if negative
-;  		lda 	NUM_AS 		; extracted sign
-;  		bpl 	NumCvtX
-;  		lda 	#'-' 		; replace by '-' for negative
-;  		sta 	NUM_BUF 	; place sign at Res[0]
- 		;-- NumCvtX 	rts
-
+;== PROBLEM CHILD
 
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A to digits in NUM_BUF
 ; NUM should be in unpacked form (with sign extracted)
-; $3412 => 13330 in 1514 cycles   (5055 bytes)
+; 24bits => 16,000,000 8 Digits, start at 8+1(null)+1(-)
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
  		;-- fill buffer with zeroes
  		ldx 	#CVTSZ-1
  		lda 	#0
  		sta 	NUM_BUF,x
+ 		lda	#'.'
  		dex
- 		sta 	NUM_BUF,x
- 		ldx	#CVTSZ-3	; 5
+NumCvt0		sta 	NUM_BUF,x
+ 		dex
+ 		bpl	NumCvt0
+
+ 		ldx	#8
 NumCvtL 	;- num/100 remainder .A as 0-99
- 		jsr 	NumDH 		; div NUM_TMP by 10, remainder in A
- 		phx
- 		tax
- 		lda 	BinTbl,x
- 		plx
- 		pha
- 		and 	#$f
- 		ora 	#'0' 		; convert remainder to a digit
+ 		phx			; save X
+	 	  jsr 	NumDH 		; div NUM_A by 100, remainder in A
+	 	  tax			; convert A to BCD
+	 	  lda 	BinTbl,x	; via look up
+ 		plx			; recall X
+ 		;-- BCD to digits
+ 		pha			; save BCD
+ 		  and 	#$f		; mask low digit
+ 		  ora 	#'0' 		; to ascii
+ 		  sta 	NUM_BUF,X 	; into the buffer
+ 		  dex 			; back-up one pos to the left
+ 		pla			; recall BCD
+ 		lsr 	a		; get high digit into lower bits
+ 		lsr 	a
+ 		lsr 	a
+ 		lsr 	a
+
+ 		ora 	#'0' 		; to ascii
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
- 		pla
- 		lsr 	a
- 		lsr 	a
- 		lsr 	a
- 		lsr 	a
- 		ora 	#'0' 		; convert remainder to a digit
- 		sta 	NUM_BUF,X 	; store the digit
- 		dex 			; back-up one pos to the left
+
  		bpl 	NumCvtL 	; loop until done
+
 NumCvtS 	;-- Place sign in NR[0] based on SGN
  		lda 	#'0' 		; leading zero
  		sta 	NUM_BUF
  		;-- check if negative
- 		lda 	NUM_AS 		; extracted sign
- 		bpl 	NumCvtX
+ 		lda 	NUM_AS 		; extracted sign +:00 -:FF
+ 		beq 	NumCvtX
  		lda 	#'-' 		; replace by '-' for negative
  		sta 	NUM_BUF 	; place sign at Res[0]
 NumCvtX 	rts
@@ -309,14 +332,14 @@ NumDH: ; NUM_A = NUM_A / 100  remainder in A
  		lda 	#100
  		sta 	ZDIV
  		bra 	NumDN
-
 ;----------------------------------------------- NumDT
-NumDT 		; NUM_A = NUM_A / 10 (48Bit), remainder in A
+NumDT: ; NUM_A = NUM_A / 10 (48Bit), remainder in A
  		phy
  		lda 	#10
  		sta 	ZDIV 		; set divisor to 10
-NumDN 		; NUM_A = NUM_A / ZDIV (48bit), remainder in A [AXY]
- 		ldy 	#16 		; no of bits
+
+NumDN 		; NUM_A = NUM_A / ZDIV (24bit), remainder in A [AXY]
+ 		ldy 	#24 		; no of bits	<== 16/24
  		lda 	#0
  		clc
 NumDN1 		rol 	A
@@ -325,10 +348,13 @@ NumDN1 		rol 	A
  		sbc 	ZDIV
 NumDN2 		rol 	NUM_AA 		; L 1
  		rol 	NUM_AB 		; H 2
- 		dey
- 		bpl 	NumDN1
+ 		rol 	NUM_AC 		; U 3		<== 16/24
+ 		dey			; NZ
+ 		bpl 	NumDN1		; br if bit7=0
+
  		ply
  		rts
+
 
 ;----------------------------------------------- NumFmt
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
@@ -716,19 +742,24 @@ NumRndX 	;-- get as a number
 DB_Num: ; Debug Math Registers NUMA, NUMB
  		PUSHALL()
 
- 		PRINT("NUMA:")
+ 		PRINT("NUMA:s")
  		HEX_SHORT(NUM_AS)
+ 		lda #'x'
+		jsr	ChrOut
  		HEX_SHORT(NUM_AX)
- 		HEX_INT(NUM_AC)
- 		HEX_INT(NUM_AA)
+ 		lda #'#'
+		jsr	ChrOut
+		HEX_SHORT(NUM_AC)
+ 		HEX_SHORT(NUM_AB)
+ 		HEX_SHORT(NUM_AA)
  		jsr 	PrNL
 
- 		PRINT("NUMB:")
- 		HEX_SHORT(NUM_BS)
- 		HEX_SHORT(NUM_BX)
- 		HEX_INT(NUM_BC)
- 		HEX_INT(NUM_BA)
- 		jsr 	PrNL
+; 		PRINT("NUMB:")
+; 		HEX_SHORT(NUM_BS)
+; 		HEX_SHORT(NUM_BX)
+; 		HEX_INT(NUM_BC)
+; 		HEX_INT(NUM_BA)
+; 		jsr 	PrNL
 
  		PULLALL()
  		PAUSE()

@@ -96,6 +96,10 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 ; .echo "\t\tROM at $C000-$FFFF (16k)\r"
 
 #include "Constants.a65"
+
+; MathModule = MATH_MOD_S24
+MathModule = MATH_MOD_S16
+
 #include "Macros.a65"
 #include "_Vars.a65"
 
@@ -117,7 +121,8 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 ; 		START OF ROM
  		jmp 	Reset
 
-Greet 		.DB 	_FF,"Anton's basic",CR,LF,0
+Greet 		.DB 	_FF,"Minimal BASIC",CR,LF,0
+
 
 #include "ConSim.a65" 			; Console Implementation
 
@@ -265,7 +270,7 @@ MainProg: ; Dump start of Program space
 #include "Variables.a65" 		; Variable parse/list
 
 #include "All.a65" 			; include all keywords
-#include "Tok.a65" 			; Genral Parse/List
+#include "Tok.a65" 			; General Parse/List
 #include "Editor.a65" 			; Program editor
 
 #include "IrqNmi.a65" 			; Interrupt handlers

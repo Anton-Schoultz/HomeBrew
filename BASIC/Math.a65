@@ -9,9 +9,39 @@
 ;*  NumSwap              Swap NUM_A <-> NUM_B  (S,X,A,B,C)
 ;*
 #if ($/256) = 0
-Use_Module = 1
 
 #define CSTKSZ 16
+
+#if MathModule = MATH_MOD_NONE
+; Size of number in memory
+#define NUMSZ	2
+; Size of NUM_BUF for string Representation
+#define CVTSZ 8
+#endif
+
+#if MathModule = MATH_MOD_S16
+; Size of number in memory
+#define NUMSZ	2
+; Size of NUM_BUF for string Representation
+#define CVTSZ 8
+#endif
+
+#if MathModule = MATH_MOD_S24
+; Size of number in memory
+#define NUMSZ	4
+
+; Size of NUM_BUF for string Representation
+#define CVTSZ 	14
+#endif
+
+Var(NUM_BUF,CVTSZ+2) ; Conversion work area CVTSZ=14
+
+
+.echo "NUMSZ="
+.echo NUMSZ
+.echo " CVTSZ="
+.echo CVTSZ
+.echo "\n"
 
 ; this lets me select which maths implementation to use
 
@@ -51,6 +81,7 @@ NUM_DIVX = NUM_DIV+FPX
 NUM_DIVA = NUM_DIV+FPA
 NUM_DIVB = NUM_DIV+FPB
 #endif
+
 
 
 
@@ -189,11 +220,18 @@ NumSwapL 	lda 	NUM_A,X
 .nolist
 
 ;=================================================================== MATH MODULE ======
-#if Use_Module
+#if MathModule = MATH_MOD_S16
 #include "Math_S16.a65"
 .nolist
-#else
+#endif
 
+#if MathModule = MATH_MOD_S24
+#include "Math_S24.a65"
+.nolist
+#endif
+
+
+#if MathModule = MATH_MOD_NONE
 ;----------------------------------------------- Dummy{
 #if $>$400
 .echo "\n"

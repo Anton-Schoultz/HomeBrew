@@ -5,6 +5,10 @@ SCRN_LINES 	= 16
 PG_SYSVAR 	= 3
 PG_SYSIO 	= 2
 
+MATH_MOD_NONE= 0
+MATH_MOD_S16= 1
+MATH_MOD_S24= 2
+
 ;----------------------------------------------- ASCII Control Codes
 #DEFINE NULL	0
 #DEFINE BS 	8
@@ -26,8 +30,6 @@ PG_SYSIO 	= 2
 ; STRSZ Size for STRBUF
 #define STRSZ 128
 
-; digits to convert into NUM_BUF  including [-] digits... NULL
-#define CVTSZ 8
 
 ; Nesting depth for GOSUB calls
 #define RTNSZ 32
@@ -69,6 +71,10 @@ T_LineNo 	= $F0 			; header includes line number
 PG_ROM 		= $E0 			; main code
 PG_KEY 		= $FE 			; key word table
 PG_RUN 		= $FF 			; main jump table
+
+
+
+
 
 TblKeyword 	= (PG_KEY<<8)
 TblRun 		= (PG_RUN<<8)
