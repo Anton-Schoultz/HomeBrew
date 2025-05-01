@@ -6,7 +6,7 @@
 
 #if ($/256) = 0
 .echo "** Math Module S16 **\n"
-#define NUMSZ	2
+#define NUMPKSZ	2
 ;----------------------------------------------- Numeric
 Short(ZDIV) 	; short divisor 10/100
 
@@ -263,33 +263,37 @@ NumParseX 	rts
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A to digits in NUM_BUF
 ; NUM should be in unpacked form (with sign extracted)
-; $3412 => 13330 in 1514 cycles   (5055 bytes)
+; -########e##.		DIGITS=8
+; 0123456789abcdef
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
- 		;-- fill buffer with zeroes
- 		ldx 	#CVTSZ-1
+ 		;-- '0' as place holder for the '-' sign
+ 		lda	#'0'
+ 		sta	NUM_BUF
+ 		;-- null at the end
+ 		ldx 	#DIGITS
  		lda 	#0
- 		sta 	NUM_BUF,x
- 		dex
- 		sta 	NUM_BUF,x
- 		ldx	#CVTSZ-3	; 5
+ 		sta 	NUM_BUF+1,X
+ 		;-- conversion results starts at [digit] and works backwards
 NumCvtL 	;- num/100 remainder .A as 0-99
- 		jsr 	NumDH 		; div NUM_TMP by 10, remainder in A
- 		phx
- 		tax
- 		lda 	BinTbl,x
- 		plx
- 		pha
- 		and 	#$f
- 		ora 	#'0' 		; convert remainder to a digit
- 		sta 	NUM_BUF,X 	; store the digit
+ 		phx			; save X
+	 	  jsr 	NumDH 		; div NUM_A by 100, remainder in A
+	 	  tax			; convert A to BCD
+	 	  lda 	BinTbl,x	; via look up
+ 		plx			; recall X
+ 		;-- BCD to digits
+ 		pha			; save BCD
+ 		  and 	#$f		; mask low digit
+ 		  ora 	#'0' 		; to ascii
+ 		  sta 	NUM_BUF,X 	; into the buffer
  		dex 			; back-up one pos to the left
- 		pla
+ 		pla			; recall BCD
+ 		lsr 	a		; get high digit into lower bits
  		lsr 	a
  		lsr 	a
  		lsr 	a
- 		lsr 	a
- 		ora 	#'0' 		; convert remainder to a digit
+
+ 		ora 	#'0' 		; to ascii
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
  		bpl 	NumCvtL 	; loop until done
@@ -297,8 +301,8 @@ NumCvtS 	;-- Place sign in NR[0] based on SGN
  		lda 	#'0' 		; leading zero
  		sta 	NUM_BUF
  		;-- check if negative
- 		lda 	NUM_AS 		; extracted sign
- 		bpl 	NumCvtX
+ 		lda 	NUM_AS 		; extracted sign +:00 -:FF
+ 		beq 	NumCvtX
  		lda 	#'-' 		; replace by '-' for negative
  		sta 	NUM_BUF 	; place sign at Res[0]
 NumCvtX 	rts
@@ -330,52 +334,52 @@ NumDN2 		rol 	NUM_AA 		; L 1
  		ply
  		rts
 
-;----------------------------------------------- NumFmt
-NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
- 		BR_ZSUP(NumSup) 	; TMP = NUM_A
- 		;-- suppress leading zeroes
- 		BR_ZSPC(NumSpc) 	; blank leading zeroes
- 		rts
-
-;----------------------------------------------- NumSup
-NumSup 		; removing leading zeroes
- 		ldx 	#0
- 		ldy 	#0
- 		lda 	NUM_BUF
- 		cmp 	#'-'
- 		bne 	NumSupL
- 		inx
- 		iny
-NumSupL 	lda 	NUM_BUF,y
- 		cmp 	#'0'
- 		bne 	NumSupC 	; go copy
- 		iny
- 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
- 		bne 	NumSupL
-NumSupC 	lda 	NUM_BUF,y
- 		sta 	NUM_BUF,x
- 		beq 	NumSupX
- 		inx
- 		iny
- 		bra 	NumSupC
-NumSupX 	rts
-
-;----------------------------------------------- NumSpc
-NumSpc 		; blank leading zeroes
- 		ldy 	#0
- 		lda 	NUM_BUF
- 		cmp 	#'-'
- 		bne 	NumSpcL
- 		iny
-NumSpcL 	lda 	NUM_BUF,y
- 		cmp 	#'0'
- 		bne 	NumSpcX 	; go copy
- 		lda 	#' '
- 		sta 	NUM_BUF,y
- 		iny
- 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
- 		bne 	NumSpcL
-NumSpcX 	rts
+;;----------------------------------------------- NumFmt
+;NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
+; 		BR_ZSUP(NumSup) 	; TMP = NUM_A
+; 		;-- suppress leading zeroes
+; 		BR_ZSPC(NumSpc) 	; blank leading zeroes
+; 		rts
+;
+;;----------------------------------------------- NumSup
+;NumSup 		; removing leading zeroes
+; 		ldx 	#0
+; 		ldy 	#0
+; 		lda 	NUM_BUF
+; 		cmp 	#'-'
+; 		bne 	NumSupL
+; 		inx
+; 		iny
+;NumSupL 	lda 	NUM_BUF,y
+; 		cmp 	#'0'
+; 		bne 	NumSupC 	; go copy
+; 		iny
+; 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
+; 		bne 	NumSupL
+;NumSupC 	lda 	NUM_BUF,y
+; 		sta 	NUM_BUF,x
+; 		beq 	NumSupX
+; 		inx
+; 		iny
+; 		bra 	NumSupC
+;NumSupX 	rts
+;
+;;----------------------------------------------- NumSpc
+;NumSpc 		; blank leading zeroes
+; 		ldy 	#0
+; 		lda 	NUM_BUF
+; 		cmp 	#'-'
+; 		bne 	NumSpcL
+; 		iny
+;NumSpcL 	lda 	NUM_BUF,y
+; 		cmp 	#'0'
+; 		bne 	NumSpcX 	; go copy
+; 		lda 	#' '
+; 		sta 	NUM_BUF,y
+; 		iny
+; 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
+; 		bne 	NumSpcL
+;NumSpcX 	rts
 
 ;----------------------------------------------- NumRd
 NumRd: ; Read from memory (ChrRd) & unpack

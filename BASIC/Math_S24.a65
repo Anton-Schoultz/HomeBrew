@@ -273,25 +273,22 @@ NumParseAX 	;- next character
  		bra 	NumParseL
 NumParseX 	rts
 
-;== PROBLEM CHILD
-
 ;----------------------------------------------- NumCvt
 NumCvt: ; Convert NUM_A to digits in NUM_BUF
 ; NUM should be in unpacked form (with sign extracted)
-; 24bits => 16,000,000 8 Digits, start at 8+1(null)+1(-)
+; -########e##.		DIGITS=8
+; 0123456789abcdef
+
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
- 		;-- fill buffer with zeroes
- 		ldx 	#CVTSZ-1
+ 		;-- '0' as place holder for the '-' sign
+ 		lda	#'0'
+ 		sta	NUM_BUF
+ 		;-- null at the end
+ 		ldx 	#DIGITS
  		lda 	#0
- 		sta 	NUM_BUF,x
- 		lda	#'.'
- 		dex
-NumCvt0		sta 	NUM_BUF,x
- 		dex
- 		bpl	NumCvt0
-
- 		ldx	#8
+ 		sta 	NUM_BUF+1,X
+ 		;-- conversion results starts at [digit] and works backwards
 NumCvtL 	;- num/100 remainder .A as 0-99
  		phx			; save X
 	 	  jsr 	NumDH 		; div NUM_A by 100, remainder in A
@@ -356,52 +353,51 @@ NumDN2 		rol 	NUM_AA 		; L 1
  		rts
 
 
-;----------------------------------------------- NumFmt
-NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
- 		BR_ZSUP(NumSup) 	; TMP = NUM_A
- 		;-- suppress leading zeroes
- 		BR_ZSPC(NumSpc) 	; blank leading zeroes
- 		rts
-
-;----------------------------------------------- NumSup
-NumSup 		; removing leading zeroes
- 		ldx 	#0
- 		ldy 	#0
- 		lda 	NUM_BUF
- 		cmp 	#'-'
- 		bne 	NumSupL
- 		inx
- 		iny
-NumSupL 	lda 	NUM_BUF,y
- 		cmp 	#'0'
- 		bne 	NumSupC 	; go copy
- 		iny
- 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
- 		bne 	NumSupL
-NumSupC 	lda 	NUM_BUF,y
- 		sta 	NUM_BUF,x
- 		beq 	NumSupX
- 		inx
- 		iny
- 		bra 	NumSupC
-NumSupX 	rts
-
-;----------------------------------------------- NumSpc
-NumSpc 		; blank leading zeroes
- 		ldy 	#0
- 		lda 	NUM_BUF
- 		cmp 	#'-'
- 		bne 	NumSpcL
- 		iny
-NumSpcL 	lda 	NUM_BUF,y
- 		cmp 	#'0'
- 		bne 	NumSpcX 	; go copy
- 		lda 	#' '
- 		sta 	NUM_BUF,y
- 		iny
- 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
- 		bne 	NumSpcL
-NumSpcX 	rts
+;;----------------------------------------------- NumFmt
+;NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
+; 		BR_ZSUP(NumSup) 	; TMP = NUM_A
+; 		;-- suppress leading zeroes
+; 		BR_ZSPC(NumSpc) 	; blank leading zeroes
+; 		rts
+;
+;;----------------------------------------------- NumSup
+;NumSup 		; removing leading zeroes
+; 		ldx 	#0
+; 		ldy 	#0
+; 		lda 	NUM_BUF
+; 		cmp 	#'-'
+; 		bne 	NumSup1
+; 		inx
+;NumSupL		iny
+; 		lda 	NUM_BUF,y
+;NumSup1 	cmp 	#'0'
+; 		bne 	NumSupC 	; go copy
+; 		cpy 	#DIGITS+1 	; make sure we leave the last digit at least
+; 		bne 	NumSupL
+;
+;NumSupC 	lda 	NUM_BUF,y
+; 		sta 	NUM_BUF,x
+; 		beq 	NumSupX
+; 		inx
+; 		iny
+; 		bra 	NumSupC
+;NumSupX 	rts
+;
+;;----------------------------------------------- NumSpc
+;NumSpc 		; blank leading zeroes
+; 		ldy 	#0
+; 		lda 	NUM_BUF
+; 		cmp 	#'-'
+; 		bne 	NumSpc1
+;NumSpcL		iny
+; 		lda 	NUM_BUF,y
+;NumSpc1 	cmp 	#'0'
+; 		bne 	NumSpcX 	; go copy
+; 		lda 	#' '
+; 		sta 	NUM_BUF,y
+; 		cpy 	#DIGITS 	; make sure we leave the last digit at least
+; 		bne 	NumSpcL
+;NumSpcX 	rts
 
 ;----------------------------------------------- NumRd
 NumRd: ; Read from memory (ChrRd) & unpack
@@ -435,8 +431,6 @@ NumPrint: ; Convert number to string & output (via PutChr mem/io)
  		jsr 	NumFmt
  		LDAX(NUM_BUF)
  		jmp 	PrStrAX
-; 		lda 	#' '
-; 		jmp 	PutChr
 
 ;----------------------------------------------- NumFlag
 NumFlag: ; set flags bassed on unpacked result
@@ -450,6 +444,7 @@ NumFlag: ; set flags bassed on unpacked result
  		bra 	NumFlagX 	; done
 NumFlag1 	lda 	NUM_AA
  		ora 	NUM_AB
+ 		ora	NUM_AC
  		beq 	NumFlag2
  		;-- Not zero, so positive
  		SMB2 	NUM_FLG 	; set bit2:GT
@@ -464,7 +459,6 @@ NumFlagX 	;-- exit
  		rts 			; done
 
 ;----------------------------------------------- NumPreAS
-; on entry, set NUM_SGN to 00 for add or $80 for subtract
 NumPreAS 	; Prepare to Add/Subtract - align & sign
  		ldx 	#NUM_A
  		jsr 	NumSign 	; move sign to mantissa
@@ -481,6 +475,9 @@ NumAdd: ; NumA = NumB + NumA
  		lda 	NUM_BB
  		adc 	NUM_AB
  		sta 	NUM_AB
+ 		lda 	NUM_BC
+ 		adc 	NUM_AC
+ 		sta 	NUM_AC
  		;--
  		ldx 	#NUM_A
  		jmp 	NumUnSign 	; extract sign again
@@ -495,6 +492,9 @@ NumSub: ; NumA = NumB - NumA
  		lda 	NUM_BB
  		sbc 	NUM_AB
  		sta 	NUM_AB
+ 		lda 	NUM_BC
+ 		sbc 	NUM_AC
+ 		sta 	NUM_AC
  		;--
  		ldx 	#NUM_A
  		jmp 	NumUnSign 	; extract sign again
@@ -517,26 +517,33 @@ NumMul: ; NumA = NumB * NumA (in unpacked form)
  		jsr 	NumPreMD 	; pull signs out (make both pos)
  		;-- zero extended result
  		lda 	#0
- 		sta 	NUM_AC
  		sta 	NUM_AD
- 		ldx 	#16 		; bits in NA
+ 		sta 	NUM_AE
+ 		STA	NUM_AF
+ 		ldx 	#24 		; bits in NA
  		;-- Shift NA to the right, lowest bit into CY
- 		lsr 	NUM_AB
+ 		lsr	NUM_AC
+ 		ror 	NUM_AB
  		ror 	NUM_AA
  		;--
 NumMul1 	bcc 	NumMul2 	;0 or 1?
- 		;-- bit is 1 so add
+ 		;-- bit is 1 so add to DEF
  		clc
  		lda 	NUM_BA
- 		adc 	NUM_AC
- 		sta 	NUM_AC
- 		;--
- 		lda 	NUM_BB
  		adc 	NUM_AD
  		sta 	NUM_AD
  		;--
+ 		lda 	NUM_BB
+ 		adc 	NUM_AE
+ 		sta 	NUM_AE
+ 		;--
+ 		lda 	NUM_BC
+ 		adc 	NUM_AF
+ 		sta 	NUM_AF
 NumMul2 	;shift result right (equivalent to shift B left )
  		clc
+ 		ror 	NUM_AF
+ 		ror 	NUM_AE
  		ror 	NUM_AD
  		ror 	NUM_AC
  		ror 	NUM_AB
@@ -568,6 +575,8 @@ NumMod: ; NumA = NumB % NumA
  		sta 	NUM_AA
  		lda 	NUM_TMPB
  		sta 	NUM_AB
+ 		lda 	NUM_TMPC
+ 		sta 	NUM_AC
  		RTN_T()
 
 ;----------------------------------------------- NumDivZero
@@ -578,10 +587,11 @@ NumDivZero: ; divide by zero error
 NumDiv: ; NumA = NumB / NumA
  		jsr 	NumPreMD 	; pull signs out (make both pos)
  		;-- place divisor in NUM_DIV
- 		ZCPY4(NUM_DIV,NUM_A)
+ 		ZCPY6(NUM_DIV,NUM_A)
  		;-- check divide by zero
  		lda 	NUM_DIV+FPA
  		ora 	NUM_DIV+FPB
+ 		ora 	NUM_DIV+FPC
  		beq 	NumDivZero
  		;-- zero result (6 bytes)
  		jsr 	NumZeroA
@@ -590,40 +600,52 @@ NumDiv: ; NumA = NumB / NumA
  		sta 	NUM_TMP+FPB
  		sta 	NUM_TMP+FPC
  		;--
- 		ldx 	#16 		; bits to divide
+ 		ldx 	#24 		; bits to divide
 NumDivL 	;-- shift a bit from dividend into temp
  		asl 	NUM_BA
  		rol 	NUM_BB
+ 		rol 	NUM_BC
  		;-- now pull the bit into NUM_TMP
  		rol 	NUM_TMPA
  		rol 	NUM_TMPB
+ 		rol 	NUM_TMPC
  		;-- try subtract divisor from temp TMP=TMP-DIV
  		sec
  		lda 	NUM_TMPA
  		sbc 	NUM_DIVA
  		sta 	NUM_TMPA
+ 		;
  		lda 	NUM_TMPB
  		sbc 	NUM_DIVB
  		sta 	NUM_TMPB
+ 		;
+ 		lda 	NUM_TMPC
+ 		sbc 	NUM_DIVC
+ 		sta 	NUM_TMPC
  		;-- if ok, shift 1 into result
  		bcs 	NumDiv2 	; continue C=1
  		;-- subtract failed, put it back TMP=TMP+DIV
  		lda 	NUM_TMPA
  		adc 	NUM_DIVA
  		sta 	NUM_TMPA
+ 		;
  		lda 	NUM_TMPB
  		adc 	NUM_DIVB
  		sta 	NUM_TMPB
+ 		;
+ 		lda 	NUM_TMPC
+ 		adc 	NUM_DIVC
+ 		sta 	NUM_TMPC
  		clc
 NumDiv2 	; save result bit
  		rol 	NUM_AA
  		rol 	NUM_AB
-;   		rol 	NUM_AC
+   		rol 	NUM_AC
  		;-- next bit
  		dex
  		bne 	NumDivL
 NumDiv8 	;-- round ?
- 		;-- place thes sign
+ 		;-- place the sign
  		lda 	NUM_SGN
  		sta 	NUM_AS
  		RTN_T()
@@ -638,6 +660,10 @@ NumAnd: ; AND
  		and 	NUM_BB
  		sta 	NUM_AB
  		;--
+ 		lda 	NUM_AC
+ 		and 	NUM_BC
+ 		sta 	NUM_AC
+ 		;--
  		rts
 
 ;----------------------------------------------- NumOr
@@ -650,6 +676,10 @@ NumOr: ; OR
  		ora 	NUM_BB
  		sta 	NUM_AB
  		;--
+ 		lda 	NUM_AC
+ 		ora 	NUM_BC
+ 		sta 	NUM_AC
+ 		;--
  		rts
 
 ;----------------------------------------------- NumXor
@@ -661,6 +691,10 @@ NumXor: ; XOR
  		lda 	NUM_AB
  		eor 	NUM_BB
  		sta 	NUM_AB
+ 		;--
+ 		lda 	NUM_AC
+ 		eor 	NUM_BC
+ 		sta 	NUM_AC
  		;--
  		rts
 

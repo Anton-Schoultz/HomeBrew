@@ -11,7 +11,7 @@ _DBUG 		= 1
 ; MATH_MOD_S16 1
 ; MATH_MOD_S24 2
 
-MathModule 	= MATH_MOD_S24
+MathModule 	= MATH_MOD_S16
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -30,15 +30,9 @@ MathModule 	= MATH_MOD_S24
  		;-- go do the test
  		jmp 	Test
 
-P_1234 		.DB 	"1234",0 	;00 00 04D2
-P_1234567 	.DB 	"1234567",0 	;00 12 D687
-
-P_Max 	.DB 	"8388607",0 	;00 7F FFFF
-
-
-N_1234 		.DB 	"-1234",0 	;FF 00 04D2
-N_1234567 	.DB 	"-1234567",0 	;FF 12 D687
-
+P_A 		.DB 	"1234",0 	;00 00 04D2
+P_B	 	.DB 	"4567",0 	;00 12 D687
+P_1		.db "0",0
 
 ListLn:  	rts
 Main:  		HALT()
@@ -52,43 +46,43 @@ Main:  		HALT()
 
 ;----------------------------------------------- Test
 Test: ; test maths
+
+		;PR_ZSPC_ON()
+		;PR_ZSUP_ON()
+
  		jsr 	TestParse	; 1234567		12d687
 
  		jsr	NumCvt
+ 		jsr	NumFmt
 
  		LDAX(NUM_BUF)
  		jsr	PrStrAX
 
-.export NUM_BUF
-
-;		jsr	NumDH		; 12345 67		003039 r43
-; 		jsr 	DB_Num 		; display NUM_A
-;
-;		jsr	NumDH		; 123 45 		00007B r2D
-; 		jsr 	DB_Num 		; display NUM_A
-
-
-
  		HALT()
 
 TestParse:
- 		ZSET(ZParse,P_Max)
+ 		ZSET(ZParse,P_1)	; 1
+ 		jsr 	NumParsePtr
+
+		rts
+
+
+ 		ZSET(ZParse,P_B)	; 4567
  		jsr 	NumParsePtr
  		jsr 	NumPushA
-; 		ZSET(ZParse,P_1234)
-; 		jsr 	NumParsePtr
-; 		jsr 	NumPopB
- 		jsr 	DB_Num 		; display NUM_A & B
-; 		ZSET(ZParse,N_1234)
-; 		jsr 	NumParsePtr
-; 		jsr 	NumPushA
-; 		ZSET(ZParse,N_1234567)
-; 		jsr 	NumParsePtr
-; 		jsr 	NumPopB
-; 		jsr 	DB_Num 		; display NUM_A & B
+ 		ZSET(ZParse,P_A)	; 1234
+ 		jsr 	NumParsePtr
+ 		jsr 	NumPopB
+
+ 		;jsr 	NumAdd		;    5801
+ 		;jsr 	NumSub		;    3333
+ 		jsr 	NumMul		; 5635678
+ 		;jsr 	NumDiv		; 	3 r 865
+ 		;jsr 	NumMod		; 	3 r 865
+
  		rts
 
-
+.export NUM_BUF
 
 
 

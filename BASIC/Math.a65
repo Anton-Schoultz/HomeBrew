@@ -12,35 +12,38 @@
 
 #define CSTKSZ 16
 
+; NUMPKSZ 	is the size for the packed value in memory
+; DIGITS	is the number of digits when printed (even number)
+; -########e##.
+; 0123456789abcdef
+;
 #if MathModule = MATH_MOD_NONE
-; Size of number in memory
-#define NUMSZ	2
-; Size of NUM_BUF for string Representation
-#define CVTSZ 8
+#define NUMPKSZ	2
+#define DIGITS 8
 #endif
 
 #if MathModule = MATH_MOD_S16
-; Size of number in memory
-#define NUMSZ	2
-; Size of NUM_BUF for string Representation
-#define CVTSZ 8
+#define NUMPKSZ	2
+#define DIGITS 6
 #endif
 
 #if MathModule = MATH_MOD_S24
-; Size of number in memory
-#define NUMSZ	4
-
-; Size of NUM_BUF for string Representation
-#define CVTSZ 	14
+#define NUMPKSZ	4
+#define DIGITS 	8
 #endif
 
-Var(NUM_BUF,CVTSZ+2) ; Conversion work area CVTSZ=14
+; sign, null and 'e##'
+#define NUMPAD 5
+#define NUMBUFSZ DIGITS+NUMPAD
+
+; for conversion, need one for '-', another for null, and possibly 3 more 'eXX'
+Var(NUM_BUF,NUMBUFSZ) ; Conversion work area
 
 
-.echo "NUMSZ="
-.echo NUMSZ
-.echo " CVTSZ="
-.echo CVTSZ
+.echo "NUMPKSZ="
+.echo NUMPKSZ
+.echo " DIGITS="
+.echo DIGITS
 .echo "\n"
 
 ; this lets me select which maths implementation to use
@@ -57,29 +60,32 @@ Var(NUM_BUF,CVTSZ+2) ; Conversion work area CVTSZ=14
 #define FPE	6
 #define FPF	7
 
-NUM_AS = NUM_A+FPS
-NUM_AX = NUM_A+FPX
-NUM_AA = NUM_A+FPA
-NUM_AB = NUM_A+FPB
-NUM_AC = NUM_A+FPC
-NUM_AD = NUM_A+FPD
+NUM_AS 		= NUM_A+FPS
+NUM_AX 		= NUM_A+FPX
+NUM_AA 		= NUM_A+FPA
+NUM_AB 		= NUM_A+FPB
+NUM_AC 		= NUM_A+FPC
+NUM_AD 		= NUM_A+FPD
+NUM_AE 		= NUM_A+FPE
+NUM_AF 		= NUM_A+FPF
 
-NUM_BS = NUM_B+FPS
-NUM_BX = NUM_B+FPX
-NUM_BA = NUM_B+FPA
-NUM_BB = NUM_B+FPB
-NUM_BC = NUM_B+FPC
+NUM_BS 		= NUM_B+FPS
+NUM_BX 		= NUM_B+FPX
+NUM_BA 		= NUM_B+FPA
+NUM_BB 		= NUM_B+FPB
+NUM_BC 		= NUM_B+FPC
 
-NUM_TMPS = NUM_TMP+FPS
-NUM_TMPX = NUM_TMP+FPX
-NUM_TMPA = NUM_TMP+FPA
-NUM_TMPB = NUM_TMP+FPB
-NUM_TMPC = NUM_TMP+FPC
+NUM_TMPS 	= NUM_TMP+FPS
+NUM_TMPX 	= NUM_TMP+FPX
+NUM_TMPA 	= NUM_TMP+FPA
+NUM_TMPB 	= NUM_TMP+FPB
+NUM_TMPC 	= NUM_TMP+FPC
 
-NUM_DIVS = NUM_DIV+FPS
-NUM_DIVX = NUM_DIV+FPX
-NUM_DIVA = NUM_DIV+FPA
-NUM_DIVB = NUM_DIV+FPB
+NUM_DIVS 	= NUM_DIV+FPS
+NUM_DIVX 	= NUM_DIV+FPX
+NUM_DIVA 	= NUM_DIV+FPA
+NUM_DIVB 	= NUM_DIV+FPB
+NUM_DIVC 	= NUM_DIV+FPC
 #endif
 
 
@@ -105,7 +111,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; F32 uses X,A,B,C
  		;--
 ; Constants:
-; NUMSZ 2	size of a numeric format in internal for - S16 is 2 bytes
+; NUMPKSZ 2	size of a numeric format in internal for - S16 is 2 bytes
 ; NUMUSZ 5	size of numeric value once 'unpacked' for calcualtions
 ;----------------------------------------------- Numeric common vars
 ; Var(NUM_A,NUMUSZ) 	; Number parsed / Primary accumulator
@@ -115,7 +121,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
 ; Short(NUM_SP) 	; calculator stack pointer
 ; Short(NUM_SGN) 	; sign
-; Var(NUM_BUF,CVTSZ) 	; Conversion work area CVTSZ=14
+; Var(NUM_BUF,DIGITS) 	; Conversion work area DIGITS=14
 .nolist
 .echo "  CPU Stack\t"
 .echo $200 - $
@@ -215,6 +221,55 @@ NumSwapL 	lda 	NUM_A,X
  		bpl 	NumSwapL
  		rts
 
+
+;----------------------------------------------- NumFmt
+NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
+ 		BR_ZSUP(NumSup) 	; TMP = NUM_A
+ 		;-- suppress leading zeroes
+ 		BR_ZSPC(NumSpc) 	; blank leading zeroes
+ 		rts
+
+;----------------------------------------------- NumSup
+NumSup 		; removing leading zeroes
+ 		ldx 	#0
+ 		ldy 	#0
+ 		lda 	NUM_BUF
+ 		cmp 	#'-'
+ 		bne 	NumSup1
+ 		inx
+NumSupL		iny
+ 		lda 	NUM_BUF,y
+NumSup1 	cmp 	#'0'
+ 		bne 	NumSupC 	; go copy
+ 		cpy 	#DIGITS 	; make sure we leave the last digit at least
+ 		bne 	NumSupL
+
+NumSupC 	lda 	NUM_BUF,y
+ 		sta 	NUM_BUF,x
+ 		beq 	NumSupX
+ 		inx
+ 		iny
+ 		bra 	NumSupC
+NumSupX 	rts
+
+;----------------------------------------------- NumSpc
+NumSpc 		; blank leading zeroes
+ 		ldy 	#0
+ 		lda 	NUM_BUF
+ 		cmp 	#'-'
+ 		bne 	NumSpc1
+NumSpcL		iny
+ 		lda 	NUM_BUF,y
+NumSpc1 	cmp 	#'0'
+ 		bne 	NumSpcX 	; go copy
+ 		lda 	#' '
+ 		sta 	NUM_BUF,y
+ 		cpy 	#DIGITS-1 	; make sure we leave the last digit at least
+ 		bne 	NumSpcL
+NumSpcX 	rts
+
+
+
 #endif 					; end page > $80
 
 .nolist
@@ -244,7 +299,7 @@ NumSwapL 	lda 	NUM_A,X
 
 ;  -------- Module must define these ----------
 
-NumParsePtr	; Parse a number from (ZParse) into NUM_A
+NumParsePtr 	; Parse a number from (ZParse) into NUM_A
 
 NumCvt 		; X_PrNum to display value
 NumPrint 	; L_Number to list number (from P_Number)
@@ -267,7 +322,7 @@ NumFmt 		; X_PrNum (also uses NumCvt)
 
 NumZeroA 	; Eval
 
-NumRnd		; Random number 0-32767  -> NUM_AA,B
+NumRnd 		; Random number 0-32767  -> NUM_AA,B
 
 NumRd 		; Eval for literal values
 NumWr 		; Tok.P_Number to create a literal
@@ -279,7 +334,7 @@ NumToInt 	; Return integer value in AX (lo,hi) - sets NUM_FLG
 NumFromInt 	; Set NUMA to int value in AX (lo,hi)
 
 ; TODO is this really needed?
-NumPack		; Pack NUM_A into memory format for storing
+NumPack 	; Pack NUM_A into memory format for storing
 
 
 #endif

@@ -37,7 +37,7 @@ MATH_MOD_S24= 2
 ; Nesting depth for FOR..NEXT
 #define FORDEEP 8
 
-; Size of FOR block = NUMSZ+NUMSZ+3 = STP,LIM, ADR,IX
+; Size of FOR block = NUMPKSZ+NUMPKSZ+3 = STP,LIM, ADR,IX
 #define FORSZ  7
 
 ; bytes per line of Hex Dump  (if cols > 69 then use 16)

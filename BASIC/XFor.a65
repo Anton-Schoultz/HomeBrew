@@ -14,8 +14,8 @@ _For 		= $
 ; #define FOR_STP_X 27
 ; #define FOR_LIM_X 28
 ; FOR_DATA 	;-- DATA
-; Var(FOR_STP,NUMSZ) ; [27] Step size
-; Var(FOR_LIM,NUMSZ) ; [28] Limit
+; Var(FOR_STP,NUMPKSZ) ; [27] Step size
+; Var(FOR_LIM,NUMPKSZ) ; [28] Limit
 ; Int(FOR_ADR) 	; Address of loop line (after the FOR line)
 ; Short(FOR_NDX) 	; Loop variable number (1-26)
 ;  		;-- STACK	FOR nesting depth FORDEEP=8 (CBM has 9)

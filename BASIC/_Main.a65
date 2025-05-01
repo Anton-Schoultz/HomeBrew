@@ -97,8 +97,8 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 #include "Constants.a65"
 
-; MathModule = MATH_MOD_S24
-MathModule = MATH_MOD_S16
+MathModule = MATH_MOD_S24	;6609 (137 more)
+;MathModule = MATH_MOD_S16	;6472
 
 #include "Macros.a65"
 #include "_Vars.a65"

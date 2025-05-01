@@ -108,8 +108,6 @@ Short(EVFLG)	; flag for evaluation 0=no expr, +:Num, -:Str
 
 Var(TIMER,3)	; timer value
 
-;Var(NUM_BUF,CVTSZ) ; Conversion work area CVTSZ=14
-
 
 ;----------------------------------------------- String
 ; (Z) ->    LenL|LenH|Characters.....|00|
@@ -117,7 +115,7 @@ Int(STR_PTR) 	; pointer to string
 Int(STR_END) 	; end of string work area
 Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 
-
+PARAGRAPH()
 #include "Math.a65" 			; Math module ZeroPage
 
 .echo "  _ZeroPage\t"
@@ -155,15 +153,15 @@ VARTAB
 ;----------------------------------------------- String Vars A-Z
 Var(VARSTR,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
 
-;----------------------------------------------- Numeric Vars 27 x NUMSZ
+;----------------------------------------------- Numeric Vars 27 x NUMPKSZ
 ; Vars stored as sequence of bytes, [Exp] Low...Hi
 ; index 0 is for RND, 1-26 for A-Z => 27 slots
-Var(VARNUM,27*NUMSZ)
+Var(VARNUM,27*NUMPKSZ)
 ;----------------------------------------------- For/Next
 ; FOR values are stored immediately after the A-Z, so access with index 27,28
 FOR_DATA 	;-- DATA
-Var(FOR_STP,NUMSZ) ; [27] Step size
-Var(FOR_LIM,NUMSZ) ; [28] Limit
+Var(FOR_STP,NUMPKSZ) ; [27] Step size
+Var(FOR_LIM,NUMPKSZ) ; [28] Limit
 Int(FOR_ADR) 	; Address of loop line (after the FOR line)
 Short(FOR_NDX) 	; Loop variable number (1-26)
 #define FOR_STP_X 27
