@@ -28,7 +28,7 @@
 #endif
 
 #if MathModule = MATH_MOD_S24
-#define NUMPKSZ	4
+#define NUMPKSZ	3
 #define DIGITS 	8
 #endif
 

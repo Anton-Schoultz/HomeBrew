@@ -74,12 +74,12 @@ Short(ZDIV) 	; short divisor 10/100
 ; NUM_BUF
 
 ; MATHOFF()  convert index in .A to an offset in .X based on size of numbers
-#define MATHOFF() asl a\ asl a\ tax
+#define MATHOFF() sta ZTmp\ asl a\ adc ZTmp\ tax
 
 
 ;----------------------------------------------- NumGet
 NumGet: ; Retrieve simple variable VARNUM[A].. and unpack to internal form
-; .A is the index, math module multiplies for size as required
+; .A is the index (0-31) , math module multiplies for size as required
 ; returns with sign byte in A
  		MATHOFF()
  		;-- clear the sign (+ve)
