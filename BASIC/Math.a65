@@ -229,8 +229,11 @@ NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
  		BR_ZSPC(NumSpc) 	; blank leading zeroes
  		rts
 
+; -########e##.		DIGITS=8
+; 0123456789abcdef
+
 ;----------------------------------------------- NumSup
-NumSup 		; removing leading zeroes
+NumSup:	; removing leading zeroes
  		ldx 	#0
  		ldy 	#0
  		lda 	NUM_BUF
@@ -243,7 +246,6 @@ NumSup1 	cmp 	#'0'
  		bne 	NumSupC 	; go copy
  		cpy 	#DIGITS 	; make sure we leave the last digit at least
  		bne 	NumSupL
-
 NumSupC 	lda 	NUM_BUF,y
  		sta 	NUM_BUF,x
  		beq 	NumSupX
@@ -258,13 +260,14 @@ NumSpc 		; blank leading zeroes
  		lda 	NUM_BUF
  		cmp 	#'-'
  		bne 	NumSpc1
-NumSpcL		iny
- 		lda 	NUM_BUF,y
+		iny
+NumSpcL		lda 	NUM_BUF,y
 NumSpc1 	cmp 	#'0'
  		bne 	NumSpcX 	; go copy
  		lda 	#' '
  		sta 	NUM_BUF,y
- 		cpy 	#DIGITS-1 	; make sure we leave the last digit at least
+ 		iny
+ 		cpy 	#DIGITS 	; make sure we leave the last digit at least
  		bne 	NumSpcL
 NumSpcX 	rts
 

@@ -234,6 +234,8 @@ NumParseX 	rts
 ; ----------------------------------------------- NumCvt
 ; -- NumCvt: ; Convert NUM_A to digits in NUM_BUF
 ; $3412 => 13330 in 2726 cycles   (5028 bytes)
+; this method can be modified to push the disigs instead
+; , so can combine leading zero suppression
 ;  		ldx 	#NUM_A
 ;  		jsr 	NumUnSign 	; extract sign
 ;  		;-- fill buffer with zeroes
@@ -267,36 +269,40 @@ NumCvt: ; Convert NUM_A to digits in NUM_BUF
 ; 0123456789abcdef
  		ldx 	#NUM_A
  		jsr 	NumUnSign 	; extract sign
- 		;-- '0' as place holder for the '-' sign
- 		lda	#'0'
- 		sta	NUM_BUF
  		;-- null at the end
  		ldx 	#DIGITS
  		lda 	#0
- 		sta 	NUM_BUF+1,X
+ 		sta 	NUM_BUF+1,X	; (for e##, use +4)
+ 		;-- fill buffer with '0's
+ 		lda	#'0'
+NumCvtClr	sta	NUM_BUF,X
+ 		dex
+ 		bpl	NumCvtClr
  		;-- conversion results starts at [digit] and works backwards
+ 		ldx	#DIGITS
 NumCvtL 	;- num/100 remainder .A as 0-99
  		phx			; save X
-	 	  jsr 	NumDH 		; div NUM_A by 100, remainder in A
-	 	  tax			; convert A to BCD
-	 	  lda 	BinTbl,x	; via look up
+	 	jsr 	NumDH 		; div NUM_A by 100, remainder in A
+	 	tax			; convert A to BCD
+	 	lda 	BinTbl,x	; via look up
  		plx			; recall X
  		;-- BCD to digits
  		pha			; save BCD
- 		  and 	#$f		; mask low digit
- 		  ora 	#'0' 		; to ascii
- 		  sta 	NUM_BUF,X 	; into the buffer
+ 		and 	#$f		; mask low digit
+ 		ora 	#'0' 		; to ascii
+ 		 sta 	NUM_BUF,X 	; into the buffer
  		dex 			; back-up one pos to the left
  		pla			; recall BCD
  		lsr 	a		; get high digit into lower bits
  		lsr 	a
  		lsr 	a
  		lsr 	a
-
  		ora 	#'0' 		; to ascii
  		sta 	NUM_BUF,X 	; store the digit
  		dex 			; back-up one pos to the left
- 		bpl 	NumCvtL 	; loop until done
+ 		bne 	NumCvtL 	; loop until X=0
+ 		; BUF[0] is for sign
+
 NumCvtS 	;-- Place sign in NR[0] based on SGN
  		lda 	#'0' 		; leading zero
  		sta 	NUM_BUF
@@ -333,53 +339,6 @@ NumDN2 		rol 	NUM_AA 		; L 1
  		bpl 	NumDN1
  		ply
  		rts
-
-;;----------------------------------------------- NumFmt
-;NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
-; 		BR_ZSUP(NumSup) 	; TMP = NUM_A
-; 		;-- suppress leading zeroes
-; 		BR_ZSPC(NumSpc) 	; blank leading zeroes
-; 		rts
-;
-;;----------------------------------------------- NumSup
-;NumSup 		; removing leading zeroes
-; 		ldx 	#0
-; 		ldy 	#0
-; 		lda 	NUM_BUF
-; 		cmp 	#'-'
-; 		bne 	NumSupL
-; 		inx
-; 		iny
-;NumSupL 	lda 	NUM_BUF,y
-; 		cmp 	#'0'
-; 		bne 	NumSupC 	; go copy
-; 		iny
-; 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
-; 		bne 	NumSupL
-;NumSupC 	lda 	NUM_BUF,y
-; 		sta 	NUM_BUF,x
-; 		beq 	NumSupX
-; 		inx
-; 		iny
-; 		bra 	NumSupC
-;NumSupX 	rts
-;
-;;----------------------------------------------- NumSpc
-;NumSpc 		; blank leading zeroes
-; 		ldy 	#0
-; 		lda 	NUM_BUF
-; 		cmp 	#'-'
-; 		bne 	NumSpcL
-; 		iny
-;NumSpcL 	lda 	NUM_BUF,y
-; 		cmp 	#'0'
-; 		bne 	NumSpcX 	; go copy
-; 		lda 	#' '
-; 		sta 	NUM_BUF,y
-; 		iny
-; 		cpy 	#(CVTSZ-3) 	; make sure we leave the last digit at least
-; 		bne 	NumSpcL
-;NumSpcX 	rts
 
 ;----------------------------------------------- NumRd
 NumRd: ; Read from memory (ChrRd) & unpack

@@ -11,7 +11,7 @@ _DBUG 		= 1
 ; MATH_MOD_S16 1
 ; MATH_MOD_S24 2
 
-MathModule 	= MATH_MOD_S16
+MathModule 	= MATH_MOD_S24
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -31,7 +31,7 @@ MathModule 	= MATH_MOD_S16
  		jmp 	Test
 
 P_A 		.DB 	"1234",0 	;00 00 04D2
-P_B	 	.DB 	"4567",0 	;00 12 D687
+P_B	 	.DB 	"-4567",0 	;00 12 D687
 P_1		.db "0",0
 
 ListLn:  	rts
@@ -53,7 +53,9 @@ Test: ; test maths
  		jsr 	TestParse	; 1234567		12d687
 
  		jsr	NumCvt
- 		jsr	NumFmt
+ 		jsr	NumSup
+ 		;jsr	NumSpc
+ 		;jsr	NumFmt
 
  		LDAX(NUM_BUF)
  		jsr	PrStrAX
@@ -61,12 +63,6 @@ Test: ; test maths
  		HALT()
 
 TestParse:
- 		ZSET(ZParse,P_1)	; 1
- 		jsr 	NumParsePtr
-
-		rts
-
-
  		ZSET(ZParse,P_B)	; 4567
  		jsr 	NumParsePtr
  		jsr 	NumPushA
