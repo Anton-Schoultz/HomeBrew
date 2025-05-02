@@ -8,7 +8,7 @@
 _Goto 		= $
 
 ;----------------------------------------------- X_Goto
-X_Goto: ;  GOTO #LineNo~Goto LineNo
+X_Goto: ;  GOTO #NumExpr~Goto LineNo
  		jsr 	ChrRd 		; consume token
 		jsr	EvInt		; Evaluate expression as integer value AX Lo,Hi
  		stx 	LN_FND+1

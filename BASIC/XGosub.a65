@@ -8,30 +8,20 @@
 _Gosub 		= $
 
 ;----------------------------------------------- X_Gosub
-X_Gosub: ; GOSUB #LineNo~Call subroutine at LineNo
- 		jsr 	ChrRd 		; consume token
- 		BR_AEQ(T_NumLit,Gosub)
- 		;-- Expected constant
- 		ERROR(ERR_CONST)
-Gosub 		;- push return line address onto RTNSTK
+X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
+ 		;- push return line address onto RTNSTK
  		ldx 	RTNSP
  		lda 	LN_NXT
  		sta 	RTNSTK_L
  		lda 	LN_NXT+1
  		sta 	RTNSTK_H
- 		;-- bump stack pointer
+ 		;-- bump stack pointer & check stack overflow
  		inx
  		cmp 	#RTNSZ
  		bpl 	GosubOvr
  		stx 	RTNSP
- 		;-- find the line and transfer
- 		jsr 	NumRd 		; returns in A=Hi, X=Lo
- 		sta 	LN_FND+1
- 		stx 	LN_FND
- 		jsr 	LnGo
- 		;-- return will go to next line, so back up
- 		ZCPY(LN_NXT,LN_ADR)
- 		rts
+; Evaluate numeric expression as target line no and jump
+		jmp 	X_Goto
 
 GosubOvr 	ERROR(ERR_GOSUB)
 
