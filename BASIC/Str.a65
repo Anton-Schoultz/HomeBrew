@@ -80,10 +80,6 @@ EvString: ; Evaluate a string expression (no comparrisons)
 ; return T=OK, F otherwise
  		jsr 	StrClear 	; create a temp space
 
- 		;-- term counter, dec with each term
- 		lda 	#0
- 		sta 	EVFLG
-
 EvStrPart 	jsr 	EvStrItem
  		RTN_IFF()
 
@@ -181,7 +177,6 @@ StrLitL 	jsr 	ChrRd 		; read literal from code
  		;-- fall through to save index
 StrLitX 	sty 	S_LEN_A
  		ZCPY(STR_LEN,S_LEN_A)
- 		dec 	EVFLG 		; note that we got something
  		;-- move on to next byte in code
  		jsr 	ChrRd
  		RTN_T()

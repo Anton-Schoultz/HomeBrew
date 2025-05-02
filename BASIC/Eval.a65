@@ -36,8 +36,6 @@ _Ev 		= $
 
 ;----------------------------------------------- EvNumeric
 EvNumeric: ; Evaluate numeric expression, return T if valid (and CHRGOT is next char)
- 		lda 	#0
- 		sta 	EVFLG
  		jsr 	BoolTerm
  		BR_T(EvNumL)
  		rts
@@ -287,7 +285,6 @@ ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
  		;-- fetch number from memory
  		jsr 	NumRd
  		jsr 	ChrRd 		; move on
- 		inc 	EVFLG 		; got a value
  		RTN_T()
 
 ;----------------------------------------------- EvFVar
@@ -300,7 +297,6 @@ EvFVar: ; retrieve variable value -> NumA
  		and 	#$1F 		; mask for index
  		jsr 	NumGet 		; retrieve simple variable [A]
  		jsr 	ChrRd 		; get next token into CHRGOT
- 		inc 	EVFLG 		; got a value
  		RTN_T() 		; got a value
 
 ;----------------------------------------------- EvVarLong
