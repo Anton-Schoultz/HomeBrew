@@ -43,6 +43,10 @@
 ;  UPPER$($$)~Convert string to upper case
 ;  VAL($$)~Evaluate the string and return it's numeric value
 
+; RAMBEG
+; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
+;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
+
 ;=================================================================== TODO =============
 ; GET v		Stores KeyPress value into var v
 ;

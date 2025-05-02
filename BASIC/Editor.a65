@@ -1,4 +1,4 @@
-;=================================================================== EDITOR =========== 
+;=================================================================== EDITOR ===========
 ;*  DB_EdtLine           Debug editor line - NUM  ADR  NXT  LEN  FND
 ;*  DB_EdtMem            Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ;*  DB_EdtMove           Debug memory moves - ZPtr ZCnt ZSrc ZTgt
@@ -22,7 +22,7 @@
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
 ; $0400	VARNUM	32 x 4 for A-Z vars
- 		;-- 
+ 		;--
 
 ;  Int(RAMBEG)	; Start of user ram area (set with cold start)	$0800
 ;  Int(RAMEND)	; End of user ram area (set at cold start)	$8000
@@ -46,7 +46,7 @@
 
 _Edt 		= $
 
-;----------------------------------------------- EdtNew 
+;----------------------------------------------- EdtNew
 EdtNew: ; NEW = clear program, variables etc.
  		;-- Start Basic at start of RAM
  		ZCPY(BASBEG,RAMBEG)
@@ -86,7 +86,7 @@ EdtWipe 	sta 	VARTAB,y 	; clear VARTAB, Gosub,For/Next
  		bne 	EdtWipe
  		RTN_T()
 
-;----------------------------------------------- EdtUpdate 
+;----------------------------------------------- EdtUpdate
 EdtUpd: ; Update program with line in TOKBUF
 ; LN_FND has line no from tokbuf
 ; TOK_LEN is length of the line in tokbuf
@@ -129,7 +129,7 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		jmp 	EdtCpy
 EdtInsX 	rts 			; Done
 
-;----------------------------------------------- EdtCpy 
+;----------------------------------------------- EdtCpy
 EdtCpy: ; Copy from TOKBUF->(ZTgt)
  		ZSET(ZSrc,TOKBUF) 	; from the token buffer
  		ZCPY(ZCnt,TOK_LEN)
@@ -142,14 +142,14 @@ EdtCpyL 	lda 	(ZSrc),y
  		ZCPY(VAREND,BASEND) 	; track end of code in VAREND
  		rts
 
-;=================================================================== MEM-ALLOC ======== 
+;=================================================================== MEM-ALLOC ========
 
-;----------------------------------------------- EdtAlloc 
+;----------------------------------------------- EdtAlloc
 EdtAlloc: ; TODO Allocate space - reuse old space otherwise create new space
 ; payload size in ZCnt, Returns pointer in ZPtr
 
-;----------------------------------------------- EdtFresh 
-EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr,AX
+;----------------------------------------------- EdtFresh
+EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr,AX lo/hi
 ; payload size in ZCnt, Returns pointer in ZPtr & AX (points to the length bytes)
 ; Move ARYBEG down
  		ZCPY(ZPtr,ZCnt) 	; data size
@@ -161,7 +161,7 @@ EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
  		lda 	#0
  		adc 	ZPtr+1
  		sta 	ZPtr+1
- 		;-- 
+ 		;--
  		ZSUB(ARYBEG,ZPtr) 	; reduce ARYBEG
  		;-- TODO check out-of-memory, throw if error
  		ZCPY(ZPtr,ARYBEG) 	; place in ZPtr
@@ -182,9 +182,9 @@ EdtFreshClr 	iny
  		ldx 	ZPtr+1
  		rts
 
-;=================================================================== INS/DEL ========== 
+;=================================================================== INS/DEL ==========
 
-;----------------------------------------------- EdtDwn 
+;----------------------------------------------- EdtDwn
 ; Move bytes down (Delete)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
@@ -210,7 +210,7 @@ EdtDwn3 	lda 	(ZSrc),Y 	; move the remaining bytes
  		bne 	EdtDwn3
 EdtDwn4 	rts
 
-;----------------------------------------------- EdtOpn 
+;----------------------------------------------- EdtOpn
 ; Move memory up (open up a space)
 ; ZSrc = source start address		Changed
 ; ZTgt = destination start address	Changed
@@ -246,8 +246,8 @@ EdtOpn3 	dey
 
 
 #if _DB_EDT
-;=================================================================== DBUG ============= 
-;----------------------------------------------- DB_EdtLine 
+;=================================================================== DBUG =============
+;----------------------------------------------- DB_EdtLine
 DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
  		PUSHALL()
  		PRINTLN("NUM  ADR  NXT  LEN  FND")
@@ -261,7 +261,7 @@ DB_EdtLine: ; Debug editor line - NUM  ADR  NXT  LEN  FND
  		PULLALL()
  		rts
 
-;----------------------------------------------- DB_EdtMem 
+;----------------------------------------------- DB_EdtMem
 DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ; RAMBEG
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
@@ -277,7 +277,7 @@ DB_EdtMem: ; Debug BASIC vars - BBeg BEnd VEnd SEnd ABeg
 ; 		PAUSE()
  		PULLALL()
  		rts
-;----------------------------------------------- DB_EdtMove 
+;----------------------------------------------- DB_EdtMove
 DB_EdtMove: ; Debug memory moves - ZPtr ZCnt ZSrc ZTgt
  		PUSHALL()
  		PRINTLN("ZPtr ZCnt ZSrc ZTgt")

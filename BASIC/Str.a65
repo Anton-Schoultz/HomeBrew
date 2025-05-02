@@ -145,7 +145,7 @@ StrGet: ; get string at index A  A$..Z$ 1..26
  		;-- no string data yet
  		ERROR(ERR_UNDEFSTR)
 
-StrLoad 	jsr 	StrPoint 	; ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
+StrLoad 	jsr 	StrPoint 	; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
 
  		ZCPY(ZSrc,ZTgt) 	; from hi-mem
  		ZCPY(ZTgt,S_PTR_A)
@@ -225,11 +225,14 @@ StrPoint: ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		lda 	(ZPtr),y
  		sta 	ZCnt+1
  		;-- Tgt = Ptr + 2
- 		ZCPY(ZTgt,ZPtr)
- 		ZINC(ZTgt)
- 		ZINC(ZTgt)
+		clc
+		lda	#2
+		adc	ZPtr
+		sta	ZTgt
+		lda 	#0
+		adc	ZPtr+1
+		sta	ZTgt+1
  		rts
-
 
 ;----------------------------------------------- EvIsStr
 ; used by print, which then calls EvString
