@@ -294,7 +294,9 @@ ROMEND 		= $
 #include "All.a65"
 .echo "\tWords\t"
 .echo $-TblKeyword
-.echo "/256\n"
+.echo "/256 ("
+.echo 256-($-TblKeyword)
+.echo " free)\n"
 
 ;----------------------------------------------- TblRun
 ; Include for the jump/run table
@@ -306,7 +308,9 @@ T_Max 		= LOW($)+$80
 .echo (T_Max-$80)/2
 .echo "/64 \t("
 .echo $-TblRun
-.echo "/256)\n"
+.echo "/256 bytes,"
+.echo 256-($-TblRun)
+.echo " free)\n"
 
 #if T_Max > $F0
 .echo " Too many tokens"
