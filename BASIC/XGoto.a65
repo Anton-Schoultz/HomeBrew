@@ -10,18 +10,13 @@ _Goto 		= $
 ;----------------------------------------------- X_Goto
 X_Goto: ;  GOTO #LineNo~Goto LineNo
  		jsr 	ChrRd 		; consume token
- 		BR_AEQ(T_NumLit,Goto)
- 		;-- Expected constant
- 		ERROR(ERR_CONST)
-Goto 		;- find the line and transfer
- 		jsr 	NumRd 		; returns in A=Hi, X=Lo
- 		sta 	LN_FND+1
- 		stx 	LN_FND
+		jsr	EvInt		; Evaluate expression as integer value AX Lo,Hi
+ 		stx 	LN_FND+1
+ 		sta 	LN_FND
  		jsr 	LnGo
  		;-- return will go to next line, so back up
  		ZCPY(LN_NXT,LN_ADR)
  		rts
-
 
 .echo "  _GOTO\t\t"
 .echo $-_Goto
