@@ -14,9 +14,12 @@ X_Cls: ; CLS~Clear Screen
  		jmp 	ConOut
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _CLS\t\t"
 .echo $-_Cls
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

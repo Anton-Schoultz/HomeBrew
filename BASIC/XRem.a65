@@ -18,9 +18,12 @@ X_Rem: ; REM {comment}~Program remarks/comments
  		sta 	ZRd+1
  		rts
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _REM\t\t"
 .echo $-_Rem
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

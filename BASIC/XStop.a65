@@ -13,9 +13,12 @@ _Stop 		= $
 X_Stop: ; STOP~Stop executing the program
  		jmp 	Main 		; resets stack etc
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _STOP\t\t"
 .echo $-_Stop
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

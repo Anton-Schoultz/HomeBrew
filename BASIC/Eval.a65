@@ -173,19 +173,28 @@ DoAddOp: ; Do Add/Sub - rts back to inside while
  		CASE('+',EvAdd)
  		CASE('-',EvSub)
  		RTN_F()
-EvAdd: ; add
- 		jsr 	NumPushA
- 		jsr 	ChrRd 		; comsume the '+'
+
+EvAddSub:;  common for Add/Sub
+  		jsr 	NumPushA
+ 		jsr 	ChrRd 		; comsume the '+'/'-'
  		jsr 	Term
- 		jsr 	NumPopB
+ 		jmp 	NumPopB
+
+EvAdd: ; add
+		jsr	EvAddSub
+; 		jsr 	NumPushA
+; 		jsr 	ChrRd 		; comsume the '+'/'-'
+; 		jsr 	Term
+; 		jsr 	NumPopB
  		jsr 	NumAdd
  		RTN_T()
 
 EvSub: ; subtract
- 		jsr 	NumPushA
- 		jsr 	ChrRd 		; consume the '-'
- 		jsr 	Term
- 		jsr 	NumPopB
+		jsr	EvAddSub
+; 		jsr 	NumPushA
+; 		jsr 	ChrRd 		; comsume the '+'/'-'
+; 		jsr 	Term
+; 		jsr 	NumPopB
  		jsr 	NumSub
  		RTN_T()
 
@@ -213,27 +222,36 @@ DoMulOp 	lda 	CHRGOT
  		CASE('%',EvMod)
  		RTN_F()
 
-EvMul: ; Do Multiply
+EvMulDiv:; common for Mul/Div/Mod
  		jsr 	NumPushA
  		jsr 	ChrRd
  		jsr 	Factor
- 		jsr 	NumPopB
+ 		jmp 	NumPopB
+
+EvMul: ; Do Multiply
+		jsr	EvMulDiv
+; 		jsr 	NumPushA
+; 		jsr 	ChrRd
+; 		jsr 	Factor
+; 		jsr 	NumPopB
  		jsr 	NumMul
  		RTN_T()
 
 EvDiv: ; Do Divide
- 		jsr 	NumPushA
- 		jsr 	ChrRd
- 		jsr 	Factor
- 		jsr 	NumPopB
+		jsr	EvMulDiv
+; 		jsr 	NumPushA
+; 		jsr 	ChrRd
+; 		jsr 	Factor
+; 		jsr 	NumPopB
  		jsr 	NumDiv
  		RTN_T()
 
 EvMod: ; Do Modulus
- 		jsr 	NumPushA
- 		jsr 	ChrRd
- 		jsr 	Factor
- 		jsr 	NumPopB
+		jsr	EvMulDiv
+; 		jsr 	NumPushA
+; 		jsr 	ChrRd
+; 		jsr 	Factor
+; 		jsr 	NumPopB
  		jsr 	NumMod
  		RTN_T()
 
@@ -345,9 +363,12 @@ DB_EvStr: ; Debug Eval - ZRd  SnEx NumA Gt Fl  SnEx=S_LEN_A, NumA=S_PTR_A
 #endif
 
 
+#if _LEVEL >= _DETAIL
 .echo "  _Eval\t\t"
 .echo $-_Ev
 .echo "\n"
+#endif
+
 .list
 
 

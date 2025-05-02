@@ -25,9 +25,12 @@ X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
 
 GosubOvr 	ERROR(ERR_GOSUB)
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _GOSUB\t"
 .echo $-_Gosub
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

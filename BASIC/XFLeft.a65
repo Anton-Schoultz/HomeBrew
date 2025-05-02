@@ -25,9 +25,12 @@ X_Left: ; LEFT$($$,##)~Keep left most chars of string [Head]
  		sta 	(S_PTR_A),Y
 X_LeftX 	jmp 	StrLen 		; find new length
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _LEFT$(\t"
 .echo $-_Left
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

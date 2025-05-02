@@ -12,9 +12,12 @@ X_Upper: ; UPPER$($$)~Convert string to upper case
 ; num should already have sign extracted, so just make it positive
  		jmp 	StrUpper
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _UPPER$(\t"
 .echo $-_Upper
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

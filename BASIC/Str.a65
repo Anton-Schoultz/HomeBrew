@@ -247,7 +247,8 @@ StrTrue 	RTN_T()
 ;----------------------------------------------- StrInit
 StrInit: ;VAREND->STR_END, 0->STR_LEN
  		ZCPY(STR_END,VAREND) 	; point to open area
- 		ZSET(STR_LEN,0) 	; set length as zero
+ 		;ZSET(STR_LEN,0) 	; set length as zero
+ 		ZZERO(STR_LEN)
  		rts
 
 ;----------------------------------------------- StrPush
@@ -259,8 +260,11 @@ StrPush: ;Push temp string sets up S_PTR_A,S_LEN_A
 ;----------------------------------------------- StrClear
 StrClear: ; Clear string 'accumulator' ready for  a new string
  		ZCPY(S_PTR_A,STR_END) 	; set pointer
- 		ZSET(STR_LEN,0) 	; set length as zero
- 		ZSET(S_LEN_A,0) 	; zero length
+ 		;ZSET(STR_LEN,0) 	; set length as zero
+ 		ZZERO(STR_LEN)
+
+ 		;ZSET(S_LEN_A,0) 	; zero length
+ 		ZZERO(S_LEN_A)
  		rts
 
 ;----------------------------------------------- StrOvr
@@ -464,8 +468,12 @@ StrTest
 #endif 					;_TEST
 
 #endif 					;_DB_STR
+
+#if _LEVEL >= _DETAIL
 .echo "  _Str\t\t"
 .echo $-_Str
 .echo "\n"
+#endif
+
 .list
 

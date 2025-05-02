@@ -20,9 +20,12 @@ X_Len: ; Len($$)~Return the length of the string expression
  		jsr 	NumFromInt
  		RTN_T()
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _LEN(\t\t"
 .echo $-_Len
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

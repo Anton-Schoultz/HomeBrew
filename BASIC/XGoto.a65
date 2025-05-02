@@ -18,9 +18,12 @@ X_Goto: ;  GOTO #NumExpr~Goto LineNo
  		ZCPY(LN_NXT,LN_ADR)
  		rts
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _GOTO\t\t"
 .echo $-_Goto
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

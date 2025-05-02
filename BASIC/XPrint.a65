@@ -85,9 +85,12 @@ DB_Print: ; Debug Print values
 
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _PRINT\t"
 .echo $-_Print
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

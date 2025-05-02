@@ -27,9 +27,12 @@ X_Right: ; RIGHT$($$,##N)~Keep right most N chars of string [Tail]
  		jsr 	StrLTrim2 	; copy donw
 X_RightX 	jmp 	StrLen 		; find new length
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _RIGHT$(\t"
 .echo $-_Right
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

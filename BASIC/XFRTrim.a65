@@ -12,9 +12,12 @@ X_RTrim: ; RTRIM$($$)~Trim trailing spaces from string
 ; string arg already set up
  		jmp 	StrRTrim
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _RTRIM$(\t"
 .echo $-_RTrim
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

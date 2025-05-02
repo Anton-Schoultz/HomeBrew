@@ -698,9 +698,6 @@ DB_Num: ; Debug Math Registers NUMA, NUMB
  		rts
 #endif
 
-.echo "  _Math\t\t"
-.echo $-_Math
-.echo "\n"
 .list
 
 #endif

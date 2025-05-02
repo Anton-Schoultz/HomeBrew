@@ -17,9 +17,12 @@ X_Fre: ; FRE(##)~Return number of bytes available in free memory
  		ZSUB(NUM_AA,STR_END)
  		rts
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _FRE(\t\t"
 .echo $-_Fre
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

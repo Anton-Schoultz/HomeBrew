@@ -102,9 +102,12 @@ X_LetStrAry 	; Assign to subscripted String
 
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _LET\t\t"
 .echo $-_Let
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

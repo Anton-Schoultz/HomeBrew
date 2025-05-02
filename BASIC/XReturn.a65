@@ -23,9 +23,12 @@ X_Return: ; RETURN~Return control to after the GOSUB
 RtnOver 	ERROR(ERR_GOSUB)
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _RETURN\t"
 .echo $-_Return
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

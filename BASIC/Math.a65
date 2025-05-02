@@ -299,6 +299,14 @@ NumSpcX 	rts
 .echo "====================================\n"
 .echo "\n"
 
+
+#if _LEVEL >= _DETAIL
+.echo "  _Math\t\t"
+.echo $-_Math
+.echo "\n"
+#endif
+
+
 .nolist
 
 ;  -------- Module must define these ----------

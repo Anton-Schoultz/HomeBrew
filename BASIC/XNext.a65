@@ -74,9 +74,12 @@ X_NextLoop 	; loop by going back to the loop line
 
 ;  NUM_FLG ; Comparisson flags 4:< 2:= 1:>
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _NEXT\t\t"
 .echo $-_Next
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

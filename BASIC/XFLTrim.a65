@@ -12,9 +12,12 @@ X_LTrim: ; LTRIM($$)~Trim leading spaces from string
 ; string arg already set up
  		jmp 	StrLTrim
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _LTRIM$(\t"
 .echo $-_LTrim
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

@@ -120,9 +120,12 @@ DB_For: ; Debug For values - STP  LIM  ADR  IX SP
 #endif
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _FOR\t\t"
 .echo $-_For
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

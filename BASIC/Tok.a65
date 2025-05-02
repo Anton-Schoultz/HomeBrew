@@ -24,9 +24,9 @@
 
 _Tok 		= $
 
-#define NUMFLGLT()	SMB2 NUM_FLG
-#define NUMFLGEQ()	SMB1 NUM_FLG
-#define NUMFLGGT()	SMB0 NUM_FLG
+;#define NUMFLGLT()	SMB2 NUM_FLG
+;#define NUMFLGEQ()	SMB1 NUM_FLG
+;#define NUMFLGGT()	SMB0 NUM_FLG
 
 
 BAS_EOL 	= $00 			; end of line
@@ -184,12 +184,12 @@ SkipBlank0	BR_AEQ(SPC,SkipBlankL) 	; Space -> Loop
  		;-- ok
 RtnTrue 	RTN_T()
 
-;----------------------------------------------- IsNumValue
-IsNumValue: ; return T if token is a numeric value
- 		BR_AEQ(T_NumLit,RtnTrue)
- 		BR_AEQ(T_NumVar,RtnTrue)
- 		BR_AEQ(T_NumAry,RtnTrue)
- 		RTN_F()
+;;----------------------------------------------- IsNumValue
+;IsNumValue: ; return T if token is a numeric value
+; 		BR_AEQ(T_NumLit,RtnTrue)
+; 		BR_AEQ(T_NumVar,RtnTrue)
+; 		BR_AEQ(T_NumAry,RtnTrue)
+; 		RTN_F()
 
 ;----------------------------------------------- IsNumFn
 IsNumFn: ; Return T/F if CHRGOT is a numeric function and token in A
@@ -332,7 +332,10 @@ P_LineNo: ; Parse line number and place int TOKBUF
  		;-- place holder for the length
  		jmp 	ChrWr 		; place holder and RTS
 
+#if _LEVEL >= _DETAIL
 .echo "  _Tok\t\t"
 .echo $-_Tok
 .echo "\n"
+#endif
+
 .list
