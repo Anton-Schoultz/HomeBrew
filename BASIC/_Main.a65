@@ -97,8 +97,8 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 
 #include "Constants.a65"
 
-;MathModule = MATH_MOD_S24	;6609 (137 more)
-MathModule = MATH_MOD_S16	;6472
+MathModule = MATH_MOD_S24	;6709
+;MathModule = MATH_MOD_S16	;6571
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -121,7 +121,7 @@ MathModule = MATH_MOD_S16	;6472
 ; 		START OF ROM
  		jmp 	Reset
 
-Greet 		.DB 	_FF,"Minimal BASIC",CR,LF,0
+Greet 		.DB 	_FF,"Minimal BASIC S24",CR,LF,0
 
 
 #include "ConSim.a65" 			; Console Implementation

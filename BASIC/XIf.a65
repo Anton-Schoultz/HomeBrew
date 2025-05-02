@@ -15,9 +15,7 @@ _If 		= $
 X_If: ; IF ?? THEN {Statment}~Execute statement if condition ?? is true
  		jsr 	ChrRd 		; consume token
 		;-- check for string comparison
-		jsr	IsStrValue
-		BR_T(X_IfStr)
-		jsr	IsStrFn
+		jsr	EvIsStr
 		BR_T(X_IfStr)
  		;-- Not sting so assume numeric expression
  		jsr 	EvNumeric 	; AX lo/hi
