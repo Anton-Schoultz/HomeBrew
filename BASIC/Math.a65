@@ -224,8 +224,9 @@ NumSwapL 	lda 	NUM_A,X
 
 ;----------------------------------------------- NumFmt
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
- 		BR_ZSUP(NumSup) 	; TMP = NUM_A
- 		;-- suppress leading zeroes
+; BASIC usually suppresses leading zeroes, no other options available
+; so we could remove these lines, falling through to NumSup and remove NumSpc
+ 		BR_ZSUP(NumSup) 	; suppress leading zeroes
  		BR_ZSPC(NumSpc) 	; blank leading zeroes
  		rts
 

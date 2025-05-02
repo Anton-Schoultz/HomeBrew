@@ -190,7 +190,7 @@ PutChr: ; Print character to Mem/IO
  		;-- don't send null
  		cmp 	#0
  		beq 	ChrWrX
- 		;-- outp[ut or memory
+ 		;-- output or memory
  		BR_WR(ChrWr) 		;wr=1?
  		;-- 0=fall through to send via ChrOut
 ;----------------------------------------------- ChrOut
