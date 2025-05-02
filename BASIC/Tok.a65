@@ -192,19 +192,19 @@ IsNumValue: ; return T if token is a numeric value
  		RTN_F()
 
 ;----------------------------------------------- IsStrValue
-IsStrValue: ; return T if token is a string value
+IsStrValue: ; return T if token is a string value (Z:1 EQ if true)
  		BR_AEQ(T_StrLit,RtnTrue)
  		BR_AEQ(T_StrVar,RtnTrue)
  		BR_AEQ(T_StrAry,RtnTrue)
  		RTN_F()
 
-;----------------------------------------------- IsRelOpChr
-IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
- 		lda 	CHRGOT
- 		BR_AEQ('<',RtnTrue) 	; 3c
- 		BR_AEQ('=',RtnTrue) 	; 3d
- 		BR_AEQ('>',RtnTrue) 	; 3e
- 		RTN_F()
+;;----------------------------------------------- IsRelOpChr
+;IsRelOpChr: ; returns T/F if CHRGOT is a relational opperator <>=
+;  		lda 	CHRGOT
+;  		BR_AEQ('<',RtnTrue) 	; 3c
+;  		BR_AEQ('=',RtnTrue) 	; 3d
+;  		BR_AEQ('>',RtnTrue) 	; 3e
+;  		RTN_F()
 
 ;----------------------------------------------- IsNumFn
 IsNumFn: ; Return T/F if CHRGOT is a numeric function and token in A

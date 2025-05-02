@@ -5,14 +5,15 @@
 ;*  EvIsStr              Return EQ if A is a string value/function
 ;*  EvStrFn              evaluate string function FN$($ [,~]* )
 ;*  EvStrItem            get a single item T_StrLit |T_StrVar| StrFn
-;*  EvString             Evaluate a string expression
+;*  EvString             Evaluate a string expression (no comparrisons)
+;*  IsStrFn              Return T/F if .A is a string function (A preserved)
 ;*  StrAppend            Append top two strings (PopB, append)
 ;*  StrClear             Clear string 'accumulator' ready for  a new string
+;*  StrComp              Compare the strings
 ;*  StrFind              find string .A in table, place it's address in ZPtr
 ;*  StrFunct             prepare for string manipulation
 ;*  StrGet               get string at index A  A$..Z$ 1..26
 ;*  StrInit              VAREND->STR_END, 0->STR_LEN
-;*  StrIsFn              Return T/F if .A is a string function (A preserved)
 ;*  StrLTrim             trim leading blanks
 ;*  StrLen               check length of Str_A, set in S_LEN_A
 ;*  StrLit               Recall a string literal
@@ -75,7 +76,7 @@ _Str 		= $
 ; ZPtr must point to the memory block
 
 ;----------------------------------------------- EvString
-EvString: ; Evaluate a string expression
+EvString: ; Evaluate a string expression (no comparrisons)
 ; return T=OK, F otherwise
  		jsr 	StrClear 	; create a temp space
 
@@ -108,7 +109,7 @@ EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
  		CASE(T_StrLit,StrLit)
  		CASE(T_StrVar,StrVar)
  		;-- BR_AEQ(T_StrAry,RtnTrue)
- 		jsr 	StrIsFn
+ 		jsr 	IsStrFn
  		BR_T(EvStrFn) 		; yes, perform function
  		RTN_F()
 EvStrFn: ; evaluate string function FN$($ [,~]* )
@@ -142,7 +143,8 @@ StrGet: ; get string at index A  A$..Z$ 1..26
  		jsr 	StrFind
  		bne 	StrLoad 	; string exists
  		;-- no string data yet
- 		RTN_F()
+ 		ERROR(ERR_UNDEFSTR)
+
 StrLoad 	jsr 	StrPoint 	; ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
 
  		ZCPY(ZSrc,ZTgt) 	; from hi-mem
@@ -235,8 +237,8 @@ EvIsStr: ; Return EQ if A is a string value/function
  		BR_AEQ(T_StrLit,StrTrue)
  		BR_AEQ(T_StrVar,StrTrue)
  		BR_AEQ(T_StrAry,StrTrue)
-;----------------------------------------------- StrIsFn
-StrIsFn: ; Return T/F if .A is a string function (A preserved)
+;----------------------------------------------- IsStrFn
+IsStrFn: ; Return T/F if .A is a string function (A preserved)
 ; T_FSTR < A < T_LineNo
  		lda 	CHRGOT
  		BR_AGE(T_LineNo,StrNo) 	; Special token $Fx
@@ -386,6 +388,37 @@ StrPop: ; PopB and swap
  		jsr 	NumPopB
  		jmp 	NumSwap
 
+;----------------------------------------------- StrComp
+StrComp: ; Compare the strings, sets NUM_FLG
+ 		LDY 	#0
+ 		STY 	NUM_FLG 	; clear result flag
+StrCompL 	LDA 	(S_PTR_A),y
+ 		CMP 	(S_PTR_B),y
+ 		BCC 	StrCompLT
+ 		BNE 	StrCompGT 	; go set result
+ 		;-- equal, is it end of strings?
+ 		CMP 	#0 		; is end of strings?
+ 		BEQ 	StrCompEQ 	; yes, resultis EQUAL
+ 		LDA 	#0
+ 		STA 	(S_PTR_B) 	; make sure StrA is terminated (kill append)
+ 		;-- test next character
+ 		iny
+ 		BNE 	StrCompL
+ 		ERROR(ERR_RANGE) 	; 'Out Of Range' - string too long
+
+StrCompGT 	SMB2 	NUM_FLG 	; set bit2:GT
+ 		bra 	StrCompX
+
+StrCompLT 	SMB0 	NUM_FLG 	; set bit0:LT
+ 		bra 	StrCompX
+
+StrCompEQ 	SMB1 	NUM_FLG 	; set bit1:EQ
+
+StrCompX	rts
+
+; BCS LE the carry flag is set when the value in memory is less than or equal to the accumulator,
+; BCC GT reset when it is greater than the accumulator
+
 ;======================================================================================
 
 .nolist
@@ -408,6 +441,8 @@ DB_Str: ; Debug String values - PtrA LenA PtrB LenB, VEND SEND SLEN ZRd
  		PAUSE()
  		PULLALL()
  		rts
+
+.export S_PTR_A,S_PTR_B,NUM_FLG
 
 #ifdef _TEST
 ;----------------------------------------------- StrTest

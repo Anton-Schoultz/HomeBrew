@@ -18,6 +18,7 @@
 ;*  EvVarLong            TODO Get value of long name variable
 ;*  Expression           [ Term ]   ( [+/-] Term)*
 ;*  Factor               Factor = (BoolTerm) | NumLit | NumVar | Function(~)
+;*  IsRelOp              return eq if op is one of  <,=,>,<=,<>,>=
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
 ;*  NotFactor            Boolean NOT
 ;*  Relation             Handle relation test < = > <= <> >=
@@ -48,7 +49,7 @@ EvNumL 		jsr 	IsOrOp
  		bra 	EvNumL
  		;--
 EvNumX 		;-- TODO Does this really need to be packed as NumSet will pack?
-		php
+ 		php
  		jsr 	NumPack
  		plp
  		rts
@@ -134,7 +135,8 @@ Relation: ; Handle relation test < = > <= <> >=
  		jsr 	NumSub 		; subtract
  		jsr 	NumFlag 	; set flags bassed on result
  		;-- test condition
- 		pla 			; recal the rel-op
+		pla 			; recal the rel-op
+RelTest:; Test result in NUM_FLG againt RelOp in A condition on stack, return True/False
  		and 	NUM_FLG 	; and with the flag
  		and 	#$7 		; opcode low bits match NUM_FLG
  		beq 	RelFalse 	; zero is false
@@ -145,8 +147,9 @@ RelFalse 	; set NUMA to zero
  		jsr 	NumFalse 	; FALSE = 0
 RelationX 	RTN_T()
 
-; return eq if op is one of  <,=,>,<=,<>,>=
-IsRelOp 	and 	#$F8
+;----------------------------------------------- IsRelOp
+IsRelOp: ; return eq if op is one of  <,=,>,<=,<>,>=
+ 		and 	#$F8
  		cmp 	#$F0
  		rts
 
@@ -252,11 +255,11 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
  		CASE(T_NumVar,EvFVar) 	; variable
  		CASE(T_NumAry,EvFAry) 	; subscripted var
  		CASE(T_NumLit,ENumLit) 	; Literal value
-		;-- convert string to value is special case
- 		CASE(T_Asc,X_Asc)	; ASC($)-> code
- 		CASE(T_Val,X_Val)	; VAL($)-> numeric value
- 		CASE(T_Len,X_Len)	; LEN($)-> Length of StrExpr
-		;-- Fn(##) ?
+ 		;-- convert string to value is special case
+ 		CASE(T_Asc,X_Asc) 	; ASC($)-> code
+ 		CASE(T_Val,X_Val) 	; VAL($)-> numeric value
+ 		CASE(T_Len,X_Len) 	; LEN($)-> Length of StrExpr
+ 		;-- Fn(##) ?
  		lda 	CHRGOT
  		jsr 	IsNumFn
  		BR_T(Function)

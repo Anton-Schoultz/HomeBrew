@@ -124,10 +124,10 @@ ListTok 	sta 	TOKNO
  		cmp 	#$F0
  		bne 	ListTok1
  		;-- expand realtional op
- 		BBR2 	TOKNO,ListTokR1 ; '<' ?
+ 		BBR0 	TOKNO,ListTokR1 ; '<' ?
  		lda 	#'<'
  		jsr 	PutChr
-ListTokR1 	BBR0 	TOKNO,ListTokR2 ; '>' ?
+ListTokR1 	BBR2 	TOKNO,ListTokR2 ; '>' ?
  		lda 	#'>'
  		jsr 	PutChr
 ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?

@@ -7,7 +7,7 @@
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============ 
+;=================================================================== ERROR ============
 ; NOTE: Message nos go up in 2s
 ;
 ;*  ErrList              List offending line (if available)
@@ -32,7 +32,8 @@ _Err 		= $
 #define ERR_MEMORY 	18
 #define ERR_TOKEN 	20
 #define ERR_SYNTAX 	22
-
+#define ERR_RANGE 	24
+#define ERR_UNDEFSTR 	26
 
 #define DOT '.'+$80
 
@@ -55,11 +56,13 @@ ErrTbl
 .DB "Out of memory",DOT 		;18=ERR_MEMORY
 .DB "Invalid token !",DOT 		;20=ERR_TOKEN
 .DB "Syntax",DOT 			;22=ERR_SYNTAX
+.DB "Out of Range",DOT			;24=ERR_RANGE
+.DB "Undefined string",DOT		;26=ERR_UNDEFSTR
 .DB 0
 
 
 
-;----------------------------------------------- X_Err 
+;----------------------------------------------- X_Err
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
@@ -103,7 +106,7 @@ ErrList1 	clc
 ; * 	Address where error was called from
 
 
-;----------------------------------------------- RegLoad 
+;----------------------------------------------- RegLoad
 RegLoad: ; Load registers from ZReg~
  		LDA 	ZRegP
  		pha
@@ -113,7 +116,7 @@ RegLoad: ; Load registers from ZReg~
  		plp
  		rts
 
-;----------------------------------------------- RegSave 
+;----------------------------------------------- RegSave
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 		; save .A
  		sty 	ZRegY 		; save .Y
@@ -125,7 +128,7 @@ RegSave: ; Save registers into ZReg~
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg 
+;----------------------------------------------- Msg
 Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		jsr 	RegSave 	; save regs
  		ldy 	#0 		; in case X=0
@@ -136,7 +139,7 @@ Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
 ; 		cpx 	#0
  		beq 	MsgL0 		; token 80 is special ;P
  		ldy 	#$FF
- 		;-- 
+ 		;--
  		;-- MsgNxt 		cpx 	#0 		; no more
 ; 		beq 	MsgX
  		;-- move to next word
