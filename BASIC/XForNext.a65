@@ -53,11 +53,15 @@ X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		;-- TO
  		lda 	#T_TO 		; TO
  		jsr 	Match 		; check for and skip over 'TO'
+
  		;-- limit
- 		jsr 	EvNumeric
- 		jsr 	NumToInt 	; num as AX l/h
- 		sta 	FOR_LIM
- 		stx 	FOR_LIM+1
+ 		jsr 	EvNumeric	; evaluate, result in NUM_A...
+ 		ZSET(ZPtr,FOR_LIM)	; point to the limit
+ 		jsr	NumSetPtr	; save value
+; 		jsr 	NumToInt 	; num as AX l/h
+; 		sta 	FOR_LIM
+; 		stx 	FOR_LIM+1
+
  		;-- STEP?
  		ZSET(FOR_STP,1) 	; default step is 1
  		lda 	CHRGOT
@@ -65,10 +69,17 @@ X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		;-- evaluate step size & save it
  		lda 	#T_STEP 	; STEP
  		jsr 	Match 		; check for and skip over 'TO'
+
+ 		;-- step
  		jsr 	EvNumeric
- 		jsr 	NumToInt 	; num as AX l/h
- 		sta 	FOR_STP
- 		stx 	FOR_STP+1
+ 		ZSET(ZPtr,FOR_STP)	; point to the step
+ 		jsr	NumSetPtr	; save value
+; 		jsr 	NumToInt 	; num as AX l/h
+; 		sta 	FOR_STP
+; 		stx 	FOR_STP+1
+
+ 		jsr DB_For
+
 X_ForX 		rts
 
 ;----------------------------------------------- ForPush
@@ -138,8 +149,12 @@ X_Next1 	jsr 	ChrRd 		; get first char of variable name
  		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
 
 X_Next2 	; Retrieve step from VARNUM and unpack to internal form
- 		lda 	#FOR_STP_X
- 		jsr 	NumGet
+
+; 		lda 	#FOR_STP_X
+; 		jsr 	NumGet
+ 		ZSET(ZPtr,FOR_STP)	; point to the step size
+ 		jsr	NumGetPtr	; fetch from (ZPtr)
+
  		lda 	NUM_AS 		; get the sign of the step
  		sta 	NUM_SGN 	; save sign of step (up/down)
  		jsr 	NumPushA
@@ -153,8 +168,12 @@ X_Next2 	; Retrieve step from VARNUM and unpack to internal form
  		lda 	VARID
  		jsr 	NumSet
  		;-- test the limit
- 		lda 	#FOR_LIM_X
- 		jsr 	NumGet 		; RCL limit
+
+; 		lda 	#FOR_LIM_X
+; 		jsr 	NumGet 		; RCL limit
+ 		ZSET(ZPtr,FOR_LIM)	; point to the limit
+ 		jsr	NumGetPtr	; fetch from (ZPtr)
+
  		jsr 	NumPushA 	; ^
  		lda 	VARID
  		jsr 	NumGet 		; RCL var
@@ -176,7 +195,7 @@ X_NextLoop 	; loop by going back to the loop line
  		sta 	LN_NXT+1
  		rts
 
-;  NUM_FLG ; Comparisson flags 4:< 2:= 1:>
+;  NUM_FLG ; Comparison flags 4:< 2:= 1:>
 
 
 
@@ -186,9 +205,19 @@ X_NextLoop 	; loop by going back to the loop line
 DB_For: ; Debug For values - STP  LIM  ADR  IX SP
  		PUSHALL()
  		jsr 	PrNL
- 		PRINTLN("STP  LIM  ADR  IX SP")
- 		HEX_INT(FOR_STP)
- 		HEX_INT(FOR_LIM)
+ 		PRINT("STEP ")
+ 		HEX_SHORT(FOR_STP+2)
+ 		HEX_SHORT(FOR_STP+1)
+ 		HEX_SHORT(FOR_STP+0)
+
+ 		jsr 	PrNL
+ 		PRINT("LIM  ")
+ 		HEX_SHORT(FOR_LIM+2)
+ 		HEX_SHORT(FOR_LIM+1)
+ 		HEX_SHORT(FOR_LIM+0)
+
+ 		jsr 	PrNL
+ 		PRINTLN("ADR  IX SP")
  		HEX_INT(FOR_ADR)
  		HEX_SHORT(FOR_NDX)
  		HEX_SHORT(FOR_SP)

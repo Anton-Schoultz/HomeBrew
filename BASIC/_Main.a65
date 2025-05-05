@@ -254,7 +254,7 @@ MainCmd 	;-- Run command line
 .list
 ;=================================================================== MAIN-DBUG =============
 MainTokBuf: ; Dump TOKBUF
- 		PR_WR_IO()
+; 		PR_WR_IO()
  		CLS()
  		jsr 	MainList
  		HEX_DUMP(TOKBUF) 	; dump 8

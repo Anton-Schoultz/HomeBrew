@@ -226,7 +226,7 @@ _Print_L 	iny 			; next char
  		lda 	(ZDPtr),y
  		beq 	_Print_X 	; zero -> exit
  		bmi 	_Print_HX
- 		jsr 	PutChr 		; print character
+ 		jsr 	ChrOut 		; print character
  		bra 	_Print_L 	; loop back (no more than 255 chars)
 _Print_HX 	; print hex data
  		iny
@@ -239,9 +239,9 @@ _Print_HX 	; print hex data
  		phy
  		;--
  		lda 	#'='
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		lda 	#'$'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		;--
  		ldy 	#1
  		lda 	(ZDBug),y 	; hi data
@@ -269,13 +269,13 @@ _PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
 _PrHexShort: ; print int .A.X as hex value with space
  		jsr 	PrAHex
  		lda 	#' '
- 		jmp 	PutChr
+ 		jmp 	ChrOut
 
 ;----------------------------------------------- _PrHexInt
 _PrHexInt: ; print int .A.X as hex value with space
  		jsr 	PrAXHex
  		lda 	#' '
- 		jmp 	PutChr
+ 		jmp 	ChrOut
 
 ;----------------------------------------------- HexDump
 HexDump: ; hex dump memory (ZPtr) to output io/mem
@@ -284,13 +284,13 @@ HexDump: ; hex dump memory (ZPtr) to output io/mem
  		lda 	ZPtr
  		jsr 	PrAHex
  		lda 	#' '
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		ldy 	#0
 HexDumpL 	; dump a line of bytes
  		lda 	(ZPtr),y
  		jsr 	PrAHex
  		lda 	#' '
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		iny
  		cpy 	#HEXSZ
  		bne 	HexDumpL
@@ -299,11 +299,11 @@ HexDumpL1 	; dump a line of bytes
  		lda 	(ZPtr),y
  		BR_ALT(32,HexDump1) 	; a<' '?
  		BR_AGT(127,HexDump1)
- 		jsr 	PutChr 		;printable
+ 		jsr 	ChrOut 		;printable
  		bra 	HexDump2
 HexDump1 	; non printable
  		lda 	#'.'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 HexDump2 	iny
  		cpy 	#HEXSZ
  		bne 	HexDumpL1

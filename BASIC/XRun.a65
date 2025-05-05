@@ -46,8 +46,8 @@ X_Run: ; RUN [#LineNo]~Execute the program, optionally from line number
  		;-- numeric literal is start line
  		jsr 	NumRd 		; read number into NUM_A
  		jsr 	NumToInt 	; NUM_A as AX l/h
- 		sta 	LN_FND+1
- 		stx 	LN_FND
+ 		sta 	LN_FND
+ 		stx 	LN_FND+1
 Run 		;-- Run from line LN_FND
  		jsr 	LnSeekTop
  		lda 	CHRGOT
