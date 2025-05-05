@@ -23,7 +23,7 @@ X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
  		;-- Check for '#n'
  		lda	#DEV_OUT_STD	; default output device no
  		jsr	Hash		; check for '#n' return n in A (or default)
- 		sta	DEV_OUT		; set output device for i/o
+ 		jsr	SetOutDev	; set output device for i/o
 		;-- default end with CRLF
  		DONL()
  		;-- print parts loop

@@ -25,6 +25,8 @@
 ;*  IsDigit              returns T/F if .A is a digit 0..9
 ;*  PrStr                Print string pointed to by ZPtr [A], last Y->ZTmp
 ;*  PrStrAX              Print string at AX [A] -> PutChr -> Mem/IO
+;*  SetInDev             set input device .A
+;*  SetOutDev            set input device .A
 ;*m BR_NBCD(tgt)         Branch to tgt if BCD=0
 ;*m BR_ND7(tgt)          Branch to tgt if MRK=0 (end with bit 7)
 ;*m PR_ALL()             Term Null F5=0 Term null only
@@ -143,7 +145,7 @@ ChrRd_: ; Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
 .dw $ABCD
 
 .db DEV_CONSOLE*2 			; DEV_IN  initial input device no = 0 (Console-keyboard)
-.db DEV_CONSOLE*2			; DEV_OUT initial output device no = 0 (Console-screen)
+.db DEV_CONSOLE*2 			; DEV_OUT initial output device no = 0 (Console-screen)
 
 ;----------------------------------------------- Devices
 ; 0	CON	Console is Keyboard & screen
@@ -166,8 +168,8 @@ ChrInitL 	lda 	ChrRd_,X
 ;----------------------------------------------- ChrIn
 ChrIn: ; Read character from input device (KBD,COM..)
  		phx
- 		 ldx 	DEV_IN
- 		 jsr 	ChrInCall
+ 		ldx 	DEV_IN
+ 		jsr 	ChrInCall
  		plx
  		cmp 	#0 		; set flags based on .A
  		rts
@@ -177,8 +179,8 @@ ChrInCall 	jmp 	(VEC_IN,X)
 ;----------------------------------------------- ChrOut
 ChrOut: ; Send character to output device (SCR,COM..)
  		phx
- 		 ldx 	DEV_OUT
- 		 jsr 	ChrOutCall
+ 		ldx 	DEV_OUT
+ 		jsr 	ChrOutCall
  		plx
  		rts
 
@@ -198,13 +200,26 @@ ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
 ChrWrX 		rts
 
+
+;----------------------------------------------- SetInDev
+SetInDev: ; set input device .A
+ 		asl 	a
+ 		sta 	DEV_IN
+ 		rts
+
+;----------------------------------------------- SetOutDev
+SetOutDev: ; set input device .A
+ 		asl 	a
+ 		sta 	DEV_OUT
+ 		rts
+
 ;----------------------------------------------- InputText
 InputText: ; Input text from console to INBUF, prompt char is in A
-		;-- check if input is device or screen
-		ldx	DEV_IN
-		bne	Input		; non-zero so skip output of prompt char
+ 		;-- check if input is device or screen
+ 		ldx 	DEV_IN
+ 		bne 	Input 		; non-zero so skip output of prompt char
  		jsr 	ConOut
-InputText1	jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+InputText1 	jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		jmp 	PrNL
 
 ;----------------------------------------------- InputIOEcho
@@ -248,8 +263,8 @@ Input1 		cmp 	#$22 		; is it a quote?
  		;--
 Input2 		ldy 	ZTmp
  		bne 	Input3 		; quote mode is on
- 		ldy	DEV_IN
- 		bne	Input3		; input from device - no upper
+ 		ldy 	DEV_IN
+ 		bne 	Input3 		; input from device - no upper
 
  		;-- not in quote mode, so convert to upper case
  		cmp 	#'a'

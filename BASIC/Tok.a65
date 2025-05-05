@@ -203,8 +203,7 @@ Hash: ; check for '#n' for channel i/o
 HashDo		pla			; drop the default
 		jsr	ChrRd		; consume '#'
  		jsr 	EvInt 		; Evaluate as INT in AX l/h
-HashX		asl	a		; double for offset in table
- 		and 	#$F 		; mask off lower bits
+HashX 		and 	#3 		; mask off lower bits
  		rts
 
 ;----------------------------------------------- P_IsToken

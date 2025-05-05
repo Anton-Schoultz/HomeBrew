@@ -96,19 +96,19 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 .echo "\t+--------------+\n\n"
 #endif
 
-_DETAIL = 2
-_KEYWORDS = 1
-_SUMMARY = 0
+_DETAIL 	= 2
+_KEYWORDS 	= 1
+_SUMMARY 	= 0
 
-_LEVEL = _SUMMARY
+_LEVEL 		= _KEYWORDS
 
 .echo "\tROM at $E000-$FFFF (8k)\r"
 ; .echo "\t\tROM at $C000-$FFFF (16k)\r"
 
 #include "Constants.a65"
 
-MathModule = MATH_MOD_S24	;6651 -> 6578
-;MathModule = MATH_MOD_S16	;6534 -> 6431
+MathModule 	= MATH_MOD_S24 		;6651 -> 6578
+ 		;-- MathModule = MATH_MOD_S16	;6534 -> 6431
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -142,7 +142,7 @@ Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #include "Util.a65" 			; utilities for general use
 
 #include "ConSim.a65" 			; Console Implementation
-#include "ComSim.a65"			; Com port simulation
+#include "ComSim.a65" 			; Com port simulation
 
 #include "ChrStr.a65" 			; Base IO (incl macros)
 #include "Error.a65" 			; Error/token expansion
@@ -186,7 +186,7 @@ RstClr 		sta 	$0000,y 	; clear z-page
  		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 		; NEW
 
- 		jsr	ComInit		; reset Serial
+ 		jsr 	ComInit 	; reset Serial
 
  		;-- Greeting
  		LDAX(Greet)
@@ -211,6 +211,12 @@ Main: ;Warm Start entry point
  		sta 	FOR_ADR+1
 
  		sta 	HLTFLG
+
+ 		;-- default input and putput devices
+ 		lda 	#DEV_IN_STD
+ 		sta 	DEV_IN
+ 		lda 	#DEV_OUT_STD
+ 		sta 	DEV_OUT
 
  		;-- character output to I/O device -> ChrOut
 ; 		PR_WR_IO()
