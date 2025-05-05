@@ -36,7 +36,7 @@ _For 		= $
 
 ;----------------------------------------------- FOR stack
 ; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
-Var(FORSTK,8*FORDEEP)
+;Var(FORSTK,8*FORDEEP)
 
 ;----------------------------------------------- X_For
 X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
@@ -119,6 +119,68 @@ ForPopL 	lda 	FORSTK,y
  		bne 	ForPopL
  		rts
 
+;== NEXT
+
+;----------------------------------------------- X_Next
+X_Next: ; NEXT {Var}~End of FOR/NEXT loop
+ 		jsr 	ChrRd 		; consume token
+ 		;-- loop var
+ 		BR_AEQ(T_NumVar,X_Next1)
+X_NextErr 	ERROR(ERR_VAR) 		; "Expected Variable"
+
+X_Next1 	jsr 	ChrRd 		; get first char of variable name
+ 		bpl 	X_NextErr 	; long var name -> Expected Variable
+ 		and 	#$1F 		; get var index
+ 		sta 	VARID 		; save it
+ 		;-- check that it matches
+ 		cmp 	FOR_NDX
+ 		beq 	X_Next2
+ 		ERROR(ERR_FOR) 		; 'FOR/NEXT error'
+
+X_Next2 	; Retrieve step from VARNUM and unpack to internal form
+ 		lda 	#FOR_STP_X
+ 		jsr 	NumGet
+ 		lda 	NUM_AS 		; get the sign of the step
+ 		sta 	NUM_SGN 	; save sign of step (up/down)
+ 		jsr 	NumPushA
+ 		;-- get loop var value
+ 		lda 	VARID
+ 		jsr 	NumGet
+ 		;-- add the step
+ 		jsr 	NumPopB
+ 		jsr 	NumAdd
+ 		;-- save value in loop var
+ 		lda 	VARID
+ 		jsr 	NumSet
+ 		;-- test the limit
+ 		lda 	#FOR_LIM_X
+ 		jsr 	NumGet 		; RCL limit
+ 		jsr 	NumPushA 	; ^
+ 		lda 	VARID
+ 		jsr 	NumGet 		; RCL var
+ 		jsr 	NumPopB
+ 		jsr 	NumSub 		; Limit-Value
+ 		jsr 	NumFlag 	; check < = >
+ 		beq 	X_NextLoop 	; if equal then last iteration
+ 		;-- account for direction
+ 		eor 	NUM_SGN
+ 		and 	#4 		; 4< 2= 1>
+ 		bne 	X_NextLoop
+ 		;-- loop is done so pop
+ 		jmp 	ForPop
+
+X_NextLoop 	; loop by going back to the loop line
+ 		lda 	FOR_ADR
+ 		sta 	LN_NXT
+ 		lda 	FOR_ADR+1
+ 		sta 	LN_NXT+1
+ 		rts
+
+;  NUM_FLG ; Comparisson flags 4:< 2:= 1:>
+
+
+
+
 #if _DB_FOR
 ;=================================================================== DBUG =============
 DB_For: ; Debug For values - STP  LIM  ADR  IX SP
@@ -138,7 +200,7 @@ DB_For: ; Debug For values - STP  LIM  ADR  IX SP
 
 
 #if _LEVEL >= _KEYWORDS
-.echo "  _FOR\t\t"
+.echo "  _For_Next\t\t"
 .echo $-_For
 .echo "\n"
 #endif
@@ -150,6 +212,8 @@ DB_For: ; Debug For values - STP  LIM  ADR  IX SP
 #if ($/256) = PG_KEY
 .list
 W_For 		.DB 	"FO",'R'+$80
+W_Next 		.DB 	"NEX",'T'+$80
+
 .nolist
 #endif
 ;----------------------------------------------- run
@@ -157,6 +221,10 @@ W_For 		.DB 	"FO",'R'+$80
 .list
 T_For 		= LOW($)+$80
 .DW 	X_For
+
+T_NEXT 		= LOW($)+$80
+.DW 	X_Next
+
 .nolist
 #endif
 

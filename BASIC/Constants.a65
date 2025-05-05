@@ -26,10 +26,7 @@ MATH_MOD_S24= 2
 #define NUMUSZ 5
 
 ; BUFSZ() Size for INBUF,TOKBUF
-#define BUFSZ() 64
-; STRSZ Size for STRBUF
-#define STRSZ 128
-
+#define BUFSZ	64
 
 ; Nesting depth for GOSUB calls
 #define RTNSZ 32
@@ -38,7 +35,7 @@ MATH_MOD_S24= 2
 #define FORDEEP 8
 
 ; Size of FOR block = NUMPKSZ+NUMPKSZ+3 = STP,LIM, ADR,IX
-#define FORSZ  7
+;#define FORSZ  7
 
 ; bytes per line of Hex Dump  (if cols > 69 then use 16)
 #define HEXSZ 8
@@ -55,9 +52,9 @@ T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
 T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
 T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 
- 		;-- = $F7
+ 		;-- $F7 = always
 
- 		;-- 1111.0<=>		;0>=<
+ 		;-- 1111.0>=<		;0>=<
 #define T_LE 	$F3 			;0011
 #define T_NE	$F5 			;0101
 #define T_LT	$F1 			;0001
@@ -68,12 +65,12 @@ T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
 T_LineNo 	= $F0 			; header includes line number
 
 
+
+
+;-- rom pages
 PG_ROM 		= $E0 			; main code
 PG_KEY 		= $FE 			; key word table
 PG_RUN 		= $FF 			; main jump table
-
-
-
 
 
 TblKeyword 	= (PG_KEY<<8)

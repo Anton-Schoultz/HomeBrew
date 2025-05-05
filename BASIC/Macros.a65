@@ -79,7 +79,7 @@
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
 
 ; ZZERO(z)	Zero a z-pg z
-#define ZZERO(z) 	.db $64, z
+;#define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
 ;----------------------------------------------- LOW,HIGH,UPPER

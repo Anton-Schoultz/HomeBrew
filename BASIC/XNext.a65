@@ -36,7 +36,8 @@ X_Next1 	jsr 	ChrRd 		; get first char of variable name
 
 X_Next2 	; Retrieve step from VARNUM and unpack to internal form
  		lda 	#FOR_STP_X
- 		jsr 	NumGet 		; returns sign in A
+ 		jsr 	NumGet
+ 		lda 	NUM_AS 		; get the sign of the step
  		sta 	NUM_SGN 	; save sign of step (up/down)
  		jsr 	NumPushA
  		;-- get loop var value

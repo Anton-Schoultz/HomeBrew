@@ -13,8 +13,9 @@
 #include "XRem.a65" 			; REM remark
 #include "XReturn.a65" 			; RETURN from subroutine
 #include "XRun.a65" 			; RUN	Execute the program
-#include "XFor.a65" 			; FOR <Var> = <From-expr> TO <To-Expr> [STEP <Step-Expr>
-#include "XNext.a65" 			; Next <Var>
+;#include "XFor.a65" 			; FOR <Var> = <From-expr> TO <To-Expr> [STEP <Step-Expr>
+;#include "XNext.a65" 			; Next <Var>
+#include "XForNext.a65"			; FOR & NEXT
 #include "XStop.a65" 			; STOP	Stop program execution
 #include "XDim.a65" 			; DIM <StrVar>( size )
 #include "XInput.a65" 			; INPUT ["prompt",] NumVar|StrVar

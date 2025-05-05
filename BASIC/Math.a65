@@ -122,6 +122,7 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; Short(NUM_SP) 	; calculator stack pointer
 ; Short(NUM_SGN) 	; sign
 ; Var(NUM_BUF,DIGITS) 	; Conversion work area DIGITS=14
+
 .nolist
 .echo "  CPU Stack\t"
 .echo $200 - $
