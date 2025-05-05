@@ -49,7 +49,7 @@ ParseIn: ;Parse from memory into TOKBUF
  		jsr 	ParseClr 	; clear TOKBUF, LN_FND
 
  		;-- prime pump -> CHRGOT
- 		jsr 	GetChr
+ 		jsr 	ChrRd
 
  		;-- line number ?
  		jsr 	SkipBlank 	; skipover leading blank/tabs
@@ -92,7 +92,7 @@ P_StmntX 	;-- done with the whole line
 
 ;----------------------------------------------- P_Part , P_PartNxt
 P_PartNxt 	;- advance and do part
- 		jsr 	GetChr
+ 		jsr 	ChrRd
 P_Part 		;- parse a part of the line
  		jsr 	SkipBlank 	; skipover leading blank/tabs
  		BR_T(P_KeyWord) 	; Not-null -> P_KeyWord
@@ -132,7 +132,7 @@ POut 		jsr 	ChrWr
  		bra 	P_PartNxt
 ; relational opperator
 PLT 		; check for <= <> <
- 		jsr 	GetChr
+ 		jsr 	ChrRd
  		BR_AEQ('=',PLE)
  		BR_AEQ('>',PNE)
  		lda 	#T_LT
@@ -142,7 +142,7 @@ PLE 		lda 	#T_LE
 PNE 		lda 	#T_NE
  		bra 	POut
 PGT 		; check for >= >
- 		jsr 	GetChr
+ 		jsr 	ChrRd
  		BR_AEQ('=',PGE)
  		lda 	#T_GT
  		bra 	PROP
@@ -170,7 +170,7 @@ ParseClrL 	sta 	TOKBUF,y
 ;----------------------------------------------- SkipBlankL
 ; reads next character nad then checks for balnks
 SkipBlankL 	; read next
- 		jsr 	GetChr 		; get from io or mem
+ 		jsr 	ChrRd 		; get from io or mem
 ;----------------------------------------------- SkipBlank
 ; returns with ending chr in A, (C=1 if A==null)
 SkipBlank: ; Skip blank/tabs, end char in A, T if not null
@@ -310,10 +310,23 @@ P_StrX 		lda 	#0
 L_String: ; list out string text
  		lda 	#'"'
  		jsr 	PutChr
- 		jsr 	ChrCopy
- 		lda 	#'"'
+
+L_StringL	jsr 	ChrRd 		; get from IO
+ 		beq 	L_StringX 	; Null -> exit
+ 		BR_ND7(L_String1) 	; Stop=Off, skip bit test
+ 		bmi 	L_StringX 	; bit 7 set -> exit
+ 		and 	#$7F 		; force ascii
+L_String1 	jsr 	PutChr 		; put Mem / IO
+ 		bra 	L_StringL 	; loop
+
+L_StringX	lda 	#'"'
  		jsr 	PutChr
  		jmp 	ChrRd 		; close quote and rts
+
+
+;;----------------------------------------------- ChrCopy
+;ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
+
 
 ;=================================================================== LINE_NO ==========
 

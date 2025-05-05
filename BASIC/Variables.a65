@@ -1,4 +1,4 @@
-;=================================================================== VARIABLES ======== 
+;=================================================================== VARIABLES ========
 ;*  VarList              List a variable specifier
 ;*  VarParse             Parse variable spec from source
 ;*
@@ -10,7 +10,7 @@
 ;                 1111111111111111
 ; 0123456789ABCDEF0123456789ABCDEF
 ; @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
- 		;-- 
+ 		;--
 ; $5B 91 [x=27]  [
 
 
@@ -18,30 +18,30 @@
 ; k:0=Variable		k:1=Constant/literal
 ; t:0=Numeric		t:1=String
 ; a:0=Simple		a:1=Array
- 		;-- 
+ 		;--
 ;                  FF			;ff
 ;  T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
 ;                  FD			;fd 123	Lit,Num  , -
 ;  T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
- 		;-- 
+ 		;--
 ;  T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
 ;  T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
- 		;-- 
+ 		;--
 ;  T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
 ;  T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
- 		;-- 
- 		;-- 
+ 		;--
+ 		;--
 
 ;  VARID
 ; 76543210
 ; ...aaaaa	bottom 5 bits of first char (0-31 0=@,1=A,...)
 ; 1.......	This is the last character of the variable Name
 ; .#......	Variable is an array
- 		;-- 
+ 		;--
 
 _Variables 	= $
 
-;----------------------------------------------- VarParse 
+;----------------------------------------------- VarParse
 VarParse: ; Parse variable spec from source
 ; ZRd points at the initial alpha char
  		lda 	#T_NumVar
@@ -101,11 +101,11 @@ VarPMod 	jsr 	ChrRd
 
 VarPXX 		rts
 
-;----------------------------------------------- VarList 
+;----------------------------------------------- VarList
 VarList: ; List a variable specifier
  		;-- sta 	TOKNO		; save he var token F8..FF already there
  		;-- List a VarName
-ListVarL 	jsr 	GetChr 		; read name character
+ListVarL 	jsr 	ChrRd 		; read name character
  		bmi 	ListVarStp 	; Ending character
  		jsr 	PutChr 		; output letter
  		bra 	ListVarL 	; loop back
@@ -122,7 +122,7 @@ ListVarAry 	BBR0 	TOKNO,ListVarEnd ; array ?
  		jsr 	PutChr
 
 ListVarEnd 	;- done with var name
- 		jsr 	GetChr
+ 		jsr 	ChrRd
  		RTN_T()
 
 
