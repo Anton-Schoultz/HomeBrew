@@ -160,7 +160,6 @@ MsgL0 		;-- output the word
  		BR_AEQ('!',MsgAH) 	; ZRegA as hex
  		BR_AEQ('#',MsgYC) 	; ZRegY as character
  		BR_AEQ('&',MsgYH) 	; ZRegY as hex
- 		BR_AEQ('%',MsgYD) 	; ZRegY as dec
  		BR_AEQ('*',MsgErrAdr) 	; caller address stack
  		jsr 	ChrOut 		; echo
  		bra 	MsgL 		; loop next char
@@ -192,8 +191,8 @@ MsgHex 		pha
  		pla
  		jsr 	PrAHex
  		bra 	MsgL
-MsgYD 		lda 	ZRegY
-MsgDec 		jmp 	PrADec3
+;MsgYD 		lda 	ZRegY
+;MsgDec 		jmp 	PrADec3
 
 MsgErrAdr 	;-- display stack trace
  		jsr 	PrNL

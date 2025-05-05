@@ -51,6 +51,31 @@
 
 _Util 		= $
 
+BinTbl
+.db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
+.db $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
+.db $20,$21,$22,$23,$24,$25,$26,$27,$28,$29
+.db $30,$31,$32,$33,$34,$35,$36,$37,$38,$39
+.db $40,$41,$42,$43,$44,$45,$46,$47,$48,$49
+.db $50,$51,$52,$53,$54,$55,$56,$57,$58,$59
+.db $60,$61,$62,$63,$64,$65,$66,$67,$68,$69
+.db $70,$71,$72,$73,$74,$75,$76,$77,$78,$79
+.db $80,$81,$82,$83,$84,$85,$86,$87,$88,$89
+.db $90,$91,$92,$93,$94,$95,$96,$97,$98,$99
+
+;Bin2BCDTbl
+;.byte	$63,$31,$15,$07,$03,$01,$00
+
+Nib2HexTbl
+;    ____ BCD:0______
+.db "0123456789ABCDEF"
+;    ===== BCD:1 ====
+;.db "0123456789+-e.E "
+;   "0123456789ABCDEF0123456789abcdef"
+
+;.export BinTbl,Bin2BCDTbl,Nib2HexTbl
+
+
 ;=================================================================== UTIL_INT =========
 
 ; === This method is faster, but works with pairs of digits so suppression is a bit funny
@@ -96,7 +121,6 @@ IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
  		lda 	TMP 		; done?
  		ora 	TMP+1
  		bne 	IntPrint1 	; no- loop
- 		;--
 IntPrint2 	;- now pop & print the digits
  		pla
  		bmi 	IntPrintX 	; found the marker so exit
@@ -181,10 +205,6 @@ PrNL: ; print CR,LF to PutChr -> mem/io
  		jmp 	ChrOut
 
 ;=================================================================== UTIL_HEX =========
-Nib2HexTbl
-;    ____ BCD:0______===== BCD:1 ====
-.db "0123456789ABCDEF0123456789+-e.E "
-;   "0123456789ABCDEF0123456789abcdef"
 
 ;----------------------------------------------- PrAXHex
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
@@ -207,10 +227,10 @@ PrAHex: ; Print A as Hex digits (send/write) [A]
 PrNib: ; Convert hex nibble and Print it (preserves XY)
  		phx 			; save X
  		and 	#$0F 		; Mask LSD for hex print
- 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
- 		;-- BCD so add 16 for second part of table
- 		clc
- 		adc 	#$10 		; add 16 for BCD part of table
+; 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
+; 		;-- BCD so add 16 for second part of table
+; 		clc
+; 		adc 	#$10 		; add 16 for BCD part of table
 PrNibX 		tax
  		lda 	Nib2HexTbl,X 	; Look Up
  		plx
@@ -337,24 +357,8 @@ HexDump2 	iny
 HexDumpX 	rts
 #endif
 
-PARAGRAPH()
+;PARAGRAPH()
 ;=================================================================== UTIL_BCD =========
-BinTbl
-.db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
-.db $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
-.db $20,$21,$22,$23,$24,$25,$26,$27,$28,$29
-.db $30,$31,$32,$33,$34,$35,$36,$37,$38,$39
-.db $40,$41,$42,$43,$44,$45,$46,$47,$48,$49
-.db $50,$51,$52,$53,$54,$55,$56,$57,$58,$59
-.db $60,$61,$62,$63,$64,$65,$66,$67,$68,$69
-.db $70,$71,$72,$73,$74,$75,$76,$77,$78,$79
-.db $80,$81,$82,$83,$84,$85,$86,$87,$88,$89
-.db $90,$91,$92,$93,$94,$95,$96,$97,$98,$99
-
-
-Bin2BCDTbl
-.byte	$63,$31,$15,$07,$03,$01,$00
-
 ;----------------------------------------------- PrADec2
 PrADec2: ; Print A as decimal digits 00-99
  		phx
@@ -365,44 +369,44 @@ PrADec2: ; Print A as decimal digits 00-99
  		rts
 
 ;----------------------------------------------- PrADec2
-PrADec3: ; Print A as decimal digits 000-255
- 		jsr 	Bin2BCD
- 		pha
- 		txa
- 		jsr 	PrNib 		; hundreds
- 		pla
- 		jmp 	PrAHex 		; Tens,Unit
+;PrADec3: ; Print A as decimal digits 000-255
+; 		jsr 	Bin2BCD
+; 		pha
+; 		txa
+; 		jsr 	PrNib 		; hundreds
+; 		pla
+; 		jmp 	PrAHex 		; Tens,Unit
 
 ;----------------------------------------------- Bin2BCD
-Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
- 		sed 			; all adds in decimal mode
- 		sta 	ZTmp 		; save A
- 		lda 	#$00 		; clear A
- 		ldx 	#$07 		; set bit count
-Bin2BCDL 	lsr 	ZTmp 		; bit to carry
- 		bcc 	Bin2BCD1 	; branch if no add
- 		adc 	Bin2BCDTbl-1,X 	; else add BCD value
-Bin2BCD1 	dex 			; decrement bit count
- 		bne 	Bin2BCDL 	; loop if more to do
-
-; 3digit {  (high digit in X)
- 		bcc 	Bin2BCD2 	; branch if no 100's carry
- 		;-- if Cb set here (and can only be set by the
- 		;-- last loop add) then there was a carry into
- 		inx 			; the 100's so add 100's carry to the high byte
-Bin2BCD2 	;-- now check the 2^7 (128) bit
- 		lsr 	ZTmp 		; bit 7 to carry
- 		bcc 	Bin2BCD3 	; branch if no add
- 		inx 			; else effectively add 100 part of 128
- 		adc 	#$27 		; and then add 128 (-1) part of 128
- 		bcc 	Bin2BCD3 	; branch if no further carry
- 		inx 			; else add 200's carry
-Bin2BCD3
-; }
-
- 		sta 	ZTmp 		; save result ZTmp byte
- 		cld 			; clear decimal mode
- 		rts
+;Bin2BCD: ; Convert binary value in A (0-99) into BCD in A, (high digit in X)
+; 		sed 			; all adds in decimal mode
+; 		sta 	ZTmp 		; save A
+; 		lda 	#$00 		; clear A
+; 		ldx 	#$07 		; set bit count
+;Bin2BCDL 	lsr 	ZTmp 		; bit to carry
+; 		bcc 	Bin2BCD1 	; branch if no add
+; 		adc 	Bin2BCDTbl-1,X 	; else add BCD value
+;Bin2BCD1 	dex 			; decrement bit count
+; 		bne 	Bin2BCDL 	; loop if more to do
+;
+;; 3digit {  (high digit in X)
+; 		bcc 	Bin2BCD2 	; branch if no 100's carry
+; 		;-- if Cb set here (and can only be set by the
+; 		;-- last loop add) then there was a carry into
+; 		inx 			; the 100's so add 100's carry to the high byte
+;Bin2BCD2 	;-- now check the 2^7 (128) bit
+; 		lsr 	ZTmp 		; bit 7 to carry
+; 		bcc 	Bin2BCD3 	; branch if no add
+; 		inx 			; else effectively add 100 part of 128
+; 		adc 	#$27 		; and then add 128 (-1) part of 128
+; 		bcc 	Bin2BCD3 	; branch if no further carry
+; 		inx 			; else add 200's carry
+;Bin2BCD3
+;; }
+;
+; 		sta 	ZTmp 		; save result ZTmp byte
+; 		cld 			; clear decimal mode
+; 		rts
 
 ; ;----------------------------------------------- DivA10
 ; DivA10: ;Divide .A by 10

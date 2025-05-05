@@ -181,40 +181,17 @@ ChrInitL 	lda 	ChrRd_,X
  		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
  		rts
 
-
-;----------------------------------------------- PutNull
-;PutNull: ; write terminating null to Mem/IO
-; 		lda 	#0
-;----------------------------------------------- PutChr
-;PutChr: ; Print character to Mem/IO
-; 		;-- don't send null
-; 		cmp 	#0
-; 		beq 	ChrWrX
-; 		;-- output or memory
-; 		BR_WR(ChrWr) 		;wr=1?
-; 		;-- 0=fall through to send via ChrOut
 ;----------------------------------------------- ChrOut
 ChrOut: ; Send character to output device (SCR,COM..)
  		jmp 	(VCHROUT)
 
-
-;;----------------------------------------------- GetChr
-;GetChr: ; Input character from Mem/IO -> A, CHRGOT
-; 		BR_NECHO(ChrIn) 	; if echo is off, just go get the char
-; 		jsr 	ChrIn	 	; fetch char
-; 		beq 	GetChrX 	; Null? ->exit (no echo)
-; 		pha 			; save it
-; 		jsr 	ChrOut 		; echo to IO out
-; 		pla 			; restore
-;GetChrX 	rts 			; return
-
 ;----------------------------------------------- ChrIn
 ChrIn: ; Read character from input device (KBD,COM..) -> CHRGOT
- 		jsr 	ChrVecIn 	; call through vecotr
- 		sta 	CHRGOT 		; save in CHRGOT
- 		rts
-
+; 		jsr 	ChrVecIn 	; call through vecotr
+; 		sta 	CHRGOT 		; save in CHRGOT
+; 		rts
 ChrVecIn 	jmp 	(VCHRIN)
+
 ;----------------------------------------------- ChrRd
 ;ChrRd is code in Z Page
 
