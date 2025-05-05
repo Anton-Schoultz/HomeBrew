@@ -8,31 +8,9 @@
 ;*  X_Goto               GOTO #NumExpr~Goto LineNo
 ;*  X_Return             RETURN~Return control to after the GOSUB
 ;*
+_Flow 		= $
 
-;=================================================================== GOTO ============== 
-_Goto 		= $
-
-;----------------------------------------------- X_Goto 
-X_Goto: ;  GOTO #NumExpr~Goto LineNo
- 		jsr 	ChrRd 		; consume token
- 		jsr 	EvInt 		; Evaluate expression as integer value AX Lo,Hi
- 		stx 	LN_FND+1
- 		sta 	LN_FND
- 		jsr 	LnGo
- 		;-- return will go to next line, so back up
- 		ZCPY(LN_NXT,LN_ADR)
- 		rts
-
-#if _LEVEL >= _KEYWORDS
-.echo "  _GOTO\t\t"
-.echo $-_Goto
-.echo "\n"
-#endif
-
-;=================================================================== GOSUB ============ 
-_Gosub 		= $
-
-;----------------------------------------------- X_Gosub 
+;----------------------------------------------- X_Gosub
 X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
  		;-- push return line address onto RTNSTK
  		ldx 	RTNSP
@@ -43,49 +21,49 @@ X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
  		;-- bump stack pointer & check stack overflow
  		inx
  		cmp 	#RTNSZ
- 		bpl 	GosubOvr
+ 		bpl 	GoSubRtnErr
  		stx 	RTNSP
-; Evaluate numeric expression as target line no and jump
- 		jmp 	X_Goto
+; Fall through to evaluate numeric expression as target line no and jump
+;----------------------------------------------- X_Goto
+X_Goto: ;  GOTO #NumExpr~Goto LineNo
+ 		jsr 	ChrRd 		; consume token
+ 		jsr 	EvInt 		; Evaluate expression as integer value AX Lo,Hi
+ 		stx 	LN_FND+1
+ 		sta 	LN_FND
+ 		jsr 	LnGo
+ 		;-- return will go to next line, so back up
+ 		ZCPY(LN_NXT,LN_ADR)
+ 		rts
 
-GosubOvr 	ERROR(ERR_GOSUB)
+GoSubRtnErr 	ERROR(ERR_GOSUB) 	; 'GOSUB/RETURN error
 
-#if _LEVEL >= _KEYWORDS
-.echo "  _GOSUB\t"
-.echo $-_Gosub
-.echo "\n"
-#endif
 
-;=================================================================== RETURN =========== 
-_Return 	= $
 
-;----------------------------------------------- X_Return 
+;----------------------------------------------- X_Return
 X_Return: ; RETURN~Return control to after the GOSUB
  		jsr 	ChrRd 		; consume token
  		;-- pop return
  		ldx 	RTNSP
  		dex
- 		bmi 	RtnOver
+ 		bmi 	GoSubRtnErr
+ 		;-- set up return line as next one to execute
  		lda 	RTNSTK_L
  		sta 	LN_NXT
  		lda 	RTNSTK_H
  		sta 	LN_NXT+1
  		rts
-RtnOver 	ERROR(ERR_GOSUB)
 
 
 #if _LEVEL >= _KEYWORDS
-.echo "  _RETURN\t"
-.echo $-_Return
+.echo "  _GOTO/SUB/RTN\t"
+.echo $-_Flow
 .echo "\n"
 #endif
-
-
 
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Goto 		.DB 	"GOT",'O'+$80
@@ -93,7 +71,7 @@ W_Gosub 	.DB 	"GOSU",'B'+$80
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Goto 		= LOW($)+$80
