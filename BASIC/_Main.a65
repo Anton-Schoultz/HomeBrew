@@ -142,6 +142,8 @@ Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #include "Util.a65" 			; utilities for general use
 
 #include "ConSim.a65" 			; Console Implementation
+#include "ComSim.a65"			; Com port simulation
+
 #include "ChrStr.a65" 			; Base IO (incl macros)
 #include "Error.a65" 			; Error/token expansion
 #include "Str.a65" 			; String code
@@ -183,6 +185,8 @@ RstClr 		sta 	$0000,y 	; clear z-page
  		jsr 	ChrInit 	; Set up ZPage Code & vectors
  		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 		; NEW
+
+ 		jsr	ComInit		; reset Serial
 
  		;-- Greeting
  		LDAX(Greet)

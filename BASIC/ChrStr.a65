@@ -2,8 +2,17 @@
 .NOLIST
 #endif
 
+; Device numbers
+#define DEV_CONSOLE 0
+#define DEV_SERIAL 1
+
+; Default input and output device numbers (0=Console)
+#define DEV_IN_STD DEV_CONSOLE
+#define DEV_OUT_STD DEV_CONSOLE
+
+
 ;=================================================================== CHRSTR ===========
-;*  ChrIn                Read character from input device (KBD,COM..) -> CHRGOT
+;*  ChrIn                Read character from input device (KBD,COM..)
 ;*  ChrInit              Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
 ;*  ChrOut               Send character to output device (SCR,COM..)
 ;*  ChrRd_               Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
@@ -124,17 +133,17 @@ ChrRd_: ; Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
 ; Initial values for 8 vectors in here, copied along with the above to zero page
 ;----------------------------------------------- Input Devices
 .dw ConIn 				; VIN0
-.dw $ABCD
+.dw ComIn
 .dw $ABCD
 .dw $ABCD
 ;----------------------------------------------- Output devices
 .dw ConOut 				; VOUT0
-.dw $ABCD
+.dw ComOut
 .dw $ABCD
 .dw $ABCD
 
-.db 0		; DEV_IN  initial input device no = 0 (Console-keyboard)
-.db 0		; DEV_OUT initial output device no = 0 (Console-screen)
+.db DEV_CONSOLE*2 			; DEV_IN  initial input device no = 0 (Console-keyboard)
+.db DEV_CONSOLE*2			; DEV_OUT initial output device no = 0 (Console-screen)
 
 ;----------------------------------------------- Devices
 ; 0	CON	Console is Keyboard & screen
@@ -156,22 +165,24 @@ ChrInitL 	lda 	ChrRd_,X
 
 ;----------------------------------------------- ChrIn
 ChrIn: ; Read character from input device (KBD,COM..)
-		phx
-		ldx	DEV_IN
-		jsr	ChrInCall
-		plx
-		cmp	#0		; set flags based on .A
-		rts
-ChrInCall	jmp 	(VEC_IN,X)
+ 		phx
+ 		 ldx 	DEV_IN
+ 		 jsr 	ChrInCall
+ 		plx
+ 		cmp 	#0 		; set flags based on .A
+ 		rts
+
+ChrInCall 	jmp 	(VEC_IN,X)
 
 ;----------------------------------------------- ChrOut
 ChrOut: ; Send character to output device (SCR,COM..)
-		phx
-		ldx	DEV_OUT
-		jsr	ChrOutCall
-		plx
-		rts
-ChrOutCall	jmp 	(VEC_OUT,X)
+ 		phx
+ 		 ldx 	DEV_OUT
+ 		 jsr 	ChrOutCall
+ 		plx
+ 		rts
+
+ChrOutCall 	jmp 	(VEC_OUT,X)
 
 ;----------------------------------------------- ChrRd
 ; Read character from memory (++ZRd)->A->CHRGOT
@@ -189,8 +200,11 @@ ChrWrX 		rts
 
 ;----------------------------------------------- InputText
 InputText: ; Input text from console to INBUF, prompt char is in A
+		;-- check if input is device or screen
+		ldx	DEV_IN
+		bne	Input		; non-zero so skip output of prompt char
  		jsr 	ConOut
- 		jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+InputText1	jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
  		jmp 	PrNL
 
 ;----------------------------------------------- InputIOEcho
@@ -234,6 +248,8 @@ Input1 		cmp 	#$22 		; is it a quote?
  		;--
 Input2 		ldy 	ZTmp
  		bne 	Input3 		; quote mode is on
+ 		ldy	DEV_IN
+ 		bne	Input3		; input from device - no upper
 
  		;-- not in quote mode, so convert to upper case
  		cmp 	#'a'

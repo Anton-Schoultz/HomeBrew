@@ -1,11 +1,6 @@
 ;=================================================================== TOK ==============
-;*  IsAlpha              returns T/F if .A is a Alpha A-Z
-;*  IsAlphaNumeric       returns true if .A is 0-9,A-Z
-;*  IsDigit              returns T/F if .A is a digit 0..9
+;*  Hash                 check for '#n' for channel i/o
 ;*  IsNumFn              Return T/F if CHRGOT is a numeric function and token in A
-;*  IsNumValue           return T if token is a numeric value
-;*  IsRelOpChr           returns T/F if CHRGOT is a relational opperator <>=
-;*  IsStrValue           return T if token is a string value
 ;*  L_Number             List number
 ;*  L_String             list out string text
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -24,9 +19,9 @@
 
 _Tok 		= $
 
-;#define NUMFLGLT()	SMB2 NUM_FLG
-;#define NUMFLGEQ()	SMB1 NUM_FLG
-;#define NUMFLGGT()	SMB0 NUM_FLG
+ 		;-- #define NUMFLGLT()	SMB2 NUM_FLG
+ 		;-- #define NUMFLGEQ()	SMB1 NUM_FLG
+ 		;-- #define NUMFLGGT()	SMB0 NUM_FLG
 
 
 BAS_EOL 	= $00 			; end of line
@@ -174,10 +169,10 @@ SkipBlankL 	; read next
 SkipBlank: ; Skip blank/tabs, end char in A, T if not null
  		;-- null -> exit flase
  		lda 	CHRGOT
- 		bne	SkipBlank0
+ 		bne 	SkipBlank0
  		RTN_F()
  		;-- blank
-SkipBlank0	BR_AEQ(SPC,SkipBlankL) 	; Space -> Loop
+SkipBlank0 	BR_AEQ(SPC,SkipBlankL) 	; Space -> Loop
  		BR_AEQ(HT,SkipBlankL) 	; TAB   -> loop
  		;-- ok
 RtnTrue 	RTN_T()
@@ -195,6 +190,22 @@ IsFnTrue 	RTN_T()
 
 IsFnFalse 	RTN_F()
 
+
+;----------------------------------------------- Hash
+Hash: ; check for '#n' for channel i/o
+; enter with default in A
+ 		pha 			; store A
+ 		lda 	CHRGOT
+ 		cmp 	#'#' 		; '#' ?
+ 		beq 	HashDo		; Yes, go process it
+		pla			; restore default (x2)
+		bra	HashX
+HashDo		pla			; drop the default
+		jsr	ChrRd		; consume '#'
+ 		jsr 	EvInt 		; Evaluate as INT in AX l/h
+HashX		asl	a		; double for offset in table
+ 		and 	#$F 		; mask off lower bits
+ 		rts
 
 ;----------------------------------------------- P_IsToken
 P_IsToken: ; Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -302,7 +313,7 @@ L_String: ; list out string text
  		lda 	#'"'
  		jsr 	ChrOut
 
-L_StringL	jsr 	ChrRd 		; get from IO
+L_StringL 	jsr 	ChrRd 		; get from IO
  		beq 	L_StringX 	; Null -> exit
  		BR_ND7(L_String1) 	; Stop=Off, skip bit test
  		bmi 	L_StringX 	; bit 7 set -> exit
@@ -310,7 +321,7 @@ L_StringL	jsr 	ChrRd 		; get from IO
 L_String1 	jsr 	ChrOut 		; put Mem / IO
  		bra 	L_StringL 	; loop
 
-L_StringX	lda 	#'"'
+L_StringX 	lda 	#'"'
  		jsr 	ChrOut
  		jmp 	ChrRd 		; close quote and rts
 

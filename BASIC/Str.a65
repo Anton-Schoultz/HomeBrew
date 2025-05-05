@@ -298,10 +298,8 @@ StrOut: ; Output the resulting string (cut at 255)
 ; used by print to output resulting string to io
  		ldy 	#0
 StrOutL 	lda 	(S_PTR_A),y
- 		pha
- 		jsr 	ChrOut 		; A -> io
- 		pla
  		beq 	StrOutX 	; null -> done
+ 		jsr 	ChrOut 		; A -> io
  		iny
  		bne 	StrOutL
 StrOutX 	rts

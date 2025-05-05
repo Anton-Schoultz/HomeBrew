@@ -1,0 +1,42 @@
+#ifdef hide 				; ComSim
+.NOLIST
+#endif
+;=================================================================== COMSIM ===========
+; Simulator Implementation of Serial port communications
+;
+;*  ComIn                Read character from serial port (simulated by read from memory)
+;*  ComOut               Write character to serial port (Simulated by writing to memory)
+;*  ComRst               Reset serial Port (Simulated by reseting pointers)
+;*
+
+_ComSim 	= $
+
+;----------------------------------------------- ComOut
+ComOut: ;Write character to serial port (Simulated by writing to memory)
+ 		cmp 	#_FF 		; Form Feed = Clear Screen / reset
+ 		beq 	ComInit
+ 		sta 	(COM_WR) 	; store into memory
+ 		ZINC(COM_WR) 		; bump pointer
+ 		rts
+
+ComInit: ; Reset serial Port (Simulated by reseting pointers)
+ 		LDAX($8000)
+ 		SETAX(COM_RD)
+ 		SETAX(COM_WR)
+ 		rts
+
+;----------------------------------------------- ComIn
+ComIn: ; Read character from serial port (simulated by read from memory)
+ 		lda 	(COM_RD)
+ 		ZINC(COM_RD)
+ 		rts
+
+.NOLIST
+
+#if _LEVEL >= _DETAIL
+.echo $-_ComSim
+.echo " Bytes in _ComSim\n"
+#endif
+
+.LIST 					;-- End of ComSim
+

@@ -19,8 +19,14 @@ _Print 		= $
 
 ;----------------------------------------------- X_Print
 X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
- 		jsr 	ChrRd 		; consume PRINT
- 		DONL() 			; default end with CRLF
+ 		jsr	ChrRd		; consume PRINT token
+ 		;-- Check for '#n'
+ 		lda	#DEV_OUT_STD	; default output device no
+ 		jsr	Hash		; check for '#n' return n in A (or default)
+ 		sta	DEV_OUT		; set output device for i/o
+		;-- default end with CRLF
+ 		DONL()
+ 		;-- print parts loop
 X_PrintL 	lda 	CHRGOT
  		beq 	X_PrEnd 	; null = done
  		jsr 	X_PrPart 	; (*1) Expand
@@ -28,7 +34,11 @@ X_PrintL 	lda 	CHRGOT
 X_PrEnd 	;-- end off with Cr LF if needed
  		BR_NNL(X_PrX) 		; no cr,lf -> exit
  		jsr 	PrNL 		; output CR,LF and exit
-X_PrX 		rts
+
+X_PrX 		;- done
+		lda	#DEV_OUT_STD	; reset to default output device
+		sta	DEV_OUT
+		rts
 
 
 ;----------------------------------------------- X_PrPart

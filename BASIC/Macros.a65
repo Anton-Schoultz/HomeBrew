@@ -112,7 +112,7 @@
 
 ;----------------------------------------------- ZPg
 ; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
-#DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
+#DEFINE ZSET(z,m) lda #(m) \ sta z \ ldx #HIGH(m) \ stx z+1
 
 ; ZZERO(z)	Sets z-pg pair z,z+1 to 0
 #DEFINE ZZERO(z) lda #0 \ sta z \ sta z+1
