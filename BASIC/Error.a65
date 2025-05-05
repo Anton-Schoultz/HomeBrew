@@ -191,8 +191,6 @@ MsgHex 		pha
  		pla
  		jsr 	PrAHex
  		bra 	MsgL
-;MsgYD 		lda 	ZRegY
-;MsgDec 		jmp 	PrADec3
 
 MsgErrAdr 	;-- display stack trace
  		jsr 	PrNL

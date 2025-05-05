@@ -17,8 +17,6 @@ X_List: ; LIST [##From] [- [##To]]~List program (optional range of lines)
  		jsr 	ChrRd 		; consume LIST
  		CLS()
  		;-- Read memory, out to I/O
- 		PR_RD_MEM()
- 		PR_WR_IO()
  		PR_ZSUP_ON()
  		;-- default range 0000-FFFF
  		lda 	#0

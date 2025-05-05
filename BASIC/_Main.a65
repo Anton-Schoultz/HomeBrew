@@ -209,13 +209,12 @@ Main: ;Warm Start entry point
  		sta 	HLTFLG
 
  		;-- character output to I/O device -> ChrOut
- 		PR_WR_IO()
+; 		PR_WR_IO()
  		cli 			; enable IRQ's
 
 
 ;----------------------------------------------- MainLoop
 MainLoop: ; Main Loop
- 		PR_WR_IO()
  		lda 	#'>'
  		jsr 	InputText
  		jsr 	Parse 		; Parse INBUF into TOKBUF

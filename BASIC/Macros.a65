@@ -22,7 +22,6 @@
 ;*m HIGH(m)              High byte 1
 ;*m Int(name)            Reserve 2 bytes for variable name
 ;*m Long(name)           Reserve 4 bytes for variable name
-;*m MZERO(a)             Zero memory at address
 ;*m NCASE(v,tgt)         if .A!=v then jump to tgt
 ;*m PULLAXY()            Pulls Y,X,A
 ;*m RTN_F()              return ERROR (Carry=0)
@@ -50,6 +49,7 @@
 ;*m ZSUB(r,n)            r = r-n
 ;*m ZSUB3(r,n)           r = r-n
 ;*m ZSUBR(r,m,n)         r = m - n
+;*m ZZERO(z)             Sets z-pg pair z,z+1 to 0
 ;*
 
 ; 00=BRK x, 02=NOP x
@@ -223,29 +223,8 @@
 ; RTN_IFT() return if true (C=1)
 #define RTN_IFT() bcc $+3\ rts
 
-;----------------------------------------------- PSEUDO-CODE
-;; PRINT(str) echo str to output
-;#define PRINT(str) jsr _Print_ \ .db str,0
-;; PRINT(str) echo str to output, with CR,LF
-;#define PRINTLN(str) jsr _Print_ \ .db str,0 \ jsr PrNL
-;; print sting and data value
-;#define DBUG(str,adr) jsr _Print_ \ .db str,$80 \ .dw adr \ jsr PrNL
-
-
 ; CLS()	Clear screen
 #define CLS() lda #_FF \ jsr ChrOut
-
-
-; PRINT(str) 	Print in-line string
-; #define PRINT(str) 	jsr _Print_ \ .db "str",0
-
-; PRINTLN(str) 	Print in-line string with CR,LF
- 		;-- #define PRINTLN(str) 	PRINT(str) \ jsr PrNL
-
-
-
-
-
 
 
 ; CASE(v,tgt) if .A==v then jump to tgt

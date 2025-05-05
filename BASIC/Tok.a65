@@ -41,11 +41,9 @@ Parse: ;Parse INBUF into TOKBUF
  		ZSET(ZRd,INBUF-1) 	; read memory from INBUF
 ;----------------------------------------------- ParseIn
 ParseIn: ;Parse from memory into TOKBUF
- 		PR_RD_MEM() 		; read from memory (ZRd)
  		PR_ECHO_OFF() 		; don't echo it
  		;-- write to TOKBUF
  		ZSET(ZWr,TOKBUF) 	; point to TOKBUF
- 		PR_WR_MEM() 		; write to memory
  		jsr 	ParseClr 	; clear TOKBUF, LN_FND
 
  		;-- prime pump -> CHRGOT
@@ -63,7 +61,7 @@ ParseIn: ;Parse from memory into TOKBUF
 P_Stmnt 	jsr 	P_Part 		; parse parts until end of line
  		;-- end of input line
  		lda 	#BAS_EOL 	; end-of-line marker
- 		jsr 	ChrWr 		; line marker
+ 		jsr 	ChrWr 		; line marker -> mem
 
  		;-- length of line for editor -> TOK_LEN
  		sec
@@ -183,13 +181,6 @@ SkipBlank0	BR_AEQ(SPC,SkipBlankL) 	; Space -> Loop
  		BR_AEQ(HT,SkipBlankL) 	; TAB   -> loop
  		;-- ok
 RtnTrue 	RTN_T()
-
-;;----------------------------------------------- IsNumValue
-;IsNumValue: ; return T if token is a numeric value
-; 		BR_AEQ(T_NumLit,RtnTrue)
-; 		BR_AEQ(T_NumVar,RtnTrue)
-; 		BR_AEQ(T_NumAry,RtnTrue)
-; 		RTN_F()
 
 ;----------------------------------------------- IsNumFn
 IsNumFn: ; Return T/F if CHRGOT is a numeric function and token in A
@@ -322,11 +313,6 @@ L_String1 	jsr 	ChrOut 		; put Mem / IO
 L_StringX	lda 	#'"'
  		jsr 	ChrOut
  		jmp 	ChrRd 		; close quote and rts
-
-
-;;----------------------------------------------- ChrCopy
-;ChrCopy: ; Output characters from input (mem/device) to output(Mem/device)
-
 
 ;=================================================================== LINE_NO ==========
 

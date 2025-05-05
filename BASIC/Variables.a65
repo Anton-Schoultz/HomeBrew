@@ -75,8 +75,6 @@ VarP1 		; if '(' then set Ary bit0 and move on
  		cmp 	#'('
  		bne 	VarP2
  		SMB0 	TOKNO 		; set ARY bit0
-; 		iny
-; 		lda 	(ZRd),y
 
 VarP2 		; output Token from VARID
  		lda 	TOKNO
@@ -103,7 +101,6 @@ VarPXX 		rts
 
 ;----------------------------------------------- VarList
 VarList: ; List a variable specifier
- 		;-- sta 	TOKNO		; save he var token F8..FF already there
  		;-- List a VarName
 ListVarL 	jsr 	ChrRd 		; read name character
  		bmi 	ListVarStp 	; Ending character

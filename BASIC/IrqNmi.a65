@@ -64,8 +64,6 @@ IrqBrk0 	dec 	Z_IrqPtr 	; decr low
  		lda 	ZPrFlg
  		pha
 
- 		;-- force IO output (screen)
- 		PR_WR_IO()
  		jsr 	PrNL
  		lda 	#'*'
  		jsr 	ChrOut
