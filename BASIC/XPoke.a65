@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== POKE ============== 
+;=================================================================== POKE ==============
 ;*  X_Poke               POKE ##Address,##value~Poke byte of data to the address
 ;*
 _Poke 		= $
 
-;----------------------------------------------- X_Poke 
+;----------------------------------------------- X_Poke
 X_Poke: ; POKE ##Address,##value~Poke byte of data to the address
  		jsr 	ChrRd 		; consume token
  		;-- evaluate address, convert to int, and push it
@@ -27,19 +27,22 @@ X_Poke: ; POKE ##Address,##value~Poke byte of data to the address
  		rts
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _POKE\t\t"
 .echo $-_Poke
 .echo "\n"
+#endif
+
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Poke 		.DB 	"POK",'E'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Poke 		= LOW($)+$80

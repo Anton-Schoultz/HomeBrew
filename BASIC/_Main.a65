@@ -96,13 +96,19 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 .echo "\t+--------------+\n\n"
 #endif
 
+_DETAIL = 2
+_KEYWORDS = 1
+_SUMMARY = 0
+
+_LEVEL = _SUMMARY
+
 .echo "\tROM at $E000-$FFFF (8k)\r"
 ; .echo "\t\tROM at $C000-$FFFF (16k)\r"
 
 #include "Constants.a65"
 
-MathModule = MATH_MOD_S24	;6672
-;MathModule = MATH_MOD_S16	;6534
+MathModule = MATH_MOD_S24	;6651 -> 6578
+;MathModule = MATH_MOD_S16	;6534 -> 6431
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -288,7 +294,9 @@ ROMEND 		= $
 #include "All.a65"
 .echo "\tWords\t"
 .echo $-TblKeyword
-.echo "/256\n"
+.echo "/256 ("
+.echo 256-($-TblKeyword)
+.echo " free)\n"
 
 ;----------------------------------------------- TblRun
 ; Include for the jump/run table
@@ -300,7 +308,9 @@ T_Max 		= LOW($)+$80
 .echo (T_Max-$80)/2
 .echo "/64 \t("
 .echo $-TblRun
-.echo "/256)\n"
+.echo "/256 bytes,"
+.echo 256-($-TblRun)
+.echo " free)\n"
 
 #if T_Max > $F0
 .echo " Too many tokens"

@@ -12,9 +12,12 @@ X_Clear: ; CLEAR~Clear variables
  		jmp 	EdtClear
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _CLEAR\t"
 .echo $-_Clear
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

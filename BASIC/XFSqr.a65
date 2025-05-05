@@ -15,9 +15,12 @@ X_Sqr: ; SQR(##Val)~Return the Square of Val
  		RTN_T()
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _SQR(\t\t"
 .echo $-_Sqr
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

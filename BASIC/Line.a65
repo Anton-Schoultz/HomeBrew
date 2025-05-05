@@ -148,8 +148,11 @@ DB_LineComp: ; Debug results of LnComp - step through
 
 
 
+#if _LEVEL >= _DETAIL
 .echo "  _Line\t\t"
 .echo $-_Ln
 .echo "\n"
+#endif
+
 .list
 

@@ -23,9 +23,12 @@ X_MidNull 	lda 	#0 		; trunc with null
 X_MidX 		jmp 	StrLen 		; find new length
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _MID$(\t"
 .echo $-_Mid
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

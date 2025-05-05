@@ -12,9 +12,12 @@ X_Lower: ; LOWER($$)~Convert string to Lower case
 ; string arg already set up
  		jmp 	StrLower
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _LOWER$(\t"
 .echo $-_Lower
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

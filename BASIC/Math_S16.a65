@@ -73,40 +73,48 @@ Short(ZDIV) 	; short divisor 10/100
 #define MATHOFF() asl a\ tax
 
 
-;----------------------------------------------- NumGet
-NumGet: ; Retrieve simple variable VARNUM[A].. and unpack to internal form
-; .A is the index, math module multiplies for size as required
-; returns with sign byte in A
- 		MATHOFF()
- 		;-- clear the sign (+ve)
+;----------------------------------------------- NumPoint
+NumPoint: ;  Point ZPtr to the variable indexed by A (0-31)
+ 		sta 	ZTmp
+ 		asl 	a 		; high bit of A is zero, so this clears carry
+ 		adc 	ZTmp 		; offset is in A
+ 		adc 	#LOW(VARNUM) 	; low address
+ 		sta 	ZPtr
  		lda 	#0
- 		sta 	NUM_AS
- 		;--
- 		lda 	VARNUM,X
- 		sta 	NUM_AA
- 		;--
- 		lda 	VARNUM+1,X
- 		sta 	NUM_AB
- 		;--
- 		jsr 	NumUnpack 	; pad NUMA with zero, extract SGN & 2s exp
- 		lda 	NUM_AS 		; 0:+ve
+ 		adc 	#HIGH(VARNUM) 	; hi of vars
+ 		sta 	ZPtr+1
  		rts
 
+;----------------------------------------------- NumGet
+NumGet: ; Recall and unpack VARNUM[A] .A is (0-31)
+ 		jsr 	NumPoint 	; (ZPtr)-> VAR[.A]
+;----------------------------------------------- NumGetPtr
+NumGetPtr: ; recall variable from (ZPtr).. and then unpack it
+ 		ldy 	#0
+ 		sty 	NUM_AS 		; clear the sign (+ve)
+ 		;--
+ 		lda 	(ZPtr),y
+ 		sta 	NUM_AA
+ 		iny
+ 		lda 	(ZPtr),y
+ 		sta 	NUM_AB
+ 		;--
+ 		jmp 	NumUnpack 	; pad NUMA with zero, extract SGN & 2s exp
+
 ;----------------------------------------------- NumSet
-NumSet: ; Pack and Store simple VARNUM[A]..
-; .A is the index, math module multiplies for size as required
- 		MATHOFF()
- 		;--
- 		phx 			; push offset
+NumSet: ; Pack and Store simple VARNUM[A]  .A is (0-31)
+ 		jsr 	NumPoint 	; (ZPtr)-> VAR[.A]
+;----------------------------------------------- NumSetPtr
+NumSetPtr: ; Pack value and store to (ZPtr)...
  		jsr 	NumPack
- 		plx 			; rcall offset
  		;--
+ 		ldy 	#0
  		lda 	NUM_AA
- 		sta 	VARNUM,X
- 		;--
- 		inx
+ 		sta 	(ZPtr),Y
+ 		iny
  		lda 	NUM_AB
- 		sta 	VARNUM,X
+ 		sta 	(ZPtr),Y
+ 		;--
  		rts
 
 ;----------------------------------------------- NumUnpack
@@ -698,9 +706,6 @@ DB_Num: ; Debug Math Registers NUMA, NUMB
  		rts
 #endif
 
-.echo "  _Math\t\t"
-.echo $-_Math
-.echo "\n"
 .list
 
 #endif

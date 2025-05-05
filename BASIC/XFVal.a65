@@ -19,9 +19,12 @@ X_Val: ; VAL($$)~Evaluate the string and return it's numeric value
  		jsr 	NumParsePtr 	; parse it into NUM_A
  		RTN_T()
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _VAL(\t\t"
 .echo $-_Val
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

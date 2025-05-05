@@ -57,7 +57,7 @@ Int(ZPtr) 	; ZPtr general pointer
 
 Int(ZParse) 	; Parse pointer
 
-Int(ERR_ADR)	; Address where error was detected
+Int(ERR_ADR) 	; Address where error was detected
 
 ;----------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
@@ -104,7 +104,7 @@ Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
 
-Var(TIMER,3)	; timer value
+Var(TIMER,3) 	; timer value
 
 
 ;----------------------------------------------- String
@@ -133,11 +133,16 @@ PARAGRAPH()
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 
+;----------------------------------------------- GOSUB stack 32x2 = 64
+; Gosub to depth of RTNSZ=32  (CBM has ~23)
+; return value is the address of the line following the GOSUB (2bytes)
+Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
+#define RTNSTK_L RTNSTK
+#define RTNSTK_H RTNSTK+RTNSZ
+
 .echo "  _Buffers\t"
 .echo $-$200
-.echo "/256\t(see BUFSZ,STRSZ)\n"
-
-
+.echo "/256\t(incl. FOR/GOSUB stack)\n"
 
 ;======================================================================================
 ; reserved space for memory mapped IO devices
@@ -150,6 +155,9 @@ VARTAB
 
 ;----------------------------------------------- String Vars A-Z
 Var(VARSTR,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
+
+Var(VARARY,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
+
 
 ;----------------------------------------------- Numeric Vars 27 x NUMPKSZ
 ; Vars stored as sequence of bytes, [Exp] Low...Hi
@@ -165,19 +173,20 @@ Short(FOR_NDX) 	; Loop variable number (1-26)
 #define FOR_STP_X 27
 #define FOR_LIM_X 28
 
+; Size of FOR block = NUMPKSZ+NUMPKSZ+2+1 = STP,LIM, ADR,IX
+FORSZ = NUMPKSZ * 2 + 3
+.echo "FOR SIZE = "
+.echo FORSZ
+.echo "\n"
+
+;----------------------------------------------- FOR stack
 ; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 Var(FORSTK,8*FORDEEP)
 
-;----------------------------------------------- GOSUB stack 32x2 = 64
-; Gosub to depth of RTNSZ=32  (CBM has ~23)
-; return value is the address of the line following the GOSUB (2bytes)
-Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
-#define RTNSTK_L RTNSTK
-#define RTNSTK_H RTNSTK+RTNSZ
 
 
 .echo "  SysRAM ($400)\t"
-.echo $-$400
+.echo $-VARTAB
 .echo "\t1024-"
 .echo $
 .echo " (first 255 cleared by CLEAR/EdtClear)\n"

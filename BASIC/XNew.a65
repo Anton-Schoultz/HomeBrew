@@ -13,9 +13,12 @@ X_New: ; NEW~Clear program and data
  		jmp 	EdtNew
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _NEW\t\t"
 .echo $-_New
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

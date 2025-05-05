@@ -21,9 +21,12 @@ X_Asc: ;ASC($$)~Return numeric value of the first character of String $$
  		jsr 	NumFromInt
  		RTN_T()
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _ASC(\t\t"
 .echo $-_Asc
 .echo "\n"
+#endif
+
 .nolist
 #endif
 
