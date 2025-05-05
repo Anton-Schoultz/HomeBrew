@@ -5,8 +5,8 @@
 ; ZRd		ChrRd  address to read next char from
 ; ZWr		ChrWr  address to send char to
 ;----------------------------------------------- Vectors	$001x
-; VCHRIN	ChrIn  Read character from input device
-; VCHROUT 	ChrOut Send character to output device
+; VIN0	ChrIn  Read character from input device
+; VOUT0 	ChrOut Send character to output device
 ;
 ;----------------------------------------------- ZPage		$002x
 ; ZBuf 		pointer to a buffer
@@ -32,19 +32,27 @@
 ZPgCode 	.BLOCK 	16
 
 .org $0010
-; 8 vectors here
-Int(VCHRIN) 	; Read character from input device (Keyboard, serial..)
-Int(VCHROUT) 	; Send character to output device (Screen, serial..)
-Int(V2)
-Int(V3)
-Int(V4)
-Int(V5)
-Int(V6)
-Int(V7)
+; 8 vectors here - initialised along with z-pg code
+VEC_IN
+Int(VIN0) 	; Read character from input device (Keyboard, serial..)
+Int(VIN1)
+Int(VIN2)
+Int(VIN3)
+
+VEC_OUT
+Int(VOUT0) 	; Send character to output device (Screen, serial..)
+Int(VOUT1)
+Int(VOUT2)
+Int(VOUT3)
 
 ;=================================================================== ZVARS ============
 ; Zero page variables
 .org $0020
+; Device numbers - initialised along with z-pg code
+Short(DEV_IN)	; input device no (0-3)
+Short(DEV_OUT)	; output device no (0-3)
+
+
 Int(ZSrc) 	; Source for copy/move
 Int(ZTgt) 	; Destination for copy/move
 Int(ZCnt) 	; Number of bytes to copy/move
