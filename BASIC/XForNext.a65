@@ -200,7 +200,7 @@ DB_For: ; Debug For values - STP  LIM  ADR  IX SP
 
 
 #if _LEVEL >= _KEYWORDS
-.echo "  _For_Next\t\t"
+.echo "  _FOR_NEXT\t"
 .echo $-_For
 .echo "\n"
 #endif
