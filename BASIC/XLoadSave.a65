@@ -2,23 +2,24 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LOAD/SAVE ======== 
+;=================================================================== LOAD/SAVE ========
 ;*  X_Load               LOAD~Load program
 ;*  X_Save               SAVE~Save program
 ;*
 _LoadSave 	= $
 
-;=================================================================== SAVE ============= 
+;=================================================================== SAVE =============
 X_Save: ; SAVE~Save program
 ; lists the code to serial poprt
- 		;-- default range 0000-FFFF
- 		jsr 	ListInit
+		jsr	ComInit		; init coms
  		;-- set output to serial port
  		lda 	#DEV_SERIAL
  		jsr 	SetOutDev
+ 		;-- default range 0000-FFFF
+ 		jsr 	ListInit
  		;-- list to output
  		jsr 	X_ListDo
- 		;-- output the command to STOP
+ 		;-- output the command to STOP (will reset Input when loading)
  		ldx 	#T_Stop
  		jsr 	TokExpand
  		jsr 	PrNL
@@ -26,17 +27,19 @@ X_Save: ; SAVE~Save program
  		lda 	#DEV_CONSOLE
  		jmp 	SetOutDev
 
-;=================================================================== LOAD ============= 
+;=================================================================== LOAD =============
 X_Load: ; LOAD~Load program
 ; sets to 'type' from the serial port
 ; ends when input of cmd 'STOP' which resets I/O channels
+		jsr	ComInit		; init coms
+		;-- input from serial
  		lda 	#DEV_SERIAL
  		jmp 	SetInDev
 
 
 
 #if _LEVEL >= _KEYWORDS
-.echo "  _LAOAD/SAVE\t"
+.echo "  _LOAD/SAVE\t"
 .echo $-_LoadSave
 .echo "\n"
 #endif
@@ -44,14 +47,14 @@ X_Load: ; LOAD~Load program
 .nolist
 #endif
 
-;----------------------------------------------- keyword 
+;----------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Save 		.DB 	"SAV",'E'+$80
 W_Load 		.DB 	"LOA",'D'+$80
 .nolist
 #endif
-;----------------------------------------------- run 
+;----------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Save 		= LOW($)+$80

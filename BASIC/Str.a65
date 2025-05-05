@@ -1,4 +1,4 @@
-;=================================================================== STR =============
+;=================================================================== STR ============= 
 ; String functions
 ;
 ;*  DB_Str               Debug String values - PtrA LenA PtrB LenB, VEND SEND SLEN ZRd
@@ -9,7 +9,7 @@
 ;*  IsStrFn              Return T/F if .A is a string function (A preserved)
 ;*  StrAppend            Append top two strings (PopB, append)
 ;*  StrClear             Clear string 'accumulator' ready for  a new string
-;*  StrComp              Compare the strings
+;*  StrComp              Compare the strings, sets NUM_FLG
 ;*  StrFind              find string .A in table, place it's address in ZPtr
 ;*  StrFunct             prepare for string manipulation
 ;*  StrGet               get string at index A  A$..Z$ 1..26
@@ -39,7 +39,7 @@
 ; Int(ZStr) 		ZStr points to string result
 ; Short(ZStrLen)	Length of STRBUF used (write index)
 
-;----------------------------------------------- String
+;----------------------------------------------- String 
 ; (Z) ->    LenL|LenH|Characters.....|00|
 ; Int(STR_PTR) 	; pointer to string
 ; Int(STR_END) 	; end of string work area
@@ -72,10 +72,10 @@ _Str 		= $
 ;    copy the data to the string space checking limit
 ; otherwise
 ;    copy data to it, checking limit
- 		;--
+ 		;-- 
 ; ZPtr must point to the memory block
 
-;----------------------------------------------- EvString
+;----------------------------------------------- EvString 
 EvString: ; Evaluate a string expression (no comparrisons)
 ; return T=OK, F otherwise
  		jsr 	StrClear 	; create a temp space
@@ -98,7 +98,7 @@ EvStrL 		;-- while '+'
 
 EvStrX 		RTN_T()
 
-;----------------------------------------------- EvStrItem
+;----------------------------------------------- EvStrItem 
 EvStrItem: ; get a single item T_StrLit |T_StrVar| StrFn
  		lda 	CHRGOT
  		;-- string Value ?
@@ -122,7 +122,7 @@ EvStrFn: ; evaluate string function FN$($ [,~]* )
 StrFnDo 	jmp 	RunJump 	; dispatch to function to process
 
 
-;----------------------------------------------- StrVar
+;----------------------------------------------- StrVar 
 StrVar: ; recall a String variable T_StrVar ID
  		jsr 	StrClear 	;AAA
  		jsr 	ChrRd 		; consume T_StrVar, get ID
@@ -134,7 +134,7 @@ StrVar1 	;-- recall the variable
  		jsr 	ChrRd 		; consume ID, move on to '+'/end
  		pla
  		;-- drop through to recall
-;----------------------------------------------- StrGet
+;----------------------------------------------- StrGet 
 StrGet: ; get string at index A  A$..Z$ 1..26
  		jsr 	StrFind
  		bne 	StrLoad 	; string exists
@@ -159,7 +159,7 @@ StrLoadX 	sty 	S_LEN_A
  		ZCPY(STR_LEN,S_LEN_A)
  		RTN_T()
 
-;----------------------------------------------- StrLit
+;----------------------------------------------- StrLit 
 StrLit: ; Recall a string literal
  		jsr 	StrClear 	;AAA
 
@@ -181,7 +181,7 @@ StrLitX 	sty 	S_LEN_A
  		jsr 	ChrRd
  		RTN_T()
 
-;----------------------------------------------- StrSet
+;----------------------------------------------- StrSet 
 StrSet: ; Store string at index A  A$..Z$ 1..26
  		jsr 	StrFind
  		bne 	StrSave 	; string already exists
@@ -200,7 +200,7 @@ StrSave 	;- ZPtr points to the string space
  		ZCPY(ZSrc,S_PTR_A) 	; Src = S_PTR_A
  		jmp 	EdtDwn 		; copy bytes
 
-;----------------------------------------------- StrFind
+;----------------------------------------------- StrFind 
 StrFind: ; find string .A in table, place it's address in ZPtr
  		sta 	VARID
  		STROFF()
@@ -211,7 +211,7 @@ StrFind: ; find string .A in table, place it's address in ZPtr
  		ora 	ZPtr
  		rts
 
-;----------------------------------------------- StrPoint
+;----------------------------------------------- StrPoint 
 StrPoint: ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		ldy 	#0
  		lda 	(ZPtr),y
@@ -220,22 +220,22 @@ StrPoint: ; (ZPtr)->Object, Exit (ZTgt)->data and ZCnt=Size
  		lda 	(ZPtr),y
  		sta 	ZCnt+1
  		;-- Tgt = Ptr + 2
-		clc
-		lda	#2
-		adc	ZPtr
-		sta	ZTgt
-		lda 	#0
-		adc	ZPtr+1
-		sta	ZTgt+1
+ 		clc
+ 		lda 	#2
+ 		adc 	ZPtr
+ 		sta 	ZTgt
+ 		lda 	#0
+ 		adc 	ZPtr+1
+ 		sta 	ZTgt+1
  		rts
 
-;----------------------------------------------- EvIsStr
+;----------------------------------------------- EvIsStr 
 ; used by print, which then calls EvString
 EvIsStr: ; Return EQ if A is a string value/function
  		BR_AEQ(T_StrLit,StrTrue)
  		BR_AEQ(T_StrVar,StrTrue)
  		BR_AEQ(T_StrAry,StrTrue)
-;----------------------------------------------- IsStrFn
+;----------------------------------------------- IsStrFn 
 IsStrFn: ; Return T/F if .A is a string function (A preserved)
 ; T_FSTR < A < T_LineNo
  		lda 	CHRGOT
@@ -244,26 +244,26 @@ IsStrFn: ; Return T/F if .A is a string function (A preserved)
 StrNo 		RTN_F()
 StrTrue 	RTN_T()
 
-;----------------------------------------------- StrInit
+;----------------------------------------------- StrInit 
 StrInit: ;VAREND->STR_END, 0->STR_LEN
  		ZCPY(STR_END,VAREND) 	; point to open area
  		ZZERO(STR_LEN)
  		rts
 
-;----------------------------------------------- StrPush
+;----------------------------------------------- StrPush 
 StrPush: ;Push temp string sets up S_PTR_A,S_LEN_A
  		jsr 	NumPushA
- 		;--
+ 		;-- 
  		ZADD(STR_END,STR_LEN)
  		;-- fall through to clear new string
-;----------------------------------------------- StrClear
+;----------------------------------------------- StrClear 
 StrClear: ; Clear string 'accumulator' ready for  a new string
  		ZCPY(S_PTR_A,STR_END) 	; set pointer
  		ZZERO(STR_LEN)
  		ZZERO(S_LEN_A)
  		rts
 
-;----------------------------------------------- StrOvr
+;----------------------------------------------- StrOvr 
 StrOvr: ; Overflow - truncate
  		dey 			; back up to last char
  		lda 	#0 		; make it null
@@ -271,14 +271,14 @@ StrOvr: ; Overflow - truncate
 StrEnd 		sty 	S_LEN_A
  		rts
 
-;----------------------------------------------- StrAppend
+;----------------------------------------------- StrAppend 
 StrAppend: ; Append top two strings (PopB, append)
 ; StrPush sets it up so that the second string is already in the right place
 ; so just swap data and adjust initial length to add second's length
  		jsr 	NumPopB
  		jsr 	NumSwap
  		;-- fall through to get the new length
-;----------------------------------------------- StrLen
+;----------------------------------------------- StrLen 
 StrLen: ; check length of Str_A, set in S_LEN_A
  		ldy 	#0
  		sty 	S_LEN_A+1
@@ -289,7 +289,7 @@ StrLenL 	lda 	(S_PTR_A),Y
 StrLenX 	sty 	S_LEN_A
  		rts
 
-;----------------------------------------------- StrOut
+;----------------------------------------------- StrOut 
 StrOut: ; Output the resulting string (cut at 255)
 ; used by print to output resulting string to io
  		ldy 	#0
@@ -300,7 +300,7 @@ StrOutL 	lda 	(S_PTR_A),y
  		bne 	StrOutL
 StrOutX 	rts
 
-;----------------------------------------------- StrUpper
+;----------------------------------------------- StrUpper 
 StrUpper: ; convert to UPPER case
  		ldy 	#$FF
 StrUpper1 	iny
@@ -312,8 +312,7 @@ StrUpper1 	iny
  		sta 	(S_PTR_A),Y
  		bra 	StrUpper1
 StrUpperX 	RTN_T()
-
-;----------------------------------------------- StrLower
+;----------------------------------------------- StrLower 
 StrLower: ; convert to LOWER case
  		ldy 	#$FF
 StrLower1 	iny
@@ -326,7 +325,25 @@ StrLower1 	iny
  		bra 	StrLower1
 StrLowerX 	RTN_T()
 
-;----------------------------------------------- StrLTrim
+;----------------------------------------------- StrRTrim 
+StrRTrim: ; trim trailing blanks
+ 		;-- get the end of the string ,Y->Null
+ 		jsr 	StrLen
+ 		;-- empty string?
+ 		cpy 	#0
+ 		beq 	StrRTrimX 	; yes -> done
+StrRTrim1 	dey
+ 		lda 	(S_PTR_A),Y
+ 		cmp 	#' '
+ 		beq 	StrRTrim1 	; blank -> loop
+ 		;-- non blank
+StrRTrim2 	iny
+ 		lda 	#0
+ 		sta 	(S_PTR_A),Y 	; place new null
+ 		;-- sta	S_LEN_A		; note new size
+StrRTrimX 	RTN_T()
+
+;----------------------------------------------- StrLTrim 
 StrLTrim: ; trim leading blanks
  		;-- find first non blank
  		ldy 	#$FF
@@ -347,7 +364,7 @@ StrLTrim2 	;- Copy down from Yth char (Delete first Y chars)
  		lda 	#0
  		adc 	S_PTR_A+1
  		sta 	ZSrc+1
- 		;--
+ 		;-- 
  		ldy 	#$FF
 StrLTrim3 	; copy string down
  		iny
@@ -357,25 +374,10 @@ StrLTrim3 	; copy string down
  		;-- sta	S_LEN_A		; note new size
 StrLTrimX 	RTN_T()
 
-;----------------------------------------------- StrRTrim
-StrRTrim: ; trim trailing blanks
- 		;-- get the end of the string ,Y->Null
- 		jsr 	StrLen
- 		;-- empty string?
- 		cpy 	#0
- 		beq 	StrRTrimX 	; yes -> done
-StrRTrim1 	dey
- 		lda 	(S_PTR_A),Y
- 		cmp 	#' '
- 		beq 	StrRTrim1 	; blank -> loop
- 		;-- non blank
-StrRTrim2 	iny
- 		lda 	#0
- 		sta 	(S_PTR_A),Y 	; place new null
- 		;-- sta	S_LEN_A		; note new size
-StrRTrimX 	RTN_T()
 
-;----------------------------------------------- StrFunct
+
+
+;----------------------------------------------- StrFunct 
 StrFunct: ;prepare for string manipulation
  		jsr 	StrPush 	; push the string
  		lda 	#',' 		; check & skip ','
@@ -385,22 +387,22 @@ StrPop: ; PopB and swap
  		jsr 	NumPopB
  		jmp 	NumSwap
 
-;----------------------------------------------- StrComp
+;----------------------------------------------- StrComp 
 StrComp: ; Compare the strings, sets NUM_FLG
- 		LDY 	#0
- 		STY 	NUM_FLG 	; clear result flag
-StrCompL 	LDA 	(S_PTR_A),y
- 		CMP 	(S_PTR_B),y
- 		BCC 	StrCompLT
- 		BNE 	StrCompGT 	; go set result
+ 		ldy 	#0
+ 		sty 	NUM_FLG 	; clear result flag
+StrCompL 	lda 	(S_PTR_A),y
+ 		cmp 	(S_PTR_B),y
+ 		bcc 	StrCompLT
+ 		bne 	StrCompGT 	; go set result
  		;-- equal, is it end of strings?
- 		CMP 	#0 		; is end of strings?
- 		BEQ 	StrCompEQ 	; yes, resultis EQUAL
- 		LDA 	#0
- 		STA 	(S_PTR_B) 	; make sure StrA is terminated (kill append)
+ 		cmp 	#0 		; is end of strings?
+ 		beq 	StrCompEQ 	; yes, resultis EQUAL
+ 		lda 	#0
+ 		sta 	(S_PTR_B) 	; make sure StrA is terminated (kill append)
  		;-- test next character
  		iny
- 		BNE 	StrCompL
+ 		bne 	StrCompL
  		ERROR(ERR_RANGE) 	; 'Out Of Range' - string too long
 
 StrCompGT 	SMB2 	NUM_FLG 	; set bit2:GT
@@ -411,7 +413,7 @@ StrCompLT 	SMB0 	NUM_FLG 	; set bit0:LT
 
 StrCompEQ 	SMB1 	NUM_FLG 	; set bit1:EQ
 
-StrCompX	rts
+StrCompX 	rts
 
 ; BCS LE the carry flag is set when the value in memory is less than or equal to the accumulator,
 ; BCC GT reset when it is greater than the accumulator
@@ -420,7 +422,7 @@ StrCompX	rts
 
 .nolist
 #if _DB_STR
-;----------------------------------------------- DB_Str
+;----------------------------------------------- DB_Str 
 DB_Str: ; Debug String values - PtrA LenA PtrB LenB, VEND SEND SLEN ZRd
  		PUSHALL()
  		PRINTLN("PtrA LenA PtrB LenB")
@@ -442,7 +444,7 @@ DB_Str: ; Debug String values - PtrA LenA PtrB LenB, VEND SEND SLEN ZRd
 .export S_PTR_A,S_PTR_B,NUM_FLG
 
 #ifdef _TEST
-;----------------------------------------------- StrTest
+;----------------------------------------------- StrTest 
 Hi:  		.DB 	T_StrLit,"HellO ",0
 Big 		.DB 	T_StrLit,"BiG ",0
 Wo:  		.DB 	T_StrLit,"WorlD.",0
