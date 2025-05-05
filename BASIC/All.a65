@@ -17,7 +17,7 @@
 #include "XInput.a65" 			; INPUT ["prompt",] NumVar|StrVar
 #include "XPoke.a65" 			; POKE {AddressExpr},## Poke byte of data to the address
 #include "XDoke.a65" 			; DOKE {AddressExpr},## Poke word of data to the address
-
+#include "XLoadSave.a65"		; LOAD and SAVE
 ; Secondary keywords
 #include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
 

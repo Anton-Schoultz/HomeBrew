@@ -193,7 +193,7 @@ RstClr 		sta 	$0000,y 	; clear z-page
  		jsr 	PrStrAX
 
 ;----------------------------------------------- Main
-Main: ;Warm Start entry point
+Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		;-- reset the stack and binary mode
  		sei 			; Halt IRQs
  		ldx 	#$ff 		; Set Stack pointer

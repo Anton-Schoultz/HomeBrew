@@ -2,30 +2,25 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LIST ==============
+;=================================================================== LIST ============== 
 ;*  DB_List              Debug LIST values - BEG  END  NUM  FLG  FND"
+;*  ListInit             initial range for listing 0000->FFFF
 ;*  ListLn               List line (LnNext called before this)
 ;*  X_List               LIST [##From] [- [##To]]~List program (optional range of lines)
+;*  X_ListDo             List lines in range LST_BEG to LST_END
 ;*
 _List 		= $
 
 #define LST_BEG ZSrc
 #define LST_END ZTgt
 
-;----------------------------------------------- X_List
+;----------------------------------------------- X_List 
 X_List: ; LIST [##From] [- [##To]]~List program (optional range of lines)
  		jsr 	ChrRd 		; consume LIST
  		CLS()
- 		;-- Read memory, out to I/O
- 		PR_ZSUP_ON()
  		;-- default range 0000-FFFF
- 		lda 	#0
- 		sta 	LST_BEG
- 		sta 	LST_BEG+1
- 		dec 	a
- 		sta 	LST_END
- 		sta 	LST_END+1
- 		;--
+ 		jsr 	ListInit
+ 		;-- 
  		lda 	CHRGOT
  		BR_ANE(T_NumLit,X_List_0)
  		;-- set from (NumRd will consume the T_NumLit)
@@ -41,21 +36,20 @@ X_List: ; LIST [##From] [- [##To]]~List program (optional range of lines)
 X_List_0 	;- check for a '-'
  		lda 	CHRGOT
  		cmp 	#'-'
- 		bne 	X_List_1 	; no
+ 		bne 	X_ListDo 	; no
  		;-- default end is FFFF
  		lda 	#$ff
  		sta 	LST_END
  		sta 	LST_END+1
  		jsr 	ChrRd 		; consume '-', get next byte
  		;-- check for ending number
- 		BR_ANE(T_NumLit,X_List_1)
+ 		BR_ANE(T_NumLit,X_ListDo)
  		jsr 	NumRd 		; read value into NUM_A
  		jsr 	NumToInt 	; NUM_A as AX l/h
  		sta 	LST_END
  		stx 	LST_END+1
-
-X_List_1 	;-- list lines within range LST_BEG to LST_END
-		;-- find the starting line
+;----------------------------------------------- X_ListDo 
+X_ListDo: ; List lines in range LST_BEG to LST_END
  		ZCPY(LN_FND,LST_BEG)
  		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
  		;-- TODO check start line is out of range
@@ -72,7 +66,7 @@ X_List1 	jsr 	ListLn 		; list the line
  		bne 	X_List_L 	; non-zero, so loop
 X_List_X 	rts
 
-;----------------------------------------------- ListLn
+;----------------------------------------------- ListLn 
 ListLn: ; List line (LnNext called before this)
 ; line token already processed
  		jsr 	ChrRd
@@ -133,7 +127,7 @@ ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
  		jsr 	ChrOut
 ListTokR3 	bra 	ListTokX
- 		;--
+ 		;-- 
  		;-- Token ?
 ListTok1 	ldx 	TOKNO
  		jsr 	TokExpand
@@ -146,8 +140,20 @@ ListTok1 	ldx 	TOKNO
 ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()
 
+;----------------------------------------------- ListInit 
+ListInit: ; initial range for listing 0000->FFFF
+ 		;-- default range 0000-FFFF
+ 		lda 	#0
+ 		sta 	LST_BEG
+ 		sta 	LST_BEG+1
+ 		dec 	a
+ 		sta 	LST_END
+ 		sta 	LST_END+1
+ 		PR_ZSUP_ON()
+ 		rts
+
 #if _DB_LIST
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 DB_List: ; Debug LIST values - BEG  END  NUM  FLG  FND"
  		PUSHALL()
  		PRINTLN("BEG  END  NUM  FLG  FND")
@@ -172,13 +178,13 @@ DB_List: ; Debug LIST values - BEG  END  NUM  FLG  FND"
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;----------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_List 		.DB 	"LIS",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;----------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_List 		= LOW($)+$80

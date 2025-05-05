@@ -159,7 +159,7 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		rts
 
 ;----------------------------------------------- PrNL
-PrNL: ; print CR,LF to PutChr -> mem/io
+PrNL: ; print CR,LF to ChrOut -> io
  		lda 	#CR
  		jsr 	ChrOut
  		lda 	#LF

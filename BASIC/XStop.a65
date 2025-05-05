@@ -13,6 +13,8 @@ _Stop 		= $
 X_Stop: ; STOP~Stop executing the program
  		jmp 	Main 		; resets stack etc
 
+; Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
+
 #if _LEVEL >= _KEYWORDS
 .echo "  _STOP\t\t"
 .echo $-_Stop
