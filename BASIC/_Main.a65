@@ -131,7 +131,13 @@ MathModule = MATH_MOD_S24	;6651 -> 6578
 ; 		START OF ROM
  		jmp 	Reset
 
+#if MathModule = MATH_MOD_S24
 Greet 		.DB 	_FF,"Minimal BASIC S24",CR,LF,0
+#endif
+
+#if MathModule = MATH_MOD_S16
+Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
+#endif
 
 #include "Util.a65" 			; utilities for general use
 
