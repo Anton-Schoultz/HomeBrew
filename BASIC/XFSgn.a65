@@ -23,9 +23,12 @@ SgnOne 		sta 	NUM_AS 		; save sign 00/FF
  		rts
 SgnZero 	jmp 	NumZeroA
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _SGN(\t\t"
 .echo $-_Sgn
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

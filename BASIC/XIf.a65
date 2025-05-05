@@ -66,9 +66,12 @@ X_IfStr:; do string comparison
 
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _IF\t\t"
 .echo $-_If
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

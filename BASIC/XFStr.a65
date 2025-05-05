@@ -18,9 +18,12 @@ X_FStr: ; STR$(##Value)~Return string representation of the value
 X_FStrX 	jmp 	StrLen 		; find new length
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _STR$(\t"
 .echo $-_FStr
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

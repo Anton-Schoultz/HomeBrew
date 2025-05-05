@@ -126,8 +126,11 @@ ListVarEnd 	;- done with var name
  		RTN_T()
 
 
+#if _LEVEL >= _DETAIL
 .echo "  _Variables\t"
 .echo $-_Variables
 .echo "\n"
+#endif
+
 .list
 

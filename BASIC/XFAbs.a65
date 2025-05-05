@@ -14,9 +14,12 @@ X_Abs: ; ABS(##)~Return absolute value of numeric expression ##
  		sta 	NUM_AS
  		rts
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _ABS(\t\t"
 .echo $-_Abs
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

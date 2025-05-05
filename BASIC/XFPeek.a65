@@ -22,9 +22,12 @@ X_Peek: ; PEEK(##Address)~Return the byte at address
 ; NumPopB	Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
 ; NumSwap	Swap NUM_A <-> NUM_B  (S,X,A,B,C)
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _PEEK(\t"
 .echo $-_Peek
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

@@ -21,9 +21,12 @@ X_Chr: ; CHR$(##)~Return string with a character for the given value
 X_ChrX 		jmp 	StrLen 		; find new length
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _CHR$(\t"
 .echo $-_Chr
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

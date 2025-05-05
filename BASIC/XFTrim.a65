@@ -13,9 +13,12 @@ X_Trim: ; TRIM$($$)~Trim leading and trailing spaces from the string
  		jsr 	StrLTrim 	; trim left
  		jmp 	StrRTrim 	; and then right
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _TRIM$(\t"
 .echo $-_Trim
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

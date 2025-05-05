@@ -49,14 +49,19 @@ _Edt 		= $
 ;----------------------------------------------- EdtNew
 EdtNew: ; NEW = clear program, variables etc.
  		;-- Start Basic at start of RAM
- 		ZCPY(BASBEG,RAMBEG)
- 		ZCPY(ZWr,BASBEG) 	; prepare to write to memory
+ 		;ZCPY(BASBEG,RAMBEG)
+ 		;ZCPY(ZWr,BASBEG) 	; prepare to write to memory
+ 		lda	RAMBEG
+ 		sta	BASBEG
+ 		sta	ZWr
+ 		lda	RAMBEG+1
+ 		sta	BASBEG+1
+ 		sta	ZWr+1
  		;-- Null terminate Program
  		lda 	#0
  		jsr 	ChrWr 		; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		;-- jsr 	ChrWr
  		ZCPY(BASEND,ZWr) 	; Set BASEND
-
  		;-- wipe program
  		lda 	#0
  		tay
@@ -70,8 +75,16 @@ EdtClear: ; Clear variables and arrays
  		lda 	#0
  		jsr 	ChrWr
  		jsr 	ChrWr
- 		ZCPY(VAREND,ZWr) 	; Set VAREND
- 		ZCPY(STR_END,ZWr) 	; Set STR_END
+
+ 		;ZCPY(VAREND,ZWr) 	; Set VAREND
+ 		;ZCPY(STR_END,ZWr) 	; Set STR_END
+ 		lda	ZWr
+ 		sta	VAREND
+ 		sta	STR_END
+ 		lda	ZWr+1
+ 		sta	VAREND+1
+ 		sta	STR_END+1
+
  		;-- clear arrays
  		ZCPY(ARYBEG,RAMEND)
  		ZDEC(ARYBEG) 		; top the last ram byte
@@ -103,10 +116,17 @@ EdtAdd: ; Append TOKBUF line to end of program
 EdtDel: ; Delete line and fall through to Insert
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
- 		ZCPY(ZCnt,BASEND)
- 		ZSUB(ZCnt,LN_ADR)
+
+ 		; ZCnt = BASEND - LN_ADR
+ 		;ZCPY(ZCnt,BASEND)
+ 		;ZSUB(ZCnt,LN_ADR)
+ 		; ZSUBR(r,m,n)	r = m - n
+ 		ZSUBR(ZCnt,BASEND,LN_ADR)
+
+ 		; BASEND = BASEND - ZSrc + ZTgt
  		ZSUB(BASEND,ZSrc) 	; BASEND -= Len
  		ZADD(BASEND,ZTgt)
+
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
@@ -115,12 +135,19 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		bpl 	EdtInsX 	; Empty Line -> exit
  		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
+
  		;-- ZTgt=LN_ADR+TOK_LEN
- 		ZCPY(ZTgt,LN_ADR)
- 		ZADD(ZTgt,TOK_LEN)
+ 		;ZCPY(ZTgt,LN_ADR)
+ 		;ZADD(ZTgt,TOK_LEN)
+ 		; ZADDR(r,m,n)	r = m  + n
+ 		ZADDR(ZTgt,LN_ADR,TOK_LEN)
+
  		;-- ZCnt = BASEND - LN_ADR
- 		ZCPY(ZCnt,BASEND)
- 		ZSUB(ZCnt,LN_ADR) 	; ZSUB(r,n)	r = r-n
+ 		;ZCPY(ZCnt,BASEND)
+ 		;ZSUB(ZCnt,LN_ADR) 	; ZSUB(r,n)	r = r-n
+ 		; ZSUBR(r,m,n)	r = m - n
+ 		ZSUBR(ZCnt,BASEND,LN_ADR)
+
  		ZADD(BASEND,TOK_LEN) 	; BASEND += Len
  		;-- copy up to make space
  		jsr 	EdtOpn
@@ -292,9 +319,11 @@ DB_EdtMove: ; Debug memory moves - ZPtr ZCnt ZSrc ZTgt
 
 #endif
 
-
+#if _LEVEL >= _DETAIL
 .echo "  _Edtor\t"
 .echo $-_Edt
 .echo "\n"
+#endif
+
 .list
 #endif

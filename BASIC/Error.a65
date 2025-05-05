@@ -241,9 +241,11 @@ MsgChrX 	jmp 	PutChr
 
 
 
-
+#if _LEVEL >= _DETAIL
 .echo "  _Error\t"
 .echo $-_Err
 .echo "\n"
+#endif
+
 .list
 #endif

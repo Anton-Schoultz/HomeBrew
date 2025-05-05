@@ -46,7 +46,8 @@ X_Run: ; RUN [#LineNo]~Execute the program, optionally from line number
  		jsr 	ChrRd 		; consume RUN
  		BR_ANE(T_NumLit,Run) 	; start at default line no 0
  		;-- numeric literal is start line
- 		jsr 	NumRd 		; returns in A=Hi, X=Lo
+ 		jsr 	NumRd 		; read number into NUM_A
+ 		jsr 	NumToInt 	; NUM_A as AX l/h
  		sta 	LN_FND+1
  		stx 	LN_FND
 Run 		;-- Run from line LN_FND
@@ -84,9 +85,12 @@ RunTokErr: ; display invalid token as [xx]
  		ERROR(ERR_TOKEN)
 
 
+#if _LEVEL >= _KEYWORDS
 .echo "  _RUN\t\t"
 .echo $-_Run
 .echo "\n"
+#endif
+
 .nolist
 #endif
 

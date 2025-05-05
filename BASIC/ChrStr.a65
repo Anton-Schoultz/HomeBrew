@@ -183,8 +183,8 @@ ChrInitL 	lda 	ChrRd_,X
 
 
 ;----------------------------------------------- PutNull
-PutNull: ; write terminating null to Mem/IO
- 		lda 	#0
+;PutNull: ; write terminating null to Mem/IO
+; 		lda 	#0
 ;----------------------------------------------- PutChr
 PutChr: ; Print character to Mem/IO
  		;-- don't send null
@@ -339,10 +339,11 @@ IsDigit: ; returns T/F if .A is a digit 0..9
 IsTrue 		RTN_T()
 IsFalse 	RTN_F()
 
-
+#if _LEVEL >= _DETAIL
 .echo "  _ChrStr\t"
 .echo $-_ChrStr
 .echo "\n"
+#endif
 
 .LIST 					;-- End of ChrStr
 

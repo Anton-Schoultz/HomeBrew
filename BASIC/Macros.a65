@@ -35,9 +35,11 @@
 ;*m UPPER(m)             Upper byte 2
 ;*m ZADD(r,n)            r = r+n
 ;*m ZADD3(r,n)           r = r+n
+;*m ZADDR(r,m,n)         r = m  + n
 ;*m ZCPY(zTo,zFr)        Coppies z-pg pair from zFr to zTo
 ;*m ZCPY3(zTo,zFr)       Coppies 3 bytes from zFr to zTo
 ;*m ZCPY4(zTo,zFr)       Coppies 4 bytes from zFr to zTo
+;*m ZCPY6(zTo,zFr)       Coppies 6 bytes from zFr to zTo
 ;*m ZCPY7(zTo,zFr)       Coppies 7 bytes from zFr to zTo
 ;*m ZDEC(z)              Decrement z-pg pair at z,z+1
 ;*m ZINC(z)              Increment z-pg pair at z,z+1
@@ -47,6 +49,7 @@
 ;*m ZSR(z)               Shift Z,z+1 right (/2)
 ;*m ZSUB(r,n)            r = r-n
 ;*m ZSUB3(r,n)           r = r-n
+;*m ZSUBR(r,m,n)         r = m - n
 ;*
 
 ; 00=BRK x, 02=NOP x
@@ -76,7 +79,7 @@
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
 
 ; ZZERO(z)	Zero a z-pg z
-#define ZZERO(z) 	.db $64, z
+;#define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
 ;----------------------------------------------- LOW,HIGH,UPPER
@@ -110,6 +113,10 @@
 ;----------------------------------------------- ZPg
 ; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
 #DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
+
+; ZZERO(z)	Sets z-pg pair z,z+1 to 0
+#DEFINE ZZERO(z) lda #0 \ sta z \ sta z+1
+
 ; ZCPY(zTo,zFr)	Coppies z-pg pair from zFr to zTo
 #DEFINE ZCPY(zTo,zFr) lda zFr \ sta zTo \ lda zFr+1 \ sta zTo+1
 ; ZCPY3(zTo,zFr) Coppies 3 bytes from zFr to zTo
@@ -148,6 +155,13 @@
 #define ZSUB(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1
 ; ZSUB3(r,n)	r = r-n
 #define ZSUB3(r,n) sec\ lda r\ sbc n\ sta r\ lda r+1\ sbc n+1\ sta r+1\ lda r+2\ sbc n+2\ sta r+2
+
+
+; ZSUBR(r,m,n)	r = m - n
+#define ZSUBR(r,m,n) sec\ lda m\ sbc n\ sta r\ lda m+1\ sbc n+1\ sta r+1
+
+; ZADDR(r,m,n)	r = m  + n
+#define ZADDR(r,m,n) clc\ lda m\ adc n\ sta r\ lda m+1\ adc n+1\ sta r+1
 
 
 ;----------------------------------------------- 16 bit AX
