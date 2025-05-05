@@ -1,0 +1,86 @@
+#ifdef hide
+.NOLIST
+#endif
+
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== FLOW =============
+;*  X_Gosub              GOSUB #expr~Call subroutine at LineNo
+;*  X_Goto               GOTO #NumExpr~Goto LineNo
+;*  X_Return             RETURN~Return control to after the GOSUB
+;*
+_Flow 		= $
+
+;----------------------------------------------- X_Gosub
+X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
+ 		;-- push return line address onto RTNSTK
+ 		ldx 	RTNSP
+ 		lda 	LN_NXT
+ 		sta 	RTNSTK_L
+ 		lda 	LN_NXT+1
+ 		sta 	RTNSTK_H
+ 		;-- bump stack pointer & check stack overflow
+ 		inx
+ 		cmp 	#RTNSZ
+ 		bpl 	GoSubRtnErr
+ 		stx 	RTNSP
+; Fall through to evaluate numeric expression as target line no and jump
+;----------------------------------------------- X_Goto
+X_Goto: ;  GOTO #NumExpr~Goto LineNo
+ 		jsr 	ChrRd 		; consume token
+ 		jsr 	EvInt 		; Evaluate expression as integer value AX Lo,Hi
+ 		stx 	LN_FND+1
+ 		sta 	LN_FND
+ 		jsr 	LnGo
+ 		;-- return will go to next line, so back up
+ 		ZCPY(LN_NXT,LN_ADR)
+ 		rts
+
+GoSubRtnErr 	ERROR(ERR_GOSUB) 	; 'GOSUB/RETURN error
+
+
+
+;----------------------------------------------- X_Return
+X_Return: ; RETURN~Return control to after the GOSUB
+ 		jsr 	ChrRd 		; consume token
+ 		;-- pop return
+ 		ldx 	RTNSP
+ 		dex
+ 		bmi 	GoSubRtnErr
+ 		;-- set up return line as next one to execute
+ 		lda 	RTNSTK_L
+ 		sta 	LN_NXT
+ 		lda 	RTNSTK_H
+ 		sta 	LN_NXT+1
+ 		rts
+
+
+#if _LEVEL >= _KEYWORDS
+.echo "  _GOTO/SUB/RTN\t"
+.echo $-_Flow
+.echo "\n"
+#endif
+
+.nolist
+#endif
+
+;----------------------------------------------- keyword
+#if ($/256) = PG_KEY
+.list
+W_Goto 		.DB 	"GOT",'O'+$80
+W_Gosub 	.DB 	"GOSU",'B'+$80
+W_Return 	.DB 	"RETUR",'N'+$80
+.nolist
+#endif
+;----------------------------------------------- run
+#if ($/256) = PG_RUN
+.list
+T_Goto 		= LOW($)+$80
+.DW 	X_Goto
+T_Gosub 	= LOW($)+$80
+.DW 	X_Gosub
+T_Return 	= LOW($)+$80
+.DW 	X_Return
+.nolist
+#endif
+
+.list 					; end of Goto
