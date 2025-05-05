@@ -312,6 +312,8 @@ ROMEND 		= $
 .echo 256-($-TblKeyword)
 .echo " free)\n"
 
+
+
 ;----------------------------------------------- TblRun
 ; Include for the jump/run table
 .org TblRun
@@ -348,8 +350,9 @@ T_Max 		= LOW($)+$80
 .echo " bytes used (~"
 .echo (ROMEND - _ROM + 512) * 100 / 8192
 .echo "%)  "
-.echo ($FF00 - ROMEND)
+.echo ($FE00 - ROMEND)
 .echo " bytes remaining.\n\n"
 
+.export  ROMEND,TblKeyword,TblRun
 
 .end

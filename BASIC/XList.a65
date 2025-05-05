@@ -54,7 +54,8 @@ X_List_0 	;- check for a '-'
  		sta 	LST_END
  		stx 	LST_END+1
 
-X_List_1 	;-- find the starting line
+X_List_1 	;-- list lines within range LST_BEG to LST_END
+		;-- find the starting line
  		ZCPY(LN_FND,LST_BEG)
  		jsr 	LnSeekTop 	;Seek line>=LN_FND, sets LN_ADR,LN_NUM,LN_NXT
  		;-- TODO check start line is out of range

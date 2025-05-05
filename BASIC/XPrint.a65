@@ -120,3 +120,5 @@ T_Print 	= LOW($)+$80
 .nolist
 #endif
 .list 					; end of PRINT
+
+.export T_Print
