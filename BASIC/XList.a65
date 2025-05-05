@@ -86,7 +86,7 @@ ListLn: ; List line (LnNext called before this)
  		ldx 	LN_NUM+1
  		jsr 	IntPrint
  		lda 	#' '
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 
 ListLnL 	;-- check for end of line null
  		lda 	CHRGOT
@@ -102,7 +102,7 @@ ListLnX 	;-- end of the line, CRLF and done
  		jmp 	PrNL
 
 ListChr 	; non-token
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		jsr 	ChrRd
  		bra 	ListLnL
 
@@ -126,13 +126,13 @@ ListTok 	sta 	TOKNO
  		;-- expand realtional op
  		BBR0 	TOKNO,ListTokR1 ; '<' ?
  		lda 	#'<'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 ListTokR1 	BBR2 	TOKNO,ListTokR2 ; '>' ?
  		lda 	#'>'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 ListTokR2 	BBR1 	TOKNO,ListTokR3 ; '=' ?
  		lda 	#'='
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 ListTokR3 	bra 	ListTokX
  		;--
  		;-- Token ?
@@ -142,7 +142,7 @@ ListTok1 	ldx 	TOKNO
 
  		;-- not token, treat as ASCII
  		lda 	TOKNO 		; CHRGOT
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 
 ListTokX 	jsr 	ChrRd 		; get next byte
  		RTN_T()

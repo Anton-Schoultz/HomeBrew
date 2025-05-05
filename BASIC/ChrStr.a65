@@ -186,25 +186,17 @@ ChrInitL 	lda 	ChrRd_,X
 ;PutNull: ; write terminating null to Mem/IO
 ; 		lda 	#0
 ;----------------------------------------------- PutChr
-PutChr: ; Print character to Mem/IO
- 		;-- don't send null
- 		cmp 	#0
- 		beq 	ChrWrX
- 		;-- output or memory
- 		BR_WR(ChrWr) 		;wr=1?
- 		;-- 0=fall through to send via ChrOut
+;PutChr: ; Print character to Mem/IO
+; 		;-- don't send null
+; 		cmp 	#0
+; 		beq 	ChrWrX
+; 		;-- output or memory
+; 		BR_WR(ChrWr) 		;wr=1?
+; 		;-- 0=fall through to send via ChrOut
 ;----------------------------------------------- ChrOut
 ChrOut: ; Send character to output device (SCR,COM..)
  		jmp 	(VCHROUT)
-;----------------------------------------------- ChrWr
-ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
- 		sta 	(ZWr)
- 		;-- bump to next address
- 		ZINC(ZWr)
- 		;-- ensure terminating null
- 		lda 	#0
- 		sta 	(ZWr)
-ChrWrX 		rts
+
 
 ;;----------------------------------------------- GetChr
 ;GetChr: ; Input character from Mem/IO -> A, CHRGOT
@@ -225,6 +217,16 @@ ChrIn: ; Read character from input device (KBD,COM..) -> CHRGOT
 ChrVecIn 	jmp 	(VCHRIN)
 ;----------------------------------------------- ChrRd
 ;ChrRd is code in Z Page
+
+;----------------------------------------------- ChrWr
+ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
+ 		sta 	(ZWr)
+ 		;-- bump to next address
+ 		ZINC(ZWr)
+ 		;-- ensure terminating null
+ 		lda 	#0
+ 		sta 	(ZWr)
+ChrWrX 		rts
 
 ;----------------------------------------------- InputText
 InputText: ; Input text from console to INBUF, prompt char is in A
@@ -279,7 +281,12 @@ Input1 		cmp 	#$22 		; is it a quote?
 Input2 		ldy 	ZTmp
  		bne 	Input3 		; quote mode is on
  		;-- not in quote mode, so convert to upper case
- 		jsr 	ToUpper
+	 	cmp 	#'a'
+ 		bmi 	Input3 	; <'a'
+ 		cmp 	#'{'
+ 		bpl 	Input3
+ 		eor 	#$20
+		;
 Input3 		sta 	INBUF,x 	; place in buf
  		;-- check buffer full
  		cpx 	#BUFSZ
@@ -291,14 +298,6 @@ InputX 		lda 	#0 		; terminate with a null
  		sta 	INBUF,X
  		sta 	INBUF+1,X
  		rts
-
-ToUpper 	cmp 	#'a'
- 		bmi 	ToUpperX 	; <'a'
- 		cmp 	#'{'
- 		bpl 	ToUpperX
- 		;--
- 		eor 	#$20
-ToUpperX 	rts
 
 ;----------------------------------------------- PrStrAX
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
@@ -315,7 +314,7 @@ PrStr1 		lda 	(ZPtr),y
  		bmi 	PrStrX 		; bit 7 set -> exit
  		and 	#$7F 		; force ascii
  		;--
-PrStr2 		jsr 	PutChr 		; print character
+PrStr2 		jsr 	ChrOut 		; print character to io
  		iny 			; move to next char
  		bne 	PrStr1 		; loop back (no more than 255 chars)
 PrStrX 		sty 	ZTmp

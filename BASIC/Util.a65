@@ -100,7 +100,7 @@ IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
 IntPrint2 	;- now pop & print the digits
  		pla
  		bmi 	IntPrintX 	; found the marker so exit
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		bra 	IntPrint2
 IntPrintX 	rts
 
@@ -176,9 +176,9 @@ PtrAX: ; set ZPtr to valkue in AX (lo,hi)
 ;----------------------------------------------- PrNL
 PrNL: ; print CR,LF to PutChr -> mem/io
  		lda 	#CR
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		lda 	#LF
- 		jmp 	PutChr
+ 		jmp 	ChrOut
 
 ;=================================================================== UTIL_HEX =========
 Nib2HexTbl
@@ -214,7 +214,7 @@ PrNib: ; Convert hex nibble and Print it (preserves XY)
 PrNibX 		tax
  		lda 	Nib2HexTbl,X 	; Look Up
  		plx
- 		jmp 	PutChr 		; Write/Send
+ 		jmp 	ChrOut 		; Write/Send
 
 ;----------------------------------------------- Hex2Nib
 Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]

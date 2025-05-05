@@ -309,18 +309,18 @@ P_StrX 		lda 	#0
 ;----------------------------------------------- L_String
 L_String: ; list out string text
  		lda 	#'"'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 
 L_StringL	jsr 	ChrRd 		; get from IO
  		beq 	L_StringX 	; Null -> exit
  		BR_ND7(L_String1) 	; Stop=Off, skip bit test
  		bmi 	L_StringX 	; bit 7 set -> exit
  		and 	#$7F 		; force ascii
-L_String1 	jsr 	PutChr 		; put Mem / IO
+L_String1 	jsr 	ChrOut 		; put Mem / IO
  		bra 	L_StringL 	; loop
 
 L_StringX	lda 	#'"'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		jmp 	ChrRd 		; close quote and rts
 
 

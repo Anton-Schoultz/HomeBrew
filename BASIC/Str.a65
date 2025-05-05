@@ -295,10 +295,11 @@ StrLenX 	sty 	S_LEN_A
 
 ;----------------------------------------------- StrOut
 StrOut: ; Output the resulting string (cut at 255)
+; used by print to output resulting string to io
  		ldy 	#0
 StrOutL 	lda 	(S_PTR_A),y
  		pha
- 		jsr 	PutChr 		; A -> mem/io
+ 		jsr 	ChrOut 		; A -> io
  		pla
  		beq 	StrOutX 	; null -> done
  		iny

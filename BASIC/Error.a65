@@ -162,16 +162,16 @@ MsgL0 		;-- output the word
  		BR_AEQ('&',MsgYH) 	; ZRegY as hex
  		BR_AEQ('%',MsgYD) 	; ZRegY as dec
  		BR_AEQ('*',MsgErrAdr) 	; caller address stack
- 		jsr 	PutChr 		; echo
+ 		jsr 	ChrOut 		; echo
  		bra 	MsgL 		; loop next char
 
 MsgLX 		;-- last character of the word (marked one)
  		and 	#$7F 		; mask off bit7
- 		jsr 	PutChr 		; output it and return
+ 		jsr 	ChrOut 		; output it and return
  		jsr 	IsAlpha
  		BR_F(MsgX) 		; ends in alpha?
  		lda 	#' ' 		; yes, pad a blank
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 MsgX 		;jsr ChrRd
  		RTN_T() 		; otherwise done
 MsgInvalid 	; not found
@@ -188,7 +188,7 @@ MsgYC 		lda 	ZRegY 		; '#' Y as char
 MsgYH 		lda 	ZRegY 		; '$' Y as hex
 MsgHex 		pha
  		lda 	#'$'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		pla
  		jsr 	PrAHex
  		bra 	MsgL
@@ -209,9 +209,9 @@ MsgErrAdr 	;-- display stack trace
  		BRA 	MsgStkL1
 MsgStkL 	;-- display stack trace
  		lda 	#'<'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		lda 	#'~'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
  		;-- pop Hi,Lo and decr to match the jsr address
  		pla
  		STA 	ZTmp
@@ -237,7 +237,7 @@ MsgChr: ; print char in .A if it is ascii, otherwise a '?'
  		cmp 	#$21
  		bpl 	MsgChrX
 MsgChrNo 	lda 	#'?'
-MsgChrX 	jmp 	PutChr
+MsgChrX 	jmp 	ChrOut
 
 
 

@@ -107,19 +107,19 @@ VarList: ; List a variable specifier
  		;-- List a VarName
 ListVarL 	jsr 	ChrRd 		; read name character
  		bmi 	ListVarStp 	; Ending character
- 		jsr 	PutChr 		; output letter
+ 		jsr 	ChrOut 		; output letter
  		bra 	ListVarL 	; loop back
 
 ListVarStp 	; last char has bit 7 set
  		and 	#$7F
- 		jsr 	PutChr 		; maskoff and output
+ 		jsr 	ChrOut 		; maskoff and output
 
 ListVarStr 	BBR1 	TOKNO,ListVarAry ; String?
  		lda 	#'$' 		; yes, '$'
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 ListVarAry 	BBR0 	TOKNO,ListVarEnd ; array ?
  		lda 	#'(' 		; yes '('
- 		jsr 	PutChr
+ 		jsr 	ChrOut
 
 ListVarEnd 	;- done with var name
  		jsr 	ChrRd

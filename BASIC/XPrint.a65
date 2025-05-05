@@ -55,7 +55,7 @@ X_PrSemi 	; SEMICOLON
 X_PrStr 	; STRING expression
  		jsr 	StrInit
  		jsr 	EvString 	; Evaluate
- 		jsr 	StrOut 		; Print
+ 		jsr 	StrOut 		; Print to io
  		DONL() 			; NL on
  		RTN_T() 		; OK
 ;----------------------------------------------- X_PrNum
