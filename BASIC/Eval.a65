@@ -1,4 +1,4 @@
-;=================================================================== EVALUATE ========= 
+;=================================================================== EVALUATE =========
 ;*  BoolOr               OR
 ;*  BoolTerm             Boolean AND
 ;*  BoolXor              XOR
@@ -37,36 +37,36 @@
 
 _Ev 		= $
 
-;------------------------------------------------------- EvNumeric 
+;------------------------------------------------------- EvNumeric
 EvNumeric: ; Evaluate numeric expression, return T if valid (and CHRGOT is next char)
  		jsr 	BoolTerm
  		BR_T(EvNumL)
  		rts
 EvNumL 		jsr 	IsOrOp
  		bne 	EvNumX
- 		;-- 
+ 		;--
  		jsr 	NumPushA
  		jsr 	DoOrOp
  		bra 	EvNumL
- 		;-- 
+ 		;--
 EvNumX 		;-- TODO Does this really need to be packed as NumSet will pack?
  		php
  		jsr 	NumPack
  		plp
  		rts
 
-;------------------------------------------------------- EvInt 
+;------------------------------------------------------- EvInt
 EvInt: ; Evaluate expression as integer value AX Lo,Hi
  		jsr 	EvNumeric
  		jmp 	NumToInt
 
-;------------------------------------------------------- DoOrOp 
+;------------------------------------------------------- DoOrOp
 DoOrOp 		lda 	CHRGOT
  		CASE(T_OR,BoolOr)
  		CASE(T_XOR,BoolXor)
  		RTN_F()
 
-;------------------------------------------------------- IsOrOp 
+;------------------------------------------------------- IsOrOp
 IsOrOp 		; return EQ if 'OR' / 'XOR'
  		lda 	CHRGOT
  		cmp 	#T_OR
@@ -74,7 +74,7 @@ IsOrOp 		; return EQ if 'OR' / 'XOR'
  		cmp 	#T_XOR
 IsOrOpX 	rts
 
-;------------------------------------------------------- BoolOr 
+;------------------------------------------------------- BoolOr
 BoolOr: ; OR
  		jsr 	ChrRd
  		jsr 	BoolTerm
@@ -84,7 +84,7 @@ BoolOr: ; OR
  		jsr 	ChrRd
  		RTN_T()
 
-;------------------------------------------------------- BoolXor 
+;------------------------------------------------------- BoolXor
 BoolXor: ; XOR
  		jsr 	ChrRd
  		jsr 	BoolTerm
@@ -92,7 +92,7 @@ BoolXor: ; XOR
  		lda 	CHRGOT
  		RTN_T()
 
-;------------------------------------------------------- BoolTerm 
+;------------------------------------------------------- BoolTerm
 BoolTerm: ; Boolean AND
  		jsr 	NotFactor
 BoolTermL 	lda 	CHRGOT
@@ -106,12 +106,12 @@ BoolTermL 	lda 	CHRGOT
  		bra 	BoolTermL
 BoolTermX 	RTN_T()
 
-;------------------------------------------------------- NotFactor 
+;------------------------------------------------------- NotFactor
 NotFactor: ; Boolean NOT
  		lda 	CHRGOT
  		cmp 	#T_NOT
  		bne 	Relation
- 		;-- 
+ 		;--
  		jsr 	ChrRd 			; consume NOT
  		jsr 	Relation
  		;-- negate realtion result 0<->1
@@ -119,18 +119,18 @@ NotFactor: ; Boolean NOT
  		lda 	CHRGOT
  		RTN_T()
 
-;------------------------------------------------------- Relation 
+;------------------------------------------------------- Relation
 Relation: ; Handle relation test < = > <= <> >=
  		jsr 	Expression
  		jsr 	IsRelOp
  		bne 	RelationX
- 		;-- 
+ 		;--
  		lda 	CHRGOT 			; fetch the token again
  		pha 				; save the relop on stack
- 		;-- 
+ 		;--
  		jsr 	NumPushA
  		jsr 	ChrRd 			; consume op
- 		;-- 
+ 		;--
  		jsr 	Expression 		; get second expression
  		jsr 	NumPopB 		;
  		jsr 	NumSub 			; subtract
@@ -148,13 +148,13 @@ RelFalse 	; set NUMA to zero
  		jsr 	NumFalse 		; FALSE = 0
 RelationX 	RTN_T()
 
-;------------------------------------------------------- IsRelOp 
+;------------------------------------------------------- IsRelOp
 IsRelOp: ; return eq if op is one of  <,=,>,<=,<>,>=
  		and 	#$F8
  		cmp 	#$F0
  		rts
 
-;------------------------------------------------------- Expression 
+;------------------------------------------------------- Expression
 Expression: ;  [ Term ]   ( [+/-] Term)*
  		jsr 	IsAddOp
  		bne 	Exp1
@@ -209,7 +209,7 @@ IsAddOp 	lda 	CHRGOT
 IsAddOpX 	rts
 
 
-;------------------------------------------------------- Term 
+;------------------------------------------------------- Term
 Term: ; Factor [ '*'|'/'|'%' Factor]*
  		jsr 	Factor
 
@@ -267,7 +267,7 @@ IsMulOp 	lda 	CHRGOT
  		cmp 	#'%'
 IsMulOpX 	rts
 
-;------------------------------------------------------- Factor 
+;------------------------------------------------------- Factor
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
 ; exits with next token in CHRGOT
  		lda 	CHRGOT
@@ -300,7 +300,7 @@ Function 	;-- process a function
  		jsr 	RunJump
 FunctionX 	RTN_T()
 
-;------------------------------------------------------- ENumLit 
+;------------------------------------------------------- ENumLit
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ; CHRGOT is first char AFTER the stored value
  		;-- fetch number from memory
@@ -308,7 +308,7 @@ ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
  		jsr 	ChrRd 			; move on
  		RTN_T()
 
-;------------------------------------------------------- EvFVar 
+;------------------------------------------------------- EvFVar
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
 ; VARNUM has XX AABBCC format (packed)
@@ -320,22 +320,22 @@ EvFVar: ; retrieve variable value -> NumA
  		jsr 	ChrRd 			; get next token into CHRGOT
  		RTN_T() 			; got a value
 
-;------------------------------------------------------- EvVarLong 
+;------------------------------------------------------- EvVarLong
 EvVarLong: ; TODO Get value of long name variable
  		ERROR(ERR_BADVAR) 		; invalid variable
  		;-- inc	EVFLG		; got a value
-;------------------------------------------------------- EvFAry 
+;------------------------------------------------------- EvFAry
 EvFAry: ; TODO Retrieve array variable value -> NumA
  		ERROR(ERR_BADVAR) 		; invalid variable
  		;-- inc	EVFLG		; got a value
 
-;------------------------------------------------------- Check 
+;------------------------------------------------------- Check
 Check: ; check for a given token in CHRGOT
  		cmp 	CHRGOT
  		bne 	MatchFail
  		rts
 
-;------------------------------------------------------- Match 
+;------------------------------------------------------- Match
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
  		bne 	MatchFail
@@ -347,9 +347,9 @@ MatchFail 	; expected in A
 
 
 #if _DB_EVAL
-;=================================================================== DBUG ============= 
+;=================================================================== DBUG =============
 
-;------------------------------------------------------- DB_EvStr 
+;------------------------------------------------------- DB_EvStr
 DB_EvStr: ; Debug Eval - ZRd  SnEx NumA Gt Fl  SnEx=S_LEN_A, NumA=S_PTR_A
  		PUSHALL()
  		jsr 	PrNL
