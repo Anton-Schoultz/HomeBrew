@@ -1,0 +1,31 @@
+; MC68B50_def.a65
+;
+; definitions for the MC68B50 Serial com chip
+;
+
+;--------------------------------------------------------------------- Control  = Speed OR Format
+;--------------------------------------------------------------------- Speed
+COM_DIV1 	= 	0
+COM_DIV16 	= 	1
+COM_DIV64 	= 	2
+COM_RST 	= 	3
+;--------------------------------------------------------------------- Format
+COM_7E2 	= 	0
+COM_7O2 	= 	4
+COM_7E1 	= 	8
+COM_7O1 	= 	12
+COM_8N2 	= 	16
+COM_8N1 	= 	20
+COM_8E1 	= 	32
+COM_8O1 	= 	36
+
+;--------------------------------------------------------------------- status meanings
+COM_RDRF 	= 	$01 		; Receive data register full   '1'
+COM_TDRE 	= 	$02 		; Transmit data register empty '1'
+COM_DCD 	= 	$04 		; '1' when /DCD input goes low
+COM_CTS 	= 	$08 		; '0' if /CTS is low (enabled) (blocks TDRE)
+COM_FE 		= 	$10 		; Framming error
+COM_OVRN 	= 	$20 		; Overrun error
+COM_PE 		= 	$40 		; Parity Error
+COM_IRQ 	= 	$80 		; '1' = IRQ is active (IRQ output is low)
+

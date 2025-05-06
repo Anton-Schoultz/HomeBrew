@@ -1,25 +1,57 @@
-;=================================================================== CONSTANTS ======== 
+;=================================================================== CONSTANTS ========
+;------------------------------------------------------- SCREEN
 SCRN_COLS 	= 40
 SCRN_LINES 	= 16
 
-PG_SYSVAR 	= 3
-PG_SYSIO 	= 2
+;------------------------------------------------------- COM PORT
+#define ADR_RS232  $0300
 
-MATH_MOD_NONE= 	0
-MATH_MOD_S16= 	1
-MATH_MOD_S24= 	2
 
-;------------------------------------------------------- ASCII Control Codes 
-#DEFINE NULL	0
-#DEFINE BS 	8
-#DEFINE HT 	9
-#DEFINE LF 	10
-#DEFINE	VT	11
-#DEFINE _FF	12
-#DEFINE CR 	13
-#DEFINE ESC	27
-#DEFINE SPC	32
-#DEFINE QT	34
+;------------------------------------------------------- MODULE OPTIONS
+; MOD_MATH_	NONE, S16, S24
+; MOD_CONSOLE_	NONE, SIM, LCD
+; MOD_COM_	NONE, SIM, MC68B50
+
+
+; MOD_MATH_	NONE, S16, S24
+MOD_MATH_NONE= 	0
+MOD_MATH_S16= 	1
+MOD_MATH_S24= 	2
+
+; MOD_CONSOLE_	NONE, SIM, LCD
+MOD_CONSOLE_NONE = 0	; goes via coms port ?
+MOD_CONSOLE_SIM = 1
+MOD_CONSOLE_LCD = 2
+
+; MOD_COM_	NONE, SIM, MC68B50
+MOD_COM_NONE 	= 0
+MOD_COM_SIM 	= 1
+MOD_COM_MC68B50 = 2
+
+;------------------------------------------------------- DEBUG constants
+_DB_STR 	= 0
+_DB_MAIN 	= 0
+_DB_EDT 	= 0
+_DB_EVAL 	= 0
+_DB_LINE 	= 0
+_DB_NUM 	= 0
+_DB_FOR 	= 0
+_DB_LIST 	= 0
+_DB_PRINT 	= 0
+_DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
+
+#if _DBUG
+.echo "\t+--------------+\n"
+.echo "\t| DEBUG Active |\n"
+.echo "\t+--------------+\n\n"
+#endif
+
+_DETAIL 	= 2
+_KEYWORDS 	= 1
+_SUMMARY 	= 0
+_LEVEL 		= _SUMMARY
+
+
 
 ; size of numeric value once 'unpacked' for calculations
 ; [0]SGN,  [1]X:Exp, [2]A:Low, [3]B:High, [4]C:Upper
@@ -51,9 +83,7 @@ T_StrAry 	= $FB 				;fb A$(	Var,Alpha,Array
 T_StrVar 	= $FA 				;fa A$	Var,Alpha,Single
 T_NumAry 	= $F9 				;f9 A(	Var,Num  ,Array
 T_NumVar 	= $F8 				;f8 A	Var,Num  ,Single
-
  		;-- $F7 = always
-
  		;-- 1111.0>=<		;0>=<
 #define T_LE 	$F3 				;0011
 #define T_NE	$F5 				;0101
@@ -64,14 +94,22 @@ T_NumVar 	= $F8 				;f8 A	Var,Num  ,Single
 
 T_LineNo 	= $F0 				; header includes line number
 
-
-
-
-;------------------------------------------------------- rom pages 
+;------------------------------------------------------- rom pages
 PG_ROM 		= $E0 				; main code
 PG_KEY 		= $FE 				; key word table
 PG_RUN 		= $FF 				; main jump table
 
-
 TblKeyword 	= (PG_KEY<<8)
 TblRun 		= (PG_RUN<<8)
+
+;------------------------------------------------------- ASCII Control Codes
+#DEFINE NULL	0
+#DEFINE BS 	8
+#DEFINE HT 	9
+#DEFINE LF 	10
+#DEFINE	VT	11
+#DEFINE _FF	12
+#DEFINE CR 	13
+#DEFINE ESC	27
+#DEFINE SPC	32
+#DEFINE QT	34

@@ -1,0 +1,19 @@
+;=================================================================== CONSOLE ==========
+; ConIn                Read character from input (keyboard), null if none
+; ConOut               Write character to output (screen), FormFeed=Clear, Tab
+
+#if MOD_CONSOLE = MOD_CONSOLE_NONE
+.echo "  CON\t** NONE **d\n"
+#endif
+
+#if MOD_CONSOLE = MOD_CONSOLE_SIM
+.echo "  CON\tSimulated\n"
+#include "ConSim.a65" 				; Simulator's console
+#endif
+
+#if MOD_CONSOLE = MOD_CONSOLE_LCD
+.echo "  CON\tLCD\n"
+; #include "ConLCD.a65"	; LCD screen
+#endif
+
+

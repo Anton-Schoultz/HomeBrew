@@ -19,17 +19,17 @@
 ; -########e##.
 ; 0123456789abcdef
  		;--
-#if MathModule = MATH_MOD_NONE
+#if MOD_MATH = MOD_MATH_NONE
 #define NUMPKSZ	2
 #define DIGITS 8
 #endif
 
-#if MathModule = MATH_MOD_S16
+#if MOD_MATH = MOD_MATH_S16
 #define NUMPKSZ	2
 #define DIGITS 6
 #endif
 
-#if MathModule = MATH_MOD_S24
+#if MOD_MATH = MOD_MATH_S24
 #define NUMPKSZ	3
 #define DIGITS 	8
 #endif
@@ -85,6 +85,10 @@ NUM_DIVC 	= NUM_DIV+FPC
 #endif
 
 
+
+#if ($/256) = 0
+Short(ZDIV) 	; short divisor 10/100
+#endif
 
 
 #if ($/256) = 1
@@ -270,31 +274,44 @@ NumSpc1 	cmp 	#'0'
 NumSpcX 	rts
 
 
+;=================================================================== MATH MODULE ======
+#if MOD_MATH = MOD_MATH_S16
+.echo "  MATH\tS16\t\t("
+.echo "NUMPKSZ="
+.echo NUMPKSZ
+.echo " DIGITS="
+.echo DIGITS
+.echo ")\n"
+#include "Math_S16.a65"
+.nolist
+#endif
+
+#if MOD_MATH = MOD_MATH_S24
+.echo "  MATH\tS24\t\t("
+.echo "NUMPKSZ="
+.echo NUMPKSZ
+.echo " DIGITS="
+.echo DIGITS
+.echo ")\n"
+#include "Math_S24.a65"
+.nolist
+#endif
+
+#if MOD_MATH = MOD_MATH_NONE
+.echo "  MATH\t** NONE **\n"
+.nolist
+#endif
+
 
 #endif 						; end page > $80
 
 .nolist
 
-;=================================================================== MATH MODULE ======
-#if MathModule = MATH_MOD_S16
-#include "Math_S16.a65"
-.nolist
-#endif
 
-#if MathModule = MATH_MOD_S24
-#include "Math_S24.a65"
-.nolist
-#endif
 
-#if MathModule = MATH_MOD_NONE
+#if MOD_MATH = MOD_MATH_NONE
 ;------------------------------------------------------- Dummy{
 #if $>$400
-.echo "\n"
-.echo "====================================\n"
-.echo " WARNING - Maths module is excluded \n"
-.echo "====================================\n"
-.echo "\n"
-
 
 #if _LEVEL >= _DETAIL
 .echo "  _Math\t\t"

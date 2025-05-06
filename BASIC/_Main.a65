@@ -1,156 +1,23 @@
 #define xhide
-
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
 
-;=================================================================== BASIC ============
-; ABS(##)
-;    Return absolute value of numeric expression ##
-; ASC($$)
-;    Return numeric value of the first character of String $$
-; CHR$(##)
-;    Return string with a character for the given value
-; CLEAR
-;    Clear variables
-; CLS
-;    Clear Screen
-; DEEK(##)
-;    Return the contents of memory word at address
-; DIM  a$(##size) [,b$(##size)]*
-;    Dimension Strings
-; DOKE ##Address,##word
-;    Poke word of data to the address
-; FOR #V = ##From TO ##Limit [STEP ##Step]
-;    Start of FOR/NEXT Loop
-; FRE(##)
-;    Return number of bytes available in free memory
-; STR$(##Value)
-;    Return string representation of the value
-; GOSUB #expr
-;    Call subroutine at LineNo
-; GOTO #NumExpr
-;    Goto LineNo
-; IF ?? THEN {Statment}
-;    Execute statement if condition ?? is true
-; do string comparison
-; INPUT ("prompt"|,|NumVar|StrVar)*
-;    Input values with optional prompts
-; LEFT$($$,##)
-;    Keep left most chars of string [Head]
-; Len($$)
-;    Return the length of the string expression
-; LET {var}={expr}
-;    Assign value to a variable
-; LIST [##From] [- [##To]]
-;    List program (optional range of lines)
-; List lines in range LST_BEG to LST_END
-; LOAD
-;    Load program
-; LOWER($$)
-;    Convert string to Lower case
-; LTRIM($$)
-;    Trim leading spaces from string
-; MID$($$,##From,##Len)
-;    Return substring of Len chars from position From
-; NEW
-;    Clear program and data
-; NEXT {Var}
-;    End of FOR/NEXT loop
-; PEEK(##Address)
-;    Return the byte at address
-; POKE ##Address,##value
-;    Poke byte of data to the address
-; PRINT (##|$$| |,)*
-;    Print sequence of values
-; REM {comment}
-;    Program remarks/comments
-; RETURN
-;    Return control to after the GOSUB
-; RIGHT$($$,##N)
-;    Keep right most N chars of string [Tail]
-; RND(##Max)
-;    Return random number 0..(##Max-)
-; RTRIM$($$)
-;    Trim trailing spaces from string
-; RUN [#LineNo]
-;    Execute the program, optionally from line number
-; SAVE
-;    Save program
-; SGN(##Value)
-;    Return sign of the value as  -1, 0 or 1
-; SQR(##Val)
-;    Return the Square of Val
-; STOP
-;    Stop executing the program
-; TRIM$($$)
-;    Trim leading and trailing spaces from the string
-; UPPER$($$)
-;    Convert string to upper case
-; VAL($$)
-;    Evaluate the string and return it's numeric value
-
-; RAMBEG
-; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
-;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
-
-;=================================================================== TODO =============
-; GET v		Stores KeyPress value into var v
-;
-; POS(#)	Return column no of screen cursor
-; TAB(n)	Set screen column number
-;
-; SPC(n)	Return string of n spaces
-;
-; SYS(adr)	Execute machine code at address
-;
-; TIME(#)	Timer value
-;
-; ON <expr> GOTO/GOSUB LinNum,... 	?
-;
-; CONT
-; DATA, READ, RESTORE
-; INT(v),
-;
-;======================================================================================
-
-
-; E000-FFFF = 8k
 #define _ROM $E000
-
-#define _RAM_BAS_BEG	$0800
-#define _RAM_BAS_END	$1000
-
- 		;-- ; Aprox.Size
-_DB_STR 	= 0 				; 144
-_DB_MAIN 	= 0 				;  92
-_DB_EDT 	= 0 				; 395
-_DB_EVAL 	= 0 				; 143
-_DB_LINE 	= 0 				; 188
-_DB_NUM 	= 0 				; 114
-_DB_FOR 	= 0 				; 150
-_DB_LIST 	= 0 				; 147
-_DB_PRINT 	= 0
-_DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
- 		;-- _DBUG = 154	; 6077-5923
-
-#if _DBUG
-.echo "\t+--------------+\n"
-.echo "\t| DEBUG Active |\n"
-.echo "\t+--------------+\n\n"
-#endif
-
-_DETAIL 	= 2
-_KEYWORDS 	= 1
-_SUMMARY 	= 0
-
-_LEVEL 		= _SUMMARY
-
 .echo "\tROM at $E000-$FFFF (8k)\r"
 ; .echo "\t\tROM at $C000-$FFFF (16k)\r"
 
+; default memory for BASIC
+#define _RAM_BAS_BEG	$0800
+#define _RAM_BAS_END	$1000
+
 #include "Constants.a65"
 
-MathModule 	= MATH_MOD_S24 			;6651 -> 6578
- 		;-- MathModule = MATH_MOD_S16	;6534 -> 6431
+;------------------------------------------------------- MODULE OPTIONS
+; MOD_MATH_	NONE, S16, S24
+; MOD_CONSOLE_	NONE, SIM, LCD
+; MOD_COM_	NONE, SIM, MC68B50
+MOD_MATH 	= MOD_MATH_S24
+MOD_CONSOLE 	= MOD_CONSOLE_SIM
+MOD_COM 	= MOD_COM_SIM			;MC68B50
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -173,26 +40,26 @@ MathModule 	= MATH_MOD_S24 			;6651 -> 6578
 ; 		START OF ROM
  		jmp 	Reset
 
-#if MathModule = MATH_MOD_S24
+#if MOD_MATH = MOD_MATH_S24
 Greet 		.DB 	_FF,"Minimal BASIC S24",CR,LF,0
 #endif
 
-#if MathModule = MATH_MOD_S16
+#if MOD_MATH = MOD_MATH_S16
 Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #endif
 
 #include "Util.a65" 				; utilities for general use
-
-#include "ConSim.a65" 				; Console Implementation
-#include "ComSim.a65" 				; Com port simulation
-
-#include "ChrStr.a65" 				; Base IO (incl macros)
 #include "Error.a65" 				; Error/token expansion
+#include "ChrStr.a65" 				; Base IO (incl macros)
+
+.echo "\nMODULES\n"
+#include "DevConsole.a65" 			; CONSOLE
+#include "DevCom.a65" 				; COM PORT
+#include "Math.a65" 				; MATHS MODULE
+
 #include "Str.a65" 				; String code
-#include "Math.a65" 				; Number code
 #include "Eval.a65" 				; Evaluator
 #include "Line.a65" 				; Line control
-
 
 ;------------------------------------------------------- Reset
 Reset: ;Reset (Cold start)
@@ -328,16 +195,17 @@ MainProg: ; Dump start of Program space
  		jsr 	HexDump 		; dump next 8
  		jsr 	HexDump 		; dump next 8
  		jmp 	PrNL
+;=================================================================== END DBUG =========
+.nolist
 #endif
 
 
 #include "Variables.a65" 			; Variable parse/list
-
 #include "All.a65" 				; include all keywords
 #include "Tok.a65" 				; General Parse/List
 #include "Editor.a65" 				; Program editor
 
-;#include "IrqNmi.a65" 				; Interrupt handlers
+;  #include "IrqNmi.a65" 				; Interrupt handlers
 
 ROMEND 		= $
 
@@ -399,5 +267,115 @@ T_Max 		= LOW($)+$80
 .echo " bytes remaining.\n\n"
 
 .export  ROMEND,TblKeyword,TblRun
+
+;=================================================================== BASIC ============
+; ABS(##)
+;    Return absolute value of numeric expression ##
+; ASC($$)
+;    Return numeric value of the first character of String $$
+; CHR$(##)
+;    Return string with a character for the given value
+; CLEAR
+;    Clear variables
+; CLS
+;    Clear Screen
+; DEEK(##)
+;    Return the contents of memory word at address
+; DIM  a$(##size) [,b$(##size)]*
+;    Dimension Strings
+; DOKE ##Address,##word
+;    Poke word of data to the address
+; FOR #V = ##From TO ##Limit [STEP ##Step]
+;    Start of FOR/NEXT Loop
+; FRE(##)
+;    Return number of bytes available in free memory
+; STR$(##Value)
+;    Return string representation of the value
+; GOSUB #expr
+;    Call subroutine at LineNo
+; GOTO #NumExpr
+;    Goto LineNo
+; IF ?? THEN {Statment}
+;    Execute statement if condition ?? is true
+; do string comparison
+; INPUT ("prompt"|,|NumVar|StrVar)*
+;    Input values with optional prompts
+; LEFT$($$,##)
+;    Keep left most chars of string [Head]
+; Len($$)
+;    Return the length of the string expression
+; LET {var}={expr}
+;    Assign value to a variable
+; LIST [##From] [- [##To]]
+;    List program (optional range of lines)
+; List lines in range LST_BEG to LST_END
+; LOAD
+;    Load program
+; LOWER($$)
+;    Convert string to Lower case
+; LTRIM($$)
+;    Trim leading spaces from string
+; MID$($$,##From,##Len)
+;    Return substring of Len chars from position From
+; NEW
+;    Clear program and data
+; NEXT {Var}
+;    End of FOR/NEXT loop
+; PEEK(##Address)
+;    Return the byte at address
+; POKE ##Address,##value
+;    Poke byte of data to the address
+; PRINT (##|$$| |,)*
+;    Print sequence of values
+; REM {comment}
+;    Program remarks/comments
+; RETURN
+;    Return control to after the GOSUB
+; RIGHT$($$,##N)
+;    Keep right most N chars of string [Tail]
+; RND(##Max)
+;    Return random number 0..(##Max-)
+; RTRIM$($$)
+;    Trim trailing spaces from string
+; RUN [#LineNo]
+;    Execute the program, optionally from line number
+; SAVE
+;    Save program
+; SGN(##Value)
+;    Return sign of the value as  -1, 0 or 1
+; SQR(##Val)
+;    Return the Square of Val
+; STOP
+;    Stop executing the program
+; TRIM$($$)
+;    Trim leading and trailing spaces from the string
+; UPPER$($$)
+;    Convert string to upper case
+; VAL($$)
+;    Evaluate the string and return it's numeric value
+
+; RAMBEG
+; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
+;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
+
+;=================================================================== TODO =============
+; GET v		Stores KeyPress value into var v
+;
+; POS(#)	Return column no of screen cursor
+; TAB(n)	Set screen column number
+;
+; SPC(n)	Return string of n spaces
+;
+; SYS(adr)	Execute machine code at address
+;
+; TIME(#)	Timer value
+;
+; ON <expr> GOTO/GOSUB LinNum,... 	?
+;
+; CONT
+; DATA, READ, RESTORE
+; INT(v),
+;
+;======================================================================================
 
 .end

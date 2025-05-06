@@ -1,0 +1,69 @@
+#ifdef hide 					; ConSim
+.NOLIST
+#endif
+;=================================================================== COM_MC68B50 ======
+; Address of the coms chip (MC68B50) is defined in Constants file.
+;*  ComIn                Read character from serial port (or null if none aavailable)
+;*  ComInit              Reset the serial chip andinitialise coms div=16, 8N1
+;*  ComOut               Write character to serial port, wait for port to be ready
+;*
+#ifndef ADR_RS232
+.echo "\n**** ADR_RS232 must be defined as the address of the MC68B50 Chip **\n"
+#endif
+
+_ComMC68B50 	= $
+
+#include "MC68B50_def.a65"
+
+;------------------------------------------------------- setup values here
+COM_DATA 	= ADR_RS232 			; Data transmit/receive register
+COM_CTRL 	= ADR_RS232+1 			; Control (Wr)/ Status (Rd)
+
+
+;------------------------------------------------------- ComInit
+ComInit: ; Reset the serial chip andinitialise coms div=16, 8N1
+ 		;-- Reset the chip
+ 		lda 	#COM_RST
+ 		sta 	COM_CTRL 		; Set the reset bits to reset the chip
+ 		;-- Initialise the coms to div16, 8n2
+ 		lda 	#(COM_DIV16 | COM_8N2) 	; default for 8N2, div16
+ 		sta 	COM_CTRL 		; Set coms speed and format
+ 		rts
+
+;------------------------------------------------------- ComIn
+ComIn: ; Read character from serial port (or null if none aavailable)
+ 		lda 	COM_CTRL 		; read status
+ 		and 	#COM_RDRF 		; check if rcvd full
+ 		beq 	ComGetX 		; none available so exit with A=0
+ 		;-- Have data, fetch it from the chip without waiting
+ComRx 		lda 	COM_DATA 		; read the data byte
+ComGetX 	rts
+
+
+;------------------------------------------------------- ComOut
+ComOut: ;Write character to serial port, wait for port to be ready
+ 		pha 				; Save byte to send
+ComOut0 	;-- available?
+ 		lda 	COM_CTRL 		; get status
+ 		and 	#COM_TDRE
+ 		beq 	ComOut0 		; wait for it to be empty
+ 		;-- Restore data byte and send it
+ 		pla 				; restore data byte
+ComTx 		sta 	COM_DATA 		; Send A to com without waiting
+ 		rts
+
+;------------------------------------------------------- ComStatus
+ComStatus 	; Return the status of the coms chip in A
+ 		lda 	COM_CTRL 		; read Status register
+ 		rts
+
+.NOLIST
+#if _LEVEL >= _DETAIL
+.echo "\t"
+.echo $-_ComMC68B50
+.echo " Bytes in ComMC68B50\n"
+#endif
+
+.LIST 						;-- End of ComSim
+
+

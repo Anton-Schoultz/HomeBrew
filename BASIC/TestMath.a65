@@ -7,11 +7,11 @@ _DBUG 		= 1
 
 #include "Constants.a65"
 
-; MATH_MOD_NONE 0
-; MATH_MOD_S16 1
-; MATH_MOD_S24 2
+; MOD_MATH_NONE 0
+; MOD_MATH_S16 1
+; MOD_MATH_S24 2
 
-MathModule 	= MATH_MOD_S24
+MOD_MATH 	= MOD_MATH_S24
 
 #include "Macros.a65"
 #include "_Vars.a65"
