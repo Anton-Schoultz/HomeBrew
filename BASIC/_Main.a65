@@ -78,14 +78,14 @@
 #define _RAM_BAS_END	$1000
 
  		;-- ; Aprox.Size
-_DB_STR 	= 0 			; 144
-_DB_MAIN 	= 0 			;  92
-_DB_EDT 	= 0 			; 395
-_DB_EVAL 	= 0 			; 143
-_DB_LINE 	= 0 			; 188
-_DB_NUM 	= 0 			; 114
-_DB_FOR 	= 0 			; 150
-_DB_LIST 	= 0 			; 147
+_DB_STR 	= 0 				; 144
+_DB_MAIN 	= 0 				;  92
+_DB_EDT 	= 0 				; 395
+_DB_EVAL 	= 0 				; 143
+_DB_LINE 	= 0 				; 188
+_DB_NUM 	= 0 				; 114
+_DB_FOR 	= 0 				; 150
+_DB_LIST 	= 0 				; 147
 _DB_PRINT 	= 0
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT
  		;-- _DBUG = 154	; 6077-5923
@@ -107,14 +107,14 @@ _LEVEL 		= _KEYWORDS
 
 #include "Constants.a65"
 
-MathModule 	= MATH_MOD_S24 		;6651 -> 6578
+MathModule 	= MATH_MOD_S24 			;6651 -> 6578
  		;-- MathModule = MATH_MOD_S16	;6534 -> 6431
 
 #include "Macros.a65"
 #include "_Vars.a65"
 
 ;=================================================================== MAIN =============
-;*  Main                 Warm Start entry point
+;*  Main                 Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
 ;*  MainProg             Dump start of Program space
@@ -127,7 +127,7 @@ MathModule 	= MATH_MOD_S24 		;6651 -> 6578
 
 .org _ROM
 .LIST
-;----------------------------------------------- START OF ROM
+;------------------------------------------------------- START OF ROM
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -139,25 +139,25 @@ Greet 		.DB 	_FF,"Minimal BASIC S24",CR,LF,0
 Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #endif
 
-#include "Util.a65" 			; utilities for general use
+#include "Util.a65" 				; utilities for general use
 
-#include "ConSim.a65" 			; Console Implementation
-#include "ComSim.a65" 			; Com port simulation
+#include "ConSim.a65" 				; Console Implementation
+#include "ComSim.a65" 				; Com port simulation
 
-#include "ChrStr.a65" 			; Base IO (incl macros)
-#include "Error.a65" 			; Error/token expansion
-#include "Str.a65" 			; String code
-#include "Math.a65" 			; Number code
-#include "Eval.a65" 			; Evaluator
-#include "Line.a65" 			; Line control
+#include "ChrStr.a65" 				; Base IO (incl macros)
+#include "Error.a65" 				; Error/token expansion
+#include "Str.a65" 				; String code
+#include "Math.a65" 				; Number code
+#include "Eval.a65" 				; Evaluator
+#include "Line.a65" 				; Line control
 
 
-;----------------------------------------------- Reset
+;------------------------------------------------------- Reset
 Reset: ;Reset (Cold start)
- 		sei 			; Halt IRQs
- 		ldx 	#$ff 		; Set Stack pointer
+ 		sei 				; Halt IRQs
+ 		ldx 	#$ff 			; Set Stack pointer
  		txs
- 		cld 			; Binary mode
+ 		cld 				; Binary mode
 
  		lda 	#0
  		;-- zero the timer
@@ -166,9 +166,9 @@ Reset: ;Reset (Cold start)
  		sta 	TIMER+2
 
  		tay
-RstClr 		sta 	$0000,y 	; clear z-page
- 		sta 	$0100,y 	; clear stack area
- 		sta 	$0200,y 	; clear system var area
+RstClr 		sta 	$0000,y 		; clear z-page
+ 		sta 	$0100,y 		; clear stack area
+ 		sta 	$0200,y 		; clear system var area
  		;-- $300 is I/O
  		iny
  		bne 	RstClr
@@ -182,32 +182,32 @@ RstClr 		sta 	$0000,y 	; clear z-page
  		LDAX(_RAM_BAS_END)
  		SETAX(RAMEND)
 
- 		jsr 	ChrInit 	; Set up ZPage Code & vectors
+ 		jsr 	ChrInit 		; Set up ZPage Code & vectors
  		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
- 		jsr 	EdtNew 		; NEW
+ 		jsr 	EdtNew 			; NEW
 
- 		jsr 	ComInit 	; reset Serial
+ 		jsr 	ComInit 		; reset Serial
 
  		;-- Greeting
  		LDAX(Greet)
  		jsr 	PrStrAX
 
-;----------------------------------------------- Main
+;------------------------------------------------------- Main
 Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		;-- reset the stack and binary mode
- 		sei 			; Halt IRQs
- 		ldx 	#$ff 		; Set Stack pointer
+ 		sei 				; Halt IRQs
+ 		ldx 	#$ff 			; Set Stack pointer
  		txs
- 		cld 			; Binary mode
+ 		cld 				; Binary mode
  		;-- Initialise
- 		jsr 	ChrInit 	; Copy code to ZPpg for ChrRd
- 		jsr 	NumInit 	; init calc stack pointer
- 		jsr 	StrInit 	; init string stack etc
+ 		jsr 	ChrInit 		; Copy code to ZPpg for ChrRd
+ 		jsr 	NumInit 		; init calc stack pointer
+ 		jsr 	StrInit 		; init string stack etc
  		;-- Gosub/Rtn, For/Next
  		lda 	#0
  		sta 	RTNSP
  		sta 	FOR_SP
- 		sta 	FOR_ADR 	; mark end of for next stack with zero address
+ 		sta 	FOR_ADR 		; mark end of for next stack with zero address
  		sta 	FOR_ADR+1
 
  		sta 	HLTFLG
@@ -220,23 +220,23 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 
  		;-- character output to I/O device -> ChrOut
 ; 		PR_WR_IO()
- 		cli 			; enable IRQ's
+ 		cli 				; enable IRQ's
 
 
-;----------------------------------------------- MainLoop
+;------------------------------------------------------- MainLoop
 MainLoop: ; Main Loop
  		lda 	#'>'
  		jsr 	InputText
- 		jsr 	Parse 		; Parse INBUF into TOKBUF
+ 		jsr 	Parse 			; Parse INBUF into TOKBUF
 
 #if _DBUG
 ; 		jsr 	MainTokBuf
 #endif
 
 #if _DB_MAIN
- 		ZSET(ZRd,TOKBUF+3) 	; where to run from
+ 		ZSET(ZRd,TOKBUF+3) 		; where to run from
  		jsr 	ChrRd
- 		jsr 	RunInit 	; set I/O, Zero suppress etc
+ 		jsr 	RunInit 		; set I/O, Zero suppress etc
  		jsr 	EvNumeric
  		jsr 	DB_EvStr
  		;-- jsr MainList
@@ -252,7 +252,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;----------------------------------------------- MainCmd
+;------------------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -267,8 +267,8 @@ MainTokBuf: ; Dump TOKBUF
 ; 		PR_WR_IO()
  		CLS()
  		jsr 	MainList
- 		HEX_DUMP(TOKBUF) 	; dump 8
- 		jsr 	HexDump 	; dump next 8
+ 		HEX_DUMP(TOKBUF) 		; dump 8
+ 		jsr 	HexDump 		; dump next 8
 ;   		jsr 	HexDump 	; dump next 8
  		jmp 	PrNL
 
@@ -282,27 +282,27 @@ MainList: ; list TOKBUF
 
 MainProg: ; Dump start of Program space
  		HEX_DUMP($0800)
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
- 		jsr 	HexDump 	; dump next 8
+ 		jsr 	HexDump 		; dump next 8
+ 		jsr 	HexDump 		; dump next 8
+ 		jsr 	HexDump 		; dump next 8
+ 		jsr 	HexDump 		; dump next 8
+ 		jsr 	HexDump 		; dump next 8
  		jmp 	PrNL
 #endif
 
 
-#include "Variables.a65" 		; Variable parse/list
+#include "Variables.a65" 			; Variable parse/list
 
-#include "All.a65" 			; include all keywords
-#include "Tok.a65" 			; General Parse/List
-#include "Editor.a65" 			; Program editor
+#include "All.a65" 				; include all keywords
+#include "Tok.a65" 				; General Parse/List
+#include "Editor.a65" 				; Program editor
 
-#include "IrqNmi.a65" 			; Interrupt handlers
+#include "IrqNmi.a65" 				; Interrupt handlers
 
 ROMEND 		= $
 
 
-;----------------------------------------------- TblKeyword
+;------------------------------------------------------- TblKeyword
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -314,7 +314,7 @@ ROMEND 		= $
 
 
 
-;----------------------------------------------- TblRun
+;------------------------------------------------------- TblRun
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -336,14 +336,14 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;----------------------------------------------- hardware vectors
+;------------------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
 .org $FFFA
-.dw Nmi 				; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
-.dw Reset 				; FFFC,D=> NRET	Points to Reset address (cold start)
-.dw Irq 				; FFFE,F=> IRQ		Points to Interrupt handler
+.dw Nmi 					; FFFA,B=> NMI		Points to Non-Maskable Interrupt handler
+.dw Reset 					; FFFC,D=> NRET	Points to Reset address (cold start)
+.dw Irq 					; FFFE,F=> IRQ		Points to Interrupt handler
 
 .echo "\nEPROM "
 .echo ROMEND - _ROM + 512
