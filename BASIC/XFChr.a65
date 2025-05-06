@@ -2,23 +2,23 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== CHR =============
+;=================================================================== CHR ============= 
 ;*  X_Chr                CHR$(##)~Return string with a character for the given value
 ;*
 _Chr 		= $
 
-;----------------------------------------------- X_Chr
+;------------------------------------------------------- X_Chr 
 X_Chr: ; CHR$(##)~Return string with a character for the given value
- 		jsr 	EvInt 		; get the code as an Int in AX
- 		pha 			; save char code
- 		jsr 	StrClear 	; prep a string entry
+ 		jsr 	EvInt 			; get the code as an Int in AX
+ 		pha 				; save char code
+ 		jsr 	StrClear 		; prep a string entry
  		pla
  		ldy 	#0
- 		sta 	(S_PTR_A),y 	; set the char
+ 		sta 	(S_PTR_A),y 		; set the char
  		tya
  		iny
- 		sta 	(S_PTR_A),y 	; terminate the string
-X_ChrX 		jmp 	StrLen 		; find new length
+ 		sta 	(S_PTR_A),y 		; terminate the string
+X_ChrX 		jmp 	StrLen 			; find new length
 
 
 #if _LEVEL >= _KEYWORDS
@@ -30,13 +30,13 @@ X_ChrX 		jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Chr 		.DB 	"CHR$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -49,4 +49,4 @@ T_Chr 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Chr
+.list 						; end of Chr

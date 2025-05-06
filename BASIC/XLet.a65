@@ -2,55 +2,55 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LET ==============
+;=================================================================== LET ============== 
 ;*  X_Let                LET {var}={expr}~Assign value to a variable
 ;*
 _Let 		= $
 
 ; for now, simple vars are stored in VARNUM (fixed in memory)
- 		;--
+ 		;-- 
 
-;----------------------------------------------- X_Let
+;------------------------------------------------------- X_Let 
 X_Let: ; LET {var}={expr}~Assign value to a variable
- 		jsr 	ChrRd 		; consume LET
+ 		jsr 	ChrRd 			; consume LET
 
 X_LetDo 	CASE(T_NumVar,X_LetNum)
  		CASE(T_StrVar,X_LetStr)
  		CASE(T_StrAry,X_LetStrAry)
- 		ERROR(ERR_VAR) 		; "Expected Variable"
+ 		ERROR(ERR_VAR) 			; "Expected Variable"
 
-;----------------------------------------------- X_LetNum
+;------------------------------------------------------- X_LetNum 
 X_LetNum 	;- assign integer variable (not-ary)
- 		jsr 	X_LetEQ 	; get index, skip '='
- 		pha 			; save index
- 		jsr 	EvNumeric 	; evaluate expression, result in NUM_A
- 		pla 			; recall index
- 		sta 	VARID 		; save the Var index
- 		jsr 	NumSet 		; fetch & store
- 		RTN_T() 		; done
+ 		jsr 	X_LetEQ 		; get index, skip '='
+ 		pha 				; save index
+ 		jsr 	EvNumeric 		; evaluate expression, result in NUM_A
+ 		pla 				; recall index
+ 		sta 	VARID 			; save the Var index
+ 		jsr 	NumSet 			; fetch & store
+ 		RTN_T() 			; done
 
-;----------------------------------------------- X_LetStr
+;------------------------------------------------------- X_LetStr 
 X_LetStr 	;- assign string variable (not-ary)
- 		jsr 	X_LetEQ 	; get index, skip '='
- 		pha 			; save index
- 		jsr 	EvString 	; evaluate expression
-X_LetStr1 	pla 			; recall index
- 		sta 	VARID 		; save the Var index
+ 		jsr 	X_LetEQ 		; get index, skip '='
+ 		pha 				; save index
+ 		jsr 	EvString 		; evaluate expression
+X_LetStr1 	pla 				; recall index
+ 		sta 	VARID 			; save the Var index
  		;-- .A = var index
  		;-- ZPtr -> temp result (to be coppied up to var space)
- 		jsr 	StrSet 		; fetch & store
- 		RTN_T() 		; done
+ 		jsr 	StrSet 			; fetch & store
+ 		RTN_T() 			; done
 
-;----------------------------------------------- X_LetEQ
+;------------------------------------------------------- X_LetEQ 
 X_LetEQ 	; Get variable index into .A and check for '='
- 		jsr 	ChrRd 		; get first char of variable name
- 		bpl 	X_LetBadVar 	; long var name
+ 		jsr 	ChrRd 			; get first char of variable name
+ 		bpl 	X_LetBadVar 		; long var name
  		;-- short name, character is used as index
  		and 	#$1F
- 		pha 			; push the index
- 		jsr 	ChrRd 		; move to after the var name (should be '=')
- 		lda 	#T_EQ 		; '=' TOKEN
- 		jsr 	Match 		; check for and skip over '='
+ 		pha 				; push the index
+ 		jsr 	ChrRd 			; move to after the var name (should be '=')
+ 		lda 	#T_EQ 			; '=' TOKEN
+ 		jsr 	Match 			; check for and skip over '='
  		;-- init string eval
  		jsr 	StrInit
  		pla
@@ -58,15 +58,15 @@ X_LetEQ 	; Get variable index into .A and check for '='
 
 X_LetBadVar 	ERROR(ERR_BADVAR)
 
-;----------------------------------------------- X_LetStrAry
+;------------------------------------------------------- X_LetStrAry 
 X_LetStrAry 	; Assign to subscripted String
- 		jsr 	StrVar 		; eat token, get id, get var
+ 		jsr 	StrVar 			; eat token, get id, get var
  		;-- save the index for where the result must go back to
  		lda 	VARID
- 		pha 			; {0} LHS
- 		jsr 	StrPush 	; push the LHS value
- 		jsr 	EvInt 		; calc subscript as int AX
- 		pha 			; push offset on cpu stack {1}
+ 		pha 				; {0} LHS
+ 		jsr 	StrPush 		; push the LHS value
+ 		jsr 	EvInt 			; calc subscript as int AX
+ 		pha 				; push offset on cpu stack {1}
  		;-- check for and skip over ')'
  		lda 	#')'
  		jsr 	Match
@@ -74,20 +74,20 @@ X_LetStrAry 	; Assign to subscripted String
  		lda 	#T_EQ
  		jsr 	Match
  		;-- evaluate RHS
- 		jsr 	EvString 	; replacement in 'A'
+ 		jsr 	EvString 		; replacement in 'A'
 ; 		jsr 	NumPopB 	; original in 'B'
 ; 		jsr 	NumSwap 	; A <-> B
- 		jsr 	StrPop 		; pop & swap
+ 		jsr 	StrPop 			; pop & swap
  		;-- now copy from B to A(n)
- 		pla 			; recall n {1}
- 		dec 	a 		; BASE 1
+ 		pla 				; recall n {1}
+ 		dec 	a 			; BASE 1
  		clc
  		adc 	S_PTR_A
  		sta 	ZTgt
  		lda 	#0
  		adc 	S_PTR_A+1
  		sta 	ZTgt+1
- 		;--
+ 		;-- 
  		ZCPY(ZSrc,S_PTR_B)
  		ZCPY(ZCnt,S_LEN_B)
  		jsr 	EdtDwn
@@ -96,8 +96,8 @@ X_LetStrAry 	; Assign to subscripted String
  		tya
  		sta 	(S_PTR_B),y
  		;-- length
- 		jsr 	StrLen 		; get new length
- 		jmp 	X_LetStr1 	; recall index {0} and store
+ 		jsr 	StrLen 			; get new length
+ 		jmp 	X_LetStr1 		; recall index {0} and store
 
 
 
@@ -111,17 +111,17 @@ X_LetStrAry 	; Assign to subscripted String
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Let 		.DB 	"LE",'T'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Let 		= LOW($)+$80
 .DW 	X_Let
 .nolist
 #endif
-.list 					; end of LET
+.list 						; end of LET

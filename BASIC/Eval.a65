@@ -184,7 +184,7 @@ EvAddSub: ;  common for Add/Sub
  		jmp 	NumPopB
 
 EvAdd: ; add
- 		JSR 	EvAddSub
+ 		jsr 	EvAddSub
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd 		; comsume the '+'/'-'
 ; 		jsr 	Term
@@ -193,7 +193,7 @@ EvAdd: ; add
  		RTN_T()
 
 EvSub: ; subtract
- 		JSR 	EvAddSub
+ 		jsr 	EvAddSub
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd 		; comsume the '+'/'-'
 ; 		jsr 	Term
@@ -232,7 +232,7 @@ EvMulDiv: ; common for Mul/Div/Mod
  		jmp 	NumPopB
 
 EvMul: ; Do Multiply
- 		JSR 	EvMulDiv
+ 		jsr 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor
@@ -241,7 +241,7 @@ EvMul: ; Do Multiply
  		RTN_T()
 
 EvDiv: ; Do Divide
- 		JSR 	EvMulDiv
+ 		jsr 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor
@@ -250,7 +250,7 @@ EvDiv: ; Do Divide
  		RTN_T()
 
 EvMod: ; Do Modulus
- 		JSR 	EvMulDiv
+ 		jsr 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor

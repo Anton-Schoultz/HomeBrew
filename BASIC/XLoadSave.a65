@@ -11,7 +11,7 @@ _LoadSave 	= $
 ;=================================================================== SAVE ============= 
 X_Save: ; SAVE~Save program
 ; lists the code to serial poprt
- 		JSR 	ComInit 		; init coms
+ 		jsr 	ComInit 		; init coms
  		;-- set output to serial port
  		lda 	#DEV_SERIAL
  		jsr 	SetOutDev
@@ -31,7 +31,7 @@ X_Save: ; SAVE~Save program
 X_Load: ; LOAD~Load program
 ; sets to 'type' from the serial port
 ; ends when input of cmd 'STOP' which resets I/O channels
- 		JSR 	ComInit 		; init coms
+ 		jsr 	ComInit 		; init coms
  		;-- input from serial
  		lda 	#DEV_SERIAL
  		jmp 	SetInDev

@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LEFT =============
+;=================================================================== LEFT ============= 
 ;*  X_Left               LEFT$($$,##)~Keep left most chars of string [Head]
 ;*
 _Left 		= $
@@ -14,16 +14,16 @@ _Left 		= $
 ; If n is greater than LEN(x$), the entire string (x$) will be returned.
 ; If n equals zero, the null string (length zero) is returned
 
-;----------------------------------------------- X_Left
+;------------------------------------------------------- X_Left 
 X_Left: ; LEFT$($$,##)~Keep left most chars of string [Head]
  		jsr 	StrFunct
  		;-- check high byte
  		lda 	NUM_BB
  		cmp 	#0
- 		bne 	X_LeftX 	; high -> exit
+ 		bne 	X_LeftX 		; high -> exit
  		ldy 	NUM_BA
  		sta 	(S_PTR_A),Y
-X_LeftX 	jmp 	StrLen 		; find new length
+X_LeftX 	jmp 	StrLen 			; find new length
 
 #if _LEVEL >= _KEYWORDS
 .echo "  _LEFT$(\t"
@@ -34,13 +34,13 @@ X_LeftX 	jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Left 		.DB 	"LEFT$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -53,4 +53,4 @@ T_Left 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Left
+.list 						; end of Left

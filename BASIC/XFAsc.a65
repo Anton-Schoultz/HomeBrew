@@ -2,15 +2,15 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== ASC =============
+;=================================================================== ASC ============= 
 ;*  X_Asc                ASC($$)~Return numeric value of the first character of String $$
 ;*
 _Asc 		= $
 
-;----------------------------------------------- X_Asc
+;------------------------------------------------------- X_Asc 
 X_Asc: ;ASC($$)~Return numeric value of the first character of String $$
- 		jsr 	ChrRd 		; consume the ASC( token
- 		jsr 	EvString 	; eval string value
+ 		jsr 	ChrRd 			; consume the ASC( token
+ 		jsr 	EvString 		; eval string value
  		;-- closing )
  		lda 	#')'
  		jsr 	Match
@@ -30,13 +30,13 @@ X_Asc: ;ASC($$)~Return numeric value of the first character of String $$
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Asc 		.DB 	"ASC",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 
 #ifndef _T_FNUM_
@@ -50,4 +50,4 @@ T_Asc 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Asc
+.list 						; end of Asc

@@ -19,11 +19,11 @@ _Print 		= $
 
 ;------------------------------------------------------- X_Print 
 X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
- 		JSR 	ChrRd 			; consume PRINT token
+ 		jsr 	ChrRd 			; consume PRINT token
  		;-- Check for '#n'
- 		LDA 	#DEV_OUT_STD 		; default output device no
- 		JSR 	Hash 			; check for '#n' return n in A (or default)
- 		JSR 	SetOutDev 		; set output device for i/o
+ 		lda 	#DEV_OUT_STD 		; default output device no
+ 		jsr 	Hash 			; check for '#n' return n in A (or default)
+ 		jsr 	SetOutDev 		; set output device for i/o
  		;-- default end with CRLF
  		DONL()
  		;-- print parts loop
@@ -36,8 +36,8 @@ X_PrEnd 	;-- end off with Cr LF if needed
  		jsr 	PrNL 			; output CR,LF and exit
 
 X_PrX 		;- done
- 		LDA 	#DEV_OUT_STD 		; reset to default output device
- 		STA 	DEV_OUT
+ 		lda 	#DEV_OUT_STD 		; reset to default output device
+ 		sta 	DEV_OUT
  		rts
 
 

@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== DIM ==============
+;=================================================================== DIM ============== 
 ;*  X_Dim                DIM  a$(##size) [,b$(##size)]*~Dimension Strings
 ;*
 _Dim 		= $
@@ -19,18 +19,18 @@ _Dim 		= $
 ; 1.......	This is the last character of the variable Name
 ; .#......	Variable is an array
 
-;----------------------------------------------- X_Dim
+;------------------------------------------------------- X_Dim 
 X_Dim: ; DIM  a$(##size) [,b$(##size)]*~Dimension Strings
- 		jsr 	ChrRd 		; consume Dim
+ 		jsr 	ChrRd 			; consume Dim
  		;-- Check for and skip over T_StrAry
  		lda 	#T_StrAry
- 		jsr 	Match 		; match character CHRGOT vs .A and move on, error if no match
+ 		jsr 	Match 			; match character CHRGOT vs .A and move on, error if no match
  		;-- get variable index
- 		bpl 	X_DimBadVar 	; must be last char (single char varnames only)
+ 		bpl 	X_DimBadVar 		; must be last char (single char varnames only)
  		;-- varid -> index
  		and 	#$1F
  		asl 	a
- 		pha 			; save index to var
+ 		pha 				; save index to var
  		;-- move on (consume varid)
  		jsr 	ChrRd
  		;-- get size value
@@ -39,11 +39,11 @@ X_Dim: ; DIM  a$(##size) [,b$(##size)]*~Dimension Strings
  		lda 	#')'
  		jsr 	Match
  		;-- do the allocation
- 		jsr 	NumToInt 	; Value in AX lo/hi
+ 		jsr 	NumToInt 		; Value in AX lo/hi
  		sta 	ZCnt
  		stx 	ZCnt+1
- 		;--
- 		jsr 	EdtAlloc 	; make space, set ZPtr
+ 		;-- 
+ 		jsr 	EdtAlloc 		; make space, set ZPtr
 
  		;-- save the pointer in VARSTR[n]
  		ply
@@ -63,16 +63,16 @@ X_DimBadVar 	ERROR(ERR_BADVAR)
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Dim 		.DB 	"DI",'M'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Dim 		= LOW($)+$80
 .DW 	X_Dim
 #endif
-.list 					; end of Dim
+.list 						; end of Dim

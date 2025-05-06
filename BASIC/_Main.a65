@@ -2,7 +2,7 @@
 
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
 
-;=================================================================== BASIC ============
+;=================================================================== BASIC ============ 
 ;  ABS(##)~Return absolute value of numeric expression ##
 ;  ASC($$)~Return numeric value of the first character of String $$
 ;  CHR$(##)~Return string with a character for the given value
@@ -47,7 +47,7 @@
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
-;=================================================================== TODO =============
+;=================================================================== TODO ============= 
 ; GET v		Stores KeyPress value into var v
 ;
 ; LOAD		Load a program
@@ -113,7 +113,7 @@ MathModule 	= MATH_MOD_S24 			;6651 -> 6578
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN =============
+;=================================================================== MAIN ============= 
 ;*  Main                 Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
@@ -127,7 +127,7 @@ MathModule 	= MATH_MOD_S24 			;6651 -> 6578
 
 .org _ROM
 .LIST
-;------------------------------------------------------- START OF ROM
+;------------------------------------------------------- START OF ROM 
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -152,7 +152,7 @@ Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #include "Line.a65" 				; Line control
 
 
-;------------------------------------------------------- Reset
+;------------------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		sei 				; Halt IRQs
  		ldx 	#$ff 			; Set Stack pointer
@@ -191,7 +191,7 @@ RstClr 		sta 	$0000,y 		; clear z-page
  		LDAX(Greet)
  		jsr 	PrStrAX
 
-;------------------------------------------------------- Main
+;------------------------------------------------------- Main 
 Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		;-- reset the stack and binary mode
  		sei 				; Halt IRQs
@@ -221,7 +221,7 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		cli 				; enable IRQ's
 
 
-;------------------------------------------------------- MainLoop
+;------------------------------------------------------- MainLoop 
 MainLoop: ; Main Loop
  		lda 	#'>'
  		jsr 	InputText
@@ -250,7 +250,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;------------------------------------------------------- MainCmd
+;------------------------------------------------------- MainCmd 
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -260,7 +260,7 @@ MainCmd 	;-- Run command line
 .nolist
 #if _DBUG
 .list
-;=================================================================== MAIN-DBUG =============
+;=================================================================== MAIN-DBUG ============= 
 MainTokBuf: ; Dump TOKBUF
 ; 		PR_WR_IO()
  		CLS()
@@ -300,7 +300,7 @@ MainProg: ; Dump start of Program space
 ROMEND 		= $
 
 
-;------------------------------------------------------- TblKeyword
+;------------------------------------------------------- TblKeyword 
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -312,7 +312,7 @@ ROMEND 		= $
 
 
 
-;------------------------------------------------------- TblRun
+;------------------------------------------------------- TblRun 
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -334,7 +334,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;------------------------------------------------------- hardware vectors
+;------------------------------------------------------- hardware vectors 
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ

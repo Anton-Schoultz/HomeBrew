@@ -2,25 +2,25 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== MID =============
+;=================================================================== MID ============= 
 ;*  X_Mid                MID$($$,##From,##Len)~Return substring of Len chars from position From
 ;*
 _Mid 		= $
 
-;----------------------------------------------- X_Mid
+;------------------------------------------------------- X_Mid 
 X_Mid: ; MID$($$,##From,##Len)~Return substring of Len chars from position From
  		jsr 	StrFunct
  		ldy 	#0
  		lda 	NUM_BB
- 		bne 	X_MidNull 	; > 256 empty
- 		ldy 	NUM_BA 		; From.L -> Y
- 		dey 			; use BASE 1
- 		jsr 	StrLTrim2 	; copy down
+ 		bne 	X_MidNull 		; > 256 empty
+ 		ldy 	NUM_BA 			; From.L -> Y
+ 		dey 				; use BASE 1
+ 		jsr 	StrLTrim2 		; copy down
  		jsr 	StrFunct
  		ldy 	NUM_BA
-X_MidNull 	lda 	#0 		; trunc with null
+X_MidNull 	lda 	#0 			; trunc with null
  		sta 	(S_PTR_A),Y
-X_MidX 		jmp 	StrLen 		; find new length
+X_MidX 		jmp 	StrLen 			; find new length
 
 
 #if _LEVEL >= _KEYWORDS
@@ -32,13 +32,13 @@ X_MidX 		jmp 	StrLen 		; find new length
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Mid 		.DB 	"MID$",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 #ifndef _T_FSTR_
 #define _T_FSTR_
@@ -51,4 +51,4 @@ T_Mid 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Mid
+.list 						; end of Mid

@@ -2,15 +2,15 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LEN =============
+;=================================================================== LEN ============= 
 ;*  X_Len                Len($$)~Return the length of the string expression
 ;*
 _Len 		= $
 
-;----------------------------------------------- X_Len
+;------------------------------------------------------- X_Len 
 X_Len: ; Len($$)~Return the length of the string expression
- 		jsr 	ChrRd 		; consume the LEN( token
- 		jsr 	EvString 	; evaluate string
+ 		jsr 	ChrRd 			; consume the LEN( token
+ 		jsr 	EvString 		; evaluate string
  		;-- closing )
  		lda 	#')'
  		jsr 	Match
@@ -29,13 +29,13 @@ X_Len: ; Len($$)~Return the length of the string expression
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Len 		.DB 	"LEN",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 
 #ifndef _T_FNUM_
@@ -49,4 +49,4 @@ T_Len 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Len
+.list 						; end of Len

@@ -2,21 +2,21 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== VAL =============
+;=================================================================== VAL ============= 
 ;*  X_Val                VAL($$)~Evaluate the string and return it's numeric value
 ;*
 _Val 		= $
 
-;----------------------------------------------- X_Val
+;------------------------------------------------------- X_Val 
 X_Val: ; VAL($$)~Evaluate the string and return it's numeric value
- 		jsr 	ChrRd 		; consume the VAL( token
- 		jsr 	EvString 	; eval string value
+ 		jsr 	ChrRd 			; consume the VAL( token
+ 		jsr 	EvString 		; eval string value
  		;-- closing )
  		lda 	#')'
  		jsr 	Match
  		;-- parse the string for numeric value
  		ZCPY(ZParse,S_PTR_A)
- 		jsr 	NumParsePtr 	; parse it into NUM_A
+ 		jsr 	NumParsePtr 		; parse it into NUM_A
  		RTN_T()
 
 #if _LEVEL >= _KEYWORDS
@@ -28,13 +28,13 @@ X_Val: ; VAL($$)~Evaluate the string and return it's numeric value
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Val 		.DB 	"VAL",'('+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 
 #ifndef _T_FNUM_
@@ -48,4 +48,4 @@ T_Val 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Val
+.list 						; end of Val
