@@ -276,7 +276,7 @@ NumSpcX 	rts
 
 ;=================================================================== MATH MODULE ======
 #if MOD_MATH = MOD_MATH_S16
-.echo "  MATH\tS16\t\t("
+.echo "  MATH\tS16\t\t\t("
 .echo "NUMPKSZ="
 .echo NUMPKSZ
 .echo " DIGITS="
@@ -287,7 +287,7 @@ NumSpcX 	rts
 #endif
 
 #if MOD_MATH = MOD_MATH_S24
-.echo "  MATH\tS24\t\t("
+.echo "  MATH\tS24\t\t\t("
 .echo "NUMPKSZ="
 .echo NUMPKSZ
 .echo " DIGITS="

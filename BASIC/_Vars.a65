@@ -121,9 +121,19 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
 
+;------------------------------------------------------- StateMachine
+Var(SM_H,SM_MAX) ; Hi byte for state	(Null=Empty)
+Var(SM_L,SM_MAX) ; Lo byte for state
+Var(SM_C,SM_MAX) ; Counter 		(down to 0 & stop)
+Var(SM_D,SM_MAX) ; Data byte
+
+Short(SM_NXT) 	;next slot to service
+
+
+
 .echo "  _Buffers\t"
 .echo $-$200
-.echo "/256\t\t(incl. FOR/GOSUB stack)\n"
+.echo "/256\t\t(FOR/GOSUB/StateMachine)\n"
 
 ;======================================================================================
 ; reserved space for memory mapped IO devices
@@ -156,9 +166,9 @@ Short(FOR_NDX) 	; Loop variable number (1-26)
 
 ; Size of FOR block = NUMPKSZ+NUMPKSZ+2+1 = STP,LIM, ADR,IX
 FORSZ 		= NUMPKSZ * 2 + 3
-;.echo "FOR SIZE = "
-;.echo FORSZ
-;.echo "\n"
+ 		;-- .echo "FOR SIZE = "
+ 		;-- .echo FORSZ
+ 		;-- .echo "\n"
 
 ;------------------------------------------------------- FOR stack
 ; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
@@ -170,7 +180,7 @@ Var(FORSTK,8*FORDEEP)
 .echo $-VARTAB
 .echo "\t\t1024-"
 .echo $
-;.echo " (first 255 cleared by CLEAR/EdtClear)"
+ 		;-- .echo " (first 255 cleared by CLEAR/EdtClear)"
 .echo "\n"
 
 .LIST

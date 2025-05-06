@@ -1,0 +1,100 @@
+#ifdef hide
+.NOLIST
+#endif
+;=================================================================== STATE MACHINE ====
+;*  SmFind               find an empoty slot, return in .X (N 1=None else EQ 1=found)
+;*  SmInit               Initialise state machine by clearing the slots
+;*  SmPoint              Set up pointer into the caller into slot .X
+;*  SmState              Update the stae to where this is called from
+;*  SmUpdate             Do an update of the next slot
+;*m SM_CNT(n)            Set the count down timer to n for current slot
+;*m SM_GET()             Get the data byte into .A for current slot
+;*m SM_SET()             Set data byte to value in .A for current slot
+;*
+
+;------------------------------------------------------- Constants
+; #define SM_MAX 4   	Number of slots available  (Constants)
+
+;------------------------------------------------------- Buffer area
+; Var(SM_H,SM_MAX) ; Hi byte for state	(Null=Empty)
+; Var(SM_L,SM_MAX) ; Lo byte for state
+; Var(SM_C,SM_MAX) ; Counter 		(down to 0 & stop)
+; Var(SM_D,SM_MAX) ; Data byte
+; Short(SM_NXT)    ; next slot to service
+
+
+_Sm 		= $
+
+;------------------------------------------------------- SmInit
+SmInit: ; Initialise state machine by clearing the slots
+ 		sei 				; disable IRQs
+ 		lda 	#0
+ 		ldx 	#SM_MAX
+ 		stx 	SM_NXT
+SmInitL 	dex
+ 		bmi 	SmInitX
+ 		sta 	SM_H,X 			; zero high byte
+ 		sta 	SM_L,X 			; zero low byte
+ 		sta 	SM_C,X 			; zero counter
+ 		sta 	SM_D,X 			; zero data
+ 		bra 	SmInitL
+SmInitX 	rts
+
+;------------------------------------------------------- SmFind
+SmFind: ; find an empoty slot, return in .X (N:1=None else EQ:1=found)
+ 		ldx 	#SM_MAX
+SmFindL 	dex
+ 		bmi 	SmFindX
+ 		lda 	SM_H,X 			; get high byte
+ 		bne 	SmFindL 		; non-zero so it's in use
+ 		;-- zero high byte means available slot
+SmFindX 	rts 				; N:1 => none available
+
+;------------------------------------------------------- SmState
+SmState: ; Update the stae to where this is called from
+ 		ldx 	SM_NXT 			; get active slot number
+ 		;-- fall through to set the new return address and then exit machine
+;------------------------------------------------------- SmPoint
+SmPoint: ; Set up pointer into the caller into slot .X
+; caller's return address in on stack (must call from inside statemachine code)
+; returns to wherever initialise of state machine was called from
+ 		pla
+ 		sta 	SM_L,X
+ 		pla
+ 		sta 	SM_H,X
+ 		rts
+
+;------------------------------------------------------- SmUpdate
+SmUpdate: ; Do an update of the next slot
+; this would be called from inside IRQ service routine
+ 		ldx 	SM_NXT
+ 		bne 	SmUpdate1
+ 		;-- decr would wrap around, so reset to max
+ 		ldx 	#SM_MAX
+SmUpdate1 	dex
+ 		stx 	SM_NXT 			; save active slot no
+ 		lda 	SM_H,X
+ 		beq 	SmUpdateX 		; Null slot, skip it (return to IRQ)
+ 		;-- set up original call's return address
+ 		pha
+ 		lda 	SM_L,X
+ 		pha
+ 		;-- update counter (if non-zero)
+ 		lda 	SM_C,X
+ 		beq 	SmUpdateX 		; count is already zero (return to machine)
+ 		dec 	SM_C,X 			; decrement it
+SmUpdateX 	rts
+
+; SM_GET() Get the data byte into .A for current slot
+#define SM_GET() ldx SM_NXT\ lda SM_D,X
+; SM_SET()  Set data byte to value in .A for current slot
+#define SM_SET() ldx SM_NXT\ sta SM_D,X
+; SM_CNT(n) Set the count down timer to n for current slot
+#define SM_CNT(n) lda #n\ ldx SM_NXT\ sta SM_C,X
+
+
+#if _LEVEL >= _SUMMARY
+.echo "  StateMachine\t"
+.echo $-_Sm
+.echo "\t\tState Machine engine\n"
+#endif
