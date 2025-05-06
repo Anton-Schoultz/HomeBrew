@@ -2,16 +2,16 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== LOAD/SAVE ========
+;=================================================================== LOAD/SAVE ======== 
 ;*  X_Load               LOAD~Load program
 ;*  X_Save               SAVE~Save program
 ;*
 _LoadSave 	= $
 
-;=================================================================== SAVE =============
+;=================================================================== SAVE ============= 
 X_Save: ; SAVE~Save program
 ; lists the code to serial poprt
-		jsr	ComInit		; init coms
+ 		JSR 	ComInit 		; init coms
  		;-- set output to serial port
  		lda 	#DEV_SERIAL
  		jsr 	SetOutDev
@@ -27,12 +27,12 @@ X_Save: ; SAVE~Save program
  		lda 	#DEV_CONSOLE
  		jmp 	SetOutDev
 
-;=================================================================== LOAD =============
+;=================================================================== LOAD ============= 
 X_Load: ; LOAD~Load program
 ; sets to 'type' from the serial port
 ; ends when input of cmd 'STOP' which resets I/O channels
-		jsr	ComInit		; init coms
-		;-- input from serial
+ 		JSR 	ComInit 		; init coms
+ 		;-- input from serial
  		lda 	#DEV_SERIAL
  		jmp 	SetInDev
 
@@ -47,14 +47,14 @@ X_Load: ; LOAD~Load program
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Save 		.DB 	"SAV",'E'+$80
 W_Load 		.DB 	"LOA",'D'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Save 		= LOW($)+$80
@@ -64,4 +64,4 @@ T_Load 		= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of List
+.list 						; end of List

@@ -1,22 +1,31 @@
-#ifdef hide 				; ComSim
+#ifdef hide 					; ComSim
 .NOLIST
 #endif
-;=================================================================== COMSIM ===========
+;=================================================================== COMSIM =========== 
 ; Simulator Implementation of Serial port communications
 ;
 ;*  ComIn                Read character from serial port (simulated by read from memory)
+;*  ComInit              Reset serial Port (Simulated by reseting pointers)
 ;*  ComOut               Write character to serial port (Simulated by writing to memory)
-;*  ComRst               Reset serial Port (Simulated by reseting pointers)
 ;*
 
+#if ($/256) = 0
+;------------------------------------------------------- COM port sinmulator - read/write memory) 
+Int(COM_RD)
+Int(COM_WR)
+#endif
+
+
+#if ($/256) > $80
+;=================================================================== COMSIM-CODE ======
 _ComSim 	= $
 
-;----------------------------------------------- ComOut
+;------------------------------------------------------- ComOut 
 ComOut: ;Write character to serial port (Simulated by writing to memory)
- 		cmp 	#_FF 		; Form Feed = Clear Screen / reset
+ 		cmp 	#_FF 			; Form Feed = Clear Screen / reset
  		beq 	ComInit
- 		sta 	(COM_WR) 	; store into memory
- 		ZINC(COM_WR) 		; bump pointer
+ 		sta 	(COM_WR) 		; store into memory
+ 		ZINC(COM_WR) 			; bump pointer
  		rts
 
 ComInit: ; Reset serial Port (Simulated by reseting pointers)
@@ -25,12 +34,12 @@ ComInit: ; Reset serial Port (Simulated by reseting pointers)
  		SETAX(COM_WR)
  		rts
 
-;----------------------------------------------- ComIn
+;------------------------------------------------------- ComIn 
 ComIn: ; Read character from serial port (simulated by read from memory)
  		lda 	(COM_RD)
  		ZINC(COM_RD)
  		rts
-
+#endif
 .NOLIST
 
 #if _LEVEL >= _DETAIL
@@ -38,5 +47,5 @@ ComIn: ; Read character from serial port (simulated by read from memory)
 .echo " Bytes in _ComSim\n"
 #endif
 
-.LIST 					;-- End of ComSim
+.LIST 						;-- End of ComSim
 

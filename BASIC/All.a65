@@ -1,48 +1,48 @@
 ; All
 
-;----------------------------------------------- Key words
-#include "XCls.a65" 			; CLS 	Clear screen
-#include "XFlow.a65" 			; GOTO / GOSUB / RETURN
-#include "XIf.a65" 			; IF <expr> THEN <Statement>
-#include "XLet.a65" 			; LET <var> = <expr>
-#include "XList.a65" 			; LIST [From] [- [To]]
-#include "XNew.a65" 			; NEW
-#include "XClear.a65" 			; CLEAR 	Clears variables
-#include "XPrint.a65" 			; PRINT [;|,|<StrExpr>|<NumExpr]*
-#include "XRem.a65" 			; REM remark
-#include "XRun.a65" 			; RUN	Execute the program
-#include "XForNext.a65" 		; FOR / NEXT
-#include "XStop.a65" 			; STOP	Stop program execution
-#include "XDim.a65" 			; DIM <StrVar>( size )
-#include "XInput.a65" 			; INPUT ["prompt",] NumVar|StrVar
-#include "XPoke.a65" 			; POKE {AddressExpr},## Poke byte of data to the address
-#include "XDoke.a65" 			; DOKE {AddressExpr},## Poke word of data to the address
-#include "XLoadSave.a65"		; LOAD / SAVE
+;------------------------------------------------------- Key words 
+#include "XCls.a65" 				; CLS 	Clear screen
+#include "XFlow.a65" 				; GOTO / GOSUB / RETURN
+#include "XIf.a65" 				; IF <expr> THEN <Statement>
+#include "XLet.a65" 				; LET <var> = <expr>
+#include "XList.a65" 				; LIST [From] [- [To]]
+#include "XNew.a65" 				; NEW
+#include "XClear.a65" 				; CLEAR 	Clears variables
+#include "XPrint.a65" 				; PRINT [;|,|<StrExpr>|<NumExpr]*
+#include "XRem.a65" 				; REM remark
+#include "XRun.a65" 				; RUN	Execute the program
+#include "XForNext.a65" 			; FOR / NEXT
+#include "XStop.a65" 				; STOP	Stop program execution
+#include "XDim.a65" 				; DIM <StrVar>( size )
+#include "XInput.a65" 				; INPUT ["prompt",] NumVar|StrVar
+#include "XPoke.a65" 				; POKE {AddressExpr},## Poke byte of data to the address
+#include "XDoke.a65" 				; DOKE {AddressExpr},## Poke word of data to the address
+#include "XLoadSave.a65" 			; LOAD / SAVE
 ; Secondary keywords
-#include "KeyWords.a65" 		; THEN, TO, STEP, AND, OR, XOR, NOT
+#include "KeyWords.a65" 			; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;----------------------------------------------- Numeric Functions  & Str->Num
-#include "XFRnd.a65" 			; RND(<expr>) random number (mod n)
-#include "XFSqr.a65" 			; SQR(<expr>) Square of n
-#include "XFAbs.a65" 			; ABS(<expr>) Absolute value (positive)
-#include "XFSgn.a65" 			; SGN(<expr>) Signum -1,0,1
-#include "XFAsc.a65" 			; ASC(<StrExpr>) Return code of first character in the String
-#include "XFVal.a65" 			; VAL($) Evaluate the string and return it's numeric value
-#include "XFLen.a65" 			; Len($) Return the length of the string expression
-#include "XFFre.a65" 			; FRE(#) Return number of bytes available in free memory
-#include "XFPeek.a65" 			; PEEK(##) Return the contents of memory byte at address
-#include "XFDeek.a65" 			; DEEK(##) Return the contents of memory word at address
+;------------------------------------------------------- Numeric Functions  & Str->Num 
+#include "XFRnd.a65" 				; RND(<expr>) random number (mod n)
+#include "XFSqr.a65" 				; SQR(<expr>) Square of n
+#include "XFAbs.a65" 				; ABS(<expr>) Absolute value (positive)
+#include "XFSgn.a65" 				; SGN(<expr>) Signum -1,0,1
+#include "XFAsc.a65" 				; ASC(<StrExpr>) Return code of first character in the String
+#include "XFVal.a65" 				; VAL($) Evaluate the string and return it's numeric value
+#include "XFLen.a65" 				; Len($) Return the length of the string expression
+#include "XFFre.a65" 				; FRE(#) Return number of bytes available in free memory
+#include "XFPeek.a65" 				; PEEK(##) Return the contents of memory byte at address
+#include "XFDeek.a65" 				; DEEK(##) Return the contents of memory word at address
 
-;----------------------------------------------- String functions & Num->Str
-#include "XFUpper.a65" 			; UPPER$(<StrExpr>) convert to upper case
-#include "XFLower.a65" 			; LOWER$(<StrExpr>) convert to lower case
+;------------------------------------------------------- String functions & Num->Str 
+#include "XFUpper.a65" 				; UPPER$(<StrExpr>) convert to upper case
+#include "XFLower.a65" 				; LOWER$(<StrExpr>) convert to lower case
 
-#include "XFLTrim.a65" 			; LTRIM$(<StrExpr>) Trim leadiong spaces
-#include "XFRTrim.a65" 			; RTRIM$(<StrExpr>) Trim trailing spaces
-#include "XFTrim.a65" 			; TRIM$(<StrExpr>) Trim leading and trailing spaces
+#include "XFLTrim.a65" 				; LTRIM$(<StrExpr>) Trim leadiong spaces
+#include "XFRTrim.a65" 				; RTRIM$(<StrExpr>) Trim trailing spaces
+#include "XFTrim.a65" 				; TRIM$(<StrExpr>) Trim leading and trailing spaces
 
-#include "XFLeft.a65" 			; LEFT$(<StrExpr>,<expr>) Return leftmost n characters
-#include "XFRight.a65" 			; RIGHT$(<StrExpr>,<expr>) Return right most n characters
-#include "XFMid.a65" 			; MID$(<StrExpr>,<From-expr>,<Length-expr>) Return substring
-#include "XFChr.a65" 			; CHR$(<StrExpr>) Return string of single character for ASCII code
-#include "XFStr.a65" 			; STR$(NumValue) - Return string representation of numeric expression
+#include "XFLeft.a65" 				; LEFT$(<StrExpr>,<expr>) Return leftmost n characters
+#include "XFRight.a65" 				; RIGHT$(<StrExpr>,<expr>) Return right most n characters
+#include "XFMid.a65" 				; MID$(<StrExpr>,<From-expr>,<Length-expr>) Return substring
+#include "XFChr.a65" 				; CHR$(<StrExpr>) Return string of single character for ASCII code
+#include "XFStr.a65" 				; STR$(NumValue) - Return string representation of numeric expression

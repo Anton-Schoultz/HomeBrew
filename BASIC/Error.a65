@@ -1,4 +1,4 @@
-#ifdef hide 				; Error
+#ifdef hide 					; Error
 .NOLIST
 #endif
 
@@ -7,7 +7,7 @@
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============
+;=================================================================== ERROR ============ 
 ; NOTE: Message nos go up in 2s
 ;
 ;*  ErrList              List offending line (if available)
@@ -44,31 +44,31 @@ _Err 		= $
 ; % 	Y as decimal
 
 ErrTbl
-.DB "OK",DOT 				; 0=ERR_OK
-.DB "Expected '@':! but got '#':& *",DOT ; 2=ERR_EXPECTED
-.DB "Expected constant",DOT 		; 4=ERR_CONST
-.DB "GOSUB/RETURN",DOT 			; 6=ERR_GOSUB
-.DB "FOR/NEXT",DOT 			; 8=ERR_FOR
-.DB "Expected variable",DOT 		;10=ERR_VAR
-.DB "Invalid variable !",DOT 		;12=ERR_BADVAR
-.DB "Divide by zero",DOT 		;14=ERR_DIV0
-.DB "Redimension",DOT 			;16=ERR_REDIM
-.DB "Out of memory",DOT 		;18=ERR_MEMORY
-.DB "Invalid token !",DOT 		;20=ERR_TOKEN
-.DB "Syntax",DOT 			;22=ERR_SYNTAX
-.DB "Out of Range",DOT			;24=ERR_RANGE
-.DB "Undefined string",DOT		;26=ERR_UNDEFSTR
+.DB "OK",DOT 					; 0=ERR_OK
+.DB "Expected '@':! but got '#':& *",DOT 	; 2=ERR_EXPECTED
+.DB "Expected constant",DOT 			; 4=ERR_CONST
+.DB "GOSUB/RETURN",DOT 				; 6=ERR_GOSUB
+.DB "FOR/NEXT",DOT 				; 8=ERR_FOR
+.DB "Expected variable",DOT 			;10=ERR_VAR
+.DB "Invalid variable !",DOT 			;12=ERR_BADVAR
+.DB "Divide by zero",DOT 			;14=ERR_DIV0
+.DB "Redimension",DOT 				;16=ERR_REDIM
+.DB "Out of memory",DOT 			;18=ERR_MEMORY
+.DB "Invalid token !",DOT 			;20=ERR_TOKEN
+.DB "Syntax",DOT 				;22=ERR_SYNTAX
+.DB "Out of Range",DOT 				;24=ERR_RANGE
+.DB "Undefined string",DOT 			;26=ERR_UNDEFSTR
 .DB 0
 
 
 
-;----------------------------------------------- X_Err
+;------------------------------------------------------- X_Err 
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		phx
  		phy
  		jsr 	ErrList
- 		ZSET(ZPtr,ErrTbl) 	; point to the keyword table
+ 		ZSET(ZPtr,ErrTbl) 		; point to the keyword table
  		jsr 	PrNL
  		ply
  		plx
@@ -106,85 +106,85 @@ ErrList1 	clc
 ; * 	Address where error was called from
 
 
-;----------------------------------------------- RegLoad
+;------------------------------------------------------- RegLoad 
 RegLoad: ; Load registers from ZReg~
- 		LDA 	ZRegP
+ 		lda 	ZRegP
  		pha
- 		lda 	ZRegA 		; load .A
- 		ldy 	ZRegY 		; load .Y
- 		ldx 	ZRegX 		; load .X
+ 		lda 	ZRegA 			; load .A
+ 		ldy 	ZRegY 			; load .Y
+ 		ldx 	ZRegX 			; load .X
  		plp
  		rts
 
-;----------------------------------------------- RegSave
+;------------------------------------------------------- RegSave 
 RegSave: ; Save registers into ZReg~
- 		sta 	ZRegA 		; save .A
- 		sty 	ZRegY 		; save .Y
- 		stx 	ZRegX 		; save .X
+ 		sta 	ZRegA 			; save .A
+ 		sty 	ZRegY 			; save .Y
+ 		stx 	ZRegX 			; save .X
  		;-- status register
  		php
  		pla
- 		STA 	ZRegP
+ 		sta 	ZRegP
  		rts
 
 #define ZTokPtr ZPtr
-;----------------------------------------------- Msg
+;------------------------------------------------------- Msg 
 Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
- 		jsr 	RegSave 	; save regs
- 		ldy 	#0 		; in case X=0
+ 		jsr 	RegSave 		; save regs
+ 		ldy 	#0 			; in case X=0
  		txa
  		and 	#$7F
- 		lsr 	a 		; A = TokNo / 2
- 		tax 			; index in table
+ 		lsr 	a 			; A = TokNo / 2
+ 		tax 				; index in table
 ; 		cpx 	#0
- 		beq 	MsgL0 		; token 80 is special ;P
+ 		beq 	MsgL0 			; token 80 is special ;P
  		ldy 	#$FF
- 		;--
+ 		;-- 
  		;-- MsgNxt 		cpx 	#0 		; no more
 ; 		beq 	MsgX
  		;-- move to next word
 MsgNxtL 	iny
  		lda 	(ZTokPtr),y
- 		beq 	MsgInvalid 	; end of list, not found
+ 		beq 	MsgInvalid 		; end of list, not found
  		bpl 	MsgNxtL
  		;-- got the marker
  		dex
  		bne 	MsgNxtL
 MsgL 		;-- found the start of the word
- 		iny 			; skip over the last end-of-word marker
+ 		iny 				; skip over the last end-of-word marker
 MsgL0 		;-- output the word
  		lda 	(ZTokPtr),y
- 		beq 	MsgX 		; end of list -> done
- 		bmi 	MsgLX 		; last char
- 		BR_AEQ('@',MsgAC) 	; ZRegA as character
- 		BR_AEQ('!',MsgAH) 	; ZRegA as hex
- 		BR_AEQ('#',MsgYC) 	; ZRegY as character
- 		BR_AEQ('&',MsgYH) 	; ZRegY as hex
- 		BR_AEQ('*',MsgErrAdr) 	; caller address stack
- 		jsr 	ChrOut 		; echo
- 		bra 	MsgL 		; loop next char
+ 		beq 	MsgX 			; end of list -> done
+ 		bmi 	MsgLX 			; last char
+ 		BR_AEQ('@',MsgAC) 		; ZRegA as character
+ 		BR_AEQ('!',MsgAH) 		; ZRegA as hex
+ 		BR_AEQ('#',MsgYC) 		; ZRegY as character
+ 		BR_AEQ('&',MsgYH) 		; ZRegY as hex
+ 		BR_AEQ('*',MsgErrAdr) 		; caller address stack
+ 		jsr 	ChrOut 			; echo
+ 		bra 	MsgL 			; loop next char
 
 MsgLX 		;-- last character of the word (marked one)
- 		and 	#$7F 		; mask off bit7
- 		jsr 	ChrOut 		; output it and return
+ 		and 	#$7F 			; mask off bit7
+ 		jsr 	ChrOut 			; output it and return
  		jsr 	IsAlpha
- 		BR_F(MsgX) 		; ends in alpha?
- 		lda 	#' ' 		; yes, pad a blank
+ 		BR_F(MsgX) 			; ends in alpha?
+ 		lda 	#' ' 			; yes, pad a blank
  		jsr 	ChrOut
 MsgX 		;jsr ChrRd
- 		RTN_T() 		; otherwise done
+ 		RTN_T() 			; otherwise done
 MsgInvalid 	; not found
- 		RTN_F() 		; return false
-MsgAC 		lda 	ZRegA 		; '@' A as char
+ 		RTN_F() 			; return false
+MsgAC 		lda 	ZRegA 			; '@' A as char
  		jsr 	MsgChr
  		bra 	MsgL
-MsgAH 		lda 	ZRegA 		; '!' A as hex
+MsgAH 		lda 	ZRegA 			; '!' A as hex
  		bra 	MsgHex
 
-MsgYC 		lda 	ZRegY 		; '#' Y as char
+MsgYC 		lda 	ZRegY 			; '#' Y as char
  		jsr 	MsgChr
  		bra 	MsgL
-MsgYH 		lda 	ZRegY 		; '$' Y as hex
+MsgYH 		lda 	ZRegY 			; '$' Y as hex
 MsgHex 		pha
  		lda 	#'$'
  		jsr 	ChrOut
@@ -198,12 +198,12 @@ MsgErrAdr 	;-- display stack trace
  		pla
  		pla
  		lda 	ZRd
- 		STA 	ZTmp
+ 		sta 	ZTmp
  		lda 	ZRd+1
- 		STA 	ZTmp+1
+ 		sta 	ZTmp+1
  		;-- trace to depth of 8
  		ldx 	#5
- 		BRA 	MsgStkL1
+ 		bra 	MsgStkL1
 MsgStkL 	;-- display stack trace
  		lda 	#'<'
  		jsr 	ChrOut
@@ -211,19 +211,19 @@ MsgStkL 	;-- display stack trace
  		jsr 	ChrOut
  		;-- pop Hi,Lo and decr to match the jsr address
  		pla
- 		STA 	ZTmp
+ 		sta 	ZTmp
  		pla
- 		STA 	ZTmp+1
+ 		sta 	ZTmp+1
  		ZDEC(ZTmp)
  		ZDEC(ZTmp)
  		;-- print address in hex
-MsgStkL1 	LDA 	ZTmp+1
+MsgStkL1 	lda 	ZTmp+1
  		jsr 	PrAHex
- 		LDA 	ZTmp
+ 		lda 	ZTmp
  		jsr 	PrAHex
  		;-- loop
  		dex
- 		BNE 	MsgStkL
+ 		bne 	MsgStkL
  		;-- done, so warm start
  		jsr 	PrNL
  		jmp 	Main

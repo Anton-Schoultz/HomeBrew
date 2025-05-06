@@ -182,7 +182,6 @@ RstClr 		sta 	$0000,y 		; clear z-page
  		LDAX(_RAM_BAS_END)
  		SETAX(RAMEND)
 
- 		jsr 	ChrInit 		; Set up ZPage Code & vectors
  		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 			; NEW
 
@@ -200,7 +199,6 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		txs
  		cld 				; Binary mode
  		;-- Initialise
- 		jsr 	ChrInit 		; Copy code to ZPpg for ChrRd
  		jsr 	NumInit 		; init calc stack pointer
  		jsr 	StrInit 		; init string stack etc
  		;-- Gosub/Rtn, For/Next

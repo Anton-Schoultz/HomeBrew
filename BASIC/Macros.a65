@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 
-;=================================================================== MACROS ===========
+;=================================================================== MACROS =========== 
 ;*m BR_AEQ(n,tgt)        if(A==n) branch -> tgt
 ;*m BR_AGE(n,tgt)        if(A>=n) branch -> tgt
 ;*m BR_AGT(n,tgt)        if(A>n) branch -> tgt
@@ -17,6 +17,7 @@
 ;*m BR_NE(tgt)           bne tgt
 ;*m BR_T(tgt)            branch to tgt if OK (Carry=1)
 ;*m CASE(v,tgt)          if .A==v then jump to tgt
+;*m CLS()                Clear screen
 ;*m GETAX(p)             Fetch 16 bit value from address into AX (p)->A, (p+1)->X
 ;*m HALT()               Stop simulator
 ;*m HIGH(m)              High byte 1
@@ -66,23 +67,23 @@
 
 #DEFINE THROW(n)  .db $DB
 
-;----------------------------------------------- Alignment
+;------------------------------------------------------- Alignment 
 ; align to next n (power of 2)
 #DEFINE ALIGN(n) .org (($/n + 1) * n)
 ; align to start of new page
-#DEFINE PAGE()  ALIGN(256) 		;.org (($+256) & $FF00)
+#DEFINE PAGE()  ALIGN(256) 			;.org (($+256) & $FF00)
 ; align to next 16
-#DEFINE PARAGRAPH() ALIGN(16) 		;.org (($+16) & $FFF0)
+#DEFINE PARAGRAPH() ALIGN(16) 			;.org (($+16) & $FFF0)
 
 
-;----------------------------------------------- Instructions
+;------------------------------------------------------- Instructions 
 ; STZ does not assemble correctly, so use this inplace for now (replace with STZ z once fixed)
 
 ; ZZERO(z)	Zero a z-pg z
 ;#define ZZERO(z) 	.db $64, z
 ; MZERO(a) 	Zero memory at address
 #define MZERO(adr)	.db $9c, LOW(adr), HIGH(adr)
-;----------------------------------------------- LOW,HIGH,UPPER
+;------------------------------------------------------- LOW,HIGH,UPPER 
 
 ; LOW(m)	Low byte	0
 #DEFINE LOW(m)  (m & $FF)
@@ -92,7 +93,7 @@
 
 ; UPPER(m)	Upper byte	2
 #DEFINE UPPER(m) m>>16
-;----------------------------------------------- VarDef
+;------------------------------------------------------- VarDef 
 ; Var(name,sz)	Reserve sz bytes for variable name (uses .block)
 #define Var(name,sz) name .block sz
 ; Short(name)	Reserve 1 byte for variable name
@@ -101,7 +102,7 @@
 #define Int(name) name .block 2
 ; Long(name)	Reserve 4 bytes for variable name
 #define Long(name) name .block 4
-;----------------------------------------------- Stack
+;------------------------------------------------------- Stack 
 ; PUSHAXY()	Pushes A,X,Y
 #DEFINE PUSHAXY() pha \ phx \ phy
 ; PULLAXY()	Pulls Y,X,A
@@ -110,7 +111,7 @@
 #define PUSHALL() php \ pha \ phx \ phy
 #define PULLALL() ply \ plx \ pla \ plp
 
-;----------------------------------------------- ZPg
+;------------------------------------------------------- ZPg 
 ; ZSET(z,m)	Sets z-pg pair z,z+1 to value m
 #DEFINE ZSET(z,m) lda #(m) \ sta z \ lda #HIGH(m) \ sta z+1
 
@@ -164,7 +165,7 @@
 #define ZADDR(r,m,n) clc\ lda m\ adc n\ sta r\ lda m+1\ adc n+1\ sta r+1
 
 
-;----------------------------------------------- 16 bit AX
+;------------------------------------------------------- 16 bit AX 
 ; LDAX(m) 	Loads AX with 16 bit value, low->A, high->X
 #DEFINE LDAX(m) lda #(m) \ ldx #HIGH(m)
 ; SETAX(p)	Stores 16 bit value (AX) into address A->(p), X->(p+1)
@@ -173,7 +174,7 @@
 #DEFINE GETAX(p) lda p \ ldx p+1
 
 
-;----------------------------------------------- Number format bytes
+;------------------------------------------------------- Number format bytes 
 
 
 ; 	LDA #2	; N Z C
@@ -233,5 +234,5 @@
 ; NCASE(v,tgt) if .A!=v then jump to tgt
 #define NCASE(v,tgt) cmp #v \ beq $+5 \ jmp tgt
 
-.LIST 					;-- End of Macros
+.LIST 						;-- End of Macros
 

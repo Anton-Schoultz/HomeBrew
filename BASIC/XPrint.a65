@@ -5,7 +5,7 @@
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 
-;=================================================================== PRINT ===========
+;=================================================================== PRINT =========== 
 ;*  DB_Print             Debug Print values
 ;*  X_Print              PRINT (##|$$| |,)*~Print sequence of values
 ;*
@@ -17,70 +17,70 @@ _Print 		= $
 #define BR_NNL(tgt) BBR2 ZPrFlg,tgt
 
 
-;----------------------------------------------- X_Print
+;------------------------------------------------------- X_Print 
 X_Print: ; PRINT (##|$$|;|,)*~Print sequence of values
- 		jsr	ChrRd		; consume PRINT token
+ 		JSR 	ChrRd 			; consume PRINT token
  		;-- Check for '#n'
- 		lda	#DEV_OUT_STD	; default output device no
- 		jsr	Hash		; check for '#n' return n in A (or default)
- 		jsr	SetOutDev	; set output device for i/o
-		;-- default end with CRLF
+ 		LDA 	#DEV_OUT_STD 		; default output device no
+ 		JSR 	Hash 			; check for '#n' return n in A (or default)
+ 		JSR 	SetOutDev 		; set output device for i/o
+ 		;-- default end with CRLF
  		DONL()
  		;-- print parts loop
 X_PrintL 	lda 	CHRGOT
- 		beq 	X_PrEnd 	; null = done
- 		jsr 	X_PrPart 	; (*1) Expand
+ 		beq 	X_PrEnd 		; null = done
+ 		jsr 	X_PrPart 		; (*1) Expand
  		BR_T(X_PrintL)
 X_PrEnd 	;-- end off with Cr LF if needed
- 		BR_NNL(X_PrX) 		; no cr,lf -> exit
- 		jsr 	PrNL 		; output CR,LF and exit
+ 		BR_NNL(X_PrX) 			; no cr,lf -> exit
+ 		jsr 	PrNL 			; output CR,LF and exit
 
 X_PrX 		;- done
-		lda	#DEV_OUT_STD	; reset to default output device
-		sta	DEV_OUT
-		rts
+ 		LDA 	#DEV_OUT_STD 		; reset to default output device
+ 		STA 	DEV_OUT
+ 		rts
 
 
-;----------------------------------------------- X_PrPart
+;------------------------------------------------------- X_PrPart 
 X_PrPart 	; ';' | ',' | string | numeric
  		;-- first check for comma / semi-colon
- 		BR_AEQ($3B,X_PrSemi) 	; ';' =>Semi
- 		BR_AEQ($2C,X_PrComma) 	; ',' =>Colon
+ 		BR_AEQ($3B,X_PrSemi) 		; ';' =>Semi
+ 		BR_AEQ($2C,X_PrComma) 		; ',' =>Colon
  		;-- check if A is T_StrLit,T_StrVar or StrFunction
  		jsr 	EvIsStr
- 		BR_F(X_PrNum) 		; no, treat as numeric to string
+ 		BR_F(X_PrNum) 			; no, treat as numeric to string
  		jmp 	X_PrStr
 
-;----------------------------------------------- X_PrComma
+;------------------------------------------------------- X_PrComma 
 X_PrComma 	; COMMA
- 		lda 	#HT 		; tab
- 		jsr 	ChrOut 		; output the tab
+ 		lda 	#HT 			; tab
+ 		jsr 	ChrOut 			; output the tab
  		;-- fall through
-;----------------------------------------------- X_PrSemi
+;------------------------------------------------------- X_PrSemi 
 X_PrSemi 	; SEMICOLON
  		NONL()
- 		jmp 	ChrRd 		; comsume ',' ';'
+ 		jmp 	ChrRd 			; comsume ',' ';'
 
-;----------------------------------------------- X_PrStr
+;------------------------------------------------------- X_PrStr 
 X_PrStr 	; STRING expression
  		jsr 	StrInit
- 		jsr 	EvString 	; Evaluate
- 		jsr 	StrOut 		; Print to io
- 		DONL() 			; NL on
- 		RTN_T() 		; OK
-;----------------------------------------------- X_PrNum
+ 		jsr 	EvString 		; Evaluate
+ 		jsr 	StrOut 			; Print to io
+ 		DONL() 				; NL on
+ 		RTN_T() 			; OK
+;------------------------------------------------------- X_PrNum 
 X_PrNum 	;-- NUMERIC expresion
  		jsr 	NumInit
- 		jsr 	EvNumeric 	; evaluate
- 		jsr 	NumCvt 		; convert to string
- 		jsr 	NumFmt 		; handle leading zeroes
- 		LDAX(NUM_BUF) 		; print it
+ 		jsr 	EvNumeric 		; evaluate
+ 		jsr 	NumCvt 			; convert to string
+ 		jsr 	NumFmt 			; handle leading zeroes
+ 		LDAX(NUM_BUF) 			; print it
  		jsr 	PrStrAX
- 		DONL() 			; NL on
- 		RTN_T() 		; OK
+ 		DONL() 				; NL on
+ 		RTN_T() 			; OK
 
 #if _DB_PRINT
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 DB_Print: ; Debug Print values
  		PUSHALL()
  		jsr 	PrNL
@@ -105,20 +105,20 @@ DB_Print: ; Debug Print values
 #endif
 
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Print 	.DB 	"PRIN",'T'+$80
 .nolist
 #endif
 
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Print 	= LOW($)+$80
 .DW 	X_Print
 .nolist
 #endif
-.list 					; end of PRINT
+.list 						; end of PRINT
 
 .export T_Print

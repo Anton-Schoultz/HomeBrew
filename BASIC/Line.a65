@@ -3,7 +3,7 @@
 .NOLIST
 #endif
 
-;=================================================================== LINE =============
+;=================================================================== LINE ============= 
 ;*  DB_Line              Debug Line vars - NUM  ADR  NXT  LEN  FND
 ;*  DB_LineComp          Debug results of LnComp - step through
 ;*  LnComp               Compare line number to LN_FND, (NUM-FND)
@@ -24,17 +24,17 @@ _Ln 		= $
 
 ; $003C  Int(LN_FND)   ; Line number to look for
 
-;----------------------------------------------- LnTop
+;------------------------------------------------------- LnTop 
 LnTop: ; Start of program : BASBEG->LN_NXT, LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
  		ZCPY(LN_NXT,BASBEG)
- 		jsr 	LnZero 		; Zero line number and length
+ 		jsr 	LnZero 			; Zero line number and length
 
-;----------------------------------------------- LnNext
+;------------------------------------------------------- LnNext 
 LnNext: ; Next line LN_NXT->ZRd->LN_ADR, set NUM,LEN,NXT
 ; LN_NXT -> ZRd -> LN_ADR
 ; Process the T_LineNo, sets LN_ADR,LN_NUM,LN_LEN and LN_NXT
- 		ZCPY(ZRd,LN_NXT) 	; point ChrGet to the line
- 		ZCPY(LN_ADR,ZRd) 	; save start of this line
+ 		ZCPY(ZRd,LN_NXT) 		; point ChrGet to the line
+ 		ZCPY(LN_ADR,ZRd) 		; save start of this line
  		;-- check that it points to a line
  		lda 	(ZRd)
  		sta 	CHRGOT
@@ -48,28 +48,28 @@ LnEOF 		;-- zero length and number
 LnZero 		lda 	#0
  		sta 	LN_NUM
  		sta 	LN_NUM+1
- 		rts 			; return EQ=1
+ 		rts 				; return EQ=1
 
 LnNextRd: ; fetch the line info - set NUM,LEN,NXT
- 		jsr 	ChrRd 		; get lo no
+ 		jsr 	ChrRd 			; get lo no
  		sta 	LN_NUM
- 		jsr 	ChrRd 		; hi num
+ 		jsr 	ChrRd 			; hi num
  		sta 	LN_NUM+1
  		;-- setup LN_LEN and LN_NXT
- 		jsr 	ChrRd 		; length from line
- 		sta 	LN_LEN 		; save it
+ 		jsr 	ChrRd 			; length from line
+ 		sta 	LN_LEN 			; save it
  		clc
- 		adc 	LN_ADR 		; add start address
- 		sta 	LN_NXT 		; next address
- 		lda 	#0 		; hi length is zero
- 		sta 	LN_LEN+1 	; save len.hi
- 		adc 	LN_ADR+1 	; add start address
- 		sta 	LN_NXT+1 	; store next.hi
+ 		adc 	LN_ADR 			; add start address
+ 		sta 	LN_NXT 			; next address
+ 		lda 	#0 			; hi length is zero
+ 		sta 	LN_LEN+1 		; save len.hi
+ 		adc 	LN_ADR+1 		; add start address
+ 		sta 	LN_NXT+1 		; store next.hi
  		;-- return the first byte (T_LineNo)
  		lda 	CHRGOT
  		rts
 
-;----------------------------------------------- LnComp
+;------------------------------------------------------- LnComp 
 LnComp: ; Compare line number to LN_FND, (NUM-FND)
 ; returns with difference in A (and saved in LN_FLG)
 ; N:1 Z:0 C:0  CC/MI => NUM<FIND
@@ -83,38 +83,37 @@ LnComp: ; Compare line number to LN_FND, (NUM-FND)
  		sec
  		lda 	LN_NUM
  		sbc 	LN_FND
-LnCompX 	sta 	LN_FLG 		; save result
+LnCompX 	sta 	LN_FLG 			; save result
  		rts
 
-;----------------------------------------------- LnGo
+;------------------------------------------------------- LnGo 
 LnGo: ; seek line for GOTO/GOSUB
  		jsr 	LnComp
  		bmi 	LnSeekNxt
  		;-- fall through to seek from top
 
-;----------------------------------------------- LnSeekTop
+;------------------------------------------------------- LnSeekTop 
 LnSeekTop: ; Search for LN_FND from top, EQ=Match NE=Insert MI=EOF/Error
  		jsr 	LnTop
  		beq 	LnSeekEOF
  		;-- fall through to Seek
-;----------------------------------------------- LnSeek
+;------------------------------------------------------- LnSeek 
 LnSeek: ; Search for LN_FND, EQ=Match NE=Insert MI=EOF/Error
- 		jsr 	LnComp 		; cc/mi=Cont, eq=Match ne=ins
+ 		jsr 	LnComp 			; cc/mi=Cont, eq=Match ne=ins
  		;-- bpl 	LnSeekX 	; num>=find
  		bcc 	LnSeekNxt
  		bra 	LnSeekX
 
  		;-- Not there yet, next line
-LnSeekNxt 	jsr 	LnNext 		; move to next line
+LnSeekNxt 	jsr 	LnNext 			; move to next line
  		bne 	LnSeek
  		;-- EOF or not T_LineNo
-LnSeekEOF 	;lda 	#$FF 		; sets Minus for EOF/Error
- 		clc
+LnSeekEOF 	clc
 LnSeekX 	rts
 
 
 #if _DB_LINE
-;=================================================================== TEST =============
+;=================================================================== TEST ============= 
 
 DB_Line: ; Debug Line vars - NUM  ADR  NXT  LEN  FND
  		PRINTLN("NUM  ADR  NXT  LEN  FND")
@@ -129,15 +128,15 @@ DB_LineComp: ; Debug results of LnComp - step through
  		ZSET(LN_FND,100)
  		;-- NUM<FIND
  		ZSET(LN_NUM,90)
- 		jsr 	LnComp 		; N:1 Z:0 C:0
+ 		jsr 	LnComp 			; N:1 Z:0 C:0
  		PAUSE()
  		;-- NUM=FND
  		ZSET(LN_NUM,100)
- 		jsr 	LnComp 		; N:0 Z:1 C:1
+ 		jsr 	LnComp 			; N:0 Z:1 C:1
  		PAUSE()
  		;-- NUM>FND
  		ZSET(LN_NUM,110)
- 		jsr 	LnComp 		; N:0 Z:0 C:1
+ 		jsr 	LnComp 			; N:0 Z:0 C:1
  		PAUSE()
  		rts
 ; N:1 Z:0 C:0  CC/MI => NUM<FIND

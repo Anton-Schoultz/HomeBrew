@@ -3,14 +3,14 @@
 #endif
 
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== FLOW =============
+;=================================================================== FLOW ============= 
 ;*  X_Gosub              GOSUB #expr~Call subroutine at LineNo
 ;*  X_Goto               GOTO #NumExpr~Goto LineNo
 ;*  X_Return             RETURN~Return control to after the GOSUB
 ;*
 _Flow 		= $
 
-;----------------------------------------------- X_Gosub
+;------------------------------------------------------- X_Gosub 
 X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
  		;-- push return line address onto RTNSTK
  		ldx 	RTNSP
@@ -24,10 +24,10 @@ X_Gosub: ; GOSUB #expr~Call subroutine at LineNo
  		bpl 	GoSubRtnErr
  		stx 	RTNSP
 ; Fall through to evaluate numeric expression as target line no and jump
-;----------------------------------------------- X_Goto
+;------------------------------------------------------- X_Goto 
 X_Goto: ;  GOTO #NumExpr~Goto LineNo
- 		jsr 	ChrRd 		; consume token
- 		jsr 	EvInt 		; Evaluate expression as integer value AX Lo,Hi
+ 		jsr 	ChrRd 			; consume token
+ 		jsr 	EvInt 			; Evaluate expression as integer value AX Lo,Hi
  		stx 	LN_FND+1
  		sta 	LN_FND
  		jsr 	LnGo
@@ -35,13 +35,13 @@ X_Goto: ;  GOTO #NumExpr~Goto LineNo
  		ZCPY(LN_NXT,LN_ADR)
  		rts
 
-GoSubRtnErr 	ERROR(ERR_GOSUB) 	; 'GOSUB/RETURN error
+GoSubRtnErr 	ERROR(ERR_GOSUB) 		; 'GOSUB/RETURN error
 
 
 
-;----------------------------------------------- X_Return
+;------------------------------------------------------- X_Return 
 X_Return: ; RETURN~Return control to after the GOSUB
- 		jsr 	ChrRd 		; consume token
+ 		jsr 	ChrRd 			; consume token
  		;-- pop return
  		ldx 	RTNSP
  		dex
@@ -63,7 +63,7 @@ X_Return: ; RETURN~Return control to after the GOSUB
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Goto 		.DB 	"GOT",'O'+$80
@@ -71,7 +71,7 @@ W_Gosub 	.DB 	"GOSU",'B'+$80
 W_Return 	.DB 	"RETUR",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Goto 		= LOW($)+$80
@@ -83,4 +83,4 @@ T_Return 	= LOW($)+$80
 .nolist
 #endif
 
-.list 					; end of Goto
+.list 						; end of Goto

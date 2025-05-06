@@ -1,7 +1,7 @@
 ; Math Development
 _DB_NUM 	= 1
 _DBUG 		= 1
-;=================================================================== MATH TEST ========
+;=================================================================== MATH TEST ======== 
 ;*  Test                 test maths
 ;*
 
@@ -19,20 +19,20 @@ MathModule 	= MATH_MOD_S24
 
 .org $E000
  		;-- init cpu stack and modes
- 		sei 			; Halt IRQs
- 		ldx 	#$ff 		; Set Stack pointer
+ 		sei 				; Halt IRQs
+ 		ldx 	#$ff 			; Set Stack pointer
  		txs
- 		cld 			; Binary mode
- 		;--
- 		jsr 	ChrInit 	; Copy code to ZPpg for ChrRd
- 		jsr 	NumInit 	; init calc stack pointer
+ 		cld 				; Binary mode
+ 		;-- 
+ 		jsr 	ChrInit 		; Copy code to ZPpg for ChrRd
+ 		jsr 	NumInit 		; init calc stack pointer
 
  		;-- go do the test
  		jmp 	Test
 
-P_A 		.DB 	"1234",0 	;00 00 04D2
-P_B	 	.DB 	"-4567",0 	;00 12 D687
-P_1		.db "0",0
+P_A 		.DB 	"1234",0 		;00 00 04D2
+P_B 		.DB 	"-4567",0 		;00 12 D687
+P_1 		.DB 	"0",0
 
 ListLn:  	rts
 Main:  		HALT()
@@ -44,37 +44,37 @@ Main:  		HALT()
 
 #include "Math.a65"
 
-;----------------------------------------------- Test
+;------------------------------------------------------- Test 
 Test: ; test maths
 
-		;PR_ZSPC_ON()
-		;PR_ZSUP_ON()
+ 		;-- PR_ZSPC_ON()
+ 		;-- PR_ZSUP_ON()
 
- 		jsr 	TestParse	; 1234567		12d687
+ 		jsr 	TestParse 		; 1234567		12d687
 
- 		jsr	NumCvt
- 		jsr	NumSup
- 		;jsr	NumSpc
- 		;jsr	NumFmt
+ 		JSR 	NumCvt
+ 		JSR 	NumSup
+ 		;-- jsr	NumSpc
+ 		;-- jsr	NumFmt
 
  		LDAX(NUM_BUF)
- 		jsr	PrStrAX
+ 		JSR 	PrStrAX
 
  		HALT()
 
-TestParse:
- 		ZSET(ZParse,P_B)	; 4567
+TestParse: 
+ 		ZSET(ZParse,P_B) 		; 4567
  		jsr 	NumParsePtr
  		jsr 	NumPushA
- 		ZSET(ZParse,P_A)	; 1234
+ 		ZSET(ZParse,P_A) 		; 1234
  		jsr 	NumParsePtr
  		jsr 	NumPopB
 
- 		;jsr 	NumAdd		;    5801
- 		;jsr 	NumSub		;    3333
- 		jsr 	NumMul		; 5635678
- 		;jsr 	NumDiv		; 	3 r 865
- 		;jsr 	NumMod		; 	3 r 865
+ 		;-- jsr 	NumAdd		;    5801
+ 		;-- jsr 	NumSub		;    3333
+ 		jsr 	NumMul 			; 5635678
+ 		;-- jsr 	NumDiv		; 	3 r 865
+ 		;-- jsr 	NumMod		; 	3 r 865
 
  		rts
 

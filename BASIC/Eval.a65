@@ -1,4 +1,4 @@
-;=================================================================== EVALUATE =========
+;=================================================================== EVALUATE ========= 
 ;*  BoolOr               OR
 ;*  BoolTerm             Boolean AND
 ;*  BoolXor              XOR
@@ -7,12 +7,14 @@
 ;*  DoAddOp              Do Add/Sub - rts back to inside while
 ;*  ENumLit              Fetch number from the code -> NUM_A (unpacked)
 ;*  EvAdd                add
+;*  EvAddSub             common for Add/Sub
 ;*  EvDiv                Do Divide
 ;*  EvFAry               TODO Retrieve array variable value -> NumA
 ;*  EvFVar               retrieve variable value -> NumA
 ;*  EvInt                Evaluate expression as integer value AX Lo,Hi
 ;*  EvMod                Do Modulus
 ;*  EvMul                Do Multiply
+;*  EvMulDiv             common for Mul/Div/Mod
 ;*  EvNumeric            Evaluate numeric expression, return T if valid (and CHRGOT is next char)
 ;*  EvSub                subtract
 ;*  EvVarLong            TODO Get value of long name variable
@@ -21,10 +23,11 @@
 ;*  IsRelOp              return eq if op is one of  <,=,>,<=,<>,>=
 ;*  Match                match character CHRGOT vs .A and move on, error if no match
 ;*  NotFactor            Boolean NOT
+;*  RelTest              Test result in NUM_FLG againt RelOp in A condition on stack, return True/False
 ;*  Relation             Handle relation test < = > <= <> >=
 ;*  Term                 Factor [ '*'|'/'|'%' Factor]*
 ;*
-#ifdef hide 				; Eval
+#ifdef hide 					; Eval
 .NOLIST
 #endif
 
@@ -34,36 +37,36 @@
 
 _Ev 		= $
 
-;----------------------------------------------- EvNumeric
+;------------------------------------------------------- EvNumeric 
 EvNumeric: ; Evaluate numeric expression, return T if valid (and CHRGOT is next char)
  		jsr 	BoolTerm
  		BR_T(EvNumL)
  		rts
 EvNumL 		jsr 	IsOrOp
  		bne 	EvNumX
- 		;--
+ 		;-- 
  		jsr 	NumPushA
  		jsr 	DoOrOp
  		bra 	EvNumL
- 		;--
+ 		;-- 
 EvNumX 		;-- TODO Does this really need to be packed as NumSet will pack?
  		php
  		jsr 	NumPack
  		plp
  		rts
 
-;----------------------------------------------- EvInt
+;------------------------------------------------------- EvInt 
 EvInt: ; Evaluate expression as integer value AX Lo,Hi
  		jsr 	EvNumeric
  		jmp 	NumToInt
 
-;----------------------------------------------- DoOrOp
+;------------------------------------------------------- DoOrOp 
 DoOrOp 		lda 	CHRGOT
  		CASE(T_OR,BoolOr)
  		CASE(T_XOR,BoolXor)
  		RTN_F()
 
-;----------------------------------------------- IsOrOp
+;------------------------------------------------------- IsOrOp 
 IsOrOp 		; return EQ if 'OR' / 'XOR'
  		lda 	CHRGOT
  		cmp 	#T_OR
@@ -71,7 +74,7 @@ IsOrOp 		; return EQ if 'OR' / 'XOR'
  		cmp 	#T_XOR
 IsOrOpX 	rts
 
-;----------------------------------------------- BoolOr
+;------------------------------------------------------- BoolOr 
 BoolOr: ; OR
  		jsr 	ChrRd
  		jsr 	BoolTerm
@@ -81,7 +84,7 @@ BoolOr: ; OR
  		jsr 	ChrRd
  		RTN_T()
 
-;----------------------------------------------- BoolXor
+;------------------------------------------------------- BoolXor 
 BoolXor: ; XOR
  		jsr 	ChrRd
  		jsr 	BoolTerm
@@ -89,7 +92,7 @@ BoolXor: ; XOR
  		lda 	CHRGOT
  		RTN_T()
 
-;----------------------------------------------- BoolTerm
+;------------------------------------------------------- BoolTerm 
 BoolTerm: ; Boolean AND
  		jsr 	NotFactor
 BoolTermL 	lda 	CHRGOT
@@ -103,55 +106,55 @@ BoolTermL 	lda 	CHRGOT
  		bra 	BoolTermL
 BoolTermX 	RTN_T()
 
-;----------------------------------------------- NotFactor
+;------------------------------------------------------- NotFactor 
 NotFactor: ; Boolean NOT
  		lda 	CHRGOT
  		cmp 	#T_NOT
  		bne 	Relation
- 		;--
- 		jsr 	ChrRd 		; consume NOT
+ 		;-- 
+ 		jsr 	ChrRd 			; consume NOT
  		jsr 	Relation
  		;-- negate realtion result 0<->1
  		jsr 	NumNot
  		lda 	CHRGOT
  		RTN_T()
 
-;----------------------------------------------- Relation
+;------------------------------------------------------- Relation 
 Relation: ; Handle relation test < = > <= <> >=
  		jsr 	Expression
  		jsr 	IsRelOp
  		bne 	RelationX
- 		;--
- 		lda 	CHRGOT 		; fetch the token again
- 		pha 			; save the relop on stack
- 		;--
+ 		;-- 
+ 		lda 	CHRGOT 			; fetch the token again
+ 		pha 				; save the relop on stack
+ 		;-- 
  		jsr 	NumPushA
- 		jsr 	ChrRd 		; consume op
- 		;--
- 		jsr 	Expression 	; get second expression
- 		jsr 	NumPopB 	;
- 		jsr 	NumSub 		; subtract
- 		jsr 	NumFlag 	; set flags bassed on result
+ 		jsr 	ChrRd 			; consume op
+ 		;-- 
+ 		jsr 	Expression 		; get second expression
+ 		jsr 	NumPopB 		;
+ 		jsr 	NumSub 			; subtract
+ 		jsr 	NumFlag 		; set flags bassed on result
  		;-- test condition
-		pla 			; recal the rel-op
-RelTest:; Test result in NUM_FLG againt RelOp in A condition on stack, return True/False
- 		and 	NUM_FLG 	; and with the flag
- 		and 	#$7 		; opcode low bits match NUM_FLG
- 		beq 	RelFalse 	; zero is false
+ 		pla 				; recal the rel-op
+RelTest: ; Test result in NUM_FLG againt RelOp in A condition on stack, return True/False
+ 		and 	NUM_FLG 		; and with the flag
+ 		and 	#$7 			; opcode low bits match NUM_FLG
+ 		beq 	RelFalse 		; zero is false
  		;-- non-zero means true
- 		jsr 	NumTrue 	; TRUE = FFFF
+ 		jsr 	NumTrue 		; TRUE = FFFF
  		RTN_T()
 RelFalse 	; set NUMA to zero
- 		jsr 	NumFalse 	; FALSE = 0
+ 		jsr 	NumFalse 		; FALSE = 0
 RelationX 	RTN_T()
 
-;----------------------------------------------- IsRelOp
+;------------------------------------------------------- IsRelOp 
 IsRelOp: ; return eq if op is one of  <,=,>,<=,<>,>=
  		and 	#$F8
  		cmp 	#$F0
  		rts
 
-;----------------------------------------------- Expression
+;------------------------------------------------------- Expression 
 Expression: ;  [ Term ]   ( [+/-] Term)*
  		jsr 	IsAddOp
  		bne 	Exp1
@@ -159,7 +162,7 @@ Expression: ;  [ Term ]   ( [+/-] Term)*
  		jsr 	NumZeroA
  		bra 	ExpL
 Exp1 		jsr 	Term
- 		RTN_IFF() 		; if term is not numeric then exit
+ 		RTN_IFF() 			; if term is not numeric then exit
  		;-- while isAddOp {
 ExpL 		jsr 	IsAddOp
  		bne 	ExpXT
@@ -174,14 +177,14 @@ DoAddOp: ; Do Add/Sub - rts back to inside while
  		CASE('-',EvSub)
  		RTN_F()
 
-EvAddSub:;  common for Add/Sub
-  		jsr 	NumPushA
- 		jsr 	ChrRd 		; comsume the '+'/'-'
+EvAddSub: ;  common for Add/Sub
+ 		jsr 	NumPushA
+ 		jsr 	ChrRd 			; comsume the '+'/'-'
  		jsr 	Term
  		jmp 	NumPopB
 
 EvAdd: ; add
-		jsr	EvAddSub
+ 		JSR 	EvAddSub
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd 		; comsume the '+'/'-'
 ; 		jsr 	Term
@@ -190,7 +193,7 @@ EvAdd: ; add
  		RTN_T()
 
 EvSub: ; subtract
-		jsr	EvAddSub
+ 		JSR 	EvAddSub
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd 		; comsume the '+'/'-'
 ; 		jsr 	Term
@@ -206,14 +209,14 @@ IsAddOp 	lda 	CHRGOT
 IsAddOpX 	rts
 
 
-;----------------------------------------------- Term
+;------------------------------------------------------- Term 
 Term: ; Factor [ '*'|'/'|'%' Factor]*
  		jsr 	Factor
 
-TermL 		jsr 	IsMulOp 	; while IsMulOP
- 		bne 	TermX 		; {
- 		jsr 	DoMulOp 	;   DoMulOp
- 		BR_T(TermL) 		; }
+TermL 		jsr 	IsMulOp 		; while IsMulOP
+ 		bne 	TermX 			; {
+ 		jsr 	DoMulOp 		;   DoMulOp
+ 		BR_T(TermL) 			; }
 TermX 		RTN_T()
 
 DoMulOp 	lda 	CHRGOT
@@ -222,14 +225,14 @@ DoMulOp 	lda 	CHRGOT
  		CASE('%',EvMod)
  		RTN_F()
 
-EvMulDiv:; common for Mul/Div/Mod
+EvMulDiv: ; common for Mul/Div/Mod
  		jsr 	NumPushA
  		jsr 	ChrRd
  		jsr 	Factor
  		jmp 	NumPopB
 
 EvMul: ; Do Multiply
-		jsr	EvMulDiv
+ 		JSR 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor
@@ -238,7 +241,7 @@ EvMul: ; Do Multiply
  		RTN_T()
 
 EvDiv: ; Do Divide
-		jsr	EvMulDiv
+ 		JSR 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor
@@ -247,7 +250,7 @@ EvDiv: ; Do Divide
  		RTN_T()
 
 EvMod: ; Do Modulus
-		jsr	EvMulDiv
+ 		JSR 	EvMulDiv
 ; 		jsr 	NumPushA
 ; 		jsr 	ChrRd
 ; 		jsr 	Factor
@@ -264,17 +267,17 @@ IsMulOp 	lda 	CHRGOT
  		cmp 	#'%'
 IsMulOpX 	rts
 
-;----------------------------------------------- Factor
+;------------------------------------------------------- Factor 
 Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
 ; exits with next token in CHRGOT
  		lda 	CHRGOT
- 		CASE(T_NumVar,EvFVar) 	; variable
- 		CASE(T_NumAry,EvFAry) 	; subscripted var
- 		CASE(T_NumLit,ENumLit) 	; Literal value
+ 		CASE(T_NumVar,EvFVar) 		; variable
+ 		CASE(T_NumAry,EvFAry) 		; subscripted var
+ 		CASE(T_NumLit,ENumLit) 		; Literal value
  		;-- convert string to value is special case
- 		CASE(T_Asc,X_Asc) 	; ASC($)-> code
- 		CASE(T_Val,X_Val) 	; VAL($)-> numeric value
- 		CASE(T_Len,X_Len) 	; LEN($)-> Length of StrExpr
+ 		CASE(T_Asc,X_Asc) 		; ASC($)-> code
+ 		CASE(T_Val,X_Val) 		; VAL($)-> numeric value
+ 		CASE(T_Len,X_Len) 		; LEN($)-> Length of StrExpr
  		;-- Fn(##) ?
  		lda 	CHRGOT
  		jsr 	IsNumFn
@@ -283,70 +286,70 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
 
 Function 	;-- process a function
  		lda 	CHRGOT
- 		pha 			; save the '(' / T_Fn
- 		jsr 	ChrRd 		; consume T_fn
- 		jsr 	BoolTerm 	; evaluate
+ 		pha 				; save the '(' / T_Fn
+ 		jsr 	ChrRd 			; consume T_fn
+ 		jsr 	BoolTerm 		; evaluate
  		;-- check for ')'
  		lda 	#$29
  		jsr 	Match
  		;-- now execute the function - skip for '('
  		pla
- 		cmp 	#'(' 		; braces?
- 		beq 	FunctionX 	; yes - done ok
+ 		cmp 	#'(' 			; braces?
+ 		beq 	FunctionX 		; yes - done ok
  		;-- jump to perform the function
  		jsr 	RunJump
 FunctionX 	RTN_T()
 
-;----------------------------------------------- ENumLit
+;------------------------------------------------------- ENumLit 
 ENumLit: ; Fetch number from the code -> NUM_A (unpacked)
 ; CHRGOT is first char AFTER the stored value
  		;-- fetch number from memory
  		jsr 	NumRd
- 		jsr 	ChrRd 		; move on
+ 		jsr 	ChrRd 			; move on
  		RTN_T()
 
-;----------------------------------------------- EvFVar
+;------------------------------------------------------- EvFVar 
 EvFVar: ; retrieve variable value -> NumA
 ; CHRGOT is first char AFTER the variable spec
 ; VARNUM has XX AABBCC format (packed)
 ; .A is the index, math module multiplies for size as required
- 		jsr 	ChrRd 		; get first letter of name
- 		bpl 	EvVarLong 	; get value of long name variable
- 		and 	#$1F 		; mask for index
- 		jsr 	NumGet 		; retrieve simple variable [A]
- 		jsr 	ChrRd 		; get next token into CHRGOT
- 		RTN_T() 		; got a value
+ 		jsr 	ChrRd 			; get first letter of name
+ 		bpl 	EvVarLong 		; get value of long name variable
+ 		and 	#$1F 			; mask for index
+ 		jsr 	NumGet 			; retrieve simple variable [A]
+ 		jsr 	ChrRd 			; get next token into CHRGOT
+ 		RTN_T() 			; got a value
 
-;----------------------------------------------- EvVarLong
+;------------------------------------------------------- EvVarLong 
 EvVarLong: ; TODO Get value of long name variable
- 		ERROR(ERR_BADVAR) 	; invalid variable
+ 		ERROR(ERR_BADVAR) 		; invalid variable
  		;-- inc	EVFLG		; got a value
-;----------------------------------------------- EvFAry
+;------------------------------------------------------- EvFAry 
 EvFAry: ; TODO Retrieve array variable value -> NumA
- 		ERROR(ERR_BADVAR) 	; invalid variable
+ 		ERROR(ERR_BADVAR) 		; invalid variable
  		;-- inc	EVFLG		; got a value
 
-;----------------------------------------------- Check
+;------------------------------------------------------- Check 
 Check: ; check for a given token in CHRGOT
  		cmp 	CHRGOT
  		bne 	MatchFail
  		rts
 
-;----------------------------------------------- Match
+;------------------------------------------------------- Match 
 Match: ; match character CHRGOT vs .A and move on, error if no match
  		cmp 	CHRGOT
  		bne 	MatchFail
- 		jmp 	ChrRd 		; next token and return
+ 		jmp 	ChrRd 			; next token and return
 MatchFail 	; expected in A
- 		ldy 	CHRGOT 		; got in Y
+ 		ldy 	CHRGOT 			; got in Y
  		ldx 	#ERR_EXPECTED
  		jmp 	Error
 
 
 #if _DB_EVAL
-;=================================================================== DBUG =============
+;=================================================================== DBUG ============= 
 
-;----------------------------------------------- DB_EvStr
+;------------------------------------------------------- DB_EvStr 
 DB_EvStr: ; Debug Eval - ZRd  SnEx NumA Gt Fl  SnEx=S_LEN_A, NumA=S_PTR_A
  		PUSHALL()
  		jsr 	PrNL

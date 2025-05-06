@@ -1,4 +1,4 @@
-#ifdef hide 				; ChrStr
+#ifdef hide 					; ChrStr
 .NOLIST
 #endif
 
@@ -11,11 +11,10 @@
 #define DEV_OUT_STD DEV_CONSOLE
 
 
-;=================================================================== CHRSTR ===========
+;=================================================================== CHRSTR =========== 
 ;*  ChrIn                Read character from input device (KBD,COM..)
-;*  ChrInit              Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
 ;*  ChrOut               Send character to output device (SCR,COM..)
-;*  ChrRd_               Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
+;*  ChrRd                Read character from memory (++ZRd)->A->CHRGOT
 ;*  ChrWr                Write Character to memory  A -> (ZWr++) , 00->(ZWr)
 ;*  Input                Read from IO and place in INBUF, until CR
 ;*  InputIOEcho          Input INBUF from IO, echo chars to IO
@@ -27,6 +26,8 @@
 ;*  PrStrAX              Print string at AX [A] -> PutChr -> Mem/IO
 ;*  SetInDev             set input device .A
 ;*  SetOutDev            set input device .A
+;*  VEC_IN               Vectors to input devices
+;*  VEC_OUT              Vectors to output devices
 ;*m BR_NBCD(tgt)         Branch to tgt if BCD=0
 ;*m BR_ND7(tgt)          Branch to tgt if MRK=0 (end with bit 7)
 ;*m PR_ALL()             Term Null F5=0 Term null only
@@ -55,7 +56,7 @@
 ; Bit0 ZSup	'0'		Suppress leading zeros
 
 
-;----------------------------------------------- 5:NonASCII
+;------------------------------------------------------- 5:NonASCII 
 ; BR_D7(tgt)	Branch to tgt if MRK=1 (end with bit 7)
 #define BR_D7(tgt) 	BBS5 ZPrFlg,tgt
 ; BR_ND7(tgt)	Branch to tgt if MRK=0 (end with bit 7)
@@ -67,7 +68,7 @@
 ; PR_ALL()	Term Null	F5=0 Term null only
 #define PR_ALL()	RMB5 ZPrFlg
 
-;----------------------------------------------- 4:BCD HEX
+;------------------------------------------------------- 4:BCD HEX 
 ; BR_BCD(tgt)	Branch to tgt if BCD=1
 #define BR_BCD(tgt) 	BBS4 ZPrFlg,tgt
 ; BR_NBCD(tgt)	Branch to tgt if BCD=0
@@ -79,7 +80,7 @@
 ; PR_BCD_OFF()	HEX out		F4=0 HEX 0-9ABCDEF
 #define PR_BCD_OFF()	RMB4 ZPrFlg
 
-;----------------------------------------------- 3:Echo
+;------------------------------------------------------- 3:Echo 
 ; PR_ECHO(tgt)	Branch to tgt if ECHO=1
 #define BR_ECHO(tgt) 	BBS3 ZPrFlg,tgt
 ; PR_NECHO(tgt)	Branch to tgt if ECHO=0
@@ -90,7 +91,7 @@
 #define PR_ECHO_OFF()	RMB3 ZPrFlg
 
 
-;----------------------------------------------- 1:ZeroBlank
+;------------------------------------------------------- 1:ZeroBlank 
 ; PR_ZSPC(tgt)	Branch to tgt if ZSPC=1
 #define BR_ZSPC(tgt) 	BBS1 ZPrFlg,tgt
 ; PR_NZSPC(tgt)	Branch to tgt if ZSPC=0
@@ -100,7 +101,7 @@
 ; PR_ZSPC_OFF()	Leading zeros stay
 #define PR_ZSPC_OFF()	RMB1 ZPrFlg
 
-;----------------------------------------------- 0:ZeroSuppress
+;------------------------------------------------------- 0:ZeroSuppress 
 ; PR_ZSUP(tgt)	Branch to tgt if ZSUP=1
 #define BR_ZSUP(tgt) 	BBS0 ZPrFlg,tgt
 ; PR_NZSUP(tgt)	Branch to tgt if ZSUP=0
@@ -110,73 +111,64 @@
 ; PR_ZSUP_OFF()	Leading zeros stay
 #define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
- 		;--
-ChrRd 		= $0000 		; increment pointer and fetch, save in CHRGOT
-ZRd 		= $07 			; points to character just fetched
-CHRGOT 		= $0C 			; most recently fetched character
-HLTFLG 		= $0D 			; halt flag 00=run (error code)
-ZWr 		= $0E 			; address for ChrWr to write to
-
-ChrReRd 	= $06 			; ReRead (ZRd)->A->CHRGOT
+ 		;-- 
 
 _ChrStr 	= $
-;----------------------------------------------- ChrNext
+;------------------------------------------------------- ChrRd 
 ; increment the ZRd pointer (inside the lda) and then fetch the character
-ChrRd_: ; Read character from memory (++ZRd)->A->CHRGOT  (ZPg routine)
- 		ZINC(ZRd) 		; 0001 0203 0405
- 		lda 	$1234 		; 060708
- 		sta 	CHRGOT 		; 090A
- 		rts 			; 0B
-
-.db $0 					; 0C = CHRGOT
-.db $0 					; OD = HLTFLG Halt flag
-.db 0,0 				; 0E0F = ZWr
+ChrRd: ; Read character from memory (++ZRd)->A->CHRGOT
+ 		ZINC(ZRd)
+ 		lda 	(ZRd)
+ 		sta 	CHRGOT
+ 		rts
 
 ; Initial values for 8 vectors in here, copied along with the above to zero page
-;----------------------------------------------- Input Devices
-.dw ConIn 				; VIN0
+;------------------------------------------------------- Input Devices 
+VEC_IN: ; Vectors to input devices
+.dw ConIn 					; VIN0
 .dw ComIn
 .dw $ABCD
 .dw $ABCD
-;----------------------------------------------- Output devices
-.dw ConOut 				; VOUT0
+;------------------------------------------------------- Output devices 
+VEC_OUT: ; Vectors to output devices
+.dw ConOut 					; VOUT0
 .dw ComOut
 .dw $ABCD
 .dw $ABCD
 
-.db DEV_CONSOLE*2 			; DEV_IN  initial input device no = 0 (Console-keyboard)
-.db DEV_CONSOLE*2 			; DEV_OUT initial output device no = 0 (Console-screen)
+.db DEV_CONSOLE*2 				; DEV_IN  initial input device no = 0 (Console-keyboard)
+.db DEV_CONSOLE*2 				; DEV_OUT initial output device no = 0 (Console-screen)
 
-;----------------------------------------------- Devices
+;------------------------------------------------------- Devices 
 ; 0	CON	Console is Keyboard & screen
 ; 1	COM	Serial port
 ; 2
 ; 3
 
-;----------------------------------------------- CharInit
-ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
- 		ldx 	#0
-ChrInitL 	lda 	ChrRd_,X
- 		sta 	$00,X
- 		inx
- 		cpx 	#$22 		; 16 code, 8 x vectors+ devNos
- 		bne 	ChrInitL
- 		;-- reset control flags
- 		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
- 		rts
+;;----------------------------------------------- CharInit
+;ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
+; 		ldx 	#0
+;ChrInitL 	lda 	ChrRd_,X
+; 		sta 	$00,X
+; 		inx
+; 		cpx 	#$22 		; 16 code, 8 x vectors+ devNos
+; 		bne 	ChrInitL
+; 		;-- reset control flags
+; 		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
+; 		rts
 
-;----------------------------------------------- ChrIn
+;------------------------------------------------------- ChrIn 
 ChrIn: ; Read character from input device (KBD,COM..)
  		phx
  		ldx 	DEV_IN
  		jsr 	ChrInCall
  		plx
- 		cmp 	#0 		; set flags based on .A
+ 		cmp 	#0 			; set flags based on .A
  		rts
 
 ChrInCall 	jmp 	(VEC_IN,X)
 
-;----------------------------------------------- ChrOut
+;------------------------------------------------------- ChrOut 
 ChrOut: ; Send character to output device (SCR,COM..)
  		phx
  		ldx 	DEV_OUT
@@ -186,11 +178,11 @@ ChrOut: ; Send character to output device (SCR,COM..)
 
 ChrOutCall 	jmp 	(VEC_OUT,X)
 
-;----------------------------------------------- ChrRd
+;------------------------------------------------------- ChrRd 
 ; Read character from memory (++ZRd)->A->CHRGOT
 ; ChrRd is code in Z Page
 
-;----------------------------------------------- ChrWr
+;------------------------------------------------------- ChrWr 
 ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
  		;-- bump to next address
@@ -201,46 +193,46 @@ ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
 ChrWrX 		rts
 
 
-;----------------------------------------------- SetInDev
+;------------------------------------------------------- SetInDev 
 SetInDev: ; set input device .A
  		asl 	a
  		sta 	DEV_IN
  		rts
 
-;----------------------------------------------- SetOutDev
+;------------------------------------------------------- SetOutDev 
 SetOutDev: ; set input device .A
  		asl 	a
  		sta 	DEV_OUT
  		rts
 
-;----------------------------------------------- InputText
+;------------------------------------------------------- InputText 
 InputText: ; Input text from console to INBUF, prompt char is in A
  		;-- check if input is device or screen
  		ldx 	DEV_IN
- 		bne 	Input 		; non-zero so skip output of prompt char
+ 		bne 	Input 			; non-zero so skip output of prompt char
  		jsr 	ConOut
-InputText1 	jsr 	InputIOEcho 	; Read from Mem/IO and place in INBUF, until CR
+InputText1 	jsr 	InputIOEcho 		; Read from Mem/IO and place in INBUF, until CR
  		jmp 	PrNL
 
-;----------------------------------------------- InputIOEcho
+;------------------------------------------------------- InputIOEcho 
 InputIOEcho: ; Input INBUF from IO, echo chars to IO
  		PR_ECHO_ON()
-;----------------------------------------------- Input
+;------------------------------------------------------- Input 
 Input: ; Read from IO and place in INBUF, until CR
  		ldx 	#0
  		txa
- 		sta 	ZTmp 		; quote flag
+ 		sta 	ZTmp 			; quote flag
  		sta 	INBUF,x
-InputL:  	jsr 	ChrIn 		; get from IO
+InputL:  	jsr 	ChrIn 			; get from IO
  		beq 	InputL
  		;-- ignore LF
  		cmp 	#LF
  		beq 	InputL
  		;-- echo if needed
- 		BR_NECHO(Input0) 	; if echo is off, just go get the char
- 		pha 			; save it
- 		jsr 	ChrOut 		; echo to IO out
- 		pla 			; restore
+ 		BR_NECHO(Input0) 		; if echo is off, just go get the char
+ 		pha 				; save it
+ 		jsr 	ChrOut 			; echo to IO out
+ 		pla 				; restore
 Input0 		;-- exit on CR
  		cmp 	#CR
  		beq 	InputX
@@ -248,72 +240,72 @@ Input0 		;-- exit on CR
  		cmp 	#BS
  		bne 	Input1
  		;-- back & null
- 		lda 	#0 		; null
- 		sta 	INBUF,x 	; place in buf
- 		dex 			; back-up a position
- 		sta 	INBUF,x 	; place in buf
+ 		lda 	#0 			; null
+ 		sta 	INBUF,x 		; place in buf
+ 		dex 				; back-up a position
+ 		sta 	INBUF,x 		; place in buf
  		bra 	InputL
-Input1 		cmp 	#$22 		; is it a quote?
- 		bne 	Input2 		; no, skip
+Input1 		cmp 	#$22 			; is it a quote?
+ 		bne 	Input2 			; no, skip
  		;-- yes,  toggle the quote flag in ZTmp 00 <-> $22
  		pha
  		eor 	ZTmp
  		sta 	ZTmp
  		pla
- 		;--
+ 		;-- 
 Input2 		ldy 	ZTmp
- 		bne 	Input3 		; quote mode is on
+ 		bne 	Input3 			; quote mode is on
  		ldy 	DEV_IN
- 		bne 	Input3 		; input from device - no upper
+ 		bne 	Input3 			; input from device - no upper
 
  		;-- not in quote mode, so convert to upper case
  		cmp 	#'a'
- 		bmi 	Input3 		; <'a'
+ 		bmi 	Input3 			; <'a'
  		cmp 	#'{'
  		bpl 	Input3
  		eor 	#$20
 
- 		;--
-Input3 		sta 	INBUF,x 	; place in buf
+ 		;-- 
+Input3 		sta 	INBUF,x 		; place in buf
  		;-- check buffer full
  		cpx 	#BUFSZ
- 		bpl 	InputX 		; full -> exit
+ 		bpl 	InputX 			; full -> exit
  		;-- move on
  		inx
  		bra 	InputL
-InputX 		lda 	#0 		; terminate with a null
+InputX 		lda 	#0 			; terminate with a null
  		sta 	INBUF,X
  		sta 	INBUF+1,X
  		rts
 
-;----------------------------------------------- PrStrAX
+;------------------------------------------------------- PrStrAX 
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)
-;----------------------------------------------- PrStr
+;------------------------------------------------------- PrStr 
 PrStr: ; Print string pointed to by ZPtr [A], last Y->ZTmp
 ; last index saved into ZTmp
  		phy
  		ldy 	#0
 PrStr1 		lda 	(ZPtr),y
- 		beq 	PrStrX 		; zero -> exit
+ 		beq 	PrStrX 			; zero -> exit
  		;-- end of bit 7=1 ?
- 		BR_ND7(PrStr2) 		; Stop=Off, skip bit test
- 		bmi 	PrStrX 		; bit 7 set -> exit
- 		and 	#$7F 		; force ascii
- 		;--
-PrStr2 		jsr 	ChrOut 		; print character to io
- 		iny 			; move to next char
- 		bne 	PrStr1 		; loop back (no more than 255 chars)
+ 		BR_ND7(PrStr2) 			; Stop=Off, skip bit test
+ 		bmi 	PrStrX 			; bit 7 set -> exit
+ 		and 	#$7F 			; force ascii
+ 		;-- 
+PrStr2 		jsr 	ChrOut 			; print character to io
+ 		iny 				; move to next char
+ 		bne 	PrStr1 			; loop back (no more than 255 chars)
 PrStrX 		sty 	ZTmp
- 		ply 			; restore Y
- 		rts 			; exit
+ 		ply 				; restore Y
+ 		rts 				; exit
 
-;----------------------------------------------- IsAlpha
+;------------------------------------------------------- IsAlpha 
 IsAlpha: ; returns T/F if .A is a Alpha A-Z
  		BR_ALT('A',IsFalse)
  		BR_AGE('Z'+1,IsFalse
  		RTN_T()
-;----------------------------------------------- IsAlphaNumeric
+;------------------------------------------------------- IsAlphaNumeric 
 IsAlphaNumeric: ; returns true if .A is 0-9,A-Z
  		jsr 	IsAlpha
  		BR_T(IsTrue)
@@ -331,5 +323,5 @@ IsFalse 	RTN_F()
 .echo "\n"
 #endif
 
-.LIST 					;-- End of ChrStr
+.LIST 						;-- End of ChrStr
 

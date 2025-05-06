@@ -3,7 +3,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== RUN ==============
+;=================================================================== RUN ============== 
 ;*  RunCmd               Run Cmd from TOKBUF
 ;*  RunInit              prepare to run by setting flags
 ;*  RunJump              Jump via table for token in A (mask & jump)
@@ -13,12 +13,12 @@
 ;*
 _Run 		= $
 
-;----------------------------------------------- RunInit
+;------------------------------------------------------- RunInit 
 RunInit: ; prepare to run by setting flags
  		PR_ZSUP_ON()
  		PR_ZSPC_OFF()
  		;-- init
- 		jsr 	NumInit 	; initialise evaluator
+ 		jsr 	NumInit 		; initialise evaluator
  		;-- default line no zero
  		lda 	#0
  		sta 	LN_FND
@@ -26,59 +26,59 @@ RunInit: ; prepare to run by setting flags
  		;-- random seed
  		lda 	BASEND
  		ora 	#1
- 		sta 	VARNUM 		; low byte of var[0]=Seed
+ 		sta 	VARNUM 			; low byte of var[0]=Seed
  		rts
 
-;----------------------------------------------- RunCmd
+;------------------------------------------------------- RunCmd 
 RunCmd: ; Run Cmd from TOKBUF
  		lda 	#0
  		sta 	LN_NUM
  		sta 	LN_NUM+1
- 		ZSET(ZRd,TOKBUF-1) 	; where to run from
- 		jsr 	RunInit 	; set I/O, Zero suppress etc
+ 		ZSET(ZRd,TOKBUF-1) 		; where to run from
+ 		jsr 	RunInit 		; set I/O, Zero suppress etc
  		jmp 	RunStmnt
 
-;----------------------------------------------- X_Run
+;------------------------------------------------------- X_Run 
 X_Run: ; RUN [#LineNo]~Execute the program, optionally from line number
- 		jsr 	RunInit 	; set I/O, Zero suppress etc
- 		jsr 	ChrRd 		; consume RUN
- 		BR_ANE(T_NumLit,Run) 	; start at default line no 0
+ 		jsr 	RunInit 		; set I/O, Zero suppress etc
+ 		jsr 	ChrRd 			; consume RUN
+ 		BR_ANE(T_NumLit,Run) 		; start at default line no 0
  		;-- numeric literal is start line
- 		jsr 	NumRd 		; read number into NUM_A
- 		jsr 	NumToInt 	; NUM_A as AX l/h
+ 		jsr 	NumRd 			; read number into NUM_A
+ 		jsr 	NumToInt 		; NUM_A as AX l/h
  		sta 	LN_FND
  		stx 	LN_FND+1
 Run 		;-- Run from line LN_FND
  		jsr 	LnSeekTop
  		lda 	CHRGOT
-RunL 		beq 	RunX 		; EOF -> exit
+RunL 		beq 	RunX 			; EOF -> exit
  		jsr 	RunStmnt
  		;-- move to next line
-RunNxt 		jsr 	LnNext 		; Next line LN_NXT->ZRd->LN_ADR
+RunNxt 		jsr 	LnNext 			; Next line LN_NXT->ZRd->LN_ADR
  		bra 	RunL
 RunX 		rts
 
-;----------------------------------------------- RunLn
+;------------------------------------------------------- RunLn 
 RunStmnt: ; Run a statement (used by GOSUB and RETURN too)
- 		jsr 	NumInit 	; Initialise calculator (clear stack pointer)
- 		jsr 	StrInit 	; VAREND->STR_END, 0->STR_LEN
- 		jsr 	ChrRd 		; (++ZRd)->A->CHRGOT
+ 		jsr 	NumInit 		; Initialise calculator (clear stack pointer)
+ 		jsr 	StrInit 		; VAREND->STR_END, 0->STR_LEN
+ 		jsr 	ChrRd 			; (++ZRd)->A->CHRGOT
  		sta 	TOKNO
- 		beq 	RunLnX 		; null = End-of-statement
+ 		beq 	RunLnX 			; null = End-of-statement
  		;-- remark ?
- 		BR_AEQ(T_REM,RunLnX) 	; remark skip rest
+ 		BR_AEQ(T_REM,RunLnX) 		; remark skip rest
  		;-- token
- 		BR_AGT(T_Max,RunTokErr) ; >max = invalid token
- 		BR_ALT($80,RunTokErr) 	; <$80 = invalid token
+ 		BR_AGT(T_Max,RunTokErr) 	; >max = invalid token
+ 		BR_ALT($80,RunTokErr) 		; <$80 = invalid token
  		;-- jump to X_xxxx, rts to run loop
-;----------------------------------------------- RunJump
+;------------------------------------------------------- RunJump 
 RunJump: ; Jump via table for token in A (mask & jump)
  		and 	#$7F
  		tax
  		jmp 	(TblRun,X)
-RunLnX 		rts 			; done, return
+RunLnX 		rts 				; done, return
 
-;----------------------------------------------- RunTokErr
+;------------------------------------------------------- RunTokErr 
 RunTokErr: ; display invalid token as [xx]
  		ERROR(ERR_TOKEN)
 
@@ -92,17 +92,17 @@ RunTokErr: ; display invalid token as [xx]
 .nolist
 #endif
 
-;----------------------------------------------- keyword
+;------------------------------------------------------- keyword 
 #if ($/256) = PG_KEY
 .list
 W_Run 		.DB 	"RU",'N'+$80
 .nolist
 #endif
-;----------------------------------------------- run
+;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
 T_Run 		= LOW($)+$80
 .DW 	X_Run
 .nolist
 #endif
-.list 					; end of Run
+.list 						; end of Run

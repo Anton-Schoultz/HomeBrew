@@ -1,8 +1,7 @@
-#ifdef hide 				; Util
+#ifdef hide 					; Util
 .NOLIST
 #endif
-;=================================================================== UTIL =============
-;*  Bin2BCD              Convert binary value in A (0-99) into BCD in A, (high digit in X)
+;=================================================================== UTIL ============= 
 ;*  Hex2Nib              '0..9A..F' -> to nibble in A (C=1 Valid) [A]
 ;*  HexDump              hex dump memory (ZPtr) to output io/mem
 ;*  IntDH                Divide ZTMP by 10, remainder in A (trash X)
@@ -11,10 +10,9 @@
 ;*  IntPrint             Print integer (U16) AX to mem/io via PutChr
 ;*  IntPrintZX           copy ZPg[x] to TMP and print it
 ;*  PrADec2              Print A as decimal digits 00-99
-;*  PrADec3              Print A as decimal digits 000-255
 ;*  PrAHex               Print A as Hex digits (send/write) [A]
 ;*  PrAXHex              Print AX(lo/hi) as 4 hex digits [A]
-;*  PrNL                 print CR,LF to PutChr -> mem/io
+;*  PrNL                 print CR,LF to ChrOut -> io
 ;*  PrNib                Convert hex nibble and Print it (preserves XY)
 ;*  PtrAX                set ZPtr to valkue in AX (lo,hi)
 ;*  PtrAXY               set ZPtr to AX (lo,hi) and set Y to zero
@@ -63,14 +61,14 @@ BinTbl
 .db $80,$81,$82,$83,$84,$85,$86,$87,$88,$89
 .db $90,$91,$92,$93,$94,$95,$96,$97,$98,$99
 
-;Bin2BCDTbl
-;.byte	$63,$31,$15,$07,$03,$01,$00
+ 		;-- Bin2BCDTbl
+ 		;-- .byte	$63,$31,$15,$07,$03,$01,$00
 
 Nib2HexTbl
 ;    ____ BCD:0______
 .db "0123456789ABCDEF"
 
-;----------------------------------------------- IntPrintX
+;------------------------------------------------------- IntPrintX 
 IntPrintZX: ; copy ZPg[x] to TMP and print it
  		lda 	0,X
  		sta 	TMP
@@ -78,32 +76,32 @@ IntPrintZX: ; copy ZPg[x] to TMP and print it
  		sta 	TMP+1
  		bra 	IntPrintTMP
 
-;----------------------------------------------- IntPrint
+;------------------------------------------------------- IntPrint 
 IntPrint: ; Print integer (U16) AX to mem/io via PutChr
 ; 65535:2276c, 10000:2246, 1000:1781 - div 10 method
  		sta 	TMP
  		stx 	TMP+1
 IntPrintTMP 	ldy 	#$FF
- 		phy 			; marker on the stack
-IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
+ 		phy 				; marker on the stack
+IntPrint1 	jsr 	IntDT 			; ZTMP /= 10, remainder in A
  		ora 	#'0'
- 		pha 			; push the digit
- 		lda 	TMP 		; done?
+ 		pha 				; push the digit
+ 		lda 	TMP 			; done?
  		ora 	TMP+1
- 		bne 	IntPrint1 	; no- loop
+ 		bne 	IntPrint1 		; no- loop
 IntPrint2 	;- now pop & print the digits
  		pla
- 		bmi 	IntPrintX 	; found the marker so exit
+ 		bmi 	IntPrintX 		; found the marker so exit
  		jsr 	ChrOut
  		bra 	IntPrint2
 IntPrintX 	rts
 
-;----------------------------------------------- IntDH_AX
+;------------------------------------------------------- IntDH_AX 
 IntDH_AX: ; Divide AX by 10, result in ZTMP, remainder in A
  		sta 	TMP
  		stx 	TMP+1
  		;-- fall through
-;----------------------------------------------- IntDH
+;------------------------------------------------------- IntDH 
 IntDH: ; Divide ZTMP by 10, remainder in A (trash X)
  		ldx 	#16
  		lda 	#0
@@ -118,12 +116,12 @@ IntDH_AX2 	dex
  		bne 	IntDH_AX1
  		rts
 
-;----------------------------------------------- IntDT_AX
+;------------------------------------------------------- IntDT_AX 
 ;IntDT_AX: ; Divide AX by 10, result in TMP, remainder in A
 ; 		sta 	TMP
 ; 		stx 	TMP+1
  		;-- fall through
-;----------------------------------------------- IntDT
+;------------------------------------------------------- IntDT 
 IntDT: ; Divide TMP by 10, remainder in A
 ; used by IntPrint
  		ldx 	#16
@@ -139,8 +137,8 @@ IntDT_AX2 	dex
  		bne 	IntDT_AX1
  		rts
 
-;=================================================================== UTIL_PTR =========
-;----------------------------------------------- PtrX
+;=================================================================== UTIL_PTR ========= 
+;------------------------------------------------------- PtrX 
 PtrX: ; Set ZPtr from ZPg[.X]
  		;-- get base pointer into ZPtr
  		lda 	0,X
@@ -149,135 +147,135 @@ PtrX: ; Set ZPtr from ZPg[.X]
  		sta 	ZPtr+1
  		rts
 
-;----------------------------------------------- PtrAXY
+;------------------------------------------------------- PtrAXY 
 PtrAXY: ; set ZPtr to AX (lo,hi) and set Y to zero
  		ldy 	#0
-;----------------------------------------------- PtrAX
+;------------------------------------------------------- PtrAX 
 PtrAX: ; set ZPtr to valkue in AX (lo,hi)
  		sta 	ZPtr
  		stx 	ZPtr+1
  		rts
 
-;----------------------------------------------- PrNL
+;------------------------------------------------------- PrNL 
 PrNL: ; print CR,LF to ChrOut -> io
  		lda 	#CR
  		jsr 	ChrOut
  		lda 	#LF
  		jmp 	ChrOut
 
-;=================================================================== UTIL_HEX =========
+;=================================================================== UTIL_HEX ========= 
 
-;----------------------------------------------- PrAXHex
+;------------------------------------------------------- PrAXHex 
 PrAXHex: ; Print AX(lo/hi) as 4 hex digits [A]
- 		pha 			; save ZTmp
- 		txa 			; get high
- 		jsr 	PrAHex 		; print hi as hex digits
- 		pla 			; restore ZTmp
+ 		pha 				; save ZTmp
+ 		txa 				; get high
+ 		jsr 	PrAHex 			; print hi as hex digits
+ 		pla 				; restore ZTmp
  		;-- fall through to print ZTmp as hex digits
-;----------------------------------------------- PrAHex
+;------------------------------------------------------- PrAHex 
 PrAHex: ; Print A as Hex digits (send/write) [A]
- 		pha 			;Save A for LSD
+ 		pha 				;Save A for LSD
  		lsr 	a
  		lsr 	a
- 		lsr 	a 		; MSD to LSD position
+ 		lsr 	a 			; MSD to LSD position
  		lsr 	a
- 		jsr 	PrNib 		; Output hex digit
- 		pla 			; Restore A and then
+ 		jsr 	PrNib 			; Output hex digit
+ 		pla 				; Restore A and then
  		;-- fall through to print hex routine
-;----------------------------------------------- PrNib
+;------------------------------------------------------- PrNib 
 PrNib: ; Convert hex nibble and Print it (preserves XY)
- 		phx 			; save X
- 		and 	#$0F 		; Mask LSD for hex print
+ 		phx 				; save X
+ 		and 	#$0F 			; Mask LSD for hex print
 ; 		BR_NBCD(PrNibX) 	; non-bcd -> PrNibX
 ; 		;-- BCD so add 16 for second part of table
 ; 		clc
 ; 		adc 	#$10 		; add 16 for BCD part of table
 PrNibX 		tax
- 		lda 	Nib2HexTbl,X 	; Look Up
+ 		lda 	Nib2HexTbl,X 		; Look Up
  		plx
- 		jmp 	ChrOut 		; Write/Send
+ 		jmp 	ChrOut 			; Write/Send
 
-;----------------------------------------------- Hex2Nib
+;------------------------------------------------------- Hex2Nib 
 Hex2Nib: ; '0..9A..F' -> to nibble in A (C=1:Valid) [A]
- 		eor 	#'0' 		; Map digits to 0-9
- 		cmp 	#9+1 		; Is it a decimal digit?
- 		bcc 	Hex2Nib9 	; Yes!
- 		adc 	#$08 		; Map letter "A"-"F" to $FA-FF
- 		cmp 	#$7A 		; Hex letter?
- 		bcc 	Hex2NibFPX 	; No! Character not hex
-Hex2Nib9 	sec 			; set carry flag to indicate valid
+ 		eor 	#'0' 			; Map digits to 0-9
+ 		cmp 	#9+1 			; Is it a decimal digit?
+ 		bcc 	Hex2Nib9 		; Yes!
+ 		adc 	#$08 			; Map letter "A"-"F" to $FA-FF
+ 		cmp 	#$7A 			; Hex letter?
+ 		bcc 	Hex2NibFPX 		; No! Character not hex
+Hex2Nib9 	sec 				; set carry flag to indicate valid
 Hex2NibFPX 	and 	#$0F
- 		rts 			; carry clear if invalid char
+ 		rts 				; carry clear if invalid char
 
 
 #if _DBUG
-;=================================================================== UTIL-DBUG ========
-;----------------------------------------------- _Print_
+;=================================================================== UTIL-DBUG ======== 
+;------------------------------------------------------- _Print_ 
 ; PSEUDO-CODE
 _Print_: ;Print in-line string
- 		jsr 	RegSave 	; save registers
+ 		jsr 	RegSave 		; save registers
  		;-- pop the return address from the jsr call
  		pla
  		plx
  		;-- set up to print from there (ZPtr)
- 		SETAX(ZDPtr) 		; [0] is part of call [1] is data
+ 		SETAX(ZDPtr) 			; [0] is part of call [1] is data
  		ldy 	#0
-_Print_L 	iny 			; next char
+_Print_L 	iny 				; next char
  		lda 	(ZDPtr),y
- 		beq 	_Print_X 	; zero -> exit
+ 		beq 	_Print_X 		; zero -> exit
  		bmi 	_Print_HX
- 		jsr 	ChrOut 		; print character
- 		bra 	_Print_L 	; loop back (no more than 255 chars)
+ 		jsr 	ChrOut 			; print character
+ 		bra 	_Print_L 		; loop back (no more than 255 chars)
 _Print_HX 	; print hex data
  		iny
- 		lda 	(ZDPtr),y 	; lo
+ 		lda 	(ZDPtr),y 		; lo
  		sta 	ZDBug
  		iny
- 		lda 	(ZDPtr),y 	; lo
+ 		lda 	(ZDPtr),y 		; lo
  		sta 	ZDBug+1
  		iny
  		phy
- 		;--
+ 		;-- 
  		lda 	#'='
  		jsr 	ChrOut
  		lda 	#'$'
  		jsr 	ChrOut
- 		;--
+ 		;-- 
  		ldy 	#1
- 		lda 	(ZDBug),y 	; hi data
+ 		lda 	(ZDBug),y 		; hi data
  		jsr 	PrAHex
  		dey
- 		lda 	(ZDBug),y 	; lo data
+ 		lda 	(ZDBug),y 		; lo data
  		jsr 	PrAHex
  		jsr 	PrNL
- 		;--
+ 		;-- 
  		ply
- 		;--
+ 		;-- 
  		;-- Calculate the return address
-_Print_X 	tya 			; y is offset to the null
- 		sec 			; adjust one more
- 		adc 	ZDPtr 		; + Len
- 		sta 	ZDPtr 		; -> lo
+_Print_X 	tya 				; y is offset to the null
+ 		sec 				; adjust one more
+ 		adc 	ZDPtr 			; + Len
+ 		sta 	ZDPtr 			; -> lo
  		lda 	#0
  		adc 	ZDPtr+1
  		sta 	ZDPtr+1
  		;-- restore registers
  		jsr 	RegLoad
-_PrintFPX 	jmp 	(ZDPtr) 	; jump to code after the in-line string
+_PrintFPX 	jmp 	(ZDPtr) 		; jump to code after the in-line string
 
-;----------------------------------------------- _PrHexShort
+;------------------------------------------------------- _PrHexShort 
 _PrHexShort: ; print int .A.X as hex value with space
  		jsr 	PrAHex
  		lda 	#' '
  		jmp 	ChrOut
 
-;----------------------------------------------- _PrHexInt
+;------------------------------------------------------- _PrHexInt 
 _PrHexInt: ; print int .A.X as hex value with space
  		jsr 	PrAXHex
  		lda 	#' '
  		jmp 	ChrOut
 
-;----------------------------------------------- HexDump
+;------------------------------------------------------- HexDump 
 HexDump: ; hex dump memory (ZPtr) to output io/mem
  		lda 	ZPtr+1
  		jsr 	PrAHex
@@ -297,9 +295,9 @@ HexDumpL 	; dump a line of bytes
  		ldy 	#0
 HexDumpL1 	; dump a line of bytes
  		lda 	(ZPtr),y
- 		BR_ALT(32,HexDump1) 	; a<' '?
+ 		BR_ALT(32,HexDump1) 		; a<' '?
  		BR_AGT(127,HexDump1)
- 		jsr 	ChrOut 		;printable
+ 		jsr 	ChrOut 			;printable
  		bra 	HexDump2
 HexDump1 	; non printable
  		lda 	#'.'
@@ -318,8 +316,8 @@ HexDump2 	iny
 HexDumpX 	rts
 #endif
 
-;=================================================================== UTIL_BCD =========
-;----------------------------------------------- PrADec2
+;=================================================================== UTIL_BCD ========= 
+;------------------------------------------------------- PrADec2 
 PrADec2: ; Print A as decimal digits 00-99
  		phx
  		tax

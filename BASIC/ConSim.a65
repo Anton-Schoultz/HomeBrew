@@ -1,4 +1,4 @@
-#ifdef hide 				; ConSim
+#ifdef hide 					; ConSim
 .NOLIST
 #endif
 ;=================================================================== CONSIM =========== 
@@ -12,9 +12,9 @@
 ;*
 
 ; Print to screen, Read from keyboard
-IO_AREA 	= $0300 		; Must match Simulator's Options screen.
+IO_AREA 	= $0300 			; Must match Simulator's Options screen.
 
-;-----------------------------------------------
+;-------------------------------------------------------
 SIM_CLS 	= IO_AREA + 0
 SIM_OUT 	= IO_AREA + 1
 SIM_IN 		= IO_AREA + 4
@@ -23,21 +23,21 @@ SIM_Y 		= IO_AREA + 6
 
 _ConSim 	= $
 
-;----------------------------------------------- ConOut 
+;------------------------------------------------------- ConOut 
 ConOut: ;Write character to output (screen)
- 		cmp 	#_FF 		; Form Feed = Clear Screen
+ 		cmp 	#_FF 			; Form Feed = Clear Screen
  		beq 	ConCls
- 		cmp 	#HT 		; TAB char
+ 		cmp 	#HT 			; TAB char
  		beq 	ConDoTab
- 		sta 	SIM_OUT 	; Sends A to output screen (interprets CR LF BS)
+ 		sta 	SIM_OUT 		; Sends A to output screen (interprets CR LF BS)
  		rts
 
-;----------------------------------------------- ConCls 
+;------------------------------------------------------- ConCls 
 ConCls: ; Clear Screen (CLS / FormFeed)
  		sta 	SIM_CLS
  		rts
 
-;----------------------------------------------- ConDoTab 
+;------------------------------------------------------- ConDoTab 
 ConDoTab 	; tab the output
  		lda 	#' '
  		sta 	SIM_OUT
@@ -47,17 +47,17 @@ ConDoTab 	; tab the output
  		bne 	ConDoTab
  		rts
 
-;----------------------------------------------- ConIn 
+;------------------------------------------------------- ConIn 
 ConIn: ; Read character from input (keyboard), null if none
  		lda 	SIM_IN
  		rts
 
-;----------------------------------------------- ConPos 
+;------------------------------------------------------- ConPos 
 ConPos: ; Return screen column position in .A
  		lda 	SIM_X
  		rts
 
-;----------------------------------------------- ConTab 
+;------------------------------------------------------- ConTab 
 ConTab: ; Set screen column to .A
  		sta 	SIM_X
  		rts
@@ -103,5 +103,5 @@ ConTab: ; Set screen column to .A
  		;-- .echo $-_ConSim
  		;-- .echo " Bytes in _ConSim\n"
 
-.LIST 					;-- End of ConSim
+.LIST 						;-- End of ConSim
 

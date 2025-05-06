@@ -1,15 +1,15 @@
-;=================================================================== CONSTANTS ========
+;=================================================================== CONSTANTS ======== 
 SCRN_COLS 	= 40
 SCRN_LINES 	= 16
 
 PG_SYSVAR 	= 3
 PG_SYSIO 	= 2
 
-MATH_MOD_NONE= 0
-MATH_MOD_S16= 1
-MATH_MOD_S24= 2
+MATH_MOD_NONE= 	0
+MATH_MOD_S16= 	1
+MATH_MOD_S24= 	2
 
-;----------------------------------------------- ASCII Control Codes
+;------------------------------------------------------- ASCII Control Codes 
 #DEFINE NULL	0
 #DEFINE BS 	8
 #DEFINE HT 	9
@@ -35,7 +35,7 @@ MATH_MOD_S24= 2
 #define FORDEEP 8
 
 ; Size of FOR block = NUMPKSZ+NUMPKSZ+3 = STP,LIM, ADR,IX
-;#define FORSZ  7
+ 		;-- #define FORSZ  7
 
 ; bytes per line of Hex Dump  (if cols > 69 then use 16)
 #define HEXSZ 8
@@ -44,33 +44,33 @@ MATH_MOD_S24= 2
 ; Constants
 ; Value tokens F8-FF
 ;                  FF			;ff
-T_StrLit 	= $FE 			;fe "x" Lit,Alpha, -
+T_StrLit 	= $FE 				;fe "x" Lit,Alpha, -
 ;                  FD			;fd 123	Lit,Num  , -
-T_NumLit 	= $FC 			;fc 123	Lit,Num  , -
-T_StrAry 	= $FB 			;fb A$(	Var,Alpha,Array
-T_StrVar 	= $FA 			;fa A$	Var,Alpha,Single
-T_NumAry 	= $F9 			;f9 A(	Var,Num  ,Array
-T_NumVar 	= $F8 			;f8 A	Var,Num  ,Single
+T_NumLit 	= $FC 				;fc 123	Lit,Num  , -
+T_StrAry 	= $FB 				;fb A$(	Var,Alpha,Array
+T_StrVar 	= $FA 				;fa A$	Var,Alpha,Single
+T_NumAry 	= $F9 				;f9 A(	Var,Num  ,Array
+T_NumVar 	= $F8 				;f8 A	Var,Num  ,Single
 
  		;-- $F7 = always
 
  		;-- 1111.0>=<		;0>=<
-#define T_LE 	$F3 			;0011
-#define T_NE	$F5 			;0101
-#define T_LT	$F1 			;0001
-#define T_GE 	$F6 			;0110
-#define T_EQ 	$F2 			;0010
-#define T_GT 	$F4 			;0100
+#define T_LE 	$F3 				;0011
+#define T_NE	$F5 				;0101
+#define T_LT	$F1 				;0001
+#define T_GE 	$F6 				;0110
+#define T_EQ 	$F2 				;0010
+#define T_GT 	$F4 				;0100
 
-T_LineNo 	= $F0 			; header includes line number
-
-
+T_LineNo 	= $F0 				; header includes line number
 
 
-;-- rom pages
-PG_ROM 		= $E0 			; main code
-PG_KEY 		= $FE 			; key word table
-PG_RUN 		= $FF 			; main jump table
+
+
+;------------------------------------------------------- rom pages 
+PG_ROM 		= $E0 				; main code
+PG_KEY 		= $FE 				; key word table
+PG_RUN 		= $FF 				; main jump table
 
 
 TblKeyword 	= (PG_KEY<<8)
