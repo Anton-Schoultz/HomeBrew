@@ -206,6 +206,8 @@ MainProg: ; Dump start of Program space
 #include "Editor.a65" 				; Program editor
 
 #include "State.a65" 				; state machine
+; include state machines code here
+; - eg keyscan, debounce
 
 ;  #include "IrqNmi.a65" 				; Interrupt handlers
 

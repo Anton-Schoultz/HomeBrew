@@ -38,7 +38,8 @@ SmInitL 	dex
  		sta 	SM_C,X 			; zero counter
  		sta 	SM_D,X 			; zero data
  		bra 	SmInitL
-SmInitX 	rts
+SmInitX 	cli				; Re-enable IRQs
+		rts
 
 ;------------------------------------------------------- SmFind
 SmFind: ; find an empoty slot, return in .X (N:1=None else EQ:1=found)
