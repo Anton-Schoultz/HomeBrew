@@ -1,4 +1,4 @@
-;=================================================================== VARIABLES ======== 
+;=================================================================== VARIABLES ========
 ;*
 
 #ifdef hide
@@ -6,7 +6,7 @@
 #endif
 
 
-;=================================================================== ZVARS ============ 
+;=================================================================== ZVARS ============
 .org 0
 
 ; $0000 16 bytes for z-pg code
@@ -38,7 +38,7 @@ Int(ZParse) 	; Parse pointer
 
 Int(ERR_ADR) 	; Address where error was detected
 
-;------------------------------------------------------- Printing (send to mem/io) 
+;------------------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details
 Short(ZTmp) 	; Temp byte
 Short(ZRegA) 	; Save register A (used in Msg)
@@ -46,7 +46,7 @@ Short(ZRegX) 	; Save register X (used in Msg)
 Short(ZRegY) 	; Save register Y (used in Msg)
 Short(ZRegP) 	; Save register P (used in Msg)
 
-;------------------------------------------------------- Code Lines 
+;------------------------------------------------------- Code Lines
 PARAGRAPH()
 Int(LN_NUM) 	; Current Line number
 Int(LN_ADR) 	; Current Line address
@@ -57,7 +57,7 @@ Int(TOK_LEN) 	; length of tok buffer
 Short(LN_FLG) 	; direction to search
 Short(TOKNO) 	; Token number
 Short(VARID) 	; Variable ID 0$(nnnnn nnnnn=1-26 for A-Z
-;------------------------------------------------------- BASIC program 
+;------------------------------------------------------- BASIC program
 Int(RAMBEG) 	; Start of user ram area (set with cold start)
 Int(RAMEND) 	; End of user ram area (set at cold start)
 Int(BASBEG) 	; Start of BASIC program
@@ -68,10 +68,10 @@ Int(ARYBEG) 	; Start of array Space
 Short(RTNSP) 	; Gosub/Return stack pointer	RTNSZ x2
 Short(FOR_SP) 	; FOR/NEXT stack pointer  	FORSZ x8
 
-;------------------------------------------------------- Irq / Nmi 
+;------------------------------------------------------- Irq / Nmi
 Int(Z_IrqPtr) 	; used in IRQ code
 
-;------------------------------------------------------- Numeric common vars 
+;------------------------------------------------------- Numeric common vars
 Int(TMP) 	; Temp 16 bit value (line nos)
 ; NUMUSZ = size of numeric value once 'unpacked' for calcualtions
 Var(NUM_A,NUMUSZ) ; Number parsed / Primary accumulator
@@ -86,7 +86,7 @@ Short(NUM_SGN) 	; sign
 Var(TIMER,3) 	; timer value
 
 
-;------------------------------------------------------- String 
+;------------------------------------------------------- String
 ; (Z) ->    LenL|LenH|Characters.....|00|
 Int(STR_PTR) 	; pointer to string
 Int(STR_END) 	; end of string work area
@@ -95,27 +95,26 @@ Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 
 #include "ComSim.a65" 				; COM port simulation
 
- 		;-- PARAGRAPH()
 #include "Math.a65" 				; Math module ZeroPage
 
 .echo "  _ZeroPage\t"
 .echo $
 .echo "/256\n"
 
-;=================================================================== STACK ============ 
+;=================================================================== STACK ============
 ; cpu stack grows down from 01FF..0100
 .org $0100
 
 #include "Math.a65" 				; Math module Page 1
 
 
-;=================================================================== SYSVARS ========== 
+;=================================================================== SYSVARS ==========
 .org $0200
-;------------------------------------------------------- Basic Editing 
+;------------------------------------------------------- Basic Editing
 Var(INBUF,BUFSZ) ; buffer for input
 Var(TOKBUF,BUFSZ) ; buffer for tokenized input
 
-;------------------------------------------------------- GOSUB stack 32x2 = 64 
+;------------------------------------------------------- GOSUB stack 32x2 = 64
 ; Gosub to depth of RTNSZ=32  (CBM has ~23)
 ; return value is the address of the line following the GOSUB (2bytes)
 Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
@@ -124,28 +123,28 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 
 .echo "  _Buffers\t"
 .echo $-$200
-.echo "/256\t(incl. FOR/GOSUB stack)\n"
+.echo "/256\t\t(incl. FOR/GOSUB stack)\n"
 
 ;======================================================================================
 ; reserved space for memory mapped IO devices
 .org $0300
 
 
-;=================================================================== SIMPLE VARIABLES = 
+;=================================================================== SIMPLE VARIABLES =
 .org $0400
 VARTAB
 
-;------------------------------------------------------- String Vars A-Z 
+;------------------------------------------------------- String Vars A-Z
 Var(VARSTR,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
 
 Var(VARARY,27*2) ; ( Plo,Phi ) ->  LenL,LenH,Data....
 
 
-;------------------------------------------------------- Numeric Vars 27 x NUMPKSZ 
+;------------------------------------------------------- Numeric Vars 27 x NUMPKSZ
 ; Vars stored as sequence of bytes, [Exp] Low...Hi
 ; index 0 is for RND, 1-26 for A-Z => 27 slots
 Var(VARNUM,27*NUMPKSZ)
-;------------------------------------------------------- For/Next 
+;------------------------------------------------------- For/Next
 ; FOR values are stored immediately after the A-Z, so access with index 27,28
 FOR_DATA 	;-- DATA
 Var(FOR_STP,NUMPKSZ) ; [27] Step size
@@ -157,11 +156,11 @@ Short(FOR_NDX) 	; Loop variable number (1-26)
 
 ; Size of FOR block = NUMPKSZ+NUMPKSZ+2+1 = STP,LIM, ADR,IX
 FORSZ 		= NUMPKSZ * 2 + 3
-.echo "FOR SIZE = "
-.echo FORSZ
-.echo "\n"
+;.echo "FOR SIZE = "
+;.echo FORSZ
+;.echo "\n"
 
-;------------------------------------------------------- FOR stack 
+;------------------------------------------------------- FOR stack
 ; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 Var(FORSTK,8*FORDEEP)
 
@@ -169,9 +168,10 @@ Var(FORSTK,8*FORDEEP)
 
 .echo "  SysRAM ($400)\t"
 .echo $-VARTAB
-.echo "\t1024-"
+.echo "\t\t1024-"
 .echo $
-.echo " (first 255 cleared by CLEAR/EdtClear)\n"
+;.echo " (first 255 cleared by CLEAR/EdtClear)"
+.echo "\n"
 
 .LIST
 

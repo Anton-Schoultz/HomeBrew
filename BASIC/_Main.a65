@@ -142,7 +142,7 @@ _DETAIL 	= 2
 _KEYWORDS 	= 1
 _SUMMARY 	= 0
 
-_LEVEL 		= _KEYWORDS
+_LEVEL 		= _SUMMARY
 
 .echo "\tROM at $E000-$FFFF (8k)\r"
 ; .echo "\t\tROM at $C000-$FFFF (16k)\r"
@@ -337,43 +337,48 @@ MainProg: ; Dump start of Program space
 #include "Tok.a65" 				; General Parse/List
 #include "Editor.a65" 				; Program editor
 
-#include "IrqNmi.a65" 				; Interrupt handlers
+;#include "IrqNmi.a65" 				; Interrupt handlers
 
 ROMEND 		= $
 
 
-;------------------------------------------------------- TblKeyword
+;------------------------------------------------------- WORDS
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
+.echo "\n"
 .echo "\tWords\t"
 .echo $-TblKeyword
-.echo "/256 ("
+.echo "/256 \t("
 .echo 256-($-TblKeyword)
 .echo " free)\n"
 
 
 
-;------------------------------------------------------- TblRun
+;------------------------------------------------------- TOKENS
 ; Include for the jump/run table
 .org TblRun
 .nolist
 #include "All.a65"
 T_Max 		= LOW($)+$80
+.dw 0
+
+#include "IrqNmi.a65" 				; Interrupt handlers
+
 .echo "\tTokens\t"
 .echo (T_Max-$80)/2
-.echo "/64 \t("
-.echo $-TblRun
-.echo "/256 bytes,"
+.echo "/64 \t\t(IRQ:"
+.echo IRQSIZE
+.echo " ,"
 .echo 256-($-TblRun)
-.echo " free)\n"
+.echo " remaining)\n"
 
 #if T_Max > $F0
 .echo " Too many tokens"
 #endif
 .echo "\n"
-.dw 0
 .list
+
 
 
 ;------------------------------------------------------- hardware vectors
@@ -389,7 +394,7 @@ T_Max 		= LOW($)+$80
 .echo ROMEND - _ROM + 512
 .echo " bytes used (~"
 .echo (ROMEND - _ROM + 512) * 100 / 8192
-.echo "%)  "
+.echo "%)\t"
 .echo ($FE00 - ROMEND)
 .echo " bytes remaining.\n\n"
 
