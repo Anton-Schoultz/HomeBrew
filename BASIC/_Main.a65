@@ -2,56 +2,98 @@
 
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
 
-;=================================================================== BASIC ============ 
-;  ABS(##)~Return absolute value of numeric expression ##
-;  ASC($$)~Return numeric value of the first character of String $$
-;  CHR$(##)~Return string with a character for the given value
-;  CLEAR~Clear variables
-;  CLS~Clear Screen
-;  DEEK(##)~Return the contents of memory word at address
-;  DIM  a$(##size) [,b$(##size)]*~Dimension Strings
-;  DOKE ##Address,##word~Poke word of data to the address
-;  FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
-;  FRE(##)~Return number of bytes available in free memory
-;  GOSUB #LineNo~Call subroutine at LineNo
-;  GOTO #LineNo~Goto LineNo
-;  IF ?? THEN {Statment}~Execute statement if condition ?? is true
-;  INPUT ("prompt"|,|NumVar|StrVar)*~Input values with optional prompts
-;  LEFT$($$,##)~Keep left most chars of string [Head]
-;  Len($$)~Return the length of the string expression
-;  LET {var}={expr}~Assign value to a variable
-;  LIST [##From] [- [##To]]~List program (optional range of lines)
-;  LOWER($$)~Convert string to Lower case
-;  LTRIM($$)~Trim leading spaces from string
-;  MID$($$,##From,##Len)~Return substring of Len chars from position From
-;  NEW~Clear program and data
-;  NEXT {Var}~End of FOR/NEXT loop
-;  PEEK(##Address)~Return the byte at address
-;  POKE ##Address,##value~Poke byte of data to the address
-;  PRINT (##|$$|;|,)*~Print sequence of values
-;  REM {comment}~Program remarks/comments
-;  RETURN~Return control to after the GOSUB
-;  RIGHT$($$,##N)~Keep right most N chars of string [Tail]
-;  RND(##Max)~Return random number 0..(##Max-)
-;  RTRIM$($$)~Trim trailing spaces from string
-;  RUN [#LineNo]~Execute the program, optionally from line number
-;  SGN(##Value)~Return sign of the value as  -1, 0 or 1
-;  SQR(##Val)~Return the Square of Val
-;  STOP~Stop executing the program
-;  STR$(##Value)~Return string representation of the value
-;  TRIM$($$)~Trim leading and trailing spaces from the string
-;  UPPER$($$)~Convert string to upper case
-;  VAL($$)~Evaluate the string and return it's numeric value
+;=================================================================== BASIC ============
+; ABS(##)
+;    Return absolute value of numeric expression ##
+; ASC($$)
+;    Return numeric value of the first character of String $$
+; CHR$(##)
+;    Return string with a character for the given value
+; CLEAR
+;    Clear variables
+; CLS
+;    Clear Screen
+; DEEK(##)
+;    Return the contents of memory word at address
+; DIM  a$(##size) [,b$(##size)]*
+;    Dimension Strings
+; DOKE ##Address,##word
+;    Poke word of data to the address
+; FOR #V = ##From TO ##Limit [STEP ##Step]
+;    Start of FOR/NEXT Loop
+; FRE(##)
+;    Return number of bytes available in free memory
+; STR$(##Value)
+;    Return string representation of the value
+; GOSUB #expr
+;    Call subroutine at LineNo
+; GOTO #NumExpr
+;    Goto LineNo
+; IF ?? THEN {Statment}
+;    Execute statement if condition ?? is true
+; do string comparison
+; INPUT ("prompt"|,|NumVar|StrVar)*
+;    Input values with optional prompts
+; LEFT$($$,##)
+;    Keep left most chars of string [Head]
+; Len($$)
+;    Return the length of the string expression
+; LET {var}={expr}
+;    Assign value to a variable
+; LIST [##From] [- [##To]]
+;    List program (optional range of lines)
+; List lines in range LST_BEG to LST_END
+; LOAD
+;    Load program
+; LOWER($$)
+;    Convert string to Lower case
+; LTRIM($$)
+;    Trim leading spaces from string
+; MID$($$,##From,##Len)
+;    Return substring of Len chars from position From
+; NEW
+;    Clear program and data
+; NEXT {Var}
+;    End of FOR/NEXT loop
+; PEEK(##Address)
+;    Return the byte at address
+; POKE ##Address,##value
+;    Poke byte of data to the address
+; PRINT (##|$$| |,)*
+;    Print sequence of values
+; REM {comment}
+;    Program remarks/comments
+; RETURN
+;    Return control to after the GOSUB
+; RIGHT$($$,##N)
+;    Keep right most N chars of string [Tail]
+; RND(##Max)
+;    Return random number 0..(##Max-)
+; RTRIM$($$)
+;    Trim trailing spaces from string
+; RUN [#LineNo]
+;    Execute the program, optionally from line number
+; SAVE
+;    Save program
+; SGN(##Value)
+;    Return sign of the value as  -1, 0 or 1
+; SQR(##Val)
+;    Return the Square of Val
+; STOP
+;    Stop executing the program
+; TRIM$($$)
+;    Trim leading and trailing spaces from the string
+; UPPER$($$)
+;    Convert string to upper case
+; VAL($$)
+;    Evaluate the string and return it's numeric value
 
 ; RAMBEG
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
-;=================================================================== TODO ============= 
+;=================================================================== TODO =============
 ; GET v		Stores KeyPress value into var v
-;
-; LOAD		Load a program
-; SAVE		Save a program
 ;
 ; POS(#)	Return column no of screen cursor
 ; TAB(n)	Set screen column number
@@ -113,7 +155,7 @@ MathModule 	= MATH_MOD_S24 			;6651 -> 6578
 #include "Macros.a65"
 #include "_Vars.a65"
 
-;=================================================================== MAIN ============= 
+;=================================================================== MAIN =============
 ;*  Main                 Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
@@ -127,7 +169,7 @@ MathModule 	= MATH_MOD_S24 			;6651 -> 6578
 
 .org _ROM
 .LIST
-;------------------------------------------------------- START OF ROM 
+;------------------------------------------------------- START OF ROM
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -152,7 +194,7 @@ Greet 		.DB 	_FF,"Minimal BASIC S16",CR,LF,0
 #include "Line.a65" 				; Line control
 
 
-;------------------------------------------------------- Reset 
+;------------------------------------------------------- Reset
 Reset: ;Reset (Cold start)
  		sei 				; Halt IRQs
  		ldx 	#$ff 			; Set Stack pointer
@@ -191,7 +233,7 @@ RstClr 		sta 	$0000,y 		; clear z-page
  		LDAX(Greet)
  		jsr 	PrStrAX
 
-;------------------------------------------------------- Main 
+;------------------------------------------------------- Main
 Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		;-- reset the stack and binary mode
  		sei 				; Halt IRQs
@@ -221,7 +263,7 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		cli 				; enable IRQ's
 
 
-;------------------------------------------------------- MainLoop 
+;------------------------------------------------------- MainLoop
 MainLoop: ; Main Loop
  		lda 	#'>'
  		jsr 	InputText
@@ -250,7 +292,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;------------------------------------------------------- MainCmd 
+;------------------------------------------------------- MainCmd
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -260,7 +302,7 @@ MainCmd 	;-- Run command line
 .nolist
 #if _DBUG
 .list
-;=================================================================== MAIN-DBUG ============= 
+;=================================================================== MAIN-DBUG =============
 MainTokBuf: ; Dump TOKBUF
 ; 		PR_WR_IO()
  		CLS()
@@ -300,7 +342,7 @@ MainProg: ; Dump start of Program space
 ROMEND 		= $
 
 
-;------------------------------------------------------- TblKeyword 
+;------------------------------------------------------- TblKeyword
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -312,7 +354,7 @@ ROMEND 		= $
 
 
 
-;------------------------------------------------------- TblRun 
+;------------------------------------------------------- TblRun
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -334,7 +376,7 @@ T_Max 		= LOW($)+$80
 .list
 
 
-;------------------------------------------------------- hardware vectors 
+;------------------------------------------------------- hardware vectors
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
