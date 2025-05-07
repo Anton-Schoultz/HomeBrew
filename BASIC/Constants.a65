@@ -10,6 +10,9 @@ SCRN_LINES 	= 16
 ; Number of slots available
 #define SM_MAX 4
 
+;------------------------------------------------------- Key Buffer 
+; number of characters in the keyboard buffer
+#define KB_MAX	16
 
 ;------------------------------------------------------- MODULE OPTIONS 
 ; MOD_MATH_	NONE, S16, S24

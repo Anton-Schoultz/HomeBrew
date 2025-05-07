@@ -8,9 +8,9 @@
 
 ;=================================================================== ZVARS ============
 .org 0
+Var(KEYBUF,KB_MAX); keyboard buffer
 
-; $0000 16 bytes for z-pg code
-Int(ZRd) 	; address to frtch next byte from - reads code
+Int(ZRd) 	; address to fetch next byte from - reads code
 Short(CHRGOT) 	; character fetched
 
 Int(ZWr) 	; address to write to memory with

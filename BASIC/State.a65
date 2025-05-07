@@ -52,7 +52,7 @@ SmFindL 	dex
 SmFindX 	rts 				; N:1 => none available
 
 ;------------------------------------------------------- SmState
-SmState: ; Update the stae to where this is called from
+SmState: ; Update the state to where this is called from
  		ldx 	SM_NXT 			; get active slot number
  		;-- fall through to set the new return address and then exit machine
 ;------------------------------------------------------- SmPoint
@@ -68,6 +68,7 @@ SmPoint: ; Set up pointer into the caller into slot .X
 ;------------------------------------------------------- SmUpdate
 SmUpdate: ; Do an update of the next slot
 ; this would be called from inside IRQ service routine
+; jump to user code with EQ if timed out, .X=Slot
  		ldx 	SM_NXT
  		bne 	SmUpdate1
  		;-- decr would wrap around, so reset to max

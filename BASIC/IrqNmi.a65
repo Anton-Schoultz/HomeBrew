@@ -31,7 +31,9 @@ Irq: ; Interrupt Request service routine
  		and 	#$10 			; check the BRK bit
  		bne 	IrqBrk 			; Stop -> IrqBrk
 
- 		;-- jsr 	IrqDo
+ 		;-- call into state machine
+ 		jsr	SmUpdate
+
  		;-- update the timer
 
  		inc 	TIMER

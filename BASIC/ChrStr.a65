@@ -125,14 +125,14 @@ ChrRd: ; Read character from memory (++ZRd)->A->CHRGOT
 ; Initial values for 8 vectors in here, copied along with the above to zero page
 ;------------------------------------------------------- Input Devices 
 VEC_IN: ; Vectors to input devices
-.dw ConIn 					; VIN0
-.dw ComIn
+.dw KbGet 					; KEYBOARD
+.dw ComIn 					; RX
 .dw $ABCD
 .dw $ABCD
 ;------------------------------------------------------- Output devices 
 VEC_OUT: ; Vectors to output devices
-.dw ConOut 					; VOUT0
-.dw ComOut
+.dw ConOut 					; SCREEN
+.dw ComOut 					; TX
 .dw $ABCD
 .dw $ABCD
 

@@ -1,0 +1,64 @@
+#ifdef hide
+.nolist
+#endif
+;======================================================================================
+;*  KbGet                Get character .A off the queue (null if none)
+;*  KbInit               Initialise keyboard buffer
+;*  KbPut                Queue character .A onto the buffer
+;*
+
+; keyboard buffer
+; [x] [1] [2] ....
+; X points to the next available empty cell
+
+
+_KB 		= $
+
+;------------------------------------------------------- KbInit
+KbInit: ; Initialise keyboard buffer
+		lda	#0
+		tax
+KbInitL		sta 	KEYBUF,X
+		inx
+		cmp	#KB_MAX
+		bne	KbInitL
+		rts
+
+;------------------------------------------------------- KbPut
+KbPut: ; Queue character .A onto the buffer
+		phx
+		ldx	KEYBUF			; get end index
+		inx
+		cpx	#KB_MAX
+		bne	KbPutOK
+		dex		; back up, overwrite last char
+KbPutOK		sta	KEYBUF,X
+		stx	KEYBUF
+		plx
+		rts
+
+;------------------------------------------------------- KbGet
+KbGet: ; Get character .A off the queue (null if none)
+		phx				; save X
+		lda	KEYBUF+1		; get first char
+		beq	KbGetX			; null? -> exit
+		;-- shift characters up
+		pha				; save key
+		ldx	#1
+KbGetL		lda	KEYBUF+1,x
+		sta	KEYBUF,x
+		inx
+		cpx 	#KB_MAX
+		bne	KbGetL
+		pla				; recall key
+KbGetX		plx
+		rts
+
+
+#if _LEVEL >= _SUMMARY
+.echo "  _KB\t"
+.echo $-_KB
+.echo "\n"
+#endif
+
+.list
