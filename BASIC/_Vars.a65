@@ -8,34 +8,27 @@
 
 ;=================================================================== ZVARS ============
 .org 0
-Var(KEYBUF,KB_MAX); keyboard buffer
-
 Int(ZRd) 	; address to fetch next byte from - reads code
 Short(CHRGOT) 	; character fetched
-
 Int(ZWr) 	; address to write to memory with
-
-Short(HLTFLG) 	; halt flag 00=run (error code)
-
-
-
-; Device numbers - initialised along with z-pg code
+Short(KEYPRESS)	; Key pressed
 Short(DEV_IN) 	; input device no (0-3)
 Short(DEV_OUT) 	; output device no (0-3)
-
-
+;- 08
 Int(ZSrc) 	; Source for copy/move
 Int(ZTgt) 	; Destination for copy/move
 Int(ZCnt) 	; Number of bytes to copy/move
-
+Int(ZPtr) 	; ZPtr general pointer
+;- 10
+Var(KEYBUF,KB_MAX); keyboard buffer 16
+;- 20
+Int(ZBuf) 	; ZBuf pointer to a buffer
+Int(ZParse) 	; Parse pointer
 Int(ZDBug) 	; debug usage
 Int(ZDPtr)
 
-Int(ZBuf) 	; ZBuf pointer to a buffer
-Int(ZPtr) 	; ZPtr general pointer
 
-Int(ZParse) 	; Parse pointer
-
+Short(HLTFLG) 	; halt flag 00=run (error code)
 Int(ERR_ADR) 	; Address where error was detected
 
 ;------------------------------------------------------- Printing (send to mem/io)
@@ -47,7 +40,6 @@ Short(ZRegY) 	; Save register Y (used in Msg)
 Short(ZRegP) 	; Save register P (used in Msg)
 
 ;------------------------------------------------------- Code Lines
-PARAGRAPH()
 Int(LN_NUM) 	; Current Line number
 Int(LN_ADR) 	; Current Line address
 Int(LN_NXT) 	; Adress of next line
@@ -121,14 +113,14 @@ Var(RTNSTK,RTNSZ*2) ; 32 x 2byte return line address
 #define RTNSTK_L RTNSTK
 #define RTNSTK_H RTNSTK+RTNSZ
 
+PARAGRAPH()
 ;------------------------------------------------------- StateMachine
 Var(SM_H,SM_MAX) ; Hi byte for state	(Null=Empty)
 Var(SM_L,SM_MAX) ; Lo byte for state
 Var(SM_C,SM_MAX) ; Counter 		(down to 0 & stop)
 Var(SM_D,SM_MAX) ; Data byte
-
 Short(SM_NXT) 	;next slot to service
-
+.export SM_H,SM_L,SM_C,SM_D,SM_NXT
 
 
 .echo "  _Buffers\t"

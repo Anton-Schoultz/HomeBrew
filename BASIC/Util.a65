@@ -264,7 +264,7 @@ _Print_X 	tya 				; y is offset to the null
 _PrintFPX 	jmp 	(ZDPtr) 		; jump to code after the in-line string
 
 ;------------------------------------------------------- _PrHexShort
-_PrHexShort: ; print int .A.X as hex value with space
+_PrHexShort: ; print int .A as hex value with space
  		jsr 	PrAHex
  		lda 	#' '
  		jmp 	ChrOut

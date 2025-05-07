@@ -16,9 +16,9 @@
 ; MOD_MATH_	NONE, S16, S24
 ; MOD_CONSOLE_	NONE, SIM, LCD
 ; MOD_COM_	NONE, SIM, MC68B50
-MOD_MATH 	= MOD_MATH_S24
-MOD_CONSOLE 	= MOD_CONSOLE_SIM
-MOD_COM 	= MOD_COM_SIM 			;MC68B50
+MOD_MATH 	= MOD_MATH_S24 			; NONE, S16, S24
+MOD_CONSOLE 	= MOD_CONSOLE_SIM 		; NONE, SIM, LCD
+MOD_COM 	= MOD_COM_SIM	 		; NONE, SIM, MC68B50
 
 #include "Macros.a65"
 #include "_Vars.a65"
@@ -81,12 +81,10 @@ RstClr 		sta 	$0000,y 		; clear z-page
  		;-- $300 is I/O
  		iny
  		bne 	RstClr
-
  		;-- initialise StateMachine
- 		JSR 	SmInit
+ 		jsr 	SmInit
  		;-- register the keyboard statemachine
- 		JSR 	SMKeyInit
-
+ 		jsr 	SMKeyStart
 
 ; RAMBEG    BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   | A-Z Vars | Program lines | Variables | String work | Free | Arrays |  blank | ROM
@@ -99,7 +97,6 @@ RstClr 		sta 	$0000,y 		; clear z-page
 
  		;-- clear VARTAB, Gosub,For/Next and 1st page of BASIC
  		jsr 	EdtNew 			; NEW
-
  		jsr 	ComInit 		; reset Serial
 
  		;-- Greeting
@@ -135,11 +132,24 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ; 		PR_WR_IO()
  		cli 				; enable IRQ's
 
+;------------------------------------------------------- TEST
+
+
+;TestL
+;	PAUSE()
+; 		jsr	SmUpdate
+;	PAUSE()
+;		bra	TestL
+
 
 ;------------------------------------------------------- MainLoop
 MainLoop: ; Main Loop
  		lda 	#'>'
  		jsr 	InputText
+
+ 		lda	INBUF			; empty?
+ 		beq	MainLoop		; loop back
+
  		jsr 	Parse 			; Parse INBUF into TOKBUF
 
 #if _DBUG

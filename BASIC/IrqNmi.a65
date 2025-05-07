@@ -23,29 +23,29 @@ Irq: ; Interrupt Request service routine
 ; PC & Status are pushed, then cpu comes here
  		;--
  		;-- Save registers
+ 		php
  		PUSHAXY() 			; Y,X,Z,S,PC
 
- 		;-- Test to see if it is an IRQ or a BRK
- 		tsx
- 		lda 	$0104,x 		; get the pushed status
- 		and 	#$10 			; check the BRK bit
- 		bne 	IrqBrk 			; Stop -> IrqBrk
-
- 		;-- call into state machine
+; 		;-- Test to see if it is an IRQ or a BRK
+; 		tsx
+; 		lda 	$0104,x 		; get the pushed status
+; 		and 	#$10 			; check the BRK bit
+; 		bne 	IrqBrk 			; Stop -> IrqBrk
+		;-- call into state machine
  		jsr	SmUpdate
-
- 		;-- update the timer
-
- 		inc 	TIMER
- 		bne 	IrqRtn
- 		inc 	TIMER+1
- 		bne 	IrqRtn
- 		inc 	TIMER+2
+; 		;-- update the timer
+;
+; 		inc 	TIMER
+; 		bne 	IrqRtn
+; 		inc 	TIMER+1
+; 		bne 	IrqRtn
+; 		inc 	TIMER+2
 
 
 ;------------------------------------------------------- IrqRtn
 IrqRtn: ; Restore registers and return from IRQ
  		PULLAXY()
+ 		plp
  		rti 				; pop status & PC, return, re-enabling IRQ
 
 ;------------------------------------------------------- IrqBrk

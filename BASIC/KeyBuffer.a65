@@ -5,54 +5,106 @@
 ;*  KbGet                Get character .A off the queue (null if none)
 ;*  KbInit               Initialise keyboard buffer
 ;*  KbPut                Queue character .A onto the buffer
+;*  KbTest               Test buffer
 ;*
 
 ; keyboard buffer
-; [x] [1] [2] ....
-; X points to the next available empty cell
+; [0] [1] [2] ....
+;
+; KB_MAX is 16
 
 
 _KB 		= $
 
-;------------------------------------------------------- KbInit
+;------------------------------------------------------- KbInit 
 KbInit: ; Initialise keyboard buffer
-		lda	#0
-		tax
-KbInitL		sta 	KEYBUF,X
-		inx
-		cmp	#KB_MAX
-		bne	KbInitL
-		rts
+ 		lda 	#0
+ 		tax
+KbInitL 	sta 	KEYBUF,X
+ 		inx
+ 		cpx 	#KB_MAX
+ 		bne 	KbInitL
+ 		rts
 
-;------------------------------------------------------- KbPut
+;------------------------------------------------------- KbPut 
 KbPut: ; Queue character .A onto the buffer
-		phx
-		ldx	KEYBUF			; get end index
-		inx
-		cpx	#KB_MAX
-		bne	KbPutOK
-		dex		; back up, overwrite last char
-KbPutOK		sta	KEYBUF,X
-		stx	KEYBUF
-		plx
-		rts
+ 		phx 				; store X
+ 		pha 				; save key
 
-;------------------------------------------------------- KbGet
+ 		;-- search for an empty space
+ 		ldx 	#0
+
+KbPutS 		lda 	KEYBUF,x
+ 		beq 	KbPutF 			; found a null
+ 		inx
+ 		cpx 	#KB_MAX
+ 		bne 	KbPutS
+ 		dex 				; back up to last one available (overwrite)
+
+KbPutF 		; have an empty space at X
+ 		pla 				; recall key
+ 		sta 	KEYBUF,X 		; queue it into the null
+ 		plx 				; restore X for caller
+ 		rts
+
+;------------------------------------------------------- KbGet 
 KbGet: ; Get character .A off the queue (null if none)
-		phx				; save X
-		lda	KEYBUF+1		; get first char
-		beq	KbGetX			; null? -> exit
-		;-- shift characters up
-		pha				; save key
-		ldx	#1
-KbGetL		lda	KEYBUF+1,x
-		sta	KEYBUF,x
-		inx
-		cpx 	#KB_MAX
-		bne	KbGetL
-		pla				; recall key
-KbGetX		plx
-		rts
+ 		phx 				; store X
+ 		lda 	KEYBUF 			; get first char
+ 		beq 	KbGetX 			; null? -> exit
+ 		pha 				; save key
+ 		;-- shift characters up
+ 		ldx 	#0
+KbGetL 		lda 	KEYBUF+1,x
+ 		sta 	KEYBUF,x
+ 		inx
+ 		cpx 	#KB_MAX
+ 		bne 	KbGetL
+ 		;-- 
+ 		pla 				; recall key
+KbGetX 		plx 				; restore X for caller
+ 		rts
+
+
+.nolist
+#if _DBUG
+.list
+;=================================================================== KB_TEST ========== 
+KbTest: ; Test buffer
+ 		jsr 	KbInit
+ 		HEX_DUMP(KEYBUF)
+ 		lda 	#'A'
+ 		jsr 	KbPut
+ 		HEX_DUMP(KEYBUF)
+ 		lda 	#'B'
+ 		jsr 	KbPut
+ 		HEX_DUMP(KEYBUF)
+ 		lda 	#'C'
+ 		jsr 	KbPut
+ 		HEX_DUMP(KEYBUF)
+ 		lda 	#'D'
+ 		jsr 	KbPut
+ 		HEX_DUMP(KEYBUF)
+ 		lda 	#'E'
+ 		jsr 	KbPut
+ 		HEX_DUMP(KEYBUF)
+ 		PAUSE()
+ 		jsr 	KbGet
+ 		jsr 	_PrHexShort
+ 		HEX_DUMP(KEYBUF)
+ 		jsr 	KbGet
+ 		jsr 	_PrHexShort
+ 		HEX_DUMP(KEYBUF)
+ 		jsr 	KbGet
+ 		jsr 	_PrHexShort
+ 		HEX_DUMP(KEYBUF)
+ 		jsr 	KbGet
+ 		jsr 	_PrHexShort
+ 		HEX_DUMP(KEYBUF)
+ 		PAUSE()
+ 		rts
+#endif
+
 
 
 #if _LEVEL >= _SUMMARY

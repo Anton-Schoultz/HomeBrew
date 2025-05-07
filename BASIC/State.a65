@@ -5,7 +5,9 @@
 ;*  SmFind               find an empoty slot, return in .X (N 1=None else EQ 1=found)
 ;*  SmInit               Initialise state machine by clearing the slots
 ;*  SmPoint              Set up pointer into the caller into slot .X
-;*  SmState              Update the stae to where this is called from
+;*  SmRegister           Register the machine at the slot found
+;*  SmState              Update the state to where this is called from
+;*  SmUpdSlotX           update for slot X
 ;*  SmUpdate             Do an update of the next slot
 ;*m SM_CNT(n)            Set the count down timer to n for current slot
 ;*m SM_GET()             Get the data byte into .A for current slot
@@ -38,8 +40,8 @@ SmInitL 	dex
  		sta 	SM_C,X 			; zero counter
  		sta 	SM_D,X 			; zero data
  		bra 	SmInitL
-SmInitX 	cli				; Re-enable IRQs
-		rts
+SmInitX 	cli 				; Re-enable IRQs
+ 		rts
 
 ;------------------------------------------------------- SmFind
 SmFind: ; find an empoty slot, return in .X (N:1=None else EQ:1=found)
@@ -51,6 +53,9 @@ SmFindL 	dex
  		;-- zero high byte means available slot
 SmFindX 	rts 				; N:1 => none available
 
+;------------------------------------------------------- SmRegister
+SmRegister: ; Register the machine at the slot found
+ 		stx 	SM_NXT
 ;------------------------------------------------------- SmState
 SmState: ; Update the state to where this is called from
  		ldx 	SM_NXT 			; get active slot number
@@ -64,6 +69,12 @@ SmPoint: ; Set up pointer into the caller into slot .X
  		pla
  		sta 	SM_H,X
  		rts
+
+;------------------------------------------------------- SmUpdSlot
+SmUpd: ; update for next slot (don't move)
+ 		ldx 	SM_NXT
+ 		inx
+ 		bra 	SmUpdate1
 
 ;------------------------------------------------------- SmUpdate
 SmUpdate: ; Do an update of the next slot

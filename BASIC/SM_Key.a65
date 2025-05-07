@@ -1,49 +1,46 @@
 #ifdef hide
 .nolist
 #endif
-;=================================================================== SM_KEY =========== 
-;*  SMKeyInit            Initialisekeyboard state machine (debounce, auto-repeat)
+;=================================================================== SM_KEY ===========
 ;*  SMKeyQueue           Queue the keypress into key buffer
 ;*  SMKeyStart           Start Keyboard state machine (debounce, auto repeat)
+;*  SMKeyTest            Test key machine
 ;*
 
 ; debounce delay
-#define KEY_DEBOUNCE 5
+#define KEY_DEBOUNCE 1
 ; delay before auto-repeat
-#define KEY_WAIT 150
+#define KEY_WAIT 5
 ; auto-repeat delay
-#define KEY_AUTO 50
-
-; for now let this get the keypress directly from Simulator
-; will eventually be the address where key scan stores the keypress value
-#define KEYPRESS SIM_IN
+#define KEY_AUTO 2
 
 _SM_Key 	= $
 
 SMKeyError 	ERROR(ERR_MEMORY) 		; 'out of memory error' - no slots
 
-;------------------------------------------------------- SMKeyStart 
+;------------------------------------------------------- SMKeyStart
 SMKeyStart: ; Start Keyboard state machine (debounce, auto repeat)
- 		jsr 	Sm_Find 		; Find a slot, EQ if available
+ 		jsr 	KbInit 			; initialise the keybuffer
+ 		jsr 	SmFind 			; Find a slot, EQ if available
  		bne 	SMKeyError
- 		jsr 	SmState 		; set up to come back here under IRQ
+ 		jsr 	SmRegister 		; set up to come back here under IRQ
 ; Statemachine code will pull this address off the stack and save it as the
 ; address to return to under IRQ time slot
-
 ; The previous keypress is stored as the data byte in the frame work
 
-;------------------------------------------------------- SMKeyInit 
-SMKeyInit: ; Initialisekeyboard state machine (debounce, auto-repeat)
- 		lda 	KEYPRESS
+SMKeyInit 	; Initialise keyboard state machine (debounce, auto-repeat)
+ 		lda	KEYPRESS 		; get the keypress
  		sta 	SM_D,X 			; Set initial PrevKey
  		jsr 	SmState
+
  		;-- this is the idle block
- 		lda 	KEYPRESS
+ 		lda	KEYPRESS 		; get the keypress
  		cmp 	SM_D,X 			; same as last time?
  		bne 	SMKeyInit 		; no, restart
  		;-- same key, set up de-bounce delay
  		SM_CNT(KEY_DEBOUNCE) 		; set delay counter
  		jsr 	SmState
+
  		;-- Debounce test
  		beq 	SMKeyFirst 		; timed out ? -> First
  		bra 	SMKeyCheck 		; wait for DEBOUNCE time out
@@ -51,6 +48,7 @@ SMKeyFirst 	; first key press
  		jsr 	SMKeyQueue 		; Queue firstkey
  		SM_CNT(KEY_WAIT) 		; set up auto repeat delay
  		jsr 	SmState
+
  		;-- First-repeat time ?
  		beq 	SMKeyAuto 		; yes, auto-repeat
  		bra 	SMKeyCheck 		; wait for WAIT time out
@@ -58,11 +56,12 @@ SMKeyAuto 	;-- auto-repeat the key
  		jsr 	SMKeyQueue 		; Queue the repeated key
  		SM_CNT(KEY_AUTO) 		; auto-repeat delay
  		jsr 	SmState
+
  		;-- auto-repeat time out?
  		beq 	SMKeyAuto 		; yes, loop back to re-queue and next wait
  		;-- fall through to wait for AUTO repeat time out
 SMKeyCheck 	;-- Check if still the same key, if not restart
- 		lda 	KEYPRESS 		; get key press
+ 		lda	KEYPRESS 		; get the keypress
  		beq 	SMKeyInit 		; no-key -> reset
  		cmp 	SM_D,X 			; smae as last time?
  		bne 	SMKeyInit 		; no -> reset
@@ -71,6 +70,33 @@ SMKeyCheck 	;-- Check if still the same key, if not restart
 SMKeyQueue: ; Queue the keypress into key buffer
  		SM_GET() 			; key key press into .A
  		jmp 	KbPut 			; Queue character .A onto the buffer
+
+
+.nolist
+#if _DBUG
+.list
+;=================================================================== SMKEYTEST ==========
+SMKeyTest: ; Test key machine
+ 		jsr 	SmInit 			; Initialise state machine by clearing the slots
+ 		jsr 	SMKeyStart 		; register keyboard machine
+ 		txa
+ 		jsr 	_PrHexShort 		; slot no
+ 		HEX_DUMP(SM_H)
+
+SMKeyTestL 	jsr 	SmUpd 			; update for SM_NXT (don't move)
+; 		jsr 	PrNL
+; 		HEX_DUMP(SM_H)
+ 		HEX_DUMP(KEYBUF)
+ 		clc
+ 	PAUSE()
+ 		bcc	SMKeyTestL
+ 		jsr	KbGet			; pull a character off
+ 		bra 	SMKeyTestL
+
+ 		HALT()
+
+
+#endif
 
 
 #if _LEVEL >= _SUMMARY

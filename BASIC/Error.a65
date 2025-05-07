@@ -34,6 +34,7 @@ _Err 		= $
 #define ERR_SYNTAX 	22
 #define ERR_RANGE 	24
 #define ERR_UNDEFSTR 	26
+#define ERR_BUFFER 	28
 
 #define DOT '.'+$80
 
@@ -56,6 +57,7 @@ ErrTbl
 .DB "Syntax",DOT 				;22=ERR_SYNTAX
 .DB "Out of Range",DOT 				;24=ERR_RANGE
 .DB "Undefined string",DOT 			;26=ERR_UNDEFSTR
+.DB "Buffer",DOT 				;28=ERR_BUFFER
 .DB 0
 
 

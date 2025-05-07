@@ -16,6 +16,7 @@
 ;*  ChrOut               Send character to output device (SCR,COM..)
 ;*  ChrRd                Read character from memory (++ZRd)->A->CHRGOT
 ;*  ChrWr                Write Character to memory  A -> (ZWr++) , 00->(ZWr)
+;*  GetKey               get a key press
 ;*  Input                Read from IO and place in INBUF, until CR
 ;*  InputIOEcho          Input INBUF from IO, echo chars to IO
 ;*  InputText            Input text from console to INBUF, prompt char is in A
@@ -125,7 +126,7 @@ ChrRd: ; Read character from memory (++ZRd)->A->CHRGOT
 ; Initial values for 8 vectors in here, copied along with the above to zero page
 ;------------------------------------------------------- Input Devices 
 VEC_IN: ; Vectors to input devices
-.dw KbGet 					; KEYBOARD
+.dw GetKey 					; KEYBOARD
 .dw ComIn 					; RX
 .dw $ABCD
 .dw $ABCD
@@ -145,17 +146,14 @@ VEC_OUT: ; Vectors to output devices
 ; 2
 ; 3
 
-;;----------------------------------------------- CharInit
-;ChrInit: ; Copy ZPg code, Vectors, Init print flags, Wr to STRBUF
-; 		ldx 	#0
-;ChrInitL 	lda 	ChrRd_,X
-; 		sta 	$00,X
-; 		inx
-; 		cpx 	#$22 		; 16 code, 8 x vectors+ devNos
-; 		bne 	ChrInitL
-; 		;-- reset control flags
-; 		ZZERO(ZPrFlg) 		; reset flags ChrOut, Hex, NullTerm
-; 		rts
+;------------------------------------------------------- GetKey 
+; The IRQ keyDebounce does not work with the 6502 simulator
+; So we have to do this patch
+GetKey: ; get a key press
+ 		jsr 	KbGet 			; key buffer
+ 		bne 	GetKeyX 		; got one
+ 		jsr 	ConIn 			; else try console simulator
+GetKeyX 	rts
 
 ;------------------------------------------------------- ChrIn 
 ChrIn: ; Read character from input device (KBD,COM..)
@@ -267,12 +265,13 @@ Input2 		ldy 	ZTmp
 
  		;-- 
 Input3 		sta 	INBUF,x 		; place in buf
- 		;-- check buffer full
- 		cpx 	#BUFSZ
- 		bpl 	InputX 			; full -> exit
  		;-- move on
  		inx
- 		bra 	InputL
+ 		;-- check buffer full
+ 		cpx 	#BUFSZ
+ 		bcc 	InputL
+ 		;-- buffer overrun	return null string
+ 		ldx 	#0
 InputX 		lda 	#0 			; terminate with a null
  		sta 	INBUF,X
  		sta 	INBUF+1,X
