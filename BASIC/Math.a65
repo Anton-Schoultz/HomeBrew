@@ -93,9 +93,9 @@ NUM_DIVC 	= NUM_DIV+FPC
 
 ;-- ZPage Vars
 #if ($/256) = 0
-Short(ZDIV) 	; short divisor 10/100
-Short(NUM_DEC)	; number of decimals
-Short(NUM_EXP)	; exponent
+;Short(ZDIV) 	; short divisor 10/100
+;Short(NUM_DEC)	; number of decimals
+;Short(NUM_EXP)	; exponent
 
 #endif
 
@@ -253,16 +253,35 @@ NumSup: ; removing leading zeroes
  		inx
 NumSupL 	iny
  		lda 	NUM_BUF,y
-NumSup1 	cmp 	#'0'
+
+NumSup1 	;- decimal point?
+ 		cmp 	#'.'
+ 		beq	NumSupP
+		;- non-zero
+		cmp 	#'0'
  		bne 	NumSupC 		; go copy
+		;- maxed out
  		cpy 	#DIGITS 		; make sure we leave the last digit at least
  		bne 	NumSupL
-NumSupC 	lda 	NUM_BUF,y
+
+ 		iny
+
+NumSupP
+;	PAUSE()
+		dey
+
+NumSupC
+
+;	PAUSE()
+
+
+ 		lda 	NUM_BUF,y
  		sta 	NUM_BUF,x
- 		beq 	NumSupX
+ 		beq 	NumSupX			; null -> done
  		inx
  		iny
  		bra 	NumSupC
+
 NumSupX 	rts
 
 ;------------------------------------------------------- NumSpc

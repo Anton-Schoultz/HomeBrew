@@ -1,0 +1,43 @@
+#ifdef hide
+.NOLIST
+#endif
+#if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
+;=================================================================== INT ============== 
+;*  X_Int                INT(##Value)~Return integer value
+;*
+_Int 		= $
+
+;------------------------------------------------------- X_Int 
+X_Int: ; INT(##Value)~Return integer value
+ 		jsr 	NumDH
+ 		jmp 	NumMH
+
+#if _LEVEL >= _KEYWORDS
+.echo "  _INT(\t\t"
+.echo $-_Int
+.echo "\n"
+#endif
+
+.nolist
+#endif
+
+;------------------------------------------------------- keyword 
+#if ($/256) = PG_KEY
+.list
+W_Int 		.DB 	"INT",'('+$80
+.nolist
+#endif
+;------------------------------------------------------- run 
+#if ($/256) = PG_RUN
+#ifndef _T_FNUM_
+#define _T_FNUM_
+T_FNUM 		= LOW($)+$80
+#endif
+
+.list
+T_Int 		= LOW($)+$80
+.DW 	X_Int
+.nolist
+#endif
+
+.list 						; end of Int

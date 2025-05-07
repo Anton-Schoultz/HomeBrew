@@ -75,6 +75,11 @@ Short(NUM_FLG) 	; Comparisson flags 4:> 2:= 1:<
 Short(NUM_SP) 	; calculator stack pointer
 Short(NUM_SGN) 	; sign
 
+Short(NUM_DEC)	; number of decimals
+Short(NUM_EXP)	; exponent
+
+Short(ZDIV) 	; short divisor 10/100
+
 Var(TIMER,3) 	; timer value
 
 

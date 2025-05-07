@@ -2,7 +2,7 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== FOR ============== 
+;=================================================================== FOR ==============
 ;*  DB_For               Debug For values - STP  LIM  ADR  IX SP
 ;*  ForPop               Pop for info from stack to inner vars
 ;*  ForPush              Push FOR structure onto the stack
@@ -11,7 +11,7 @@
 ;*
 _For 		= $
 
-;------------------------------------------------------- For/Next 
+;------------------------------------------------------- For/Next
 ; Data structure is 12 bytes, allowing up to 4 bytes for numeric values
 ; 1	FOR_ID		0		$xC  (low nibble is size)
 ; 1	VarNdx		1
@@ -19,7 +19,7 @@ _For 		= $
 ; 4	Step		4,5,6,7
 ; 4 	Limit		8,9,A,B
 
-;------------------------------------------------------- For/Next 
+;------------------------------------------------------- For/Next
 ; FOR values are stored immediately after the A-Z, so access with index 27,28
 ;FOR_DATA 	;-- DATA
 ;Var(FOR_STP,NUMPKSZ) ; [27] Step size
@@ -35,11 +35,11 @@ _For 		= $
 ;.echo FORSZ
 ;.echo "\n"
 
-;------------------------------------------------------- FOR stack 
+;------------------------------------------------------- FOR stack
 ; STACK	FOR nesting depth FORDEEP=8 (CBM has 9)
 ;Var(FORSTK,8*FORDEEP)
 
-;------------------------------------------------------- X_For 
+;------------------------------------------------------- X_For
 X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		;-- Push
  		jsr 	ForPush
@@ -60,7 +60,7 @@ X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		ZSET(ZPtr,FOR_LIM) 		; point to the limit
  		jsr 	NumSetPtr 		; save value
  		;-- STEP?
- 		ZSET(FOR_STP,1) 		; default step is 1
+ 		ZSET(FOR_STP,NUMONE) 		; default step is 1
  		lda 	CHRGOT
  		beq 	X_ForX 			; STEP ommitted -> done
  		;-- evaluate step size & save it
@@ -73,7 +73,7 @@ X_For: ; FOR #V = ##From TO ##Limit [STEP ##Step]~Start of FOR/NEXT Loop
  		jsr 	NumSetPtr 		; save value
 X_ForX 		rts
 
-;------------------------------------------------------- ForPush 
+;------------------------------------------------------- ForPush
 ForPush: ; Push FOR structure onto the stack
  		lda 	FOR_SP
  		asl 	a
@@ -96,10 +96,10 @@ ForPushL 	lda 	FOR_DATA,X
  		sta 	FOR_SP
  		rts
 
-;------------------------------------------------------- ForOvr 
+;------------------------------------------------------- ForOvr
 ForErr 		ERROR(ERR_FOR)
 
-;------------------------------------------------------- ForPop 
+;------------------------------------------------------- ForPop
 ForPop: ; Pop for info from stack to inner vars
  		;-- decr for stack pointer
  		lda 	FOR_SP
@@ -121,9 +121,9 @@ ForPopL 	lda 	FORSTK,y
  		bne 	ForPopL
  		rts
 
-;=================================================================== NEXT ============= 
+;=================================================================== NEXT =============
 
-;------------------------------------------------------- X_Next 
+;------------------------------------------------------- X_Next
 X_Next: ; NEXT {Var}~End of FOR/NEXT loop
  		jsr 	ChrRd 			; consume token
  		;-- loop var
@@ -181,7 +181,7 @@ X_NextLoop 	; loop by going back to the loop line
 ;  NUM_FLG ; Comparison flags 4:< 2:= 1:>
 
 #if _DB_FOR
-;=================================================================== DBUG ============= 
+;=================================================================== DBUG =============
 DB_For: ; Debug For values - STP  LIM  ADR  IX SP
  		PUSHALL()
  		jsr 	PrNL
@@ -217,7 +217,7 @@ DB_For: ; Debug For values - STP  LIM  ADR  IX SP
 .nolist
 #endif
 
-;------------------------------------------------------- keyword 
+;------------------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_For 		.DB 	"FO",'R'+$80
@@ -225,7 +225,7 @@ W_Next 		.DB 	"NEX",'T'+$80
 
 .nolist
 #endif
-;------------------------------------------------------- run 
+;------------------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_For 		= LOW($)+$80

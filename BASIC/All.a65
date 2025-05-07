@@ -32,6 +32,7 @@
 #include "XFFre.a65" 				; FRE(#) Return number of bytes available in free memory
 #include "XFPeek.a65" 				; PEEK(##) Return the contents of memory byte at address
 #include "XFDeek.a65" 				; DEEK(##) Return the contents of memory word at address
+#include "XFInt.a65" 				; INT(##Value)~Return integer value
 
 ;------------------------------------------------------- String functions & Num->Str 
 #include "XFUpper.a65" 				; UPPER$(<StrExpr>) convert to upper case
