@@ -1,5 +1,6 @@
 #define xhide
 ; 6502 Simulator equivalent to aprox 1.7Mhz clock on my machine
+; Keybaord depends on IRQs generated every 100mS
 
 #define _ROM $E000
 .echo "\tROM at $E000-$FFFF (8k)\r"
