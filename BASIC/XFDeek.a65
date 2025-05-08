@@ -2,12 +2,12 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== DEEK ============== 
+;=================================================================== DEEK ==============
 ;*  X_Deek               DEEK(##)~Return the contents of memory word at address
 ;*
 _Deek 		= $
 
-;------------------------------------------------------- X_Deek 
+;------------------------------------------------------- X_Deek
 X_Deek: ; DEEK(##)~Return the contents of memory word at address
 ; expression is already evaluated and in NUM_A (expanded form)
  		jsr 	NumToInt 		; convert to int in NUM_AA,_AB
@@ -33,13 +33,13 @@ X_Deek: ; DEEK(##)~Return the contents of memory word at address
 .nolist
 #endif
 
-;------------------------------------------------------- keyword 
+;------------------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Deek 		.DB 	"DEEK",'('+$80
 .nolist
 #endif
-;------------------------------------------------------- run 
+;------------------------------------------------------- run
 #if ($/256) = PG_RUN
 #ifndef _T_FNUM_
 #define _T_FNUM_

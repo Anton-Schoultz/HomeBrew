@@ -2,28 +2,32 @@
 .NOLIST
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
-;=================================================================== POKE ============== 
+;=================================================================== POKE ==============
 ;*  X_Poke               POKE ##Address,##value~Poke byte of data to the address
 ;*
 _Poke 		= $
 
-;------------------------------------------------------- X_Poke 
+;------------------------------------------------------- X_Poke
 X_Poke: ; POKE ##Address,##value~Poke byte of data to the address
  		jsr 	ChrRd 			; consume token
- 		;-- evaluate address, convert to int, and push it
+ 		;-- evaluate address, convert to int, and save on cpu stack
  		jsr 	EvNumeric
  		jsr 	NumToInt
- 		jsr 	NumPushA
+ 		pha
+ 		phx
  		;-- check for & skip ','
  		lda 	#','
  		jsr 	Match
  		;-- evaluate data and convert to int
  		jsr 	EvNumeric
- 		jsr 	NumToInt
  		;-- do the POKE
- 		jsr 	NumPopB
- 		lda 	NUM_AA 			; lo data
- 		sta 	(NUM_BA) 		; poke the value
+ 		;-- recall target address
+ 		plx
+ 		pla
+ 		SETAX(TMP)
+ 		;-- get data into AX
+ 		jsr 	NumToInt
+ 		sta 	(TMP) 		; poke the value
  		rts
 
 
@@ -36,13 +40,13 @@ X_Poke: ; POKE ##Address,##value~Poke byte of data to the address
 .nolist
 #endif
 
-;------------------------------------------------------- keyword 
+;------------------------------------------------------- keyword
 #if ($/256) = PG_KEY
 .list
 W_Poke 		.DB 	"POK",'E'+$80
 .nolist
 #endif
-;------------------------------------------------------- run 
+;------------------------------------------------------- run
 #if ($/256) = PG_RUN
 .list
 T_Poke 		= LOW($)+$80
