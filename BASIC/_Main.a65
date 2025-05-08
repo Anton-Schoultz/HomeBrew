@@ -25,7 +25,7 @@ MOD_COM 	= MOD_COM_MC68B50 		; NONE, SIM, MC68B50
 .echo "RAM\n"
 #include "_Vars.a65"
 
-;=================================================================== MAIN =============
+;;=================================================================== MAIN =============
 ;*  Main                 Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
@@ -33,6 +33,7 @@ MOD_COM 	= MOD_COM_MC68B50 		; NONE, SIM, MC68B50
 ;*  MainTokBuf           Dump TOKBUF
 ;*  Reset                Reset (Cold start)
 ;*
+;;
 #ifdef hide
 .NOLIST
 #endif
@@ -43,7 +44,7 @@ MOD_COM 	= MOD_COM_MC68B50 		; NONE, SIM, MC68B50
 ; 		START OF ROM
  		jmp 	Reset
 
-Greet 		.DB 	_FF,"Minimal BASIC "
+Greet 		.DB 	_FF,"Minimal BASIC 2025/05/08 15:27 "
 #if MOD_MATH = MOD_MATH_S24
 .DB 	"S24"
 #endif
@@ -244,7 +245,6 @@ MainProg: ; Dump start of Program space
 ;  #include "IrqNmi.a65" 				; Interrupt handlers
 
 ROMEND 		= $
-
 
 ;------------------------------------------------------- WORDS
 ; Include for the keyword table ..
