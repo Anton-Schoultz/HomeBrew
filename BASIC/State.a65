@@ -106,7 +106,7 @@ SmUpdateX 	rts
 #define SM_CNT(n) lda #n\ ldx SM_NXT\ sta SM_C,X
 
 
-#if _LEVEL >= _SUMMARY
+#if _LEVEL >= _DETAIL
 .echo "  StateMachine\t"
 .echo $-_Sm
 .echo "\t\tState Machine engine\n"

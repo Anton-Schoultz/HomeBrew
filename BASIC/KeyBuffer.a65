@@ -16,7 +16,7 @@
 
 _KB 		= $
 
-;------------------------------------------------------- KbInit 
+;------------------------------------------------------- KbInit
 KbInit: ; Initialise keyboard buffer
  		lda 	#0
  		tax
@@ -26,7 +26,7 @@ KbInitL 	sta 	KEYBUF,X
  		bne 	KbInitL
  		rts
 
-;------------------------------------------------------- KbPut 
+;------------------------------------------------------- KbPut
 KbPut: ; Queue character .A onto the buffer
  		phx 				; store X
  		pha 				; save key
@@ -47,7 +47,7 @@ KbPutF 		; have an empty space at X
  		plx 				; restore X for caller
  		rts
 
-;------------------------------------------------------- KbGet 
+;------------------------------------------------------- KbGet
 KbGet: ; Get character .A off the queue (null if none)
  		phx 				; store X
  		lda 	KEYBUF 			; get first char
@@ -60,7 +60,7 @@ KbGetL 		lda 	KEYBUF+1,x
  		inx
  		cpx 	#KB_MAX
  		bne 	KbGetL
- 		;-- 
+ 		;--
  		pla 				; recall key
 KbGetX 		plx 				; restore X for caller
  		rts
@@ -69,7 +69,7 @@ KbGetX 		plx 				; restore X for caller
 .nolist
 #if _DBUG
 .list
-;=================================================================== KB_TEST ========== 
+;=================================================================== KB_TEST ==========
 KbTest: ; Test buffer
  		jsr 	KbInit
  		HEX_DUMP(KEYBUF)
@@ -105,10 +105,8 @@ KbTest: ; Test buffer
  		rts
 #endif
 
-
-
-#if _LEVEL >= _SUMMARY
-.echo "  _KB\t"
+#if _LEVEL >= _DETAIL
+.echo "  _KeyBuf\t"
 .echo $-_KB
 .echo "\n"
 #endif

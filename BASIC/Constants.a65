@@ -14,6 +14,13 @@ SCRN_LINES 	= 16
 ; number of characters in the keyboard buffer
 #define KB_MAX	16
 
+;------------------------------------------------------- reporting level
+_DETAIL 	= 2
+_KEYWORDS 	= 1
+_SUMMARY 	= 0
+_LEVEL 		= _SUMMARY
+
+
 ;------------------------------------------------------- MODULE OPTIONS
 ; MOD_MATH_	NONE, S16, S24
 ; MOD_CONSOLE_	NONE, SIM, LCD
@@ -47,7 +54,7 @@ _DB_FOR 	= 0
 _DB_LIST 	= 0
 _DB_PRINT 	= 0
 
-_DB_TEST	= 0
+_DB_TEST 	= 0
 
 _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_DB_PRINT+_DB_TEST
 
@@ -56,11 +63,6 @@ _DBUG 		= _DB_MAIN+_DB_STR+_DB_EDT+_DB_EVAL+_DB_LINE+_DB_NUM+_DB_FOR+_DB_LIST+_D
 .echo "\t| DEBUG Active |\n"
 .echo "\t+--------------+\n\n"
 #endif
-
-_DETAIL 	= 2
-_KEYWORDS 	= 1
-_SUMMARY 	= 0
-_LEVEL 		= _KEYWORDS
 
 
 

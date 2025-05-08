@@ -1,11 +1,12 @@
 #ifdef hide 					; ConSim
 .NOLIST
 #endif
-;=================================================================== CONSIM ===========
+;=================================================================== CONSIM =========== 
 ; Simulator Implementation of console functions
 ;
 ;*  ConIn                Read character from input (keyboard), null if none
-;*  ConOut               Write character to output (screen), FormFeed=Clear, Tab
+;*  ConInit              Initialise console
+;*  ConOut               Write character to output (screen)
 ;*
 
 ; Print to screen, Read from keyboard
@@ -20,7 +21,11 @@ SIM_Y 		= IO_AREA + 6
 
 _ConSim 	= $
 
-;------------------------------------------------------- ConOut
+;------------------------------------------------------- ConInit 
+ConInit: ; Initialise console
+ 		rts
+
+;------------------------------------------------------- ConOut 
 ConOut: ;Write character to output (screen)
  		cmp 	#_FF 			; Form Feed = Clear Screen
  		beq 	ConCls
@@ -29,12 +34,12 @@ ConOut: ;Write character to output (screen)
  		sta 	SIM_OUT 		; Sends A to output screen (interprets CR LF BS)
  		rts
 
-;------------------------------------------------------- ConCls
+;------------------------------------------------------- ConCls 
 ConCls 		; Clear Screen (CLS / FormFeed)
  		sta 	SIM_CLS
  		rts
 
-;------------------------------------------------------- ConDoTab
+;------------------------------------------------------- ConDoTab 
 ConDoTab 	; tab the output
  		lda 	#' '
  		sta 	SIM_OUT
@@ -44,17 +49,17 @@ ConDoTab 	; tab the output
  		bne 	ConDoTab
  		rts
 
-;------------------------------------------------------- ConIn
+;------------------------------------------------------- ConIn 
 ConIn: ; Read character from input (keyboard), null if none
  		lda 	SIM_IN
  		rts
 
-;------------------------------------------------------- ConPos
+;------------------------------------------------------- ConPos 
 ConPos 		; Return screen column position in .A
  		lda 	SIM_X
  		rts
 
-;------------------------------------------------------- ConTab
+;------------------------------------------------------- ConTab 
 ConTab 		; Set screen column to .A
  		sta 	SIM_X
  		rts
@@ -63,10 +68,10 @@ ConTab 		; Set screen column to .A
 
 .NOLIST
 ; The 6502 Simulator simulates cpu and also some "I/O"
- 		;--
+ 		;-- 
 ; The variable "IO_AREA" is reserved and will return the start address of the IO page.
 ; Data is passed through the accumulator register.
- 		;--
+ 		;-- 
 ; IO_AREA+0: SIM_CLS (w)
 ; IO_AREA+1: SIM_OUT (w)
 ; IO_AREA+2: SIM_OUT_CHR (w)
@@ -74,27 +79,27 @@ ConTab 		; Set screen column to .A
 ; IO_AREA+4: SIM_IN (r)
 ; IO_AREA+5: SIM_X_POS (r/w)
 ; IO_AREA+6: SIM_Y_POS (r/w)
- 		;--
+ 		;-- 
 ; (w) means write only port, (r) read only, (r/w) read/write.
- 		;--
+ 		;-- 
 ; SIM_CLS - clear terminal window, set cursor at (0,0) position.
- 		;--
+ 		;-- 
 ; SIM_OUT - output single character interpreting control characters.
 ; 	Terminal can only recognize these control characters:
 ; 		ASCII $0D (carriage return) moving cursor to the beginning of line,
 ; 		ASCII $0A (line feed) moving cursor to the next line and scrolling window if necessary,
 ; 		ASCII $08 (backspace) moving one position to the left and erasing char below cursor.
- 		;--
+ 		;-- 
 ; SIM_OUT_CHR - outputs single character; pass control chars as it
- 		;--
+ 		;-- 
 ; SIM_OUTFPBEX - outputs single byte as a two-digit hexadecimal number.
- 		;--
+ 		;-- 
 ; SIM_IN - input single byte, returns 0 if there's no characters available in terminal's buffer
 ;     	When I/O terminal window is active, it can accept keyboard input;
  		;-- press [Ins] key to paste clipboard's contents into terminal.
- 		;--
+ 		;-- 
 ; SIMFPX_POS - cursor X position (column).
- 		;--
+ 		;-- 
 ; SIM_Y_POS - cursor Y position (row).
 
  		;-- .echo $-_ConSim

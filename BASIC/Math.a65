@@ -304,42 +304,35 @@ NumSpcX 	rts
 
 ;=================================================================== MATH MODULE ======
 #if MOD_MATH = MOD_MATH_S16
-.echo "  MATH\tS16\t\t\t("
-.echo "NUMPKSZ="
-.echo NUMPKSZ
-.echo " DIGITS="
-.echo DIGITS
-.echo ")\n"
+.echo "  MATH\tS16\t"
 #include "Math_S16.a65"
 .nolist
 #endif
 
 #if MOD_MATH = MOD_MATH_S24
-.echo "  MATH\tS24\t\t\t("
-.echo "NUMPKSZ="
-.echo NUMPKSZ
-.echo " DIGITS="
-.echo DIGITS
-.echo ")\n"
+.echo "  MATH\tS24\t"
 #include "Math_S24.a65"
 .nolist
 #endif
 
 #if MOD_MATH = MOD_MATH_H24
-.echo "  MATH\tH24\t\t\t("
-.echo "NUMPKSZ="
-.echo NUMPKSZ
-.echo " DIGITS="
-.echo DIGITS
-.echo ")\n"
+.echo "  MATH\tH24\t"
 #include "Math_H24.a65"
 .nolist
 #endif
 
 #if MOD_MATH = MOD_MATH_NONE
-.echo "  MATH\t** NONE **\n"
+.echo "  MATH\t** NONE **\t"
 .nolist
 #endif
+
+
+.echo $-_Math
+.echo "\t\t(NUMPKSZ="
+.echo NUMPKSZ
+.echo " DIGITS="
+.echo DIGITS
+.echo ")\n"
 
 
 #endif 						; end page > $80

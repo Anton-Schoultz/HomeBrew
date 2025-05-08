@@ -90,7 +90,9 @@ Int(STR_END) 	; end of string work area
 Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 
 
-#include "ComSim.a65" 				; COM port simulation
+;------------------------------------------------------- COM port simulator
+Int(COM_RD)
+Int(COM_WR)
 
 #include "Math.a65" 				; Math module ZeroPage
 

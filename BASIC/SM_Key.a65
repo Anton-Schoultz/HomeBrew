@@ -99,7 +99,7 @@ SMKeyTestL 	jsr 	SmUpd 			; update for SM_NXT (don't move)
 #endif
 
 
-#if _LEVEL >= _SUMMARY
+#if _LEVEL >= _DETAIL
 .echo "  _SM_Key\t"
 .echo $-_SM_Key
 .echo "\n"

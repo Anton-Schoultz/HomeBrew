@@ -1,19 +1,23 @@
-;=================================================================== COMS ============= 
+;=================================================================== COMS =============
 ; ComInit              Reset serial Port
 ; ComIn                Read character from serial port
 ; ComOut               Write character to serial port
 
+_Com = $
+
 #if MOD_COM = MOD_COM_NONE
-.echo "  COM\t** NONE **\n"
+.echo "  COM\t** NONE **\t"
 #endif
 
 #if MOD_COM = MOD_COM_MC68B50
-.echo "  COM\tMC68B50\n"
+.echo "  COM\tMC68B50\t"
 #include "ComMC68B50.a65"
 #endif
 
 #if MOD_COM = MOD_COM_SIM
-.echo "  COM\tSimulated\n"
+.echo "  COM\tSimulated\t"
 #include "ComSim.a65" 				; Com port simulation
 #endif
 
+.echo $-_Com
+.echo "\n"

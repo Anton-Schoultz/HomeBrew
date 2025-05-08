@@ -9,13 +9,6 @@
 ;*  ComOut               Write character to serial port (Simulated by writing to memory)
 ;*
 
-#if ($/256) = 0
-;------------------------------------------------------- COM port sinmulator - read/write memory)
-Int(COM_RD)
-Int(COM_WR)
-#endif
-
-
 #if ($/256) > $80
 ;=================================================================== COMSIM-CODE ======
 _ComSim 	= $
@@ -28,6 +21,7 @@ ComOut: ;Write character to serial port (Simulated by writing to memory)
  		ZINC(COM_WR) 			; bump pointer
  		rts
 
+;------------------------------------------------------- ComInit
 ComInit: ; Reset serial Port (Simulated by reseting pointers)
  		LDAX(_RAM_BAS_END)
  		SETAX(COM_RD)
@@ -41,11 +35,6 @@ ComIn: ; Read character from serial port (simulated by read from memory)
  		rts
 #endif
 .NOLIST
-
-#if _LEVEL >= _DETAIL
-.echo $-_ComSim
-.echo " Bytes in _ComSim\n"
-#endif
 
 .LIST 						;-- End of ComSim
 

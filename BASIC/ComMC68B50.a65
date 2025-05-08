@@ -57,13 +57,6 @@ ComStatus 	; Return the status of the coms chip in A
  		lda 	COM_CTRL 		; read Status register
  		rts
 
-.NOLIST
-#if _LEVEL >= _DETAIL
-.echo "\t"
-.echo $-_ComMC68B50
-.echo " Bytes in ComMC68B50\n"
-#endif
-
 .LIST 						;-- End of ComSim
 
 
