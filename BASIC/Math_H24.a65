@@ -2,6 +2,8 @@
 .NOLIST
 #endif
 
+#define _FLOAT_ 2
+
 ;=================================================================== MATH_H24 =========
 ; 24 But signed math with scale of 100
 
