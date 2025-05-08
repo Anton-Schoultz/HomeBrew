@@ -60,9 +60,9 @@ Greet 		.DB 	_FF,"Minimal BASIC "
 #include "ChrStr.a65" 				; Base IO (incl macros)
 
 .echo "MODULES\n"
-#include "DevConsole.a65" 			; CONSOLE
-#include "DevCom.a65" 				; COM PORT
-#include "Math.a65" 				; MATHS MODULE
+#include "MOD_CON.a65" 			; CONSOLE
+#include "MOD_COM.a65" 				; COM PORT
+#include "MOD_MATH.a65" 				; MATHS MODULE
 
 #include "Str.a65" 				; String code
 #include "Eval.a65" 				; Evaluator

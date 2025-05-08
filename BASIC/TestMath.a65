@@ -42,7 +42,7 @@ Main:  		HALT()
 #include "Util.a65"
 #include "Error.a65"
 
-#include "Math.a65"
+#include "MOD_MATH.a65"
 
 ;------------------------------------------------------- Test 
 Test: ; test maths

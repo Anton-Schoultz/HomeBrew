@@ -1,0 +1,69 @@
+#ifdef hide 					; ConLCD
+.NOLIST
+#endif
+;=================================================================== CONLCD ===========
+; Hardware Console LCD / Keyboard
+;
+;*  ConIn                Read character from input (keyboard), null if none
+;*  ConInit              Initialise console
+;*  ConOut               Write character to output, check for CLS, TAB etc
+;*
+
+; Print to screen, Read from keyboard
+IO_AREA 	= $0300 			; Must match Simulator's Options screen.
+
+#define _NEED_STATEMACHINE
+#define _NEED_KEYBUFFER
+
+_ConLCD 	= $
+
+;------------------------------------------------------- ConInit
+ConInit: ; Initialise console
+;  > initialise the LCD
+;  > clear screen
+;  > register key buffer state machine
+ 		rts
+
+;------------------------------------------------------- ConOut
+ConOut: ;Write character to output, check for CLS, TAB etc
+ 		cmp 	#_FF 			; Form Feed = Clear Screen
+ 		beq 	ConCls
+ 		cmp 	#HT 			; TAB char
+ 		beq 	ConDoTab
+ 		jmp 	ConOut 			; send char to screen
+
+;------------------------------------------------------- ConCls
+ConCls 		; Clear Screen (CLS / FormFeed)
+ 		rts
+
+;------------------------------------------------------- ConDoTab
+ConDoTab 	; tab the output
+ 		lda 	#' '
+ 		jsr 	ConOut 			; send char to screen
+ 		;-- check tab pos
+ 		jsr 	ConPos
+ 		and 	#7
+ 		bne 	ConDoTab
+ 		rts
+;------------------------------------------------------- ConSend
+ConSend 	; Send character to the screen
+; > Output a character to the screen
+ 		rts
+
+;------------------------------------------------------- ConIn
+ConIn: ; Read character from input (keyboard), null if none
+; > jmp to dequeue a char from keybuffer
+ 		rts
+
+;------------------------------------------------------- ConPos
+ConPos 		; Return screen column position in .A
+; > get column number from LCD screen
+ 		rts
+
+;------------------------------------------------------- ConTab
+ConTab 		; Set screen column to .A
+; > set LCD screen column
+ 		rts
+
+.LIST 						;-- End of ConLCD
+

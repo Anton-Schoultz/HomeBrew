@@ -94,7 +94,7 @@ Int(STR_LEN) 	; no of chars + 3 (1Null+2Len)
 Int(COM_RD)
 Int(COM_WR)
 
-#include "Math.a65" 				; Math module ZeroPage
+#include "MOD_MATH.a65" 				; Math module ZeroPage
 
 .echo "  _ZeroPage\t"
 .echo $
@@ -104,7 +104,7 @@ Int(COM_WR)
 ; cpu stack grows down from 01FF..0100
 .org $0100
 
-#include "Math.a65" 				; Math module Page 1
+#include "MOD_MATH.a65" 				; Math module Page 1
 
 
 ;=================================================================== SYSVARS ==========
