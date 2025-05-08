@@ -13,7 +13,7 @@
 ;*  ErrList              List offending line (if available)
 ;*  Error                Hanlde error[X] resetting to warm start
 ;*  Msg                  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
-;*  MsgChr               print char in .A if it is ascii, otherwise a '?'
+;*  MsgChr               print char in .A if it is ascii, otherwise the hex value
 ;*  RegLoad              Load registers from ZReg~
 ;*  RegSave              Save registers into ZReg~
 ;*
@@ -36,6 +36,7 @@ _Err 		= $
 #define ERR_UNDEFSTR 	26
 #define ERR_BUFFER 	28
 
+#define EMSG ' '+$80
 #define DOT '.'+$80
 
 ; .A @ Expected character/byte
@@ -44,49 +45,60 @@ _Err 		= $
 
 ErrTbl
 .DB "OK",DOT 					; 0=ERR_OK
-.DB "Expected @ but got #",DOT 			; 2=ERR_EXPECTED
-.DB "Expected constant",DOT 			; 4=ERR_CONST
-.DB "GOSUB/RETURN",DOT 				; 6=ERR_GOSUB
-.DB "FOR/NEXT",DOT 				; 8=ERR_FOR
-.DB "Expected variable",DOT 			;10=ERR_VAR
-.DB "Invalid variable @",DOT 			;12=ERR_BADVAR
-.DB "Divide by zero",DOT 			;14=ERR_DIV0
-.DB "Redimension",DOT 				;16=ERR_REDIM
-.DB "Out of memory",DOT 			;18=ERR_MEMORY
-.DB "Invalid token @",DOT 			;20=ERR_TOKEN
-.DB "Syntax",DOT 				;22=ERR_SYNTAX
-.DB "Out of Range",DOT 				;24=ERR_RANGE
-.DB "Undefined string",DOT 			;26=ERR_UNDEFSTR
-.DB "Buffer",DOT 				;28=ERR_BUFFER
+.DB "Expected @ but got #",EMSG 		; 2=ERR_EXPECTED
+.DB "Expected constant",EMSG 			; 4=ERR_CONST
+.DB "GOSUB/RETURN",EMSG 			; 6=ERR_GOSUB
+.DB "FOR/NEXT",EMSG 				; 8=ERR_FOR
+.DB "Expected variable",EMSG 			;10=ERR_VAR
+.DB "Invalid variable @",EMSG 			;12=ERR_BADVAR
+.DB "Divide by zero",EMSG 			;14=ERR_DIV0
+.DB "Redimension",EMSG 				;16=ERR_REDIM
+.DB "Out of memory",EMSG 			;18=ERR_MEMORY
+.DB "Invalid token @",EMSG 			;20=ERR_TOKEN
+.DB "Syntax",EMSG 				;22=ERR_SYNTAX
+.DB "Out of Range",EMSG 			;24=ERR_RANGE
+.DB "Undefined string",EMSG 			;26=ERR_UNDEFSTR
+.DB "Buffer",EMSG 				;28=ERR_BUFFER
 .DB 0
 
+ErrEnding .db "error.",0
 
 ;------------------------------------------------------- X_Err
 Error: ; Hanlde error[X] resetting to warm start
  		pha
-
+ 		stx 	ERR_NO 			; store error number
  		phx
  		phy
-		;-- list the offending line if available
+ 		;-- list the offending line if available
  		jsr 	ErrList
  		jsr 	PrNL
  		ply
  		plx
  		;-- check for 0=OK
- 		beq	Error1			; 0=OK, so no error number
+ 		beq 	Error1 			; 0=OK, so no error number
+ 		;-- 'E'
+ 		lda #'E'
+ 		jsr	ChrOut
+ 		;-- '##:' error no
  		txa
- 		lsr	a			; /2
- 		jsr	PrADec2			; print error number
- 		lda	#':'
- 		jsr	ChrOut			; print ':'
-		;-- print the erroe message
+ 		lsr 	a 			; /2
+ 		jsr 	PrADec2 		; print error number
+ 		lda 	#':'
+ 		jsr 	ChrOut 			; print ':'
+ 		;-- print the error message
 Error1 		ZSET(ZPtr,ErrTbl) 		; point to the keyword table
  		pla
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
- 		jsr 	PrNL
+ 		;-- OK?
+ 		lda	ERR_NO
+ 		beq	ErrorX			; OK -> exit
+ 		;-- 'error.'
+ 		LDAX(ErrEnding)
+ 		jsr	PrStrAX
 
-ErrorX 		jmp 	Main
+ErrorX 		jsr 	PrNL
+		jmp 	Main
 
 ErrList: ; List offending line (if available)
  		;-- check if command line
@@ -180,11 +192,11 @@ MsgChr: ; print char in .A if it is ascii, otherwise the hex value
  		cmp 	#$21
  		bmi 	MsgChrNo
 MsgChrOk 	jsr 	ChrOut
-		bra	MsgL
-MsgChrNo	pha
-		lda 	#'$'
+ 		bra 	MsgL
+MsgChrNo 	pha
+ 		lda 	#'$'
  		jsr 	ChrOut
- 		pla				; recall value
+ 		pla 				; recall value
  		jsr 	PrAHex
  		bra 	MsgL
 

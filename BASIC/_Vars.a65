@@ -29,7 +29,7 @@ Int(ZDPtr)
 
 
 Short(HLTFLG) 	; halt flag 00=run (error code)
-Int(ERR_ADR) 	; Address where error was detected
+Short(ERR_NO) 	; Error No
 
 ;------------------------------------------------------- Printing (send to mem/io)
 Short(ZPrFlg) 	; Print/convert mode  - See ChrStr for details

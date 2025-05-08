@@ -16,7 +16,7 @@ _If 		= $
 X_If: ; IF ?? THEN {Statment}~Execute statement if condition ?? is true
  		jsr 	ChrRd 			; consume token
  		;-- check for string comparison
- 		JSR 	EvIsStr
+ 		jsr 	EvIsStr
  		BR_T(X_IfStr)
  		;-- Not sting so assume numeric expression
  		jsr 	EvNumeric 		; AX lo/hi
@@ -34,35 +34,35 @@ X_IfSyntax 	ERROR(ERR_SYNTAX)
 
 X_IfStr: ; do string comparison
  		;-- evaluate LHS of compare
- 		JSR 	EvString
+ 		jsr 	EvString
  		BR_F(X_IfSyntax) 		; not a string => syntax error
- 		JSR 	StrPush 		; save that result
+ 		jsr 	StrPush 		; save that result
  		;-- now get the comparison required
- 		LDA 	CHRGOT 			; get the last token read
- 		JSR 	IsRelOp
- 		BNE 	X_IfSyntax 		; not relation => error
+ 		lda 	CHRGOT 			; get the last token read
+ 		jsr 	IsRelOp
+ 		bne 	X_IfSyntax 		; not relation => error
 
  		;-- push operator onto the stack
- 		LDA 	CHRGOT
+ 		lda 	CHRGOT
  		pha 				; save operator
 
  		;-- consume operator, get next part
- 		JSR 	ChrRd 			; consume rel op
- 		JSR 	EvString 		; evaluate next string
+ 		jsr 	ChrRd 			; consume rel op
+ 		jsr 	EvString 		; evaluate next string
  		BR_F(X_IfSyntax) 		; not a string => syntax error
  		;-- prepare to compare the strings
- 		JSR 	NumPopB 		; first string into B
- 		JSR 	NumSwap 		; A <-> B
+ 		jsr 	NumPopB 		; first string into B
+ 		jsr 	NumSwap 		; A <-> B
  		;-- compare
- 		JSR 	StrComp
+ 		jsr 	StrComp
 
  		pla 				; recall op
- 		JSR 	RelTest 		; go set true/false
+ 		jsr 	RelTest 		; go set true/false
 
 ; RelTest checks op in .A against NUM_FLG and sets NUM = TRUE / FALSE
 ; returns with .A = 0(False) or FF(True)
- 		CMP 	#0 			; 0=False, else true
- 		BNE 	IfTrue
+ 		cmp 	#0 			; 0=False, else true
+ 		bne 	IfTrue
  		rts
 
 

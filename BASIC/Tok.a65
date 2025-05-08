@@ -1,6 +1,7 @@
 ;=================================================================== TOK ==============
 ;*  Hash                 check for '#n' for channel i/o
 ;*  IsNumFn              Return T/F if CHRGOT is a numeric function and token in A
+;*  IsNumeric            Return T if the token in .A is numeric
 ;*  L_Number             List number
 ;*  L_String             list out string text
 ;*  P_IsToken            Parse for a token, returns TOKNO or CHRGOT, returns found T/F
@@ -97,11 +98,11 @@ P_KeyWord 	;-- check for keyword
  		jsr 	ChrWr
  		bra 	P_PartNxt 		; loop for more
 PNotKey 	;-- see if we have a number (digit/point)
-		BR_AEQ('.',PNumeric)
+ 		BR_AEQ('.',PNumeric)
  		jsr 	IsDigit 		; check if CHRGOT is a digit
  		BR_F(PNotDigit)
  		;-- digit, so collect as number
-PNumeric	jsr 	P_Number 		; parse number and tokenise it
+PNumeric 	jsr 	P_Number 		; parse number and tokenise it
  		bra 	P_Part 			; loop for more
 PNotDigit 	;- is it a quoted string?
  		lda 	CHRGOT
@@ -178,19 +179,28 @@ SkipBlank0 	BR_AEQ(SPC,SkipBlankL) 		; Space -> Loop
  		;-- ok
 RtnTrue 	RTN_T()
 
+;------------------------------------------------------- IsNumeric
+IsNumeric: ; Return T if the token in .A is numeric
+ 		BR_AEQ(T_NumVar,IsNumTrue) 	; variable
+ 		BR_AEQ(T_NumVar,IsNumTrue) 	; variable
+ 		BR_AEQ(T_NumAry,IsNumTrue) 	; subscripted var
+ 		BR_AEQ(T_NumLit,IsNumTrue) 	; Literal value
+ 		;-- string conversions
+ 		BR_AEQ(T_Asc,IsNumTrue) 	; ASC($)-> code
+ 		BR_AEQ(T_Val,IsNumTrue) 	; VAL($)-> numeric value
+ 		BR_AEQ(T_Len,IsNumTrue) 	; LEN($)-> Length of StrExpr
+ 		;-- Fn(##) ?
 ;------------------------------------------------------- IsNumFn
 IsNumFn: ; Return T/F if CHRGOT is a numeric function and token in A
 ; () is also treated as a function
  		lda 	CHRGOT
- 		BR_AEQ('(',IsFnTrue) 		; Brace treated as null function
+ 		BR_AEQ('(',IsNumTrue) 		; Brace treated as null function
  		cmp 	#T_FNUM 		; firt numeric function
- 		bmi 	IsFnFalse
+ 		bmi 	IsNumFalse
  		cmp 	#T_FSTR
- 		bpl 	IsFnFalse
-IsFnTrue 	RTN_T()
-
-IsFnFalse 	RTN_F()
-
+ 		bpl 	IsNumFalse
+IsNumTrue 	RTN_T()
+IsNumFalse 	RTN_F()
 
 ;------------------------------------------------------- Hash
 Hash: ; check for '#n' for channel i/o
@@ -278,12 +288,17 @@ TokExpand: ; Expand the token .X to key word
 
 ;------------------------------------------------------- P_Number
 P_Number: ; Parse a number into token & value
+		jsr	IsDecimal		; '.' | 0..9
+		BR_F(P_NumberErr)		; no -> syntax
+
+ 		;-- Parse number value
+P_NumberOK	jsr 	NumParse 		; read source -> NUM_A
  		;-- Write Number token
  		lda 	#T_NumLit
  		jsr 	ChrWr
- 		;-- Parse number value
- 		jsr 	NumParse 		; read source -> NUM_A
  		jmp 	NumWr 			; write number value and rts
+
+P_NumberErr	ERROR(ERR_SYNTAX)
 
 ;------------------------------------------------------- L_Number
 L_Number: ; List number

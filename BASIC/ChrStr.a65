@@ -11,7 +11,7 @@
 #define DEV_OUT_STD DEV_CONSOLE
 
 
-;=================================================================== CHRSTR =========== 
+;=================================================================== CHRSTR ===========
 ;*  ChrIn                Read character from input device (KBD,COM..)
 ;*  ChrOut               Send character to output device (SCR,COM..)
 ;*  ChrRd                Read character from memory (++ZRd)->A->CHRGOT
@@ -57,7 +57,7 @@
 ; Bit0 ZSup	'0'		Suppress leading zeros
 
 
-;------------------------------------------------------- 5:NonASCII 
+;------------------------------------------------------- 5:NonASCII
 ; BR_D7(tgt)	Branch to tgt if MRK=1 (end with bit 7)
 #define BR_D7(tgt) 	BBS5 ZPrFlg,tgt
 ; BR_ND7(tgt)	Branch to tgt if MRK=0 (end with bit 7)
@@ -69,7 +69,7 @@
 ; PR_ALL()	Term Null	F5=0 Term null only
 #define PR_ALL()	RMB5 ZPrFlg
 
-;------------------------------------------------------- 4:BCD HEX 
+;------------------------------------------------------- 4:BCD HEX
 ; BR_BCD(tgt)	Branch to tgt if BCD=1
 #define BR_BCD(tgt) 	BBS4 ZPrFlg,tgt
 ; BR_NBCD(tgt)	Branch to tgt if BCD=0
@@ -81,7 +81,7 @@
 ; PR_BCD_OFF()	HEX out		F4=0 HEX 0-9ABCDEF
 #define PR_BCD_OFF()	RMB4 ZPrFlg
 
-;------------------------------------------------------- 3:Echo 
+;------------------------------------------------------- 3:Echo
 ; PR_ECHO(tgt)	Branch to tgt if ECHO=1
 #define BR_ECHO(tgt) 	BBS3 ZPrFlg,tgt
 ; PR_NECHO(tgt)	Branch to tgt if ECHO=0
@@ -92,7 +92,7 @@
 #define PR_ECHO_OFF()	RMB3 ZPrFlg
 
 
-;------------------------------------------------------- 1:ZeroBlank 
+;------------------------------------------------------- 1:ZeroBlank
 ; PR_ZSPC(tgt)	Branch to tgt if ZSPC=1
 #define BR_ZSPC(tgt) 	BBS1 ZPrFlg,tgt
 ; PR_NZSPC(tgt)	Branch to tgt if ZSPC=0
@@ -102,7 +102,7 @@
 ; PR_ZSPC_OFF()	Leading zeros stay
 #define PR_ZSPC_OFF()	RMB1 ZPrFlg
 
-;------------------------------------------------------- 0:ZeroSuppress 
+;------------------------------------------------------- 0:ZeroSuppress
 ; PR_ZSUP(tgt)	Branch to tgt if ZSUP=1
 #define BR_ZSUP(tgt) 	BBS0 ZPrFlg,tgt
 ; PR_NZSUP(tgt)	Branch to tgt if ZSUP=0
@@ -112,10 +112,10 @@
 ; PR_ZSUP_OFF()	Leading zeros stay
 #define PR_ZSUP_OFF()	RMB0 ZPrFlg
 
- 		;-- 
+ 		;--
 
 _ChrStr 	= $
-;------------------------------------------------------- ChrRd 
+;------------------------------------------------------- ChrRd
 ; increment the ZRd pointer (inside the lda) and then fetch the character
 ChrRd: ; Read character from memory (++ZRd)->A->CHRGOT
  		ZINC(ZRd)
@@ -124,13 +124,13 @@ ChrRd: ; Read character from memory (++ZRd)->A->CHRGOT
  		rts
 
 ; Initial values for 8 vectors in here, copied along with the above to zero page
-;------------------------------------------------------- Input Devices 
+;------------------------------------------------------- Input Devices
 VEC_IN: ; Vectors to input devices
 .dw GetKey 					; KEYBOARD
 .dw ComIn 					; RX
 .dw $ABCD
 .dw $ABCD
-;------------------------------------------------------- Output devices 
+;------------------------------------------------------- Output devices
 VEC_OUT: ; Vectors to output devices
 .dw ConOut 					; SCREEN
 .dw ComOut 					; TX
@@ -140,13 +140,13 @@ VEC_OUT: ; Vectors to output devices
 .db DEV_CONSOLE*2 				; DEV_IN  initial input device no = 0 (Console-keyboard)
 .db DEV_CONSOLE*2 				; DEV_OUT initial output device no = 0 (Console-screen)
 
-;------------------------------------------------------- Devices 
+;------------------------------------------------------- Devices
 ; 0	CON	Console is Keyboard & screen
 ; 1	COM	Serial port
 ; 2
 ; 3
 
-;------------------------------------------------------- GetKey 
+;------------------------------------------------------- GetKey
 ; The IRQ keyDebounce does not work with the 6502 simulator
 ; So we have to do this patch
 GetKey: ; get a key press
@@ -155,7 +155,7 @@ GetKey: ; get a key press
  		jsr 	ConIn 			; else try console simulator
 GetKeyX 	rts
 
-;------------------------------------------------------- ChrIn 
+;------------------------------------------------------- ChrIn
 ChrIn: ; Read character from input device (KBD,COM..)
  		phx
  		ldx 	DEV_IN
@@ -166,7 +166,7 @@ ChrIn: ; Read character from input device (KBD,COM..)
 
 ChrInCall 	jmp 	(VEC_IN,X)
 
-;------------------------------------------------------- ChrOut 
+;------------------------------------------------------- ChrOut
 ChrOut: ; Send character to output device (SCR,COM..)
  		phx
  		ldx 	DEV_OUT
@@ -176,11 +176,11 @@ ChrOut: ; Send character to output device (SCR,COM..)
 
 ChrOutCall 	jmp 	(VEC_OUT,X)
 
-;------------------------------------------------------- ChrRd 
+;------------------------------------------------------- ChrRd
 ; Read character from memory (++ZRd)->A->CHRGOT
 ; ChrRd is code in Z Page
 
-;------------------------------------------------------- ChrWr 
+;------------------------------------------------------- ChrWr
 ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
  		sta 	(ZWr)
  		;-- bump to next address
@@ -191,19 +191,19 @@ ChrWr: ; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
 ChrWrX 		rts
 
 
-;------------------------------------------------------- SetInDev 
+;------------------------------------------------------- SetInDev
 SetInDev: ; set input device .A
  		asl 	a
  		sta 	DEV_IN
  		rts
 
-;------------------------------------------------------- SetOutDev 
+;------------------------------------------------------- SetOutDev
 SetOutDev: ; set input device .A
  		asl 	a
  		sta 	DEV_OUT
  		rts
 
-;------------------------------------------------------- InputText 
+;------------------------------------------------------- InputText
 InputText: ; Input text from console to INBUF, prompt char is in A
  		;-- check if input is device or screen
  		ldx 	DEV_IN
@@ -212,10 +212,10 @@ InputText: ; Input text from console to INBUF, prompt char is in A
 InputText1 	jsr 	InputIOEcho 		; Read from Mem/IO and place in INBUF, until CR
  		jmp 	PrNL
 
-;------------------------------------------------------- InputIOEcho 
+;------------------------------------------------------- InputIOEcho
 InputIOEcho: ; Input INBUF from IO, echo chars to IO
  		PR_ECHO_ON()
-;------------------------------------------------------- Input 
+;------------------------------------------------------- Input
 Input: ; Read from IO and place in INBUF, until CR
  		ldx 	#0
  		txa
@@ -250,7 +250,7 @@ Input1 		cmp 	#$22 			; is it a quote?
  		eor 	ZTmp
  		sta 	ZTmp
  		pla
- 		;-- 
+ 		;--
 Input2 		ldy 	ZTmp
  		bne 	Input3 			; quote mode is on
  		ldy 	DEV_IN
@@ -263,7 +263,7 @@ Input2 		ldy 	ZTmp
  		bpl 	Input3
  		eor 	#$20
 
- 		;-- 
+ 		;--
 Input3 		sta 	INBUF,x 		; place in buf
  		;-- move on
  		inx
@@ -277,10 +277,10 @@ InputX 		lda 	#0 			; terminate with a null
  		sta 	INBUF+1,X
  		rts
 
-;------------------------------------------------------- PrStrAX 
+;------------------------------------------------------- PrStrAX
 PrStrAX: ; Print string at AX [A] -> PutChr -> Mem/IO
  		SETAX(ZPtr)
-;------------------------------------------------------- PrStr 
+;------------------------------------------------------- PrStr
 PrStr: ; Print string pointed to by ZPtr [A], last Y->ZTmp
 ; last index saved into ZTmp
  		phy
@@ -291,7 +291,7 @@ PrStr1 		lda 	(ZPtr),y
  		BR_ND7(PrStr2) 			; Stop=Off, skip bit test
  		bmi 	PrStrX 			; bit 7 set -> exit
  		and 	#$7F 			; force ascii
- 		;-- 
+ 		;--
 PrStr2 		jsr 	ChrOut 			; print character to io
  		iny 				; move to next char
  		bne 	PrStr1 			; loop back (no more than 255 chars)
@@ -299,18 +299,25 @@ PrStrX 		sty 	ZTmp
  		ply 				; restore Y
  		rts 				; exit
 
-;------------------------------------------------------- IsAlpha 
+;------------------------------------------------------- IsAlpha
 IsAlpha: ; returns T/F if .A is a Alpha A-Z
  		BR_ALT('A',IsFalse)
  		BR_AGE('Z'+1,IsFalse
  		RTN_T()
-;------------------------------------------------------- IsAlphaNumeric 
+;------------------------------------------------------- IsAlphaNumeric
 IsAlphaNumeric: ; returns true if .A is 0-9,A-Z
  		jsr 	IsAlpha
  		BR_T(IsTrue)
  		;-- fall through to check for digit
- 		;-- IsDigit
+
+;-- IsDecimal
+IsDecimal: ; returns T if .A ='.' | 0..9
+#if MOD_MATH >= MOD_MATH_H24
+		BR_AEQ('.',IsTrue)		; if '.' -> ok
+#endif
+;-- IsDigit
 IsDigit: ; returns T/F if .A is a digit 0..9
+		;-- check for digits 0..9
  		BR_ALT('0',IsFalse)
  		BR_AGE('9'+1,IsFalse)
 IsTrue 		RTN_T()

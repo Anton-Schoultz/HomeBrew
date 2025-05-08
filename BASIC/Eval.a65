@@ -233,28 +233,16 @@ EvMulDiv: ; common for Mul/Div/Mod
 
 EvMul: ; Do Multiply
  		jsr 	EvMulDiv
-; 		jsr 	NumPushA
-; 		jsr 	ChrRd
-; 		jsr 	Factor
-; 		jsr 	NumPopB
  		jsr 	NumMul
  		RTN_T()
 
 EvDiv: ; Do Divide
  		jsr 	EvMulDiv
-; 		jsr 	NumPushA
-; 		jsr 	ChrRd
-; 		jsr 	Factor
-; 		jsr 	NumPopB
  		jsr 	NumDiv
  		RTN_T()
 
 EvMod: ; Do Modulus
  		jsr 	EvMulDiv
-; 		jsr 	NumPushA
-; 		jsr 	ChrRd
-; 		jsr 	Factor
-; 		jsr 	NumPopB
  		jsr 	NumMod
  		RTN_T()
 
@@ -279,7 +267,7 @@ Factor: ; Factor = (BoolTerm) | NumLit | NumVar | Function(~)
  		CASE(T_Val,X_Val) 		; VAL($)-> numeric value
  		CASE(T_Len,X_Len) 		; LEN($)-> Length of StrExpr
  		;-- Fn(##) ?
- 		lda 	CHRGOT
+; 		lda 	CHRGOT
  		jsr 	IsNumFn
  		BR_T(Function)
  		RTN_F()

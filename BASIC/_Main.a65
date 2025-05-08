@@ -16,7 +16,7 @@
 ; MOD_MATH_	NONE, S16, S24, H24
 ; MOD_CONSOLE_	NONE, SIM, LCD
 ; MOD_COM_	NONE, SIM, MC68B50
-MOD_MATH 	= MOD_MATH_H24 			; NONE, S16, S24, H24
+MOD_MATH 	= MOD_MATH_S24 			; NONE, S16, S24, H24
 MOD_CONSOLE 	= MOD_CONSOLE_SIM 		; NONE, SIM, LCD
 MOD_COM 	= MOD_COM_SIM	 		; NONE, SIM, MC68B50
 
@@ -157,7 +157,8 @@ MainLoop: ; Main Loop
  		jsr 	Parse 			; Parse INBUF into TOKBUF
 
 #if _DBUG
-; 		jsr 	MainTokBuf
+ 		jsr 	MainTokBuf
+ 		PAUSE()
 #endif
 
 #if _DB_MAIN

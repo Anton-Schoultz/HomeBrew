@@ -231,21 +231,21 @@ NumParseL 	;- term NULL ?
  		lda 	(ZParse),Y
  		beq 	NumParseEnd 		; yes -> done
 
-NumParse1 	cmp 	#'.'
+NumParse1 	;-- DECIMAL POINT
+ 		cmp 	#'.'
  		bne 	NumParse2
-		;-- decimal point found
+ 		;-- decimal point found
  		lda 	#$80
  		sta 	NUM_DEC 		; flag that we have a '.'
  		bra 	NumParseNxt 		; get next character
 
-NumParse2 	jsr 	IsDigit 		; A is preserved
+NumParse2 	;-- DIGITS
+ 		jsr 	IsDigit 		; A is preserved, T if .A is 0..9
  		BR_F(NumParseEnd) 		; no more digits
-
  		;-- count decimals
  		BBR7 	NUM_DEC,NumParse3 	; point yet? No -> skip
  		inc 	NUM_DEC 		; count it $81, $82 ...
- 		;-- check max places
- 		;--
+ 		;-- TODO check max places
 
 NumParse3 	and 	#$0F 			; convert digit to value
  		;-- NUM_AA = NUM_AA * 10 (preserves AXY)
