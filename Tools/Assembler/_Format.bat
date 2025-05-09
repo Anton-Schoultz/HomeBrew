@@ -7,16 +7,26 @@ rem p2=name	(%N)
 rem p3=ext	(%E)
 rem p4=full path(%F)
 rem
-set FullFile=%4
+rem set FullFile=%4
+set FullFile=%1\%2%3
 rem 	java.exe -jar D:\GitHub\HomeBrew\Tools\Assembler\AsmHelper.jar %F
 rem
 D:
 cd %1
 java.exe -jar D:\GitHub\HomeBrew\Tools\Assembler\AsmHelper.jar %FullFile%
+
+echo BAT Building _Index
 copy *.ref _Index.tmp > null
 sort < _Index.tmp > _Index.txt
 del _Index.tmp
 rem
+echo BAT Building _WordList
 copy *.wrd _words.tmp > null
 sort < _words.tmp > _Wordlist.txt
 del _words.tmp
+
+echo off
+rem del *.BAK
+rem del *.LST
+rem del *.WRD
+rem del *.REF
