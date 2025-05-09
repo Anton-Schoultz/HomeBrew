@@ -20,7 +20,7 @@ X_Save: ; SAVE~Save program
  		;-- list to output
  		jsr 	X_ListDo
  		;-- output the command to STOP (will reset Input when loading)
- 		ldx 	#T_Stop
+ 		ldx 	#T_STOP
  		jsr 	TokExpand
  		jsr 	PrNL
  		;-- default output again

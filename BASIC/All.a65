@@ -1,6 +1,6 @@
 ; All
 
-;------------------------------------------------------- Key words
+;------------------------------------------------------- Key words 
 #include "XClear.a65" 				; CLEAR 	Clears variables
 #include "XCls.a65" 				; CLS 	Clear screen
 #include "XDim.a65" 				; DIM <StrVar>( size )
@@ -17,11 +17,11 @@
 #include "XPrint.a65" 				; PRINT [;|,|<StrExpr>|<NumExpr]*
 #include "XRem.a65" 				; REM remark
 #include "XRun.a65" 				; RUN	Execute the program
-#include "XStop.a65" 				; STOP	Stop program execution
+#include "XSTOP.a65" 				; STOP	STOP program execution
 ; Secondary keywords
 #include "KeyWords.a65" 			; THEN, TO, STEP, AND, OR, XOR, NOT
 
-;------------------------------------------------------- Numeric Functions  & Str->Num
+;------------------------------------------------------- Numeric Functions  & Str->Num 
 #include "XFAbs.a65" 				; ABS(<expr>) Absolute value (positive)
 #include "XFAsc.a65" 				; ASC(<StrExpr>) Return code of first character in the String
 #include "XFDeek.a65" 				; DEEK(##) Return the contents of memory word at address
@@ -37,7 +37,7 @@
 #include "XFVal.a65" 				; VAL($) Evaluate the string and return it's numeric value
 
 
-;------------------------------------------------------- String functions & Num->Str
+;------------------------------------------------------- String functions & Num->Str 
 #include "XFChr.a65" 				; CHR$(<StrExpr>) Return string of single character for ASCII code
 #include "XFLTrim.a65" 				; LTRIM$(<StrExpr>) Trim leadiong spaces
 #include "XFLeft.a65" 				; LEFT$(<StrExpr>,<expr>) Return leftmost n characters

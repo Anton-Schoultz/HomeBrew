@@ -1,5 +1,5 @@
-echo off
-del *.bak
-del *.lst
-del *.wrd
-del *.ref
+echo 		off
+del 		*.BAK
+del 		*.LST
+del 		*.WRD
+del 		*.REF

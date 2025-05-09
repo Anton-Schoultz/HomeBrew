@@ -1,23 +1,23 @@
 #ifdef hide
 .NOLIST
 #endif
-;=================================================================== STATE MACHINE ====
+;=================================================================== STATE MACHINE ==== 
 ;*  SmFind               find an empoty slot, return in .X (N 1=None else EQ 1=found)
 ;*  SmInit               Initialise state machine by clearing the slots
 ;*  SmPoint              Set up pointer into the caller into slot .X
 ;*  SmRegister           Register the machine at the slot found
 ;*  SmState              Update the state to where this is called from
-;*  SmUpdSlotX           update for slot X
+;*  SmUpd                update for next slot (don't move)
 ;*  SmUpdate             Do an update of the next slot
 ;*m SM_CNT(n)            Set the count down timer to n for current slot
 ;*m SM_GET()             Get the data byte into .A for current slot
 ;*m SM_SET()             Set data byte to value in .A for current slot
 ;*
 
-;------------------------------------------------------- Constants
+;------------------------------------------------------- Constants 
 ; #define SM_MAX 4   	Number of slots available  (Constants)
 
-;------------------------------------------------------- Buffer area
+;------------------------------------------------------- Buffer area 
 ; Var(SM_H,SM_MAX) ; Hi byte for state	(Null=Empty)
 ; Var(SM_L,SM_MAX) ; Lo byte for state
 ; Var(SM_C,SM_MAX) ; Counter 		(down to 0 & stop)
@@ -27,7 +27,7 @@
 
 _Sm 		= $
 
-;------------------------------------------------------- SmInit
+;------------------------------------------------------- SmInit 
 SmInit: ; Initialise state machine by clearing the slots
  		sei 				; disable IRQs
  		lda 	#0
@@ -43,7 +43,7 @@ SmInitL 	dex
 SmInitX 	cli 				; Re-enable IRQs
  		rts
 
-;------------------------------------------------------- SmFind
+;------------------------------------------------------- SmFind 
 SmFind: ; find an empoty slot, return in .X (N:1=None else EQ:1=found)
  		ldx 	#SM_MAX
 SmFindL 	dex
@@ -53,14 +53,14 @@ SmFindL 	dex
  		;-- zero high byte means available slot
 SmFindX 	rts 				; N:1 => none available
 
-;------------------------------------------------------- SmRegister
+;------------------------------------------------------- SmRegister 
 SmRegister: ; Register the machine at the slot found
  		stx 	SM_NXT
-;------------------------------------------------------- SmState
+;------------------------------------------------------- SmState 
 SmState: ; Update the state to where this is called from
  		ldx 	SM_NXT 			; get active slot number
  		;-- fall through to set the new return address and then exit machine
-;------------------------------------------------------- SmPoint
+;------------------------------------------------------- SmPoint 
 SmPoint: ; Set up pointer into the caller into slot .X
 ; caller's return address in on stack (must call from inside statemachine code)
 ; returns to wherever initialise of state machine was called from
@@ -70,13 +70,13 @@ SmPoint: ; Set up pointer into the caller into slot .X
  		sta 	SM_H,X
  		rts
 
-;------------------------------------------------------- SmUpdSlot
+;------------------------------------------------------- SmUpdSlot 
 SmUpd: ; update for next slot (don't move)
  		ldx 	SM_NXT
  		inx
  		bra 	SmUpdate1
 
-;------------------------------------------------------- SmUpdate
+;------------------------------------------------------- SmUpdate 
 SmUpdate: ; Do an update of the next slot
 ; this would be called from inside IRQ service routine
 ; jump to user code with EQ if timed out, .X=Slot

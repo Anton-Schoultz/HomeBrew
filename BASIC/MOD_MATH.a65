@@ -1,5 +1,5 @@
 .nolist
-;=================================================================== COMMON ===========
+;=================================================================== COMMON =========== 
 ; Common to all math modules
 ;*  NumFmt               Apply formatting to leading zeroes based on ZPrFlg
 ;*  NumInit              Initialise calculator (clear stack pointer)
@@ -18,7 +18,7 @@
 ; DIGITS	is the number of digits when printed (even number)
 ; -########e##.
 ; 0123456789abcdef
- 		;--
+ 		;-- 
 #if MOD_MATH = MOD_MATH_NONE
 #define NUMPKSZ	2
 #define DIGITS 8
@@ -91,17 +91,17 @@ NUM_DIVC 	= NUM_DIV+FPC
 
 
 
-;-- ZPage Vars
+;------------------------------------------------------- ZPage Vars 
 #if ($/256) = 0
-;Short(ZDIV) 	; short divisor 10/100
-;Short(NUM_DEC)	; number of decimals
-;Short(NUM_EXP)	; exponent
+ 		;-- Short(ZDIV) 	; short divisor 10/100
+ 		;-- Short(NUM_DEC)	; number of decimals
+ 		;-- Short(NUM_EXP)	; exponent
 
 #endif
 
 
 #if ($/256) = 1
-;------------------------------------------------------- CSTK
+;------------------------------------------------------- CSTK 
 ; Calc Stack is at bottom of page 1, cpu stack grows down from top of page 1
 ; 16 x 5 => 80 bytes
 CSTK
@@ -118,11 +118,11 @@ Var(CSTKC,CSTKSZ) ; C:Upper
 ; D24 uses A,B,C
 
 ; F32 uses X,A,B,C
- 		;--
+ 		;-- 
 ; Constants:
 ; NUMPKSZ 2	size of a numeric format in internal for - S16 is 2 bytes
 ; NUMUSZ 5	size of numeric value once 'unpacked' for calcualtions
-;------------------------------------------------------- Numeric common vars
+;------------------------------------------------------- Numeric common vars 
 ; Var(NUM_A,NUMUSZ) 	; Number parsed / Primary accumulator
 ; Var(NUM_TMP,NUMUSZ) 	; Temp number
 ; Var(NUM_B,NUMUSZ) 	; Secondary accumulator
@@ -148,13 +148,13 @@ _Math 		= $
 .NOLIST
 #endif
 
-;------------------------------------------------------- NumInit
+;------------------------------------------------------- NumInit 
 NumInit: ; Initialise calculator (clear stack pointer)
  		lda 	#0
  		sta 	NUM_SP 			; zero the number stack pointer
  		rts
 
-;------------------------------------------------------- NumParse
+;------------------------------------------------------- NumParse 
 NumParse: ; Parse number from (ZRd) and move ZRd
  		ZCPY(ZParse,ZRd)
  		jsr 	NumParsePtr 		; parse from (ZParse)
@@ -168,7 +168,7 @@ NumParse: ; Parse number from (ZRd) and move ZRd
  		sta 	ZRd+1
  		rts
 
-;------------------------------------------------------- NumPushA
+;------------------------------------------------------- NumPushA 
 NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
  		ldx 	NUM_SP
  		;-- sign
@@ -195,7 +195,7 @@ NumPushA: ; Push Num_A onto calculator stack (S,X,A,B,C NUM_SP++)
 NumStackErr: ; 'out-of-memory'
  		ERROR(ERR_MEMORY)
 
-;------------------------------------------------------- NumPopB
+;------------------------------------------------------- NumPopB 
 NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		;-- try decr stak pointer check if <0
  		dec 	NUM_SP
@@ -215,10 +215,10 @@ NumPopB: ; Pop Num_B from the calculator stack (NUM_SP--  S,X,A,B,C)
  		sta 	NUM_BB
  		lda 	CSTKC,X
  		sta 	NUM_BC
- 		;--
+ 		;-- 
  		rts
 
-;------------------------------------------------------- NumSwap
+;------------------------------------------------------- NumSwap 
 NumSwap: ; Swap NUM_A <-> NUM_B  (S,X,A,B,C)
  		ldx 	#NUMUSZ
 NumSwapL 	lda 	NUM_A,X
@@ -232,7 +232,7 @@ NumSwapL 	lda 	NUM_A,X
  		rts
 
 
-;------------------------------------------------------- NumFmt
+;------------------------------------------------------- NumFmt 
 NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
 ; BASIC usually suppresses leading zeroes, no other options available
 ; so we could remove these lines, falling through to NumSup and remove NumSpc
@@ -243,7 +243,7 @@ NumFmt: ; Apply formatting to leading zeroes based on ZPrFlg
 ; -########e##.		DIGITS=8
 ; 0123456789abcdef
 
-;------------------------------------------------------- NumSup
+;------------------------------------------------------- NumSup 
 NumSup: ; removing leading zeroes
  		ldx 	#0
  		ldy 	#0
@@ -256,35 +256,35 @@ NumSupL 	iny
 
 NumSup1 	;- decimal point?
  		cmp 	#'.'
- 		beq	NumSupP
-		;- non-zero
-		cmp 	#'0'
+ 		beq 	NumSupP
+ 		;-- non-zero
+ 		cmp 	#'0'
  		bne 	NumSupC 		; go copy
-		;- maxed out
+ 		;-- maxed out
  		cpy 	#DIGITS 		; make sure we leave the last digit at least
  		bne 	NumSupL
 
  		iny
 
 NumSupP
-;	PAUSE()
-		dey
+ 		;-- PAUSE()
+ 		dey
 
 NumSupC
 
-;	PAUSE()
+ 		;-- PAUSE()
 
 
  		lda 	NUM_BUF,y
  		sta 	NUM_BUF,x
- 		beq 	NumSupX			; null -> done
+ 		beq 	NumSupX 		; null -> done
  		inx
  		iny
  		bra 	NumSupC
 
 NumSupX 	rts
 
-;------------------------------------------------------- NumSpc
+;------------------------------------------------------- NumSpc 
 NumSpc 		; blank leading zeroes
  		ldy 	#0
  		lda 	NUM_BUF
@@ -302,7 +302,7 @@ NumSpc1 	cmp 	#'0'
 NumSpcX 	rts
 
 
-;=================================================================== MATH MODULE ======
+;=================================================================== MATH MODULE ====== 
 #if MOD_MATH = MOD_MATH_S16
 .echo "  MATH\tS16\t"
 #include "Math_S16.a65"
@@ -342,7 +342,7 @@ NumSpcX 	rts
 
 
 #if MOD_MATH = MOD_MATH_NONE
-;------------------------------------------------------- Dummy{
+;------------------------------------------------------- Dummy{ 
 #if $>$400
 
 #if _LEVEL >= _DETAIL
@@ -395,7 +395,7 @@ NumPack 	; Pack NUM_A into memory format for storing
 
 
 #endif
-;------------------------------------------------------- }Dummy
+;------------------------------------------------------- }Dummy 
 
 #endif
 .list

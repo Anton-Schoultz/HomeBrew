@@ -4,20 +4,20 @@
 #endif
 #if (($/256)>=PG_ROM) & (($/256)<PG_KEY)
 ;=================================================================== STOP ============ 
-;*  X_Stop               STOP~Stop executing the program
+;*  X_STOP               STOP~STOP executing the program
 ;*
 
-_Stop 		= $
+_STOP 		= $
 
-;------------------------------------------------------- X_Stop 
-X_Stop: ; STOP~Stop executing the program
+;------------------------------------------------------- X_STOP 
+X_STOP: ; STOP~STOP executing the program
  		jmp 	Main 			; resets stack etc
 
 ; Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 
 #if _LEVEL >= _KEYWORDS
 .echo "  _STOP\t\t"
-.echo $-_Stop
+.echo $-_STOP
 .echo "\n"
 #endif
 
@@ -28,15 +28,15 @@ X_Stop: ; STOP~Stop executing the program
 #if ($/256) = PG_KEY
 
 .list
-W_Stop 		.DB 	"STO",'P'+$80
+W_STOP 		.DB 	"STO",'P'+$80
 .nolist
 #endif
 
 ;------------------------------------------------------- run 
 #if ($/256) = PG_RUN
 .list
-T_Stop 		= LOW($)+$80
-.DW 	X_Stop
+T_STOP 		= LOW($)+$80
+.DW 	X_STOP
 .nolist
 #endif
-.list 						; end of Stop
+.list 						; end of STOP

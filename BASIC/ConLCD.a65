@@ -1,7 +1,7 @@
 #ifdef hide 					; ConLCD
 .NOLIST
 #endif
-;=================================================================== CONLCD ===========
+;=================================================================== CONLCD =========== 
 ; Hardware Console LCD / Keyboard
 ;
 ;*  ConIn                Read character from input (keyboard), null if none
@@ -17,14 +17,14 @@ IO_AREA 	= $0300 			; Must match Simulator's Options screen.
 
 _ConLCD 	= $
 
-;------------------------------------------------------- ConInit
+;------------------------------------------------------- ConInit 
 ConInit: ; Initialise console
 ;  > initialise the LCD
 ;  > clear screen
 ;  > register key buffer state machine
  		rts
 
-;------------------------------------------------------- ConOut
+;------------------------------------------------------- ConOut 
 ConOut: ;Write character to output, check for CLS, TAB etc
  		cmp 	#_FF 			; Form Feed = Clear Screen
  		beq 	ConCls
@@ -32,11 +32,11 @@ ConOut: ;Write character to output, check for CLS, TAB etc
  		beq 	ConDoTab
  		jmp 	ConOut 			; send char to screen
 
-;------------------------------------------------------- ConCls
+;------------------------------------------------------- ConCls 
 ConCls 		; Clear Screen (CLS / FormFeed)
  		rts
 
-;------------------------------------------------------- ConDoTab
+;------------------------------------------------------- ConDoTab 
 ConDoTab 	; tab the output
  		lda 	#' '
  		jsr 	ConOut 			; send char to screen
@@ -45,22 +45,22 @@ ConDoTab 	; tab the output
  		and 	#7
  		bne 	ConDoTab
  		rts
-;------------------------------------------------------- ConSend
+;------------------------------------------------------- ConSend 
 ConSend 	; Send character to the screen
 ; > Output a character to the screen
  		rts
 
-;------------------------------------------------------- ConIn
+;------------------------------------------------------- ConIn 
 ConIn: ; Read character from input (keyboard), null if none
 ; > jmp to dequeue a char from keybuffer
  		rts
 
-;------------------------------------------------------- ConPos
+;------------------------------------------------------- ConPos 
 ConPos 		; Return screen column position in .A
 ; > get column number from LCD screen
  		rts
 
-;------------------------------------------------------- ConTab
+;------------------------------------------------------- ConTab 
 ConTab 		; Set screen column to .A
 ; > set LCD screen column
  		rts

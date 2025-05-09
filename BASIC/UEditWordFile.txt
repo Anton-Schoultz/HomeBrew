@@ -1,143 +1,143 @@
-/L1"HTML" Nocase Noquote HTML_LANG Block Comment On = <!-- Block Comment Off = --> Block Comment On Alt = <% Block Comment Off Alt = %> String Chars = "' File Extensions = HTM HTML ASP SHTML HTT HTX JSP
-/Delimiters = ~!@$%^&*()+=|\{}[]:;"'<> ,	.?
-/Function String = "name=*">"
+/L1"HTML" 	NOCASE 	Noquote HTML_LANG Block Comment On = <!-- Block Comment Off = --> Block Comment On Alt = <% Block Comment Off Alt = %> String Chars = "' File Extensions = HTM HTML ASP SHTML HTT HTX JSP
+/Delimiters 	= ~!@$%^&*()+=|\{}[]: 		;"'<> ,	.?
+/Function 	STRING 	= "name=*">"
 /C1"Tags"
-<A </A> <ABBR> <ABBR </ABBR> <ABOVE> <ACRONYM> <ACRONYM </ACRONYM> <ADDRESS> <ADDRESS </ADDRESS> <APPLET </APPLET> <ARRAY> <AREA </AREA
-<B> <B </B> <BASE <BASEFONT <BDO> <BDO </BDO> <BGSOUND <BIG> <BIG </BIG> <BLINK> </BLINK> <BLOCKQUOTE> <BLOCKQUOTE </BLOCKQUOTE> <BODY <BODY> </BODY> <BOX> <BR <BR> <BIG <BLINK <BUTTON> </BUTTON>
-<CAPTION> <CAPTION </CAPTION> <CENTER> <CENTER </CENTER> <CITE> <CITE </CITE> <CODE> <CODE </CODE> <COL> <COL <COLGROUP <COLGROUP> </COLGROUP> <COMMENT> </COMMENT>
-<DD> <DD </DD> <DEL> <DEL </DEL> <DFN> <DFN </DFN> <DIR> <DIR </DIR> <DIV> <DIV </DIV> <DL> <DL </DL> <DT> <DT  </DT>
-<EM> <EM </EM> <EMBED
-<FIELDSET> <FIELDSET </FIELDSET> <FIG> <FONT </FONT> <FORM> <FORM </FORM> <FRAME <FRAMESET </FRAMESET>
-<H1> <H1 </H1> <H2> <H2 </H2> <H3> <H3 </H3> <H4> <H4 </H4> <H5> <H5 </H5> <H6> <H6 </H6> <HEAD> <HEAD </HEAD> <HR> <HR <HTML> <HTML </HTML>
-<I> <I </I> <IFRAME> </IFRAME> <ILAYER> </ILAYER> <IMG <INPUT> <INPUT <INS> <INS </INS> <ISINDEX> <ISINDEX
-<KBD> <KBD </KBD>
-<LABEL> <LABEL </LABEL> <LAYER> <LAYER </LAYER> <LEGEND> <LEGEND </LEGEND> <LI> <LI </LI> <LINK <LISTING> </LISTING>
-<MAP </MAP> <MARQUEE </MARQUEE> <MENU> <MENU </MENU> <META <MULTICOL> </MULTICOL>
-<NEXTID <NOBR> </NOBR> <NOFRAMES> </NOFRAMES> <NOLAYER> </NOLAYER> <NOTE> </NOTE> <NOSCRIPT> </NOSCRIPT>
-<OBJECT> <OBJECT </OBJECT> <OL> <OL </OL> <OPTION> <OPTION </OPTION> <OPTGROUP> <OPTGROUP </OPTGROUP>
-<P <P> </P> <PARAM <PRE> <PRE </PRE>
-<Q> <Q </Q> <QUOTE>
-<RANGE> <ROOT>
-<S> <S </S> <SAMP> <SAMP </SAMP> <SCRIPT <SCRIPT> </SCRIPT> <SELECT <SELECT> </SELECT> <SMALL> <SMALL </SMALL> <SOUND <SPACER> <SPAN> <SPAN </SPAN> <SQRT> <STRIKE> <STRIKE </STRIKE> <STRONG> <STRONG </STRONG> <STYLE> <STYLE </STYLE> <SUB> <SUB </SUB> <SUP> <SUP </SUP>
-<TABLE> <TABLE </TABLE> <TBODY> <TBODY </TBODY> <TD <TD> </TD> <TEXT> <TEXTAREA <TEXTAREA> </TEXTAREA> <TFOOT> <TFOOT </TFOOT> <TH <TH> </TH> <THEAD> <THEAD </THEAD> <TITLE> </TITLE> <TR <TR> </TR> <TT> </TT> <TT
-<U> <U </U> <UL> <UL </UL>
-<VAR> </VAR> <VAR
+<A 		</A> 	<ABBR> <ABBR </ABBR> <ABOVE> <ACRONYM> <ACRONYM </ACRONYM> <ADDRESS> <ADDRESS </ADDRESS> <APPLET </APPLET> <ARRAY> <AREA </AREA
+<B> 		<B 	</B> <BASE <BASEFONT <BDO> <BDO </BDO> <BGSOUND <BIG> <BIG </BIG> <BLINK> </BLINK> <BLOCKQUOTE> <BLOCKQUOTE </BLOCKQUOTE> <BODY <BODY> </BODY> <BOX> <BR <BR> <BIG <BLINK <BUTTON> </BUTTON>
+<CAPTION> 	<CAPTION </CAPTION> <CENTER> <CENTER </CENTER> <CITE> <CITE </CITE> <CODE> <CODE </CODE> <COL> <COL <COLGROUP <COLGROUP> </COLGROUP> <COMMENT> </COMMENT>
+<DD> 		<DD 	</DD> <DEL> <DEL </DEL> <DFN> <DFN </DFN> <DIR> <DIR </DIR> <DIV> <DIV </DIV> <DL> <DL </DL> <DT> <DT  </DT>
+<EM> 		<EM 	</EM> <EMBED
+<FIELDSET> 	<FIELDSET </FIELDSET> <FIG> <FONT </FONT> <FORM> <FORM </FORM> <FRAME <FRAMESET </FRAMESET>
+<H1> 		<H1 	</H1> <H2> <H2 </H2> <H3> <H3 </H3> <H4> <H4 </H4> <H5> <H5 </H5> <H6> <H6 </H6> <HEAD> <HEAD </HEAD> <HR> <HR <HTML> <HTML </HTML>
+<I> 		<I 	</I> <IFRAME> </IFRAME> <ILAYER> </ILAYER> <IMG <INPUT> <INPUT <INS> <INS </INS> <ISINDEX> <ISINDEX
+<KBD> 		<KBD 	</KBD>
+<LABEL> 	<LABEL 	</LABEL> <LAYER> <LAYER </LAYER> <LEGEND> <LEGEND </LEGEND> <LI> <LI </LI> <LINK <LISTING> </LISTING>
+<MAP 		</MAP> 	<MARQUEE </MARQUEE> <MENU> <MENU </MENU> <META <MULTICOL> </MULTICOL>
+<NEXTID 	<NOBR> 	</NOBR> <NOFRAMES> </NOFRAMES> <NOLAYER> </NOLAYER> <NOTE> </NOTE> <NOSCRIPT> </NOSCRIPT>
+<OBJECT> 	<OBJECT </OBJECT> <OL> <OL </OL> <OPTION> <OPTION </OPTION> <OPTGROUP> <OPTGROUP </OPTGROUP>
+<P 		<P> 	</P> <PARAM <PRE> <PRE </PRE>
+<Q> 		<Q 	</Q> <QUOTE>
+<RANGE> 	<ROOT>
+<S> 		<S 	</S> <SAMP> <SAMP </SAMP> <SCRIPT <SCRIPT> </SCRIPT> <SELECT <SELECT> </SELECT> <SMALL> <SMALL </SMALL> <SOUND <SPACER> <SPAN> <SPAN </SPAN> <SQRT> <STRIKE> <STRIKE </STRIKE> <STRONG> <STRONG </STRONG> <STYLE> <STYLE </STYLE> <SUB> <SUB </SUB> <SUP> <SUP </SUP>
+<TABLE> 	<TABLE 	</TABLE> <TBODY> <TBODY </TBODY> <TD <TD> </TD> <TEXT> <TEXTAREA <TEXTAREA> </TEXTAREA> <TFOOT> <TFOOT </TFOOT> <TH <TH> </TH> <THEAD> <THEAD </THEAD> <TITLE> </TITLE> <TR <TR> </TR> <TT> </TT> <TT
+<U> 		<U 	</U> <UL> <UL </UL>
+<VAR> 		</VAR> 	<VAR
 <WBR>
-<XMP> </XMP>
+<XMP> 		</XMP>
 /C2"Attributes"
-ABBR= ACCEPT-CHARSET= ACCEPT= ACCESSKEY= ACTION= ALIGN= ALINK= ALT= ARCHIVE= AXIS=
-BACKGROUND= BEHAVIOR BELOW BGCOLOR= BORDER=
-CELLPADDING= CELLSPACING= CHAR= CHAROFF= CHARSET= CHECKED CITE= CLASS= CLASSID= CLEAR= CODE= CODEBASE= CODETYPE= COLOR= COLS= COLSPAN= COMPACT CONTENT= COORDS=
-DATA= DATETIME= DECLARE DEFER DIR= DISABLED
+ABBR= 		ACCEPT-CHARSET= ACCEPT= ACCESSKEY= ACTION= ALIGN= ALINK= ALT= ARCHIVE= AXIS=
+BACKGROUND= 	BEHAVIOR BELOW BGCOLOR= BORDER=
+CELLPADDING= 	CELLSPACING= CHAR= CHAROFF= CHARSET= CHECKED CITE= CLASS= CLASSID= CLEAR= CODE= CODEBASE= CODETYPE= COLOR= COLS= COLSPAN= COMPACT CONTENT= COORDS=
+DATA= 		DATETIME= DECLARE DEFER DIR= DISABLED
 ENCTYPE=
-FACE= FOR= FRAME= FRAMEBORDER= FRAMESPACING=
-HEADERS= HEIGHT= HIDDEN= HREF= HREFLANG= HSPACE= HTTP-EQUIV=
-ID= ISMAP=
-LABEL= LANG= LANGUAGE= LINK= LOOP= LONGDESC=
-MAILTO= MARGINHEIGHT= MARGINWIDTH= MAXLENGTH= MEDIA= METHOD= MULTIPLE
-NAME= NOHREF NORESIZE NOSHADE
-OBJECT= ONBLUR= ONCHANGE= ONFOCUS= ONKEYDOWN= ONKEYPRESS= ONKEYUP= ONLOAD= ONRESET= ONSELECT= ONSUBMIT= ONUNLOAD= ONCLICK= ONDBLCLICK= ONMOUSEDOWN= ONMOUSEMOVE= ONMOUSEOUT= ONMOUSEOVER= ONMOUSEUP=
-PROFILE= PROMPT=
-READONLY REL= REV= ROWS= ROWSPAN= RULES=
-SCHEME= SCOPE= SCROLLING= SELECTED SHAPE= SIZE= SPAN= SRC= STANDBY= START= STYLE= SUMMARY=
-TABINDEX= TARGET= TEXT= TITLE= TOPMARGIN= TYPE=
-URL= USEMAP=
-VALIGN= VALUE= VALUETYPE= VERSION= VLINK= VSPACE=
+FACE= 		FOR= FRAME= FRAMEBORDER= FRAMESPACING=
+HEADERS= 	HEIGHT= HIDDEN= HREF= HREFLANG= HSPACE= HTTP-EQUIV=
+ID= 		ISMAP=
+LABEL= 		LANG= LANGUAGE= LINK= LOOP= LONGDESC=
+MAILTO= 	MARGINHEIGHT= MARGINWIDTH= MAXLENGTH= MEDIA= METHOD= MULTIPLE
+NAME= 		NOHREF 	NORESIZE NOSHADE
+OBJECT= 	ONBLUR= ONCHANGE= ONFOCUS= ONKEYDOWN= ONKEYPRESS= ONKEYUP= ONLOAD= ONRESET= ONSELECT= ONSUBMIT= ONUNLOAD= ONCLICK= ONDBLCLICK= ONMOUSEDOWN= ONMOUSEMOVE= ONMOUSEOUT= ONMOUSEOVER= ONMOUSEUP=
+PROFILE= 	PROMPT=
+READONLY 	REL= REV= ROWS= ROWSPAN= RULES=
+SCHEME= 	SCOPE= SCROLLING= SELECTED SHAPE= SIZE= SPAN= SRC= STANDBY= START= STYLE= SUMMARY=
+TABINDEX= 	TARGET= TEXT= TITLE= TOPMARGIN= TYPE=
+URL= 		USEMAP=
+VALIGN= 	VALUE= VALUETYPE= VERSION= VLINK= VSPACE=
 WIDTH=
 =
 
 
-/L2Java" Line Comment = // Block Comment On = /* Block Comment Off = */ Escape Char = \ File Extensions = JAV JAVA
-/Delimiters = ~!@%^&*()-+=|\/{}[]:;"'<> ,	.?
-/Function String = "%[ ^t]++[ps][a-z]+ [a-z0-9]+ ^(*(*)^)*{$"
-/Function String 1 = "%[ ^t]++[ps][a-z]+ [a-z0-9]+ ^(*(*)^)[ ^t]++$"
-/Indent Strings = "{"
-/Unindent Strings = "}"
+/L2Java" 	LINE 	Comment = // Block Comment On = /* Block Comment Off = */ Escape Char = \ File Extensions = JAV JAVA
+/Delimiters 	= ~!@%^&*()-+=|\/{}[]: 		;"'<> ,	.?
+/Function 	STRING 	= "%[ ^t]++[ps][a-z]+ [a-z0-9]+ ^(*(*)^)*{$"
+/Function 	STRING 	1 = "%[ ^t]++[ps][a-z]+ [a-z0-9]+ ^(*(*)^)[ ^t]++$"
+/Indent 	STRINGS = "{"
+/Unindent 	STRINGS = "}"
 /C1
 abstract
-break byte boolean
-catch case class char continue
-default double do
-else extends
-false final float for finally
-if import implements int interface instanceof
-long length
-native new null
-package private protected public
+break 		BYTE 	boolean
+catch 		CASE 	class char continue
+default 	DOUBLE 	do
+else 		EXTENDS
+false 		FINAL 	float for finally
+if 		IMPORT 	implements int interface instanceof
+long 		LENGTH
+native 		new 	null
+package 	PRIVATE protected public
 return
-switch synchronized short static super
-try true this throw throws threadsafe transient
+switch 		SYNCHRONIZED short static super
+try 		TRUE 	this throw throws threadsafe transient
 void
 while
 /C2
-AbstractMethodError AccessException Acl AclEntry AclNotFoundException ActionEvent ActionListener Adjustable AdjustmentEvent AdjustmentListener Adler32 AlreadyBoundException Applet AppletContext AppletStub AreaAveragingScaleFilter ArithmeticException Array ArrayIndexOutOfBoundsException ArrayStoreException AudioClip AWTError AWTEvent AWTEventMulticaster AWTException
-BeanDescriptor BeanInfo Beans BigDecimal BigInteger BindException BitSet Boolean BorderLayout BreakIterator BufferedInputStream BufferedOutputStream BufferedReader BufferedWriter Button ButtonPeer Byte ByteArrayInputStream ByteArrayOutputStream
-Calendar CallableStatement Canvas CanvasPeer Certificate Character CharacterIterator CharArrayReader CharArrayWriter CharConversionException Checkbox CheckboxGroup CheckboxMenuItem CheckboxMenuItemPeer CheckboxPeer CheckedInputStream CheckedOutputStream Checksum Choice ChoiceFormat ChoicePeer Class ClassCastException ClassCircularityError ClassFormatError ClassLoader ClassNotFoundException Clipboard ClipboardOwner Cloneable CloneNotSupportedException CollationElementIterator CollationKey Collator Color ColorModel Compiler Component ComponentAdapter ComponentEvent ComponentListener ComponentPeer ConnectException ConnectIOException Connection Constructor Container ContainerAdapter ContainerEvent ContainerListener ContainerPeer ContentHandler ContentHandlerFactory CRC32 CropImageFilter Cursor Customizer CardLayout
-DatabaseMetaData DataFlavor DataFormatException DatagramPacket DatagramSocket DatagramSocketImpl DataInput DataInputStream DataOutput DataOutputStream DataTruncation Date DateFormat DateFormatSymbols DecimalFormat DecimalFormatSymbols Deflater DeflaterOutputStream DGC Dialog DialogPeer Dictionary DigestException DigestInputStream DigestOutputStream Dimension DirectColorModel Double Driver DriverManager DriverPropertyInfo DSAKey DSAKeyPairGenerator DSAParams DSAPrivateKey DSAPublicKey
-EmptyStackException Enumeration EOFException Error Event EventListener EventObject EventQueue EventSetDescriptor Exception ExceptionInInitializerError ExportException
-FeatureDescriptor Field FieldPosition File FileDescriptor FileDialog FileDialogPeer FileInputStream FilenameFilter FileNameMap FileNotFoundException FileOutputStream FileReader FileWriter FilteredImageSource FilterInputStream FilterOutputStream FilterReader FilterWriter Float FlowLayout FocusAdapter FocusEvent FocusListener Font FontMetrics FontPeer Format Frame FramePeer
-Graphics GregorianCalendar GridBagConstraints GridBagLayout GridLayout Group GZIPInputStream GZIPOutputStream
-Hashtable HttpURLConnection
-Identity IdentityScope IllegalAccessError IllegalAccessException IllegalArgumentException IllegalComponentStateException IllegalMonitorStateException IllegalStateException IllegalThreadStateException Image ImageConsumer ImageFilter ImageObserver ImageProducer IncompatibleClassChangeError IndexColorModel IndexedPropertyDescriptor IndexOutOfBoundsException InetAddress Inflater InflaterInputStream InputEvent InputStream InputStreamReader Insets InstantiationError InstantiationException Integer InternalError InterruptedException InterruptedIOException IntrospectionException Introspector InvalidClassException InvalidKeyException InvalidObjectException InvalidParameterException InvocationTargetException IOException ItemEvent ItemListener ItemSelectable
-Key KeyAdapter KeyEvent KeyException KeyListener KeyManagementException KeyPair KeyPairGenerator
-Label LabelPeer LastOwnerException LayoutManager LayoutManager2 Lease LightweightPeer LineNumberInputStream LineNumberReader LinkageError List ListPeer ListResourceBundle LoaderHandler Locale LocateRegistry LogStream Long
-MalformedURLException MarshalException Math MediaTracker Member MemoryImageSource Menu MenuBar MenuBarPeer MenuComponent MenuComponentPeer MenuContainer MenuItem MenuItemPeer MenuPeer MenuShortcut MessageDigest MessageFormat Method MethodDescriptor MissingResourceException Modifier MouseAdapter MouseEvent MouseListener MouseMotionAdapter MouseMotionListener MulticastSocket
-Naming NegativeArraySizeException NoClassDefFoundError NoRouteToHostException NoSuchAlgorithmException NoSuchElementException NoSuchFieldError NoSuchFieldException NoSuchMethodError NoSuchMethodException NoSuchObjectException NoSuchProviderException NotActiveException NotBoundException NotOwnerException NotSerializableException NullPointerException Number NumberFormat NumberFormatException
-Object ObjectInput ObjectInputStream ObjectInputValidation ObjectOutput ObjectOutputStream ObjectStreamClass ObjectStreamException ObjID Observable Observer Operation OptionalDataException OutOfMemoryError OutputStream OutputStreamWriter Owner
-PaintEvent Panel PanelPeer ParameterDescriptor ParseException ParsePosition Permission PipedInputStream PipedOutputStream PipedReader PipedWriter PixelGrabber Point Polygon PopupMenu PopupMenuPeer PreparedStatement Principal PrintGraphics PrintJob PrintStream PrintWriter PrivateKey Process Properties PropertyChangeEvent PropertyChangeListener PropertyChangeSupport PropertyDescriptor PropertyEditor PropertyEditorManager PropertyEditorSupport PropertyResourceBundle PropertyVetoException ProtocolException Provider ProviderException PublicKey PushbackInputStream PushbackReader
-Random RandomAccessFile Reader Rectangle Registry RegistryHandler Remote RemoteCall RemoteException RemoteObject RemoteRef RemoteServer RemoteStub ReplicateScaleFilter ResourceBundle ResultSet ResultSetMetaData RGBImageFilter RMIClassLoader RMIFailureHandler RMISecurityException RMISecurityManager RMISocketFactory RuleBasedCollator Runnable Runtime RuntimeException
-Scrollbar ScrollbarPeer ScrollPane ScrollPanePeer SecureRandom Security SecurityException SecurityManager SequenceInputStream Serializable ServerCloneException ServerError ServerException ServerNotActiveException ServerRef ServerRuntimeException ServerSocket Shape Short Signature SignatureException Signer SimpleBeanInfo SimpleDateFormat SimpleTimeZone Skeleton SkeletonMismatchException SkeletonNotFoundException Socket SocketException SocketImpl SocketImplFactory SocketSecurityException SQLException SQLWarning Stack StackOverflowError Statement StreamCorruptedException StreamTokenizer String StringBuffer StringBufferInputStream StringCharacterIterator StringIndexOutOfBoundsException StringReader StringSelection StringTokenizer StringWriter StubNotFoundException SyncFailedException System SystemColor
-TextArea TextAreaPeer TextComponent TextComponentPeer TextEvent TextField TextFieldPeer TextListener Thread ThreadDeath ThreadGroup Throwable Time Timestamp TimeZone Toolkit TooManyListenersException Transferable Types
-UID UnexpectedException UnicastRemoteObject UnknownError UnknownHostException UnknownServiceException UnmarshalException Unreferenced UnsatisfiedLinkError UnsupportedEncodingException UnsupportedFlavorException URL URLConnection URLEncoder URLStreamHandler URLStreamHandlerFactory UTFDataFormatException
-Vector VerifyError VetoableChangeListener VetoableChangeSupport VirtualMachineError Visibility VMID Void
-Window WindowAdapter WindowEvent WindowListener WindowPeer WriteAbortedException Writer
-ZipEntry ZipException ZipFile ZipInputStream ZipOutputStream
+AbstractMethodError ACCESSEXCEPTION Acl AclEntry AclNotFoundException ActionEvent ActionListener Adjustable AdjustmentEvent AdjustmentListener Adler32 AlreadyBoundException Applet AppletContext AppletStub AreaAveragingScaleFilter ArithmeticException Array ArrayIndexOutOfBoundsException ArrayStoreException AudioClip AWTError AWTEvent AWTEventMulticaster AWTException
+BeanDescriptor 	BEANINFO Beans BigDecimal BigInteger BindException BitSet Boolean BorderLayout BreakIterator BufferedInputStream BufferedOutputStream BufferedReader BufferedWriter Button ButtonPeer Byte ByteArrayInputStream ByteArrayOutputStream
+Calendar 	CALLABLESTATEMENT Canvas CanvasPeer Certificate Character CharacterIterator CharArrayReader CharArrayWriter CharConversionException Checkbox CheckboxGroup CheckboxMenuItem CheckboxMenuItemPeer CheckboxPeer CheckedInputStream CheckedOutputStream Checksum Choice ChoiceFormat ChoicePeer Class ClassCastException ClassCircularityError ClassFormatError ClassLoader ClassNotFoundException Clipboard ClipboardOwner Cloneable CloneNotSupportedException CollationElementIterator CollationKey Collator Color ColorModel Compiler Component ComponentAdapter ComponentEvent ComponentListener ComponentPeer ConnectException ConnectIOException Connection Constructor Container ContainerAdapter ContainerEvent ContainerListener ContainerPeer ContentHandler ContentHandlerFactory CRC32 CropImageFilter Cursor Customizer CardLayout
+DatabaseMetaData DATAFLAVOR DataFormatException DatagramPacket DatagramSocket DatagramSocketImpl DataInput DataInputStream DataOutput DataOutputStream DataTruncation Date DateFormat DateFormatSymbols DecimalFormat DecimalFormatSymbols Deflater DeflaterOutputStream DGC Dialog DialogPeer Dictionary DigestException DigestInputStream DigestOutputStream Dimension DirectColorModel Double Driver DriverManager DriverPropertyInfo DSAKey DSAKeyPairGenerator DSAParams DSAPrivateKey DSAPublicKey
+EmptyStackException ENUMERATION EOFException Error Event EventListener EventObject EventQueue EventSetDescriptor Exception ExceptionInInitializerError ExportException
+FeatureDescriptor FIELD FieldPosition File FileDescriptor FileDialog FileDialogPeer FileInputStream FilenameFilter FileNameMap FileNotFoundException FileOutputStream FileReader FileWriter FilteredImageSource FilterInputStream FilterOutputStream FilterReader FilterWriter Float FlowLayout FocusAdapter FocusEvent FocusListener Font FontMetrics FontPeer Format Frame FramePeer
+Graphics 	GREGORIANCALENDAR GridBagConstraints GridBagLayout GridLayout Group GZIPInputStream GZIPOutputStream
+Hashtable 	HTTPURLCONNECTION
+Identity 	IDENTITYSCOPE IllegalAccessError IllegalAccessException IllegalArgumentException IllegalComponentStateException IllegalMonitorStateException IllegalStateException IllegalThreadStateException Image ImageConsumer ImageFilter ImageObserver ImageProducer IncompatibleClassChangeError IndexColorModel IndexedPropertyDescriptor IndexOutOfBoundsException InetAddress Inflater InflaterInputStream InputEvent InputStream InputStreamReader Insets InstantiationError InstantiationException Integer InternalError InterruptedException InterruptedIOException IntrospectionException Introspector InvalidClassException InvalidKeyException InvalidObjectException InvalidParameterException InvocationTargetException IOException ItemEvent ItemListener ItemSelectable
+Key 		KEYADAPTER KeyEvent KeyException KeyListener KeyManagementException KeyPair KeyPairGenerator
+Label 		LABELPEER LastOwnerException LayoutManager LayoutManager2 Lease LightweightPeer LineNumberInputStream LineNumberReader LinkageError List ListPeer ListResourceBundle LoaderHandler Locale LocateRegistry LogStream Long
+MalformedURLException MARSHALEXCEPTION Math MediaTracker Member MemoryImageSource Menu MenuBar MenuBarPeer MenuComponent MenuComponentPeer MenuContainer MenuItem MenuItemPeer MenuPeer MenuShortcut MessageDigest MessageFormat Method MethodDescriptor MissingResourceException Modifier MouseAdapter MouseEvent MouseListener MouseMotionAdapter MouseMotionListener MulticastSocket
+Naming 		NEGATIVEARRAYSIZEEXCEPTION NoClassDefFoundError NoRouteToHostException NoSuchAlgorithmException NoSuchElementException NoSuchFieldError NoSuchFieldException NoSuchMethodError NoSuchMethodException NoSuchObjectException NoSuchProviderException NotActiveException NotBoundException NotOwnerException NotSerializableException NullPointerException Number NumberFormat NumberFormatException
+Object 		OBJECTINPUT ObjectInputStream ObjectInputValidation ObjectOutput ObjectOutputStream ObjectStreamClass ObjectStreamException ObjID Observable Observer Operation OptionalDataException OutOfMemoryError OutputStream OutputStreamWriter Owner
+PaintEvent 	PANEL 	PanelPeer ParameterDescriptor ParseException ParsePosition Permission PipedInputStream PipedOutputStream PipedReader PipedWriter PixelGrabber Point Polygon PopupMenu PopupMenuPeer PreparedStatement Principal PrintGraphics PrintJob PrintStream PrintWriter PrivateKey Process Properties PropertyChangeEvent PropertyChangeListener PropertyChangeSupport PropertyDescriptor PropertyEditor PropertyEditorManager PropertyEditorSupport PropertyResourceBundle PropertyVetoException ProtocolException Provider ProviderException PublicKey PushbackInputStream PushbackReader
+Random 		RANDOMACCESSFILE Reader Rectangle Registry RegistryHandler Remote RemoteCall RemoteException RemoteObject RemoteRef RemoteServer RemoteStub ReplicateScaleFilter ResourceBundle ResultSet ResultSetMetaData RGBImageFilter RMIClassLoader RMIFailureHandler RMISecurityException RMISecurityManager RMISocketFactory RuleBasedCollator Runnable Runtime RuntimeException
+Scrollbar 	SCROLLBARPEER ScrollPane ScrollPanePeer SecureRandom Security SecurityException SecurityManager SequenceInputStream Serializable ServerCloneException ServerError ServerException ServerNotActiveException ServerRef ServerRuntimeException ServerSocket Shape Short Signature SignatureException Signer SimpleBeanInfo SimpleDateFormat SimpleTimeZone Skeleton SkeletonMismatchException SkeletonNotFoundException Socket SocketException SocketImpl SocketImplFactory SocketSecurityException SQLException SQLWarning Stack StackOverflowError Statement StreamCorruptedException StreamTokenizer String StringBuffer StringBufferInputStream StringCharacterIterator StringIndexOutOfBoundsException StringReader StringSelection StringTokenizer StringWriter StubNotFoundException SyncFailedException System SystemColor
+TextArea 	TEXTAREAPEER TextComponent TextComponentPeer TextEvent TextField TextFieldPeer TextListener Thread ThreadDeath ThreadGroup Throwable Time Timestamp TimeZone Toolkit TooManyListenersException Transferable Types
+UID 		UNEXPECTEDEXCEPTION UnicastRemoteObject UnknownError UnknownHostException UnknownServiceException UnmarshalException Unreferenced UnsatisfiedLinkError UnsupportedEncodingException UnsupportedFlavorException URL URLConnection URLEncoder URLStreamHandler URLStreamHandlerFactory UTFDataFormatException
+Vector 		VERIFYERROR VetoableChangeListener VetoableChangeSupport VirtualMachineError Visibility VMID Void
+Window 		WINDOWADAPTER WindowEvent WindowListener WindowPeer WriteAbortedException Writer
+ZipEntry 	ZIPEXCEPTION ZipFile ZipInputStream ZipOutputStream
 
 
-/L3"uZ80 ASM"  Block Comment On = ;! Line Comment = ; Nocase File Extensions = Z80 ASM INC
-/Line Comment Alt ;*
-/Block Comment Alt ;!*
-/Indent Strings = "{"  
-/Unindent Strings = "}"
-/Function String = "%[a-zA-Z][a-zA-Z0-9_.]+[:]"
-/C1"Op Codes"
-adc add and 
-bit 
-call ccf cp cpd cpdr cpi cpir cpl 
-daa dec di djnz 
-ei ex exx 
-halt 
-im in in0 inc ind indr ini inir 
-jp jr 
-ld ldd lddr ldi ldir
+/L3"uZ80 	ASM" 	Block Comment On = 	;! Line Comment = ; Nocase File Extensions = Z80 ASM INC
+/Line 		COMMENT Alt 			;*
+/Block 		COMMENT Alt 			;!*
+/Indent 	STRINGS = "{"  
+/Unindent 	STRINGS = "}"
+/Function 	STRING 	= "%[a-zA-Z][a-zA-Z0-9_.]+[:]"
+/C1"Op 		CODES"
+adc 		add 	and 
+bit
+call 		ccf 	cp cpd cpdr cpi cpir cpl 
+daa 		dec 	di djnz 
+ei 		EX 	exx 
+halt
+im 		IN 	in0 inc ind indr ini inir 
+jp 		JR
+ld 		ldd 	lddr ldi ldir
 mlt
-neg nop
-or otdr otir otim otdm otimr otdmr out out0 outd outi 
-pop push 
-res ret reti retn  rl rla rlc rlca rld rr rra rrc rrca rrd rst 
-sbc scf set sla slp sra srl sub
+neg 		nop
+or 		OTDR 	otir otim otdm otimr otdmr out out0 outd outi 
+pop 		PUSH
+res 		ret 	reti retn  rl rla rlc rlca rld rr rra rrc rrca rrd rst 
+sbc 		scf 	set sla slp sra srl sub
 tst
 xor
 
 /C2"Operands"
 $
 %
-a af
-b bc
+a 		AF
+b 		BC
 c
-d de
+d 		DE
 e
 f
-h hl hx hy
-l lx ly
+h 		HL 	hx hy
+l 		LX 	ly
 i
-ix iy
+ix 		IY
 sp
 r
 ix
 iy
 
-/C3"Pre-Processor Directives"
+/C3"Pre-Processor DIRECTIVES"
 #define
 #defcont
 #include
@@ -147,7 +147,7 @@ iy
 #ifdef
 #ifndef
 
-/C4"Assembler Directives"
+/C4"Assembler 	DIRECTIVES"
 .block
 .byte
 .chk
@@ -174,49 +174,52 @@ iy
 
 /C5"Conditions"
 m
-nc nz
+nc 		NZ
 p
 pe
 po
 z
 
-/C6"Extended Registers"
-ixh ixl
-iyh iyl
+/C6"Extended 	REGISTERS"
+ixh 		ixl
+iyh 		iyl
 
 /C7"Values"
-** $ % @ 
+** 		$ 	% @ 
 
 /C8"Prefixed"
-** _
+** 		_
 
 
-/L4"ASM for 65C02" Nocase Line Comment = ; Line Comment Alt = ; Block Comment On = ;= Block Comment Off = ; Block Comment Alt = ;* String Chars = "' DisableMLS File Extensions = a65
-/Delimiters = " #	$%'()+,;=
-/Function String = "%[a-zA-Z][a-zA-Z0-9_.]+[:]"
-/Macros String = "%[A-Z][A-Z0-9]+("
+/L4"ASM 	for 	65C02" Nocase Line Comment = ; Line Comment Alt = ; Block Comment On = ;= Block Comment Off = ; Block Comment Alt = ;* String Chars = "' DisableMLS File Extensions = a65
+/Delimiters 	= " #	$%'()+, 			;=
+/Function 	STRING 	= "%[a-zA-Z][a-zA-Z0-9_.]+[:]"
+/Macros 	STRING 	= "%[A-Z][A-Z0-9]+("
 /C1"Instructions"
-ADC AND ASL
-BCC BCS BEQ BIT BMI BNE BPL BRA BRK BVC BVS
-CLC CLD CLI CLV CMP CPX CPY
-DEC DEX DEY
+ADC 		and 	ASL
+BCC 		bcs 	BEQ BIT BMI BNE BPL BRK BVC BVS
+CLC 		cld 	CLI CLV CMP CPX CPY
+DEC 		dex 	DEY
 EOR
-INC INX INY
-JMP JSR
-LDA LDX LDY LSR
+INC 		inx 	INY
+JMP 		jsr
+LDA 		ldx 	LDY LSR
 NOP
 ORA
-PHA PHP  PLA PLP
-ROL ROR RTI RTS
-SBC SEC SED SEI STA STX STY STZ
-TAX TAY TSX TXA TXS TYA
-/C2"Extended instructions"
-BBR0 BBR1 BBR2 BBR3 BBR4 BBR5 BBR6 BBR7
-BBS0 BBS1 BBS2 BBS3 BBS4 BBS5 BBS6 BBS7
-RMB0 RMB1 RMB2 RMB3 RMB4 RMB5 RMB6 RMB7
-SMB0 SMB1 SMB2 SMB3 SMB4 SMB5 SMB6 SMB7
-PHX PHY PLX PLY
-/C3"SFR Registers"
+PHA 		php 	PLA PLP
+ROL 		ror 	RTI RTS
+SBC 		sec 	SED SEI STA STX STY STZ
+TAX 		tay 	TSX TXA TXS TYA
+/C2"Extended 	INSTRUCTIONS"
+BRA
+BBR0 		BBR1 	BBR2 BBR3 BBR4 BBR5 BBR6 BBR7
+BBS0 		BBS1 	BBS2 BBS3 BBS4 BBS5 BBS6 BBS7
+PHX 		phy 	PLX PLY
+RMB0 		RMB1 	RMB2 RMB3 RMB4 RMB5 RMB6 RMB7
+SMB0 		SMB1 	SMB2 SMB3 SMB4 SMB5 SMB6 SMB7
+STZ
+TRB 		tsb
+/C3"SFR 	REGISTERS"
 A
 X
 Y

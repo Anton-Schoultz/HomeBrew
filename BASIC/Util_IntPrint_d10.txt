@@ -5,22 +5,22 @@ IntPrint: ; Print integer AX to mem/io via PutChr
  		sta 	ZTMP
  		stx 	ZTMP+1
  		ldy 	#$FF
- 		phy 			; marker on the stack
-IntPrint1 	jsr 	IntDT 		; ZTMP /= 10, remainder in A
+ 		phy 				; marker on the stack
+IntPrint1 	jsr 	IntDT 			; ZTMP /= 10, remainder in A
  		ora 	#'0'
- 		pha 			; push the digit
- 		lda 	ZTMP 		; done?
+ 		pha 				; push the digit
+ 		lda 	ZTMP 			; done?
  		ora 	ZTMP+1
- 		bne 	IntPrint1 	; no- loop
+ 		bne 	IntPrint1 		; no- loop
  		;-- 
 IntPrint2 	;- now pop & print the digits
  		pla
- 		bmi 	IntPrintX 	; found the marker so exit
+ 		bmi 	IntPrintX 		; found the marker so exit
  		jsr 	PutChr
  		bra 	IntPrint2
 IntPrintX 	rts
 
-;----------------------------------------------- IntDT_AX 
+;------------------------------------------------------- IntDT_AX 
 IntDT_AX: ; Divide AX by 10, result in ZTMP, remainder in A
  		sta 	ZTMP
  		stx 	ZTMP+1

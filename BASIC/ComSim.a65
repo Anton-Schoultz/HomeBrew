@@ -1,7 +1,7 @@
 #ifdef hide 					; ComSim
 .NOLIST
 #endif
-;=================================================================== COMSIM ===========
+;=================================================================== COMSIM =========== 
 ; Simulator Implementation of Serial port communications
 ;
 ;*  ComIn                Read character from serial port (simulated by read from memory)
@@ -10,10 +10,10 @@
 ;*
 
 #if ($/256) > $80
-;=================================================================== COMSIM-CODE ======
+;=================================================================== COMSIM-CODE ====== 
 _ComSim 	= $
 
-;------------------------------------------------------- ComOut
+;------------------------------------------------------- ComOut 
 ComOut: ;Write character to serial port (Simulated by writing to memory)
  		cmp 	#_FF 			; Form Feed = Clear Screen / reset
  		beq 	ComInit
@@ -21,14 +21,14 @@ ComOut: ;Write character to serial port (Simulated by writing to memory)
  		ZINC(COM_WR) 			; bump pointer
  		rts
 
-;------------------------------------------------------- ComInit
+;------------------------------------------------------- ComInit 
 ComInit: ; Reset serial Port (Simulated by reseting pointers)
  		LDAX(_RAM_BAS_END)
  		SETAX(COM_RD)
  		SETAX(COM_WR)
  		rts
 
-;------------------------------------------------------- ComIn
+;------------------------------------------------------- ComIn 
 ComIn: ; Read character from serial port (simulated by read from memory)
  		lda 	(COM_RD)
  		ZINC(COM_RD)

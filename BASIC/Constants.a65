@@ -1,27 +1,27 @@
-;=================================================================== CONSTANTS ========
-;------------------------------------------------------- SCREEN
+;=================================================================== CONSTANTS ======== 
+;------------------------------------------------------- SCREEN 
 SCRN_COLS 	= 40
 SCRN_LINES 	= 16
 
-;------------------------------------------------------- COM PORT
+;------------------------------------------------------- COM PORT 
 #define ADR_RS232  $0300
 
-;------------------------------------------------------- State Machine
+;------------------------------------------------------- State Machine 
 ; Number of slots available
 #define SM_MAX 4
 
-;------------------------------------------------------- Key Buffer
+;------------------------------------------------------- Key Buffer 
 ; number of characters in the keyboard buffer
 #define KB_MAX	16
 
-;------------------------------------------------------- reporting level
+;------------------------------------------------------- reporting level 
 _DETAIL 	= 2
 _KEYWORDS 	= 1
 _SUMMARY 	= 0
 _LEVEL 		= _SUMMARY
 
 
-;------------------------------------------------------- MODULE OPTIONS
+;------------------------------------------------------- MODULE OPTIONS 
 ; MOD_MATH_	NONE, S16, S24
 ; MOD_CONSOLE_	NONE, SIM, LCD
 ; MOD_COM_	NONE, SIM, MC68B50
@@ -43,7 +43,7 @@ MOD_COM_NONE 	= 0
 MOD_COM_SIM 	= 1
 MOD_COM_MC68B50 = 2
 
-;------------------------------------------------------- DEBUG constants
+;------------------------------------------------------- DEBUG constants 
 _DB_STR 	= 0
 _DB_MAIN 	= 0
 _DB_EDT 	= 0
@@ -107,7 +107,7 @@ T_NumVar 	= $F8 				;f8 A	Var,Num  ,Single
 
 T_LineNo 	= $F0 				; header includes line number
 
-;------------------------------------------------------- rom pages
+;------------------------------------------------------- rom pages 
 PG_ROM 		= $E0 				; main code
 PG_KEY 		= $FE 				; key word table
 PG_RUN 		= $FF 				; main jump table
@@ -115,7 +115,7 @@ PG_RUN 		= $FF 				; main jump table
 TblKeyword 	= (PG_KEY<<8)
 TblRun 		= (PG_RUN<<8)
 
-;------------------------------------------------------- ASCII Control Codes
+;------------------------------------------------------- ASCII Control Codes 
 #DEFINE NULL	0
 #DEFINE BS 	8
 #DEFINE HT 	9

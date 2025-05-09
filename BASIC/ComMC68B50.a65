@@ -1,7 +1,7 @@
 #ifdef hide 					; ConSim
 .NOLIST
 #endif
-;=================================================================== COM_MC68B50 ======
+;=================================================================== COM_MC68B50 ====== 
 ; Address of the coms chip (MC68B50) is defined in Constants file.
 ;*  ComIn                Read character from serial port (or null if none aavailable)
 ;*  ComInit              Reset the serial chip andinitialise coms div=16, 8N1
@@ -15,12 +15,12 @@ _ComMC68B50 	= $
 
 #include "MC68B50_def.a65"
 
-;------------------------------------------------------- setup values here
+;------------------------------------------------------- setup values here 
 COM_DATA 	= ADR_RS232 			; Data transmit/receive register
 COM_CTRL 	= ADR_RS232+1 			; Control (Wr)/ Status (Rd)
 
 
-;------------------------------------------------------- ComInit
+;------------------------------------------------------- ComInit 
 ComInit: ; Reset the serial chip andinitialise coms div=16, 8N1
  		;-- Reset the chip
  		lda 	#COM_RST
@@ -30,7 +30,7 @@ ComInit: ; Reset the serial chip andinitialise coms div=16, 8N1
  		sta 	COM_CTRL 		; Set coms speed and format
  		rts
 
-;------------------------------------------------------- ComIn
+;------------------------------------------------------- ComIn 
 ComIn: ; Read character from serial port (or null if none aavailable)
  		lda 	COM_CTRL 		; read status
  		and 	#COM_RDRF 		; check if rcvd full
@@ -40,7 +40,7 @@ ComRx 		lda 	COM_DATA 		; read the data byte
 ComGetX 	rts
 
 
-;------------------------------------------------------- ComOut
+;------------------------------------------------------- ComOut 
 ComOut: ;Write character to serial port, wait for port to be ready
  		pha 				; Save byte to send
 ComOut0 	;-- available?
@@ -52,7 +52,7 @@ ComOut0 	;-- available?
 ComTx 		sta 	COM_DATA 		; Send A to com without waiting
  		rts
 
-;------------------------------------------------------- ComStatus
+;------------------------------------------------------- ComStatus 
 ComStatus 	; Return the status of the coms chip in A
  		lda 	COM_CTRL 		; read Status register
  		rts

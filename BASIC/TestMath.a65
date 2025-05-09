@@ -52,13 +52,13 @@ Test: ; test maths
 
  		jsr 	TestParse 		; 1234567		12d687
 
- 		JSR 	NumCvt
- 		JSR 	NumSup
+ 		jsr 	NumCvt
+ 		jsr 	NumSup
  		;-- jsr	NumSpc
  		;-- jsr	NumFmt
 
  		LDAX(NUM_BUF)
- 		JSR 	PrStrAX
+ 		jsr 	PrStrAX
 
  		HALT()
 

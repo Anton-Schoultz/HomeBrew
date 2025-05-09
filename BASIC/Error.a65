@@ -7,7 +7,7 @@
 #define ERROR(n) ldx #n\ jmp Error
 
 
-;=================================================================== ERROR ============
+;=================================================================== ERROR ============ 
 ; NOTE: Message nos go up in 2s
 ;
 ;*  ErrList              List offending line (if available)
@@ -61,9 +61,9 @@ ErrTbl
 .DB "Buffer",EMSG 				;28=ERR_BUFFER
 .DB 0
 
-ErrEnding .db "error.",0
+ErrEnding 	.DB 	"error.",0
 
-;------------------------------------------------------- X_Err
+;------------------------------------------------------- X_Err 
 Error: ; Hanlde error[X] resetting to warm start
  		pha
  		stx 	ERR_NO 			; store error number
@@ -77,8 +77,8 @@ Error: ; Hanlde error[X] resetting to warm start
  		;-- check for 0=OK
  		beq 	Error1 			; 0=OK, so no error number
  		;-- 'E'
- 		lda #'E'
- 		jsr	ChrOut
+ 		lda 	#'E'
+ 		jsr 	ChrOut
  		;-- '##:' error no
  		txa
  		lsr 	a 			; /2
@@ -91,14 +91,14 @@ Error1 		ZSET(ZPtr,ErrTbl) 		; point to the keyword table
  		;-- Display Message (ZPtr)[X] A:@/! Y:#/% Char/hex
  		jsr 	Msg
  		;-- OK?
- 		lda	ERR_NO
- 		beq	ErrorX			; OK -> exit
+ 		lda 	ERR_NO
+ 		beq 	ErrorX 			; OK -> exit
  		;-- 'error.'
  		LDAX(ErrEnding)
- 		jsr	PrStrAX
+ 		jsr 	PrStrAX
 
 ErrorX 		jsr 	PrNL
-		jmp 	Main
+ 		jmp 	Main
 
 ErrList: ; List offending line (if available)
  		;-- check if command line
@@ -121,7 +121,7 @@ ErrList1 	clc
 ; @	A as character followed by hex value
 ; #	Y as character followed by hex value
 
-;------------------------------------------------------- RegLoad
+;------------------------------------------------------- RegLoad 
 RegLoad: ; Load registers from ZReg~
  		lda 	ZRegP
  		pha
@@ -131,7 +131,7 @@ RegLoad: ; Load registers from ZReg~
  		plp
  		rts
 
-;------------------------------------------------------- RegSave
+;------------------------------------------------------- RegSave 
 RegSave: ; Save registers into ZReg~
  		sta 	ZRegA 			; save .A
  		sty 	ZRegY 			; save .Y
@@ -143,7 +143,7 @@ RegSave: ; Save registers into ZReg~
  		rts
 
 #define ZTokPtr ZPtr
-;------------------------------------------------------- Msg
+;------------------------------------------------------- Msg 
 Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		jsr 	RegSave 		; save regs
  		ldy 	#0 			; in case X=0
@@ -153,7 +153,7 @@ Msg: ;  Display Message (ZPtr)[X] A @/! Y #/& Char/hex *CallAddr
  		tax 				; index in table
  		beq 	MsgL0 			; token 80 is special ;P
  		ldy 	#$FF
- 		;--
+ 		;-- 
  		;-- move to next word
 MsgNxtL 	iny
  		lda 	(ZTokPtr),y

@@ -1,9 +1,9 @@
-;=================================================================== COMS =============
+;=================================================================== COMS ============= 
 ; ComInit              Reset serial Port
 ; ComIn                Read character from serial port
 ; ComOut               Write character to serial port
 
-_Com = $
+_Com 		= $
 
 #if MOD_COM = MOD_COM_NONE
 .echo "  COM\t** NONE **\t"
