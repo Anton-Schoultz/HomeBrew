@@ -182,7 +182,6 @@ NumNegX: ; 	; 2's compliment the mantissa at X (All 6 bytes)
  		inc 	FPA,X
  		bne 	NumNegXX
  		inc 	FPB,X
- 		bne 	NumNegXX
  		;-- 
 NumNegXX 	RTN_T()
 

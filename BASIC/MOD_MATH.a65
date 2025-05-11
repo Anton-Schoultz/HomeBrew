@@ -39,6 +39,11 @@
 #define DIGITS 	9
 #endif
 
+; #if MOD_MATH = MOD_MATH_D24
+; #define NUMPKSZ	3
+; #define DIGITS 	9
+; #endif
+
 ; sign, null and 'e##'
 #define NUMPAD 5
 #define NUMBUFSZ DIGITS+NUMPAD
@@ -303,6 +308,11 @@ NumSpcX 	rts
 
 
 ;=================================================================== MATH MODULE ====== 
+#if MOD_MATH = MOD_MATH_NONE
+.echo "  MATH\t** NONE **\t"
+.nolist
+#endif
+
 #if MOD_MATH = MOD_MATH_S16
 .echo "  MATH\tS16\t"
 #include "Math_S16.a65"
@@ -321,10 +331,11 @@ NumSpcX 	rts
 .nolist
 #endif
 
-#if MOD_MATH = MOD_MATH_NONE
-.echo "  MATH\t** NONE **\t"
-.nolist
-#endif
+; #if MOD_MATH = MOD_MATH_D24
+; .echo "  MATH\tD24\t"
+; #include "Math_D24.a65"
+; .nolist
+; #endif
 
 
 .echo $-_Math

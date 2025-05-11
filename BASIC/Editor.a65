@@ -49,14 +49,11 @@ _Edt 		= $
 ;------------------------------------------------------- EdtNew 
 EdtNew: ; NEW = clear program, variables etc.
  		;-- Start Basic at start of RAM
- 		;-- ZCPY(BASBEG,RAMBEG)
- 		;-- ZCPY(ZWr,BASBEG) 	; prepare to write to memory
- 		lda 	RAMBEG
- 		sta 	BASBEG
- 		sta 	ZWr
- 		lda 	RAMBEG+1
- 		sta 	BASBEG+1
- 		sta 	ZWr+1
+ 		;-- RAMBEG -> BASBEG -> ZWr
+ 		LDAX(RAMBEG)
+ 		SETAX(BASBEG) 			; Stores 16 bit value (AX) into address A->(p), X->(p+1)
+ 		SETAX(ZWr) 			; Stores 16 bit value (AX) into address A->(p), X->(p+1)
+
  		;-- Null terminate Program
  		lda 	#0
  		jsr 	ChrWr 			; Write Character to memory  A -> (ZWr++) , 00->(ZWr)
@@ -69,6 +66,7 @@ EdtNewL 	sta 	(BASBEG),y 		; clear first page of program space
  		iny
  		bne 	EdtNewL
 
+;------------------------------------------------------- EdtClear 
 EdtClear: ; Clear variables and arrays
  		ZCPY(ZWr,BASEND) 		; end of code
  		;-- clear variables
@@ -76,14 +74,10 @@ EdtClear: ; Clear variables and arrays
  		jsr 	ChrWr
  		jsr 	ChrWr
 
- 		;-- ZCPY(VAREND,ZWr) 	; Set VAREND
- 		;-- ZCPY(STR_END,ZWr) 	; Set STR_END
- 		lda 	ZWr
- 		sta 	VAREND
- 		sta 	STR_END
- 		lda 	ZWr+1
- 		sta 	VAREND+1
- 		sta 	STR_END+1
+ 		;-- ZWr -> VAREND -> STR_END
+ 		LDAX(ZWr)
+ 		SETAX(VAREND) 			; Stores 16 bit value (AX) into address A->(p), X->(p+1)
+ 		SETAX(STR_END) 			; Stores 16 bit value (AX) into address A->(p), X->(p+1)
 
  		;-- clear arrays
  		ZCPY(ARYBEG,RAMEND)
@@ -94,7 +88,6 @@ EdtClear: ; Clear variables and arrays
  		;-- clear vartable (nums, strings, stacks)
  		tay
 EdtWipe 	sta 	VARTAB,y 		; clear VARTAB, Gosub,For/Next
- 		;-- sta	(BASBEG),y	; clear first page of program space
  		iny
  		bne 	EdtWipe
  		RTN_T()
@@ -116,17 +109,10 @@ EdtAdd: ; Append TOKBUF line to end of program
 EdtDel: ; Delete line and fall through to Insert
  		ZCPY(ZTgt,LN_ADR)
  		ZCPY(ZSrc,LN_NXT)
-
- 		;-- ZCnt = BASEND - LN_ADR
- 		;-- ZCPY(ZCnt,BASEND)
- 		;-- ZSUB(ZCnt,LN_ADR)
- 		;-- ZSUBR(r,m,n)	r = m - n
- 		ZSUBR(ZCnt,BASEND,LN_ADR)
-
+ 		ZSUBR(ZCnt,BASEND,LN_ADR) 	; ZCnt = BASEND - LN_ADR
  		;-- BASEND = BASEND - ZSrc + ZTgt
  		ZSUB(BASEND,ZSrc) 		; BASEND -= Len
  		ZADD(BASEND,ZTgt)
-
  		jsr 	EdtDwn
 
 EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
@@ -135,19 +121,8 @@ EdtIns: ; Insert line, provided it is not an 'empty' line (length <5)
  		bpl 	EdtInsX 		; Empty Line -> exit
  		;-- ZSrc = LN_ADR
  		ZCPY(ZSrc,LN_ADR)
-
- 		;-- ZTgt=LN_ADR+TOK_LEN
- 		;-- ZCPY(ZTgt,LN_ADR)
- 		;-- ZADD(ZTgt,TOK_LEN)
- 		;-- ZADDR(r,m,n)	r = m  + n
- 		ZADDR(ZTgt,LN_ADR,TOK_LEN)
-
- 		;-- ZCnt = BASEND - LN_ADR
- 		;-- ZCPY(ZCnt,BASEND)
- 		;-- ZSUB(ZCnt,LN_ADR) 	; ZSUB(r,n)	r = r-n
- 		;-- ZSUBR(r,m,n)	r = m - n
- 		ZSUBR(ZCnt,BASEND,LN_ADR)
-
+ 		ZADDR(ZTgt,LN_ADR,TOK_LEN) 	; ZTgt=LN_ADR+TOK_LEN
+ 		ZSUBR(ZCnt,BASEND,LN_ADR) 	; ZCnt = BASEND - LN_ADR
  		ZADD(BASEND,TOK_LEN) 		; BASEND += Len
  		;-- copy up to make space
  		jsr 	EdtOpn
@@ -165,7 +140,7 @@ EdtCpy: ; Copy from TOKBUF->(ZTgt)
 EdtCpyL 	lda 	(ZSrc),y
  		sta 	(ZTgt),y
  		dey
- 		bpl 	EdtCpyL
+ 		bpl 	EdtCpyL 		; works because line is <128 chars
  		ZCPY(VAREND,BASEND) 		; track end of code in VAREND
  		rts
 
@@ -195,7 +170,7 @@ EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
  		;-- copy the block size
  		ldy 	#0
  		lda 	ZCnt
- 		tax
+ 		tax 				; size -> .X
  		sta 	(ZPtr),y
  		iny
  		lda 	ZCnt+1
@@ -203,8 +178,11 @@ EdtFresh: ; Allocate fresh space - payload size in ZCnt, Returns pointer in ZPtr
  		lda 	#0
 EdtFreshClr 	iny
  		sta 	(ZPtr),y
+
+ 		;-- probably don't need this wipe
  		dex
  		bpl 	EdtFreshClr
+
  		lda 	ZPtr
  		ldx 	ZPtr+1
  		rts
@@ -218,23 +196,27 @@ EdtFreshClr 	iny
 ; ZCnt = number of bytes to move	Preserved
 EdtDwn: ;Move bytes down (Delete)
  		ldy 	#0
- 		ldx 	ZCnt+1
- 		beq 	EdtDwn2
-EdtDwn1 	lda 	(ZSrc),Y 		; move a page at a time
+ 		ldx 	ZCnt+1 			; Pages to copy
+ 		beq 	EdtDwn2 		; only a partial page needed
+EdtDwn1 	;-- move a page at a time
+ 		lda 	(ZSrc),Y
  		sta 	(ZTgt),Y
  		iny
  		bne 	EdtDwn1
+ 		;-- next page
  		inc 	ZSrc+1
  		inc 	ZTgt+1
  		dex
- 		bne 	EdtDwn1
-EdtDwn2 	ldx 	ZCnt
- 		beq 	EdtDwn4
-EdtDwn3 	lda 	(ZSrc),Y 		; move the remaining bytes
+ 		bne 	EdtDwn1 		; more pages -> loop
+EdtDwn2 	;-- last (partial) page
+ 		ldx 	ZCnt
+ 		beq 	EdtDwn4 		;none to copy -> done
+EdtDwn3 	;-- move the remaining bytes
+ 		lda 	(ZSrc),Y
  		sta 	(ZTgt),Y
  		iny
- 		dex
- 		bne 	EdtDwn3
+ 		dex 				; count down the bytes
+ 		bne 	EdtDwn3 		; loop until done
 EdtDwn4 	rts
 
 ;------------------------------------------------------- EdtOpn 
