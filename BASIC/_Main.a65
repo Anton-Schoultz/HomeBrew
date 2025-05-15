@@ -13,12 +13,12 @@
 
 ; default memory for BASIC
 #define _RAM_BAS_BEG	$0800
-#define _RAM_BAS_END	$1000
+#define _RAM_BAS_END	$8000
 
 #include "Constants.a65"
 
-;------------------------------------------------------- MODULE OPTIONS
-; MOD_MATH_	NONE, S16, S24(1073), H24(1154)
+;------------------------------------------------------- MODULE OPTIONS 
+; MOD_MATH_	NONE, S16(935), S24(1073), H24(1154)
 ; MOD_CONSOLE_	NONE, SIM, LCD
 ; MOD_COM_	NONE, SIM, MC68B50
 MOD_MATH 	= MOD_MATH_H24 			; NONE, S16, S24, H24
@@ -30,7 +30,7 @@ MOD_COM 	= MOD_COM_MC68B50 		; NONE, SIM, MC68B50
 .echo "RAM\n"
 #include "_Vars.a65"
 
-;=================================================================== MATH =============
+;=================================================================== MATH ============= 
 ;*  Main                 Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;*  MainList             list TOKBUF
 ;*  MainLoop             Main Loop
@@ -46,7 +46,7 @@ MOD_COM 	= MOD_COM_MC68B50 		; NONE, SIM, MC68B50
 
 .org _ROM
 .LIST
-;------------------------------------------------------- START OF ROM
+;------------------------------------------------------- START OF ROM 
 ; 		START OF ROM
  		jmp 	Reset
 
@@ -75,7 +75,7 @@ Greet 		.DB 	_FF,"Minimal BASIC 2025/05/08 15:27 "
 #include "Eval.a65" 				; Evaluator
 #include "Line.a65" 				; Line control
 
-;------------------------------------------------------- Reset
+;------------------------------------------------------- Reset 
 Reset: ;Reset (Cold start)
  		sei 				; Halt IRQs
  		ldx 	#$ff 			; Set Stack pointer
@@ -116,7 +116,7 @@ RstClr 		sta 	$0000,y 		; clear z-page
  		LDAX(Greet)
  		jsr 	PrStrAX
 
-;------------------------------------------------------- Main
+;------------------------------------------------------- Main 
 Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
  		;-- reset the stack and binary mode
  		sei 				; Halt IRQs
@@ -145,7 +145,7 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ; 		PR_WR_IO()
  		cli 				; enable IRQ's
 
-;------------------------------------------------------- TEST
+;------------------------------------------------------- TEST 
 
 
 ;TestL
@@ -155,7 +155,7 @@ Main: ;Warm Start = Reset Stack,Init Chr,Str,Calc,Devices
 ;		bra	TestL
 
 
-;------------------------------------------------------- MainLoop
+;------------------------------------------------------- MainLoop 
 MainLoop: ; Main Loop
  		lda 	#'>'
  		jsr 	InputText
@@ -189,7 +189,7 @@ MainLoop: ; Main Loop
  		;-- back to main loop
  		jmp 	MainLoop
 
-;------------------------------------------------------- MainCmd
+;------------------------------------------------------- MainCmd 
 MainCmd 	;-- Run command line
  		jsr 	PrNL
  		jsr 	RunCmd
@@ -199,7 +199,7 @@ MainCmd 	;-- Run command line
 .nolist
 #if _DBUG
 .list
-;=================================================================== MAIN-DBUG =============
+;=================================================================== MAIN-DBUG ============= 
 MainTokBuf: ; Dump TOKBUF
 ; 		PR_WR_IO()
  		CLS()
@@ -225,7 +225,7 @@ MainProg: ; Dump start of Program space
  		jsr 	HexDump 		; dump next 8
  		jsr 	HexDump 		; dump next 8
  		jmp 	PrNL
-;=================================================================== END DBUG =========
+;=================================================================== END DBUG ========= 
 .nolist
 #endif
 
@@ -252,7 +252,7 @@ MainProg: ; Dump start of Program space
 
 ROMEND 		= $
 
-;------------------------------------------------------- WORDS
+;------------------------------------------------------- WORDS 
 ; Include for the keyword table ..
 .org TblKeyword
 #include "All.a65"
@@ -263,7 +263,7 @@ ROMEND 		= $
 .echo 256-($-TblKeyword)
 .echo " free)\n"
 
-;------------------------------------------------------- TOKENS
+;------------------------------------------------------- TOKENS 
 ; Include for the jump/run table
 .org TblRun
 .nolist
@@ -286,7 +286,7 @@ T_Max 		= LOW($)+$80
 #endif
 .list
 
-;------------------------------------------------------- hardware vectors
+;------------------------------------------------------- hardware vectors 
 ; FFFA,B	NMI
 ; FFFC,D	Reset
 ; FFFE,F	IRQ
@@ -305,7 +305,7 @@ T_Max 		= LOW($)+$80
 
 .export  ROMEND,TblKeyword,TblRun
 
-;=================================================================== BASIC ============
+;=================================================================== BASIC ============ 
 ; ABS(##)
 ;    Return absolute value of numeric expression ##
 ; ASC($$)
@@ -395,7 +395,7 @@ T_Max 		= LOW($)+$80
 ; BASBEG          BASEND      VAREND        STR_END  ARYBEG  RAMEND
 ;   |  Program lines | Variables | String work | Free | Arrays |  blank | ROM
 
-;=================================================================== TODO =============
+;=================================================================== TODO ============= 
 ; GET v		Stores KeyPress value into var v
 ;
 ; POS(#)	Return column no of screen cursor

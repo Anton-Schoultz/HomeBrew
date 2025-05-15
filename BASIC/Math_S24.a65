@@ -34,7 +34,6 @@
 ;*  NumGet               Recall and unpack VARNUM[A] .A is (0-31)
 ;*  NumGetPtr            recall variable from (ZPtr).. and then unpack it
 ;*  NumMH                NUM_A = NUM_A * 100
-;*  NumMT                NUM_A = NUM_A * 10
 ;*  NumMod               NumA = NumB % NumA
 ;*  NumMul               NumA = NumB * NumA (in unpacked form)
 ;*  NumNegX              2's compliment the mantissa at X (All 6 bytes)
@@ -57,7 +56,6 @@
 ;*  NumWr                Pack & write to Memory (ChrWr)
 ;*  NumXor               XOR
 ;*  NumZeroA             place zero into NUM_A
-;*m MATHOFF()            convert index in .A to an offset in .X based on size of numbers
 ;*
 
 .list
@@ -139,12 +137,12 @@ NumToInt: ;Return 16 bit Int value of NUMA in AX (lo,hi) - sets NUM_FLG
  		ldx 	NUM_AB 			; hi->.X
  		rts
 
-;------------------------------------------------------- NumPack
+;------------------------------------------------------- NumPack 
 NumPack: ; Pack NUM_A into memory format for storing
 ;  for H24 we just apply the sign to the mantissa
  		ldx 	#NUM_A
  		;-- fall through to NumSign
-;------------------------------------------------------- NumSign
+;------------------------------------------------------- NumSign 
 NumSign: ; Move sign from SGN to mantissa (for Add/Sub)
  		lda 	FPS,X 			; sign byte
  		bpl 	NumNegXX 		; positive so nothing to change
@@ -162,8 +160,8 @@ NumFromInt: ;Set NUMA to 16 bit Int value in AX (lo,hi)
  		lda 	#0
  		sta 	NUM_AS 			; assume +v
  		sta 	NUM_AC 			; clear upper byte
-  		;-- fall through to NumUnpack
-;------------------------------------------------------- NumUnpack
+ 		;-- fall through to NumUnpack
+;------------------------------------------------------- NumUnpack 
 NumUnpack: ; Unpack memory format into calculation format
 ;  for S24 this simply means pulling the sign out
 
