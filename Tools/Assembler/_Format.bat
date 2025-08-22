@@ -26,7 +26,7 @@ sort < _words.tmp > _Wordlist.txt
 del _words.tmp
 
 echo off
-rem del *.BAK
+del *.BAK
 rem del *.LST
-rem del *.WRD
-rem del *.REF
+del *.WRD
+del *.REF

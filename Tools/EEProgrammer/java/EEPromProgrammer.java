@@ -14,12 +14,12 @@ public class EEPromProgrammer {
     // default baud rate
     static final int BAUD_RATE = 115200;
 
-    static final int MODE_READ = 0;
-    static final int MODE_WRITE = 1;
-    static final int MODE_ERASE = 2;
-    static final int MODE_LOAD = 4;
-    static final int MODE_DUMP = 8;
-    static final int MODE_VERIFY = 16 ;
+    static final int MODE_READ = 1;
+    static final int MODE_WRITE = 2;
+    static final int MODE_ERASE = 4;
+    static final int MODE_LOAD = 8;
+    static final int MODE_DUMP = 16;
+    static final int MODE_VERIFY = 32 ;
 
     static final int NEW_READ_TIMEOUT = 5000;
     static final int NEW_WRITE_TIMEOUT = 5000;
@@ -82,7 +82,7 @@ public class EEPromProgrammer {
             showHelp();
             return;
         }
-        println("EEProgrammer - Anton Schoultz - Jan 2025 2");
+        println("EEProgrammer - Anton Schoultz - May 2025");
         mode=0;
         for (String s : args) {
             if (s.equalsIgnoreCase("?")) {
@@ -157,7 +157,7 @@ public class EEPromProgrammer {
                 }
             }
         }
-        System.out.printf("%n-- Comport:%s %d, Filename:%s Size:0x%04x %n", portName, baudRate, fileSpec,romSize);
+        System.out.printf("%n-- Comport:%s %d, Filename:%s Size:0x%04x Mode:%02x %n", portName, baudRate, fileSpec,romSize,mode);
         findComPort();
         if (comPort != null) {
             openComPort();
@@ -175,25 +175,27 @@ public class EEPromProgrammer {
                 if(isMode(MODE_LOAD)) {
                     System.out.println("\r\nLoading...\r\n");
                     loadBinaryToROM();
+
                     File f = new File(fileSpec);
                     f = genOutFile(f);
                     readEE(f);
                 }
                 if(isMode(MODE_WRITE)) {
-                    System.out.println("\r\nWritinging...\r\n");
+                    System.out.println("\r\nWriting...\r\n");
                     writeEE();
+
                     File f = new File(fileSpec);
                     f = genOutFile(f);
                     readEE(f);
                 }
                 if(isMode(MODE_READ)){
-                    System.out.println("\r\nReading...\r\n");
                     File f = new File(fileSpec);
+                    System.out.println("\r\nReading..."+f.getAbsolutePath());
                     readEE(f);
                 }
                 if(isMode(MODE_DUMP)){
-                    System.out.println("\r\nDumpinging...\r\n");
                     File f = new File(fileSpec);
+                    System.out.println("\r\nDumping..."+f.getAbsolutePath());
                     dumpEE(f);
                 }
 
@@ -305,7 +307,7 @@ public class EEPromProgrammer {
      * Read the eeprom and write the result as simple hex dump text
      */
     private ArrayList<String> dumpEE(File f) {
-        String cmd = String.format("R", romSize/16 );
+        String cmd = String.format("R%04X", romSize/16 );
         sendCommand(cmd);
         ArrayList<String> result = new ArrayList<>();
         String input;

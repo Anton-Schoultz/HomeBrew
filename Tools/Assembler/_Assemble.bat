@@ -24,7 +24,8 @@ D:\GitHub\HomeBrew\Tools\Assembler\uz80as.exe %optn%
 sort < _Export.asm > _Export.txt
 
 set srecdir="C:\Program Files\srecord\bin\"
-%srecdir%srec_cat %1_Binary.bin -Binary -offset 0x1000 -output %1_IntHex.hex -Intel -line-length=64 -Data_Only -Address-Length=2
+rem length is characters in output line - bytes*2+12=>len   32=>76, 16=>44
+%srecdir%srec_cat %1_Binary.bin -Binary -offset 0x0000 -output %1_IntHex.hex -Intel -line-length=76 -Data_Only -Address-Length=2
 %srecdir%srec_cat %1_Binary.bin -Binary -o %1_HexDump.txt -HEX_Dump
 
 rem /Function String = "%^([0-9a-z_]+^)[ ^t]+"

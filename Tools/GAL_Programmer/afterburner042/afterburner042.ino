@@ -615,10 +615,10 @@ static void turnOn(char mode) {
     setSCLK(1);   // SCLK high
     setSTB(1);    // STB high
     setVCC(1);    // turn on VCC (if controlled)
-    delay(100);
+    delay(200);//AS 100
     setSCLK(0);   // SCLK low
     setVPP(mode);
-    delay(20);
+    delay(50);//AS 20
 }
 
 
@@ -701,7 +701,7 @@ static void strobeRow(char row, char setBit = BIT_NONE)
       if (setBit) {
         sendBits(1, setBit - 1);
       }
-      strobe(2);           // pulse /STB for 2ms
+      strobe(3);           // pulse /STB for 2ms
       break;
     case GAL22V10:
     case ATF22V10B:
@@ -1061,6 +1061,7 @@ static unsigned short verifyGalFuseMap(const unsigned char* cfgArray, char useDe
       mapBit = getFuseBit(addr);
       fuseBit = receiveBit();
       if (mapBit != fuseBit) {
+              
 #ifdef DEBUG_VERIFY
         Serial.print(F("f a="));
         Serial.println((row * galinfo[gal].bits) + bit, DEC);

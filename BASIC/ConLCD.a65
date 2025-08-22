@@ -7,13 +7,26 @@
 ;*  ConIn                Read character from input (keyboard), null if none
 ;*  ConInit              Initialise console
 ;*  ConOut               Write character to output, check for CLS, TAB etc
+;*  LcdBusy              Check if the LCD module is busy
+;*  LcdClr               LcdClr 	LCD screen
+;*  LcdCmd               Send a command .A to the module
+;*  LcdData              Send data byte .A to the LCD module
+;*  LcdInit              Initialise the LCD Module
 ;*
 
 ; Print to screen, Read from keyboard
 IO_AREA 	= $0300 			; Must match Simulator's Options screen.
 
+; base address where lcd is connected
+LCDBASE 	= $0300
+
+
+
 #define _NEED_STATEMACHINE
 #define _NEED_KEYBUFFER
+
+LCD_CMD 	= LCDBASE
+LCD_DATA 	= LCDBASE + 1
 
 _ConLCD 	= $
 
@@ -64,6 +77,59 @@ ConPos 		; Return screen column position in .A
 ConTab 		; Set screen column to .A
 ; > set LCD screen column
  		rts
+
+;=================================================================== LCD MODULE ======= 
+
+;------------------------------------------------------- LcdBusy 
+LcdBusy: ; Check if the LCD module is busy
+LcdBusyL 	lda 	LCD_CMD
+ 		bmi 	LcdBusyL 		; bit 7 is busy bit
+ 		rts
+;------------------------------------------------------- LcdCmd 
+LcdCmd: ; Send a command .A to the module
+ 		pha 				; save cmd byte
+ 		jsr 	LcdBusy 		; wait until ready
+ 		pla 				; recall command
+ 		sta 	LCD_CMD 		; send it
+ 		rts 				; done
+
+;------------------------------------------------------- LcdData 
+LcdData: ; Send data byte .A to the LCD module
+ 		pha 				; save data
+ 		jsr 	LcdBusy 		; wait until ready
+ 		pla 				; recall data
+ 		sta 	LCD_DATA 		; send it
+ 		rts 				; done
+
+;------------------------------------------------------- LcdInit 
+LcdInit: ; Initialise the LCD Module
+ 		ldx 	#$04 			;do function set 4 times
+LcdInit0 	lda 	#$38 			;function set: 8 bit, 2 lines, 5x7
+ 		jsr 	LcdCmd
+ 		dex
+ 		bne 	LcdInit0
+
+ 		lda 	#$06 			;entry mode set: increment, no shift
+ 		jsr 	LcdCmd
+ 		lda 	#$0E 			;display on, cursor on, blink off
+ 		jsr 	LcdCmd
+ 		lda 	#$01 			;clear display
+ 		jsr 	LcdCmd
+ 		lda 	#$80 			;DDRAM address set: $00
+ 		jsr 	LcdCmd
+ 		;-- fall through to clear screen
+
+;------------------------------------------------------- LcdClear 
+LcdClr: ; LcdClr 	LCD screen
+ 		pha
+ 		lda 	#$01
+ 		jsr 	LcdCmd
+ 		lda 	#$80
+ 		jsr 	LcdCmd
+ 		pla
+ 		rts
+
+
 
 .LIST 						;-- End of ConLCD
 

@@ -283,7 +283,10 @@ void write(int adr, int data) {
     writeData(0xFF);
   }
   // program the byte into the location
-  writeData(data);
+  // if pre-erased then fastWrite is true
+  if( !fastWrite | data!=0xFF ){// if data is FF then no need to write it
+    writeData(data);
+  }
   // track max memory written for 'D'ump
   if (adr > maxAdr) { maxAdr = adr; }
 }
@@ -376,6 +379,7 @@ void intelHex() {
   int loc = getHex();
   loc = (loc << 8) + getHex();
   int rec = getHex();
+  int flag = 0xFF;
   if (rec != 0) {
     Serial.println(F("Record type is not 00 (only data records accepted)"));
     return;
@@ -383,6 +387,7 @@ void intelHex() {
   // rec type is 01 so data
   for (int i = 0; i < len; i += 1) {
     dataBuf[i] = getHex();
+    flag = flag & dataBuf[i];// and all bytes to  check for FFFFF... records
   }
   int chk = getHex();
   /* verify check sum */
@@ -394,10 +399,14 @@ void intelHex() {
   Serial.print(strBuf);
   // write to the eeprom
   readyToWrite();
-  for (int i = 0; i < len; i += 1) {
-    int tmp = loc + i;
-    write(tmp, dataBuf[i]);
-    Serial.print(".");
+  if( fastWrite & flag==0xFF ){
+    Serial.print("FastMode - skipping blank line");
+  }else{
+    for (int i = 0; i < len; i += 1) {
+      int tmp = loc + i;
+      write(tmp, dataBuf[i]);
+      Serial.print(".");
+    }
   }
   if(loc>maxAdr){
     maxAdr = loc;

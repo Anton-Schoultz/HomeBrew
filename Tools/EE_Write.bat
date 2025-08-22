@@ -17,18 +17,18 @@ Rem ----------------------------------------------------------------------
 Rem
 
 if not .%1==. goto ok
-echo Read EEPROM
+echo Write EEPROM
 echo Usage:
-echo EE_Read {FileName} [Port]
+echo EE_Write {FileName} [Port]
 echo FileName is the name of the output file (without .HEX extension)
 echo Port is the com port that the uno is attached to, default is %port%
-echo
+echo Baud rate is %baud%
 goto exit
 
 :ok
 set file=%1.hex
 if not .%2==. set port=%2
-rem java -jar %jar% -B:%baud% -C:%port% -E -S:8
+title java -jar %jar% -B:%baud% -C:%port% -E -W:%file% -S:8
 java -jar %jar% -B:%baud% -C:%port% -E -W:%file% -S:8
 @echo Done!
 @echo Switch off power before removing.

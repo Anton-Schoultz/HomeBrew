@@ -8,11 +8,12 @@ Rem For GAL20v8 use programming voltage of just over 12v
 Rem
 REM 
 REM p1=jed file to write
-set port=COM8
+set port=COM9
 Rem ----------------------------------------------------------------------
 Rem this sets folder to this batch file's parent (including traing \)
 set folder=%~dp0%
-set exec=%folder%GAL_Programmer\afterburner_w64_040.exe
+rem set exec=%folder%GAL_Programmer\afterburner_w64_040.exe
+set exec=%folder%GAL_Programmer\afterburner_w64_060.exe
 title=%exec%
 Rem
 if not .%1==. goto ok
