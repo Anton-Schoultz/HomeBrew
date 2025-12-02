@@ -78299,6 +78299,12 @@
 		(uuid "7260a3b1-9e7f-4f26-a32c-6476107ae3cb")
 	)
 	(junction
+		(at 64.77 44.45)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "72fce962-f85e-4fc5-8258-490c53d3e1a6")
+	)
+	(junction
 		(at 262.89 22.86)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -78369,6 +78375,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a0e63a68-34d8-4ea8-b460-aabebca274f7")
+	)
+	(junction
+		(at 64.77 57.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a5743af2-2e78-48c8-9467-0fe3fed61a9f")
 	)
 	(junction
 		(at 81.28 97.79)
@@ -78802,7 +78814,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 44.45) (xy 69.85 44.45)
+			(xy 55.88 44.45) (xy 64.77 44.45)
 		)
 		(stroke
 			(width 0)
@@ -79042,6 +79054,16 @@
 	)
 	(wire
 		(pts
+			(xy 64.77 44.45) (xy 69.85 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1c973ba0-1cb3-44de-ba60-1332d8abb810")
+	)
+	(wire
+		(pts
 			(xy 22.86 170.18) (xy 29.21 170.18)
 		)
 		(stroke
@@ -79262,6 +79284,16 @@
 	)
 	(wire
 		(pts
+			(xy 64.77 53.34) (xy 64.77 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "255f23f3-d65a-4d1a-81bd-6ac6062b4e3d")
+	)
+	(wire
+		(pts
 			(xy 271.78 21.59) (xy 271.78 22.86)
 		)
 		(stroke
@@ -79352,7 +79384,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 57.15) (xy 66.04 57.15)
+			(xy 63.5 57.15) (xy 64.77 57.15)
 		)
 		(stroke
 			(width 0)
@@ -81542,6 +81574,16 @@
 	)
 	(wire
 		(pts
+			(xy 64.77 57.15) (xy 66.04 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "944abe13-468a-439d-bbc3-11395c31aa69")
+	)
+	(wire
+		(pts
 			(xy 132.08 81.28) (xy 127 81.28)
 		)
 		(stroke
@@ -82529,6 +82571,16 @@
 			(type default)
 		)
 		(uuid "c7faf289-393a-4ff9-a6f9-e53192fbdc19")
+	)
+	(wire
+		(pts
+			(xy 64.77 44.45) (xy 64.77 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c82cdb68-86be-4245-a174-27ed57c0cbf1")
 	)
 	(wire
 		(pts
@@ -91350,6 +91402,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small_US")
+		(at 64.77 50.8 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ca9f9bb0-e2e5-4889-8d6b-dcd964b68b75")
+		(property "Reference" "R26"
+			(at 66.548 49.022 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "R_Small_US"
+			(at 67.31 52.0699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
+			(at 64.77 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 64.77 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small US symbol"
+			(at 64.77 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "23768d03-0011-403d-b985-879fd7f8a2ca")
+		)
+		(pin "2"
+			(uuid "dfc809cc-67c4-4a53-a634-49975dd89660")
+		)
+		(instances
+			(project ""
+				(path "/d41350ce-2040-418d-ae11-f076a5474776"
+					(reference "R26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_01x32")
 		(at 189.23 149.86 0)
 		(unit 1)
@@ -92005,7 +92127,7 @@
 		(dnp no)
 		(uuid "dbd2a5c1-6fe4-48a8-b70d-fce590afb2db")
 		(property "Reference" "U2"
-			(at 63.754 48.514 0)
+			(at 59.944 48.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
