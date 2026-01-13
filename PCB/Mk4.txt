@@ -1,0 +1,23 @@
+Retro
+
+CPU	6502		R65C02	
+ROM	64k/128k	M28F512-150/SST29EE010-90/W27C010-70
+RAM	32K		62256-70
+
+IO	
+	COM		----
+	VIA		----
+	LCD		LM240128 240x128 / 40x16
+	KEY		----
+	
+2x GAL20v8 
+	GAL1	XTL/2->0.9216 MHz cpu clock, ~ROM, ~WR, ~RD, X0,X1,X2,X3
+	GAL2	Inputs A15..A7, Clk2, R/~W Output pull-ups & connector.
+	
+	Expansion bus for connection to 37 track stripboard back-plane
+	A14..A0, D7..0, RDY, ~RST, ~Wr,~Rd,R/~W,Clk2, ~IRQ,~NMI, X0,X1,X2,X3,
+	
+No VIA R6522
+No COM MC68B50
+No KEY 74ls573
+Different PCB layout to Mk2
