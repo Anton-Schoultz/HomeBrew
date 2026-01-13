@@ -50,7 +50,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_ffffd575_57555575",
+    "visible_layers": "ffffffff_ffffffff_ffffd5f5_df555575",
     "zone_display_mode": 0
   },
   "git": {
@@ -59,7 +59,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "Mk4.kicad_prl",
+    "filename": "Mk5.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
@@ -115,15 +115,15 @@
   "project": {
     "files": [
       {
-        "name": "Mk4.kicad_sch",
-        "open": false,
+        "name": "Mk5.kicad_sch",
+        "open": true,
         "window": {
           "display": 0,
-          "maximized": true,
-          "pos_x": -8,
-          "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1056
+          "maximized": false,
+          "pos_x": 93,
+          "pos_y": 52,
+          "size_x": 1650,
+          "size_y": 964
         }
       }
     ]
