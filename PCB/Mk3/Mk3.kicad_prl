@@ -50,7 +50,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_ffffd575_57555575",
+    "visible_layers": "ffffffff_ffffffff_ffffd575_d7555575",
     "zone_display_mode": 0
   },
   "git": {
@@ -118,24 +118,12 @@
         "name": "Mk3.kicad_pcb",
         "open": false,
         "window": {
-          "display": 0,
-          "maximized": true,
-          "pos_x": -8,
-          "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1056
-        }
-      },
-      {
-        "name": "Mk3.kicad_sch",
-        "open": false,
-        "window": {
           "display": 1,
-          "maximized": true,
-          "pos_x": 1912,
-          "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1056
+          "maximized": false,
+          "pos_x": 2014,
+          "pos_y": 39,
+          "size_x": 1641,
+          "size_y": 1040
         }
       }
     ]

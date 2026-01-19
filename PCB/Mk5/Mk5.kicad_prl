@@ -118,12 +118,24 @@
         "name": "Mk5.kicad_sch",
         "open": true,
         "window": {
-          "display": 0,
+          "display": 1,
           "maximized": false,
-          "pos_x": 93,
-          "pos_y": 52,
+          "pos_x": 76,
+          "pos_y": 30,
           "size_x": 1650,
           "size_y": 964
+        }
+      },
+      {
+        "name": "Mk5.kicad_pcb",
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": 2014,
+          "pos_y": 39,
+          "size_x": 1731,
+          "size_y": 962
         }
       }
     ]

@@ -118,12 +118,12 @@
         "name": "Mk4.kicad_sch",
         "open": false,
         "window": {
-          "display": 0,
-          "maximized": true,
-          "pos_x": -8,
-          "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1056
+          "display": 1,
+          "maximized": false,
+          "pos_x": 76,
+          "pos_y": 30,
+          "size_x": 1650,
+          "size_y": 964
         }
       }
     ]

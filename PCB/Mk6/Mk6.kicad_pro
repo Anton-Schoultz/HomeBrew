@@ -251,7 +251,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "pin_to_pin|1498600|444500|27131fab-f7ef-4b29-83f5-f5ee4843f9ec|29a21bcc-7ad8-439f-b958-8992ecdf5375|/d41350ce-2040-418d-ae11-f076a5474776/6f321657-4a6d-4542-a81b-ad55bdd1ca88|/d41350ce-2040-418d-ae11-f076a5474776/6f321657-4a6d-4542-a81b-ad55bdd1ca88|/d41350ce-2040-418d-ae11-f076a5474776/6f321657-4a6d-4542-a81b-ad55bdd1ca88",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -464,7 +469,7 @@
       "simulation_model_issue": "ignore",
       "single_global_label": "ignore",
       "unannotated": "error",
-      "unconnected_wire_endpoint": "ignore",
+      "unconnected_wire_endpoint": "error",
       "undefined_netclass": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
@@ -480,7 +485,7 @@
     ]
   },
   "meta": {
-    "filename": "Mk3.kicad_pro",
+    "filename": "Mk6.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -589,7 +594,7 @@
       "svg": "",
       "vrml": ""
     },
-    "page_layout_descr_file": "kicad-embed://A4_Blank.kicad_wks"
+    "page_layout_descr_file": "kicad-embed://A4_Frame.kicad_wks"
   },
   "schematic": {
     "annotate_start_num": 24,
@@ -692,7 +697,7 @@
       "version": 1
     },
     "net_format_name": "",
-    "page_layout_descr_file": "kicad-embed://A4_Blank.kicad_wks",
+    "page_layout_descr_file": "kicad-embed://A4_Frame.kicad_wks",
     "plot_directory": "",
     "space_save_all_events": true,
     "spice_current_sheet_as_root": false,
@@ -708,6 +713,26 @@
     [
       "d41350ce-2040-418d-ae11-f076a5474776",
       "Root"
+    ],
+    [
+      "c466e200-7308-4cbf-9cc6-0d7b021a89f4",
+      "PowerResetClock"
+    ],
+    [
+      "6f321657-4a6d-4542-a81b-ad55bdd1ca88",
+      "Core"
+    ],
+    [
+      "991bdc6c-c9f2-46dc-9106-bb77d701fb18",
+      "IO"
+    ],
+    [
+      "87fe3d26-27b8-42b5-bb91-53d69d084d06",
+      "COM"
+    ],
+    [
+      "4c5e0103-ac1e-400b-b6d0-d77307a1336e",
+      "LCD"
     ]
   ],
   "text_variables": {}

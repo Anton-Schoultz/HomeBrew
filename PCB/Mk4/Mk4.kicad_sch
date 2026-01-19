@@ -55330,6 +55330,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "Mk4"
+		(exclude_from_sim no)
+		(at 17.018 15.494 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+			)
+		)
+		(uuid "e09f3e66-2dd2-4f43-ad6a-0aa69880c42b")
+	)
 	(junction
 		(at 203.2 49.53)
 		(diameter 0)
