@@ -467,7 +467,7 @@
       "similar_labels": "warning",
       "similar_power": "warning",
       "simulation_model_issue": "ignore",
-      "single_global_label": "ignore",
+      "single_global_label": "warning",
       "unannotated": "error",
       "unconnected_wire_endpoint": "error",
       "undefined_netclass": "error",
@@ -597,7 +597,7 @@
     "page_layout_descr_file": "kicad-embed://A4_Frame.kicad_wks"
   },
   "schematic": {
-    "annotate_start_num": 24,
+    "annotate_start_num": 1,
     "bom_export_filename": "${PROJECTNAME}.csv",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
