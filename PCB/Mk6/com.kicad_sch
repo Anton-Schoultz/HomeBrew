@@ -1891,7 +1891,7 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 53.34) (xy 81.28 66.04)
+			(xy 81.28 53.34) (xy 81.28 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2031,7 +2031,7 @@
 	)
 	(wire
 		(pts
-			(xy 66.04 66.04) (xy 66.04 83.82)
+			(xy 66.04 64.77) (xy 66.04 83.82)
 		)
 		(stroke
 			(width 0)
@@ -2061,7 +2061,7 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 66.04) (xy 66.04 66.04)
+			(xy 81.28 64.77) (xy 66.04 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2139,23 +2139,43 @@
 		)
 		(uuid "fb1a45a7-4049-48bc-9868-b9db37b86fa3")
 	)
-	(label "Tx"
-		(at 81.28 66.04 90)
+	(label "RTS"
+		(at 58.42 68.58 90)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
+		(uuid "37e364fe-76cf-4620-a1c5-6d5bac8e8403")
+	)
+	(label "Tx"
+		(at 81.28 64.77 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
 		(uuid "53df7189-f522-4848-b4f3-22e754ab399a")
 	)
-	(label "Rx"
-		(at 83.82 57.15 90)
+	(label "DCD.CTS"
+		(at 48.26 59.69 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
+		)
+		(uuid "9d4c6a63-71aa-46f0-bc73-368ba1d06aef")
+	)
+	(label "Rx"
+		(at 83.82 68.58 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
 		)
 		(uuid "dbb4ced4-abe6-4fea-b8db-beb741c8fa6a")
 	)

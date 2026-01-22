@@ -579,6 +579,10 @@
       {
         "netclass": "POWER",
         "pattern": "/PWR"
+      },
+      {
+        "netclass": "POWER",
+        "pattern": "/PowerResetClock/PWR"
       }
     ]
   },

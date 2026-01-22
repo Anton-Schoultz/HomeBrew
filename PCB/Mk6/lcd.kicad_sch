@@ -1908,8 +1908,7 @@
 	)
 	(symbol
 		(lib_id "RetroParts_Library:R_Trim")
-		(at 99.06 29.21 0)
-		(mirror y)
+		(at 99.06 29.21 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1917,7 +1916,7 @@
 		(dnp no)
 		(uuid "11eab79a-2fe1-4e6b-81cc-2dd0a21bc71b")
 		(property "Reference" "RV2"
-			(at 96.52 23.622 0)
+			(at 104.394 29.972 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1926,7 +1925,7 @@
 			)
 		)
 		(property "Value" "Contrast"
-			(at 102.616 25.908 90)
+			(at 102.616 32.512 90)
 			(effects
 				(font
 					(size 1.27 1.27)
