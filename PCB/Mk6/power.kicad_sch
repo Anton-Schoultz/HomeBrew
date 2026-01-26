@@ -2093,6 +2093,12 @@
 		(uuid "61382d28-7f26-4799-8740-338d3fe1f08c")
 	)
 	(junction
+		(at 163.83 30.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6ee59463-b31a-415e-adc0-2b00ba16f912")
+	)
+	(junction
 		(at 39.37 30.48)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2139,6 +2145,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a55e0a86-3132-428b-bf16-9daeb4a9392e")
+	)
+	(junction
+		(at 163.83 43.18)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ae586dda-718b-42b3-85f6-37dc259565a5")
 	)
 	(junction
 		(at 39.37 45.72)
@@ -2500,6 +2512,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 40.64) (xy 163.83 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3941537e-10a5-4420-bf5c-0c152280ec06")
+	)
+	(wire
+		(pts
 			(xy 36.83 85.09) (xy 36.83 87.63)
 		)
 		(stroke
@@ -2620,6 +2642,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 30.48) (xy 163.83 33.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f623ba6-a3d8-46c5-84bb-f9fe43c6427b")
+	)
+	(wire
+		(pts
 			(xy 128.27 33.02) (xy 128.27 30.48)
 		)
 		(stroke
@@ -2707,6 +2739,16 @@
 			(type default)
 		)
 		(uuid "6445e6de-169e-49db-bf8c-487dcd3ade6e")
+	)
+	(wire
+		(pts
+			(xy 163.83 30.48) (xy 175.26 30.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "648473bb-a939-443f-a1ba-d3cc6b754686")
 	)
 	(wire
 		(pts
@@ -2980,6 +3022,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 43.18) (xy 175.26 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "93efcf03-5a64-434a-9a76-7c13ad8e592c")
+	)
+	(wire
+		(pts
 			(xy 36.83 87.63) (xy 36.83 90.17)
 		)
 		(stroke
@@ -3050,7 +3102,7 @@
 	)
 	(wire
 		(pts
-			(xy 154.94 43.18) (xy 175.26 43.18)
+			(xy 154.94 43.18) (xy 163.83 43.18)
 		)
 		(stroke
 			(width 0)
@@ -3080,7 +3132,7 @@
 	)
 	(wire
 		(pts
-			(xy 154.94 30.48) (xy 175.26 30.48)
+			(xy 154.94 30.48) (xy 163.83 30.48)
 		)
 		(stroke
 			(width 0)
@@ -4302,6 +4354,75 @@
 			(project "Mk6"
 				(path "/d41350ce-2040-418d-ae11-f076a5474776/c466e200-7308-4cbf-9cc6-0d7b021a89f4"
 					(reference "C9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 163.83 36.83 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "55aba3c4-9a15-4c6e-8f2d-eba5af784aae")
+		(property "Reference" "C16"
+			(at 164.338 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C"
+			(at 164.592 39.624 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_THT:C_Disc_D7.5mm_W2.5mm_P5.00mm"
+			(at 164.7952 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 163.83 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 163.83 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "ccc2b7d5-3c35-4428-841b-86ffea5bf54e")
+		)
+		(pin "1"
+			(uuid "1a52a07c-0ff2-4d5d-ab6e-7fe9e5e5f4cc")
+		)
+		(instances
+			(project "Mk6"
+				(path "/d41350ce-2040-418d-ae11-f076a5474776/c466e200-7308-4cbf-9cc6-0d7b021a89f4"
+					(reference "C16")
 					(unit 1)
 				)
 			)
