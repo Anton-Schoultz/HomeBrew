@@ -2267,7 +2267,7 @@
 			)
 		)
 	)
-	(global_label "Clk2"
+	(global_label "BaudClk"
 		(shape input)
 		(at 43.18 55.88 180)
 		(fields_autoplaced yes)
@@ -2279,7 +2279,7 @@
 		)
 		(uuid "894f709d-c687-4178-b17a-bd0f2c1be78e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 36.022 55.88 0)
+			(at 32.5145 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
