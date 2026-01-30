@@ -3517,8 +3517,8 @@
 				)
 			)
 		)
-		(property "Value" "1.8-M-0.9"
-			(at 146.304 66.04 0)
+		(property "Value" "x1 Osc /2"
+			(at 157.988 70.612 90)
 			(effects
 				(font
 					(size 1.27 1.27)

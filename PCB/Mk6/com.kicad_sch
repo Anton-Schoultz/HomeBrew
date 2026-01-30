@@ -2505,7 +2505,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "COM: Gnd,CTS, Vcc, Tx, Rx, DTR"
+		(property "Value" "COM: Gnd, RTS, Vcc, Rx, Tx, DCD-CTS, 5v"
 			(at 51.816 90.932 90)
 			(effects
 				(font

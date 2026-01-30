@@ -11909,7 +11909,7 @@
 				)
 			)
 		)
-		(property "Value" "Bank"
+		(property "Value" "Bank:3..0"
 			(at 130.81 41.656 90)
 			(effects
 				(font
